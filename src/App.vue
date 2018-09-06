@@ -1,6 +1,22 @@
 <template>
   <div id="app">
-    <Welcome/>
+    <div class="wrapper">
+      <base-header
+        :lang="'en'"
+        :active="'recherche'"
+        :profile.prop="null"
+        :emit-navigation="true"
+        :urls.prop="{
+          de:'/recherche/de/',
+          en:'/recherche/en/',
+          login:'/recherche/login/',
+          logout:'/recherche/logout/'}"
+        @navigate="navigate($event.detail[0])" />
+      <div class="app-container">
+        <Welcome/>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -15,11 +31,23 @@ export default {
 };
 </script>
 
-<style>
+<style lang="scss">
+  @import "./styles/variables.scss";
+
   #app {
-    position: relative;
-    margin: auto;
-    text-align: center;
-    padding-top: 200px;
+    .wrapper {
+      display: block;
+      margin: 0 auto;
+      max-width: $page-max-width;
+      min-width: $page-min-width;
+      padding: $spacing;
+      position: relative;
+      min-height: 100vh;
+      overflow: hidden;
+
+      .app-container {
+        margin-top: $header-height + $spacing;
+      }
+    }
   }
 </style>
