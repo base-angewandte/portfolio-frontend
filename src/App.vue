@@ -40,7 +40,39 @@
             :selected="showCheckbox"
             :list="list"/>
         </div>
-        <div id="form-component">test</div>
+        <div id="form-component">
+          <div class="base-row">
+            <base-menu-entry
+              :id="'asingleentry'"
+              :icon="'sheet-empty'"
+              subtext="Ausstellung" />
+            <base-button
+              text="Save"
+              icon-size="small"
+              icon="save-file"
+              button-style="row"
+              class="separation-line"/>
+          </div>
+          <div class="options-row flex-align-right" >
+            <base-button
+              text="In Showroom veröffentlichen"
+              icon-size="large"
+              icon="eye"
+              button-style="single" />
+            <base-button
+              text="Bearbeitung ermöglichen"
+              icon-size="large"
+              icon="people"
+              button-style="single" />
+            <base-button
+              text="Publikation löschen"
+              icon-size="large"
+              icon="waste-bin"
+              button-style="single" />
+          </div>
+          <base-form
+            :list="formList"/>
+        </div>
       </div>
     </div>
 
@@ -53,8 +85,10 @@ import {
   BaseSearch,
   BaseDropDown,
   BaseMenuList,
+  BaseMenuEntry,
 } from 'base-components';
 import 'base-components/dist/lib/base-components.min.css';
+import BaseForm from './components/BaseForm';
 
 
 export default {
@@ -64,10 +98,45 @@ export default {
     BaseSearch,
     BaseDropDown,
     BaseMenuList,
+    BaseMenuEntry,
+    BaseForm,
   },
   data() {
     return {
       newForm: false,
+      formList: [
+        {
+          name: 'Title',
+          type: 'text',
+          size: 'half',
+        },
+        {
+          name: 'Subtitle',
+          type: 'text',
+          size: 'half',
+        },
+        {
+          name: 'Typ',
+          type: 'chips',
+          mode: 'single',
+          source: 'cv',
+          unknown: false,
+          size: 'full',
+        },
+        {
+          name: 'Description',
+          type: 'multiline-text',
+          size: 'full',
+        },
+        {
+          name: 'Authors',
+          type: 'chips',
+          mode: 'multi',
+          source: 'dynamic',
+          unknown: false,
+          size: 'full',
+        },
+      ],
       list: [
         {
           id: '1',
@@ -126,43 +195,50 @@ export default {
         display: flex;
 
         #menu-sidebar{
-          flex: 0 0 33%;
           max-width: 33%;
           height: 100vh;
-
-          .base-row {
-            height: $row-height-large;
-            box-shadow: $box-shadow-reg;
-            display: flex;
-            margin-bottom: $spacing;
-
-            &:hover {
-              box-shadow: $box-shadow-hov;
-            }
 
             button + div {
               border-left: $separation-line;
             }
           }
-
-          .options-row {
-            height: $row-height-small;
-            width: 100%;
-            display: flex;
-            align-items: baseline;
-            margin-bottom: $spacing;
-          }
         }
 
         #form-component {
-          background-color: white;
-          flex: 0 0 66%;
+          max-width: 66%;
         }
 
         #menu-sidebar + #form-component{
           margin-left: 16px;
         }
       }
+
+    .base-row {
+      height: $row-height-large;
+      box-shadow: $box-shadow-reg;
+      display: flex;
+      margin-bottom: $spacing;
+
+      &:hover {
+        box-shadow: $box-shadow-hov;
+      }
+    }
+
+    .options-row {
+      height: $row-height-small;
+      width: 100%;
+      display: flex;
+      align-items: baseline;
+      margin-bottom: $spacing;
+
+      &.flex-align-right {
+        justify-content: flex-end;
+        margin-right: -32px;
+      }
+    }
+
+    .separation-line {
+      border-left: $separation-line;
     }
   }
 </style>
