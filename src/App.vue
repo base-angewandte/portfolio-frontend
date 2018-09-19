@@ -28,6 +28,9 @@
           <div class="options-row">
             <base-button
               :text="'Optionen'"
+              :icon="showCheckbox ? 'remove' : ''"
+              icon-position="right"
+              class="options"
               @clicked="showCheckbox = !showCheckbox"/>
             <base-drop-down
               :default-select="'Alle Typ'"
@@ -42,16 +45,22 @@
         </div>
         <div id="form-component">
           <div class="base-row">
-            <base-menu-entry
-              :id="'asingleentry'"
-              :icon="'sheet-empty'"
-              subtext="Ausstellung" />
+            <div class="base-row-header">
+              <base-menu-entry
+                :id="'asingleentry'"
+                :icon="'sheet-empty'"
+                :title="formList[0].value"
+                :title-bold="true"
+                subtext="Ausstellung" />
+            </div>
+
             <base-button
               text="Save"
               icon-size="small"
               icon="save-file"
               button-style="row"
-              class="separation-line"/>
+              class="separation-line"
+              @clicked="newForm = false"/>
           </div>
           <div class="options-row flex-align-right" >
             <base-button
@@ -107,7 +116,7 @@ export default {
       formList: [
         {
           name: 'Title',
-          type: 'text',
+          type: 'autocomplete',
           size: 'half',
         },
         {
@@ -124,16 +133,16 @@ export default {
           size: 'full',
         },
         {
-          name: 'Description',
-          type: 'multiline-text',
-          size: 'full',
-        },
-        {
-          name: 'Authors',
+          name: 'Author',
           type: 'chips',
           mode: 'multi',
           source: 'dynamic',
           unknown: false,
+          size: 'full',
+        },
+        {
+          name: 'Description',
+          type: 'multiline',
           size: 'full',
         },
       ],
@@ -218,9 +227,15 @@ export default {
       box-shadow: $box-shadow-reg;
       display: flex;
       margin-bottom: $spacing;
+      width: 100%;
 
       &:hover {
         box-shadow: $box-shadow-hov;
+      }
+
+      .base-row-header {
+        overflow: hidden;
+        width: 100%;
       }
     }
 
@@ -234,6 +249,10 @@ export default {
       &.flex-align-right {
         justify-content: flex-end;
         margin-right: -32px;
+      }
+
+      .options {
+        flex-grow: 2;
       }
     }
 
