@@ -16,12 +16,18 @@
         v-else-if="element.type === 'multiline'"
         :key="index"
         :tabs="['German', 'English']"
+        :label="element.name"
+        :placeholder="'Write a ' + element.name"
         v-model="element.value"/>
       <base-chips-input
         v-else-if="element.type === 'chips'"
         :key="index"
         :placeholder="'Select ' + element.name"
         :label="element.name"
+        :list="dropdownLists[element.name]"
+        :allow-dynamic-drop-down-entries="element.source === 'dynamic'"
+        :allow-multiple-entries="element.mode === 'multi'"
+        :allow-unknown-entries="element.unknown"
         :class="['base-form-field', 'base-form-field-' + getSizeClass(element.size)]"/>
       <base-input
         v-else-if="element.type === 'text'"
@@ -60,8 +66,24 @@ export default {
   computed: {
     dropdownLists() {
       const obj = {};
-      this.$props.list.filter(element => element.type === 'autocomplete')
-        .forEach(autoField => this.$set(obj, autoField.name, []));
+      this.$props.list.filter(element => element.type === 'autocomplete' || element.type === 'chips')
+        .forEach((autoField) => {
+          if (autoField.name === 'Schlagwörter') {
+            this.$set(obj, autoField.name, [
+              'Art',
+              'Collage',
+              'Photography',
+              'Drawing',
+              'Painting',
+              'Concert',
+              'Classic',
+              'Fashion',
+            ]);
+          } else {
+            this.$set(obj, autoField.name, []);
+          }
+        });
+      console.log(obj);
       return obj;
     },
   },

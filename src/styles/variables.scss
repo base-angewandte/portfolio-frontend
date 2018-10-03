@@ -4,8 +4,9 @@
 $spacing: 16px;
 $spacing-small: 8px;
 $spacing-large: 32px;
-$row-height-small: 32px;
-$row-height-large: 48px;
+/* new styleguide: font size + relative spacing! */
+$row-height-large: 1em +  2*1em;
+$row-height-small: 1em +  2*.5em;
 $header-height: 55px;
 
 /* shadows and borders */
