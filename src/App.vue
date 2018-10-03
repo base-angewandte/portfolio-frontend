@@ -28,7 +28,8 @@
           <div class="options-row">
             <base-button
               :text="'Optionen'"
-              :icon="showCheckbox ? 'remove' : ''"
+              :icon="'remove'"
+              :hide-icon="!showCheckbox"
               icon-position="right"
               class="options"
               @clicked="showCheckbox = !showCheckbox"/>
@@ -39,47 +40,70 @@
               :default-select="'Alle Typen'"
               :selection-list="['Bild', 'Publikation', 'Film/Video']" />
           </div>
-          <base-menu-list
-            :selected="showCheckbox"
-            :list="list"/>
-        </div>
-        <div id="form-component">
-          <div class="base-row">
-            <div class="base-row-header">
-              <base-menu-entry
-                :id="'asingleentry'"
-                :icon="'sheet-empty'"
-                :title="formList[0].value"
-                :title-bold="true"
-                subtext="Ausstellung" />
-            </div>
-
+          <transition-group
+            name="slide-fade2"
+            class="options-extend">
             <base-button
-              text="Save"
-              icon-size="small"
-              icon="save-file"
-              button-style="row"
-              class="separation-line"
-              @clicked="newForm = false"/>
-          </div>
-          <div class="options-row flex-align-right" >
+              v-if="showCheckbox"
+              key="delete"
+              text="Einträge löschen"
+              icon-size="large"
+              icon="waste-bin"
+              button-style="single" />
             <base-button
+              v-if="showCheckbox"
+              key="publish"
               text="In Showroom veröffentlichen"
               icon-size="large"
               icon="eye"
               button-style="single" />
-            <base-button
-              text="Bearbeitung ermöglichen"
-              icon-size="large"
-              icon="people"
-              button-style="single" />
-            <base-button
-              text="Publikation löschen"
-              icon-size="large"
-              icon="waste-bin"
-              button-style="single" />
+            <base-menu-list
+              id="menu-list"
+              key="menu-list"
+              :selected="showCheckbox"
+              :list="list"/>
+          </transition-group>
+        </div>
+        <div id="form-component">
+          <div id="form-head">
+            <div class="base-row">
+              <div class="base-row-header">
+                <base-menu-entry
+                  :id="'asingleentry'"
+                  :icon="'sheet-empty'"
+                  :title="formList[0].value"
+                  :title-bold="true"
+                  subtext="Ausstellung" />
+              </div>
+
+              <base-button
+                text="Save"
+                icon-size="small"
+                icon="save-file"
+                button-style="row"
+                class="separation-line"
+                @clicked="newForm = false"/>
+            </div>
+            <div class="options-row flex-align-right" >
+              <base-button
+                text="In Showroom veröffentlichen"
+                icon-size="large"
+                icon="eye"
+                button-style="single" />
+              <base-button
+                text="Bearbeitung ermöglichen"
+                icon-size="large"
+                icon="people"
+                button-style="single" />
+              <base-button
+                text="Publikation löschen"
+                icon-size="large"
+                icon="waste-bin"
+                button-style="single" />
+            </div>
           </div>
           <base-form
+            id="form"
             :list="formList"/>
         </div>
       </div>
@@ -145,6 +169,19 @@ export default {
           type: 'multiline',
           size: 'full',
         },
+        {
+          name: 'Schlagwörter',
+          type: 'chips',
+          source: 'static',
+          unknown: true,
+          mode: 'multi',
+          size: 'full',
+        },
+        {
+          name: 'Notizen',
+          type: 'multiline',
+          size: 'full',
+        },
       ],
       list: [
         {
@@ -197,36 +234,47 @@ export default {
       padding: $spacing;
       position: relative;
       min-height: 100vh;
-      overflow: hidden;
 
       #app-container {
-        margin-top: $header-height + $spacing;
+        margin-top: $header-height;
         display: flex;
 
-        #menu-sidebar{
+        #menu-sidebar {
           max-width: 33%;
-          height: 100vh;
+          align-self: flex-start;
+          position: sticky;
+          top: $header-height;
+          padding-top: $spacing;
 
-            button + div {
-              border-left: $separation-line;
-            }
+          button + div {
+            border-left: $separation-line;
           }
         }
 
         #form-component {
           max-width: 66%;
+
+          #form-head{
+            background-color: $background-color;
+            position: sticky;
+            top: $header-height;
+            z-index: 2;
+            padding-top: $spacing;
+            padding-bottom: 8px;
+          }
         }
 
-        #menu-sidebar + #form-component{
+        #menu-sidebar + #form-component {
           margin-left: 16px;
         }
       }
+    }
 
     .base-row {
       height: $row-height-large;
       box-shadow: $box-shadow-reg;
       display: flex;
-      margin-bottom: $spacing;
+      margin-bottom: $spacing-small;
       width: 100%;
 
       &:hover {
@@ -244,7 +292,6 @@ export default {
       width: 100%;
       display: flex;
       align-items: baseline;
-      margin-bottom: $spacing;
 
       &.flex-align-right {
         justify-content: flex-end;
@@ -258,6 +305,23 @@ export default {
 
     .separation-line {
       border-left: $separation-line;
+    }
+
+    #menu-list {
+      margin-top: $spacing-small;
+    }
+
+    .slide-fade2-enter-active, .slide-fade2-move {
+      transition: all 0.5s ease;
+    }
+    .slide-fade2-enter, .slide-fade2-leave-to {
+      opacity: 0;
+      transform: translateY(-#{$spacing});
+    }
+
+    .slide-fade2-leave-active {
+      position: absolute;
+      transition: all 0.3s ease;
     }
   }
 </style>
