@@ -18,7 +18,13 @@
         :tabs="['German', 'English']"
         :label="element.name"
         :placeholder="'Write a ' + element.name"
-        v-model="element.value"/>
+        v-model="element.value">
+        <div class="multiline-dropdown">
+          <base-drop-down
+            :default-select="'Textart'"
+            :selection-list="['Beschreibung', 'Ausstellungseinladung', 'Zeitungsartikel']" />
+        </div>
+      </base-multiline-text-input>
       <base-chips-input
         v-else-if="element.type === 'chips'"
         :key="index"
@@ -48,6 +54,7 @@ import {
   BaseChipsInput,
   BaseAutocompleteInput,
   BaseMultilineTextInput,
+  BaseDropDown,
 } from 'base-components';
 
 export default {
@@ -56,6 +63,7 @@ export default {
     BaseChipsInput,
     BaseInput,
     BaseAutocompleteInput,
+    BaseDropDown,
   },
   props: {
     list: {
@@ -109,22 +117,41 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+  @import "../styles/variables.scss";
+
   .base-form {
     background-color: white;
     display: flex;
     flex-wrap: wrap;
     padding: 16px;
 
-    .base-form-field-full {
+    .multiline-dropdown {
+      margin-bottom: -10px;
+    }
+  }
+  .base-form-field-full {
+    flex: 0 0 100%;
+  }
+
+  .base-form-field-half {
+    flex: 0 0 calc(50% - 8px);
+  }
+
+  .base-form-field-half + .base-form-field-half {
+    margin-left: 16px;
+  }
+
+  @media screen and (max-width: $mobile) {
+    .base-form-field-half {
       flex: 0 0 100%;
     }
 
-    .base-form-field-half {
-      flex: 0 0 calc(50% - 8px);
+    .base-form-field-half + .base-form-field-half {
+      margin-left: 0;
     }
 
-    .base-form-field-half + .base-form-field-half {
-      margin-left: 16px;
+    .multiline-dropdown {
+      order: 0;
     }
   }
 </style>
