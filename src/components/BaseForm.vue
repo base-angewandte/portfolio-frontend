@@ -18,7 +18,8 @@
         :tabs="['German', 'English']"
         :label="element.name"
         :placeholder="'Write a ' + element.name"
-        v-model="element.value">
+        v-model="element.value"
+        class="base-form-field base-form-field-full">
         <div class="multiline-dropdown">
           <base-drop-down
             :default-select="'Textart'"
@@ -30,13 +31,23 @@
         :key="index"
         :placeholder="'Select ' + element.name"
         :label="element.name"
+        :object-prop="element.name"
         :list="dropdownLists[element.name]"
         :allow-dynamic-drop-down-entries="element.source === 'dynamic'"
         :allow-multiple-entries="element.mode === 'multi'"
         :allow-unknown-entries="element.unknown"
-        :class="['base-form-field', 'base-form-field-' + getSizeClass(element.size)]"/>
+        :class="['base-form-field', 'base-form-field-' + getSizeClass(element.size)]"
+        @selected="$emit('selected', $event[element.name])"/>
       <base-input
         v-else-if="element.type === 'text'"
+        :key="index"
+        :label="element.name"
+        :placeholder="'Select ' + element.name"
+        :id="index"
+        v-model="element.value"
+        :class="['base-form-field', 'base-form-field-' + getSizeClass(element.size)]"/>
+      <base-date-input
+        v-else-if="element.type === 'date'"
         :key="index"
         :label="element.name"
         :placeholder="'Select ' + element.name"
@@ -51,6 +62,7 @@
 import axios from 'axios';
 import {
   BaseInput,
+  BaseDateInput,
   BaseChipsInput,
   BaseAutocompleteInput,
   BaseMultilineTextInput,
@@ -62,6 +74,7 @@ export default {
     BaseMultilineTextInput,
     BaseChipsInput,
     BaseInput,
+    BaseDateInput,
     BaseAutocompleteInput,
     BaseDropDown,
   },
@@ -87,11 +100,21 @@ export default {
               'Classic',
               'Fashion',
             ]);
+          } else if (autoField.name === 'Typ') {
+            this.$set(obj, autoField.name, [
+              'Publikation',
+              'Text',
+              'Bild',
+              'Konzert',
+              'Ausstellung',
+              'Collage',
+              'Skulptur',
+              'Werk',
+            ]);
           } else {
             this.$set(obj, autoField.name, []);
           }
         });
-      console.log(obj);
       return obj;
     },
   },
@@ -129,6 +152,11 @@ export default {
       margin-bottom: -10px;
     }
   }
+
+  .base-form-field:not(:last-of-type) {
+    margin-bottom: $spacing;
+  }
+
   .base-form-field-full {
     flex: 0 0 100%;
   }
