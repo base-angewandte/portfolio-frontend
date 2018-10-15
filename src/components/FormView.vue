@@ -38,7 +38,7 @@
             icon="save-file"
             button-style="row"
             class="form-button-inner"
-            @clicked="newForm = unsavedChanges = false"/>
+            @clicked="saveForm"/>
         </div>
 
       </div>
@@ -249,16 +249,40 @@ export default {
       unsavedChanges: false,
     };
   },
+  watch: {
+    $route(from) {
+      console.log('route changed');
+      console.log(from);
+    },
+  },
   created() {
-    console.log(this.$route);
+    console.log(this.$route.params.id);
     if (window.innerWidth <= 640) {
       this.showFormMenu = false;
+    }
+    if (this.$route.params.id) {
+      try {
+        this.axios.get('get the entity');
+      } catch (err) {
+        console.log(err);
+      }
     }
   },
   methods: {
     changed(field) {
       console.log(field);
       this.formType = field;
+    },
+    saveForm() {
+      debugger;
+      this.newForm = false;
+      this.unsavedChanges = false;
+      this.$emit('saveForm');
+      // TODO:
+      // a) check if title was set
+      // b) save form
+      // c) create new menu entry (or fetch entries from db)
+      // d) push new item id to router
     },
   },
 };

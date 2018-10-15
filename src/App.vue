@@ -14,14 +14,16 @@
         @navigate="navigate($event.detail[0])" />
       <div id="app-container">
         <sidebar
+          ref="sidebar"
           :new-form="isNewForm"
-          class="sidebar"
+          :class="['sidebar', { 'sidebar-full': !showForm }]"
           @newForm="createNewForm"
           @showEntry="fetchEntryData"/>
         <div
           v-if="showForm"
           class="form-view">
-          <router-view />
+          <router-view
+            @formSaved="saveForm"/>
         </div>
       </div>
     </div>
@@ -59,7 +61,10 @@ export default {
     fetchEntryData(item) {
       this.showForm = true;
       this.isNewForm = false;
-      this.router.push('/Item/xxxxx');
+      this.$router.push(`/Item/${item.id}`);
+    },
+    saveForm() {
+      console.log('saved');
     },
   },
 };
@@ -83,15 +88,20 @@ export default {
         display: flex;
 
         .sidebar {
-          flex: 1 0 calc(33% - 8px);
+          flex: 1 0 33%;
+          max-width: 33%;
           align-self: flex-start;
           position: sticky;
           top: $header-height;
           padding-top: $spacing;
         }
 
+        & .sidebar-full {
+          max-width: 100%;
+        }
+
         .form-view {
-          flex: 1 0 calc(66% - 32px);
+          flex: 0 1 66%;
           margin-left: 16px;
         }
       }
@@ -110,7 +120,6 @@ export default {
     height: $row-height-small;
     width: 100%;
     display: flex;
-    align-items: baseline;
     background-color: $background-color;
 
     &.flex-align-right {
