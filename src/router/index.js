@@ -1,7 +1,8 @@
 import Vue from 'vue';
 import Router from 'vue-router';
-import Landing from '../components/Landing';
+import Dashboard from '../components/Dashboard';
 import FormView from '../components/FormView';
+import Login from '../components/Login';
 import NotFoundComponent from '../components/NotFoundComponent';
 
 Vue.use(Router);
@@ -16,18 +17,30 @@ export default new Router({
     },
     {
       path: '/',
-      name: 'Landing',
-      component: Landing,
+      redirect: '/dashboard',
     },
     {
-      path: '/item/:id',
-      name: 'Item',
-      component: FormView,
+      path: '/dashboard',
+      name: 'Dashboard',
+      component: Dashboard,
+      meta: { requiresAuth: true },
+      children: [
+        {
+          path: 'item/:id',
+          name: 'Item',
+          component: FormView,
+        },
+        {
+          path: 'newItem',
+          name: 'newItem',
+          component: FormView,
+        },
+      ],
     },
     {
-      path: '/newItem',
-      name: 'newItem',
-      component: FormView,
+      path: '/login',
+      name: 'login',
+      component: Login,
     },
   ],
 });

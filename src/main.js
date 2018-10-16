@@ -4,6 +4,7 @@ import VueI18n from 'vue-i18n';
 import Vue from 'vue';
 import App from './App';
 import router from './router';
+import store from './store';
 
 import './styles/app.scss';
 import './styles/main.scss';
@@ -23,11 +24,29 @@ const i18n = new VueI18n({
   },
 });
 
+console.log(store);
+store.registerModule('store', {
+
+});
+
+/* router.beforeEach((to, from, next) => {
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (false) {
+      next({
+        path: '/login',
+        params: { nextUrl: to.fullPath },
+      });
+    }
+  }
+  next();
+}) */
+
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
   i18n,
   router,
+  store,
   components: { App },
   template: '<App/>',
 });

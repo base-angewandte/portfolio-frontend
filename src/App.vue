@@ -1,70 +1,26 @@
 <template>
-  <div id="app">
-    <div class="wrapper">
-      <base-header
-        :lang="'en'"
-        :active="'recherche'"
-        :profile.prop="null"
-        :emit-navigation="true"
-        :urls.prop="{
-          de:'/recherche/de/',
-          en:'/recherche/en/',
-          login:'/recherche/login/',
-          logout:'/recherche/logout/'}"
-        @navigate="navigate($event.detail[0])" />
-      <div id="app-container">
-        <sidebar
-          ref="sidebar"
-          :new-form="isNewForm"
-          :class="['sidebar', { 'sidebar-full': !showForm }]"
-          @newForm="createNewForm"
-          @showEntry="fetchEntryData"/>
-        <div
-          v-if="showForm"
-          class="form-view">
-          <router-view
-            @formSaved="saveForm"/>
-        </div>
-      </div>
-    </div>
+  <div class="wrapper">
+    <base-header
+      :lang="'en'"
+      :active="'recherche'"
+      :profile.prop="null"
+      :emit-navigation="true"
+      :urls.prop="{
+        de:'/portfolio/de/',
+        en:'/portfolio/en/',
+        login:'portfolio/login/',
+        logout:'/portfolio/logout/'}"
+      @navigate="navigate($event.detail[0])" />
+    <router-view />
   </div>
 </template>
 
 <script>
-import Sidebar from './components/Sidebar';
-
 export default {
   name: 'App',
-  components: {
-    Sidebar,
-  },
-  data() {
-    return {
-      isNewForm: false,
-      showForm: false,
-    };
-  },
-  watch: {
-    $route() {
-      this.showForm = this.$route.name !== 'Landing';
-    },
-  },
-  mounted() {
-    this.showForm = this.$route.name !== 'Landing';
-  },
   methods: {
-    createNewForm() {
-      this.showForm = true;
-      this.isNewForm = true;
-      this.$router.push('newItem');
-    },
-    fetchEntryData(item) {
-      this.showForm = true;
-      this.isNewForm = false;
-      this.$router.push(`/Item/${item.id}`);
-    },
-    saveForm() {
-      console.log('saved');
+    async navigate(val) {
+      console.log(val);
     },
   },
 };
@@ -73,37 +29,35 @@ export default {
 <style lang="scss">
   @import "./styles/variables.scss";
 
-  #app {
-    .wrapper {
-      display: block;
-      margin: 0 auto;
-      max-width: $page-max-width;
-      min-width: $page-min-width;
-      padding: $spacing;
-      position: relative;
-      min-height: 100vh;
+  .wrapper {
+    display: block;
+    margin: 0 auto;
+    max-width: $page-max-width;
+    min-width: $page-min-width;
+    padding: $spacing;
+    position: relative;
+    min-height: 100vh;
 
-      #app-container {
-        margin-top: $header-height;
-        display: flex;
+    #app-container {
+      margin-top: $header-height;
+      display: flex;
 
-        .sidebar {
-          flex: 1 0 33%;
-          max-width: 33%;
-          align-self: flex-start;
-          position: sticky;
-          top: $header-height;
-          padding-top: $spacing;
-        }
+      .sidebar {
+        flex: 1 0 33%;
+        max-width: 33%;
+        align-self: flex-start;
+        position: sticky;
+        top: $header-height;
+        padding-top: $spacing;
+      }
 
-        & .sidebar-full {
-          max-width: 100%;
-        }
+      & .sidebar-full {
+        max-width: 100%;
+      }
 
-        .form-view {
-          flex: 0 1 66%;
-          margin-left: 16px;
-        }
+      .form-view {
+        flex: 0 1 66%;
+        margin-left: 16px;
       }
     }
   }
@@ -175,7 +129,7 @@ export default {
   }
 
   @media screen and (max-width: $mobile) {
-    #app .wrapper {
+    .wrapper {
       padding: $spacing-small;
     }
 
@@ -187,21 +141,21 @@ export default {
       display: block;
     }
 
-    #app .options-row {
+    .options-row {
       flex-wrap: wrap;
       height: auto;
     }
 
-    #app .options-row.flex-align-right {
+    .options-row.flex-align-right {
       justify-content: center;
     }
 
-    #app .base-row .base-row-header {
+    .base-row .base-row-header {
       order: 3;
       border-top: $separation-line;
     }
 
-    #app .base-row {
+    .base-row {
       height: auto;
       flex-wrap: wrap;
     }

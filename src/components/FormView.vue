@@ -270,11 +270,9 @@ export default {
   },
   methods: {
     changed(field) {
-      console.log(field);
       this.formType = field;
     },
     saveForm() {
-      debugger;
       this.newForm = false;
       this.unsavedChanges = false;
       this.$emit('saveForm');
