@@ -108,11 +108,11 @@
         :show-plus="true"
         :box-size="{ width: '25%'}"
         icon="sheet-empty"
-        text="Neuen Eintrag anhängen"
-        subtext="(Click oder Drag'n Drop)"/>
+        text="Neuen Eintrag anhängen"/>
       <base-drop-box
         :show-plus="true"
         :box-size="{ width: '50%' }"
+        :box-ratio="'50'"
         icon="camera"
         text="Dateien anhängen"
         subtext="(Click oder Drag'n Drop)"
