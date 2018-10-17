@@ -37,7 +37,7 @@
         :allow-multiple-entries="element.mode === 'multi'"
         :allow-unknown-entries="element.unknown"
         :class="['base-form-field', 'base-form-field-' + getSizeClass(element.size)]"
-        @selected="$emit('selected', $event[element.name])"/>
+        @selected="$emit('selected', $event && $event.length ? $event[0][element.name] : null)"/>
       <base-input
         v-else-if="element.type === 'text'"
         :key="index"

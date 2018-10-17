@@ -131,7 +131,6 @@ export default {
   },
   methods: {
     showEntry(index) {
-      console.log(this.list[index]);
       this.$emit('showEntry', this.list[index]);
     },
     getNewForm() {

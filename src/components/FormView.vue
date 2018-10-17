@@ -8,7 +8,7 @@
             :icon="'sheet-empty'"
             :title="formList[0].value"
             :title-bold="true"
-            subtext="Ausstellung" />
+            :subtext="formType" />
         </div>
         <div
           id="form-back-button"
@@ -75,6 +75,8 @@
         </transition>
       </div>
     </div>
+
+    <!-- FORM -->
     <base-form
       :list="formList"
       class="form"
@@ -250,21 +252,20 @@ export default {
     };
   },
   watch: {
-    $route(from) {
-      console.log('route changed');
-      console.log(from);
+    $route() {
+      // TODO: this could be used to fetch the new item?
     },
   },
   created() {
-    console.log(this.$route.params.id);
     if (window.innerWidth <= 640) {
       this.showFormMenu = false;
     }
     if (this.$route.params.id) {
       try {
+        // fetch entity
         this.axios.get('get the entity');
       } catch (err) {
-        console.log(err);
+        console.error(err);
       }
     }
   },

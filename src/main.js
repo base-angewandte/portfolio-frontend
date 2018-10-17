@@ -2,9 +2,10 @@
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import VueI18n from 'vue-i18n';
 import Vue from 'vue';
+import { Api } from 'base-components';
 import App from './App';
 import router from './router';
-import store from './store';
+// import store from './store';
 
 import './styles/app.scss';
 import './styles/main.scss';
@@ -24,29 +25,28 @@ const i18n = new VueI18n({
   },
 });
 
-console.log(store);
-store.registerModule('store', {
 
-});
+// store.registerModule('api', Api);
+// TODO: this is throwing an error (.keys of undefined)
+// store.registerModule('skosmos', Skosmos);
 
-/* router.beforeEach((to, from, next) => {
+/* this is not working!
+router.beforeEach((to, from, next) => {
   if (to.matched.some(record => record.meta.requiresAuth)) {
-    if (false) {
-      next({
-        path: '/login',
-        params: { nextUrl: to.fullPath },
-      });
+    debugger;
+    if (!store.auth.state.isAuthenticated) {
+      window.location.href = 'http://localhost:8200/accounts/login';
     }
   }
   next();
-}) */
+}); */
 
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
   i18n,
   router,
-  store,
+  // store,
   components: { App },
   template: '<App/>',
 });
