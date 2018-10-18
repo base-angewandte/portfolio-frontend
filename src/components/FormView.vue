@@ -189,6 +189,7 @@ export default {
           name: 'Description',
           type: 'multiline',
           size: 'full',
+          lang: ['English', 'German'],
         },
         {
           name: 'Schlagwörter',
@@ -233,7 +234,7 @@ export default {
           size: 'half',
         },
         {
-          name: 'Ort / Adresse',
+          name: 'Adresse',
           type: 'autocomplete',
           mode: 'single',
           source: 'dynamic',

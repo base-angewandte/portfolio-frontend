@@ -15,12 +15,14 @@
       <base-multiline-text-input
         v-else-if="element.type === 'multiline'"
         :key="index"
-        :tabs="['German', 'English']"
+        :tabs="element.lang"
         :label="element.name"
         :placeholder="'Write a ' + element.name"
         v-model="element.value"
         class="base-form-field base-form-field-full">
-        <div class="multiline-dropdown">
+        <div
+          v-if="element.name === 'Description'"
+          class="multiline-dropdown">
           <base-drop-down
             :default-select="'Textart'"
             :selection-list="['Beschreibung', 'Ausstellungseinladung', 'Zeitungsartikel']" />
