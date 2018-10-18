@@ -4,7 +4,7 @@
     class="mobile-hidden">
     <div class="base-row">
       <base-button
-        :active="newFormInt"
+        :active="!$store.state.currentItemId"
         :text="$t('new')"
         icon="sheet-plus"
         icon-size="large"
@@ -41,7 +41,7 @@
         button-style="single" />
       <base-button
         v-if="showCheckbox"
-        key="publish"
+        key="duplicate"
         text="Einträge duplizieren"
         icon-size="large"
         icon="duplicate"
@@ -52,13 +52,15 @@
         text="Einträge löschen"
         icon-size="large"
         icon="waste-bin"
-        button-style="single" />
+        button-style="single"
+        @clicked="$store.commit('data/deleteSidebarItems', selectedMenuEntries)"/>
       <base-menu-list
         id="menu-list"
         key="menu-list"
         :selected="showCheckbox"
         :list="list"
-        @clicked="showEntry"/>
+        @clicked="showEntry"
+        @selected="selectedMenuEntries.push($event)"/>
     </transition-group>
   </div>
 </template>
@@ -89,39 +91,8 @@ export default {
     return {
       showCheckbox: false,
       newFormInt: this.newForm,
-      list: [
-        {
-          id: '1',
-          title: 'On a lovely Summers Day',
-          active: false,
-          type: 'Bild',
-          selected: false,
-          shared: true,
-          error: true,
-        },
-        {
-          id: '2',
-          title: 'Oh this hot hot heat',
-          active: false,
-          type: 'Bild',
-          selected: false,
-        },
-        {
-          id: '3',
-          title: 'And then again a different title',
-          active: false,
-          type: 'Ausstellung',
-          selected: false,
-          shared: true,
-        },
-        {
-          id: '4',
-          title: 'Allons-y!!',
-          active: false,
-          type: 'Bild',
-          selected: false,
-        },
-      ],
+      list: this.$store.getters['data/getSidebarData'],
+      selectedMenuEntries: [],
     };
   },
   watch: {
@@ -135,6 +106,7 @@ export default {
     },
     getNewForm() {
       this.newFormInt = true;
+      this.$store.commit('data/setCurrentItem', {})
       this.$emit('newForm');
     },
   },

@@ -2,10 +2,10 @@
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import VueI18n from 'vue-i18n';
 import Vue from 'vue';
-import { Api } from 'base-components';
+// import { Api } from 'base-components';
 import App from './App';
 import router from './router';
-// import store from './store';
+import store from './store';
 
 import './styles/app.scss';
 import './styles/main.scss';
@@ -46,6 +46,7 @@ new Vue({
   el: '#app',
   i18n,
   router,
+  store,
   // store,
   components: { App },
   template: '<App/>',

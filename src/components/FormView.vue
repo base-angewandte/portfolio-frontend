@@ -149,6 +149,7 @@ import {
 } from 'base-components';
 import 'base-components/dist/lib/base-components.min.css';
 import BaseForm from './BaseForm';
+import { FORM_MAPPINGS } from '../assets/data';
 
 export default {
   components: {
@@ -166,87 +167,8 @@ export default {
       formType: null,
       extend: false,
       newForm: false,
-      formList: [
-        {
-          name: 'Title',
-          type: 'autocomplete',
-          size: 'half',
-        },
-        {
-          name: 'Subtitle',
-          type: 'text',
-          size: 'half',
-        },
-        {
-          name: 'Typ',
-          type: 'chips',
-          mode: 'single',
-          source: 'cv',
-          unknown: false,
-          size: 'full',
-        },
-        {
-          name: 'Description',
-          type: 'multiline',
-          size: 'full',
-          lang: ['English', 'German'],
-        },
-        {
-          name: 'Schlagwörter',
-          type: 'chips',
-          source: 'static',
-          unknown: true,
-          mode: 'multi',
-          size: 'full',
-        },
-        {
-          name: 'Notizen',
-          type: 'multiline',
-          size: 'full',
-        },
-      ],
-      formExtended: [
-        {
-          name: 'Beteiligte',
-          type: 'chips',
-          mode: 'multi',
-          source: 'dynamic',
-          unknown: false,
-          size: 'full',
-        },
-        /*
-        {
-          name: 'Laufzeit',
-          type: 'date',
-          size: 'half',
-        },
-        {
-          name: 'Eröffnung',
-          type: 'date',
-          size: 'half',
-        }, */
-        {
-          name: 'Veranstaltungsort',
-          type: 'autocomplete',
-          mode: 'single',
-          source: 'dynamic',
-          unknown: true,
-          size: 'half',
-        },
-        {
-          name: 'Adresse',
-          type: 'autocomplete',
-          mode: 'single',
-          source: 'dynamic',
-          unknown: true,
-          size: 'half',
-        },
-        {
-          name: 'Links',
-          type: 'text',
-          size: 'full',
-        },
-      ],
+      formList: FORM_MAPPINGS.common,
+      formExtended: [],
       showCheckbox: false,
       showFormMenu: true,
       unsavedChanges: false,
@@ -264,19 +186,24 @@ export default {
     if (this.$route.params.id) {
       try {
         // fetch entity
-        this.axios.get('get the entity');
+        // this.axios.get('get the entity');
       } catch (err) {
         console.error(err);
       }
+    } else {
+      this.newForm = true;
     }
   },
   methods: {
-    changed(field) {
+    async changed(field) {
       this.formType = field;
+      this.formExtended = await this.$store.dispatch('data/fetchFormExtension', field);
     },
     saveForm() {
+
       this.newForm = false;
       this.unsavedChanges = false;
+      this.$store.commit('data/addSidebarItem');
       this.$emit('saveForm');
       // TODO:
       // a) check if title was set

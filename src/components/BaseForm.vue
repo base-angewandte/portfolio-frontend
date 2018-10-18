@@ -1,5 +1,7 @@
 <template>
-  <div class="base-form">
+  <div
+    ref="baseForm"
+    class="base-form">
     <template
       v-for="(element, index) in list">
       <base-autocomplete-input
@@ -9,8 +11,12 @@
         :placeholder="'Select ' + element.name"
         :list="dropdownLists[element.name]"
         :object-prop="element.name.toLowerCase()"
-        v-model="element.value"
-        :class="['base-form-field', 'base-form-field-' + getSizeClass(element.size)]"
+        v-model="formValues[element.name]"
+        :class="[
+          'base-form-field',
+          'base-form-field-' + getSizeClass(element.size),
+          { 'base-form-field-spacing': element.size === 'half' && getClassIndex(element) }
+        ]"
         @autocomplete="fetchAutocomplete({ value: $event, name: element.name })"/>
       <base-multiline-text-input
         v-else-if="element.type === 'multiline'"
@@ -18,7 +24,7 @@
         :tabs="element.lang"
         :label="element.name"
         :placeholder="'Write a ' + element.name"
-        v-model="element.value"
+        v-model="formValues[element.name]"
         class="base-form-field base-form-field-full">
         <div
           v-if="element.name === 'Description'"
@@ -35,10 +41,15 @@
         :label="element.name"
         :object-prop="element.name"
         :list="dropdownLists[element.name]"
+        v-model="formValues[element.name]"
         :allow-dynamic-drop-down-entries="element.source === 'dynamic'"
         :allow-multiple-entries="element.mode === 'multi'"
         :allow-unknown-entries="element.unknown"
-        :class="['base-form-field', 'base-form-field-' + getSizeClass(element.size)]"
+        :class="[
+          'base-form-field',
+          'base-form-field-' + getSizeClass(element.size),
+          { 'base-form-field-spacing': element.size === 'half' && getClassIndex(element) }
+        ]"
         @selected="$emit('selected', $event && $event.length ? $event[0][element.name] : null)"/>
       <base-input
         v-else-if="element.type === 'text'"
@@ -46,16 +57,25 @@
         :label="element.name"
         :placeholder="'Select ' + element.name"
         :id="index"
-        v-model="element.value"
-        :class="['base-form-field', 'base-form-field-' + getSizeClass(element.size)]"/>
+        v-model="formValues[element.name]"
+        :class="[
+          'base-form-field',
+          'base-form-field-' + getSizeClass(element.size),
+          { 'base-form-field-spacing': element.size === 'half' && getClassIndex(element) }
+      ]"/>
       <base-date-input
         v-else-if="element.type === 'date'"
         :key="index"
         :label="element.name"
         :placeholder="'Select ' + element.name"
         :id="index"
-        v-model="element.value"
-        :class="['base-form-field', 'base-form-field-' + getSizeClass(element.size)]"/>
+        :type="element.dateType"
+        v-model="formValues[element.name]"
+        :class="[
+          'base-form-field',
+          'base-form-field-' + getSizeClass(element.size),
+          { 'base-form-field-spacing': element.size === 'half' && getClassIndex(element) }
+      ]"/>
     </template>
   </div>
 </template>
@@ -84,6 +104,14 @@ export default {
     list: {
       type: Array,
       required: true,
+    },
+    formValues: {
+      type: Object,
+      default() {
+        const obj = {};
+        this.list.forEach(field => this.$set(obj, field.name, null));
+        return obj;
+      },
     },
   },
   computed: {
@@ -119,10 +147,16 @@ export default {
         });
       return obj;
     },
+    halfElements() {
+      return this.list.filter(elem => elem.size === 'half');
+    },
   },
   methods: {
     getSizeClass(val) {
       return val && ['half', 'full'].includes(val) ? val : 'full';
+    },
+    getClassIndex(val) {
+      return this.halfElements.indexOf(val) % 2;
     },
     async fetchAutocomplete(item) {
       if (!item.value || item.value.length > 3) {
@@ -167,7 +201,7 @@ export default {
     flex: 0 0 calc(50% - 8px);
   }
 
-  .base-form-field-half + .base-form-field-half {
+  .base-form-field-spacing {
     margin-left: 16px;
   }
 
@@ -176,7 +210,7 @@ export default {
       flex: 0 0 100%;
     }
 
-    .base-form-field-half + .base-form-field-half {
+    .base-form-field-spacing {
       margin-left: 0;
     }
 
