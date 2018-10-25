@@ -4,7 +4,7 @@
     class="mobile-hidden">
     <div class="base-row">
       <base-button
-        :active="!$store.state.currentItemId"
+        :active="$store.state.data.isNewForm"
         :text="$t('new')"
         icon="sheet-plus"
         icon-size="large"
@@ -17,17 +17,19 @@
       <div class="options">
         <base-button
           :text="'Optionen'"
-          :icon="'remove'"
-          :hide-icon="!showCheckbox"
-          icon-position="right"
+          :icon="'options-menu'"
+          icon-size="small"
+          icon-position="left"
           @clicked="showCheckbox = !showCheckbox"/>
       </div>
       <base-drop-down
-        :default-select="'Sortieren nach'"
-        :selection-list="['Bild', 'Publikation', 'Film/Video']" />
+        :placeholder="'Sortieren nach'"
+        :selection-list="['Nach Typ', 'A-Z', 'Z-A', 'Neueste', 'Älteste']"
+        @selected="sortEntries"/>
       <base-drop-down
         :default-select="'Alle Typen'"
-        :selection-list="['Bild', 'Publikation', 'Film/Video']" />
+        :selection-list="availableEntryTypes"
+        @selected="filterEntries"/>
     </div>
     <transition-group
       name="slide-fade2"
@@ -53,14 +55,15 @@
         icon-size="large"
         icon="waste-bin"
         button-style="single"
-        @clicked="$store.commit('data/deleteSidebarItems', selectedMenuEntries)"/>
+        @clicked="deleteEntries"/>
       <base-menu-list
         id="menu-list"
         key="menu-list"
         :selected="showCheckbox"
-        :list="list"
+        :list="listInt"
+        :active-entry="activeEntry"
         @clicked="showEntry"
-        @selected="selectedMenuEntries.push($event)"/>
+        @selected="selectEntry($event)"/>
     </transition-group>
   </div>
 </template>
@@ -81,33 +84,74 @@ export default {
     BaseDropDown,
     BaseSearch,
   },
-  props: {
-    newForm: {
-      type: Boolean,
-      default: false,
-    },
-  },
   data() {
     return {
       showCheckbox: false,
-      newFormInt: this.newForm,
-      list: this.$store.getters['data/getSidebarData'],
       selectedMenuEntries: [],
+      listInt: [],
+      activeEntryInt: null,
     };
   },
-  watch: {
-    newForm(val) {
-      this.newFormInt = val;
+  computed: {
+    activeEntry: {
+      get() {
+        if (this.$store.state.data.currentItemId) {
+          return this.activeEntryInt || this.$store.getters['data/getCurrentItemIndex'];
+        }
+        return null;
+      },
+      set(val) {
+        this.activeEntryInt = val;
+      },
     },
+    availableEntryTypes() {
+      return this.$store.getters['data/getEntryTypes'];
+    },
+    list: {
+      get() {
+        return [].concat(this.$store.getters['data/getSidebarData']);
+      },
+    },
+  },
+  watch: {
+    activeEntry(val) {
+      this.$store.commit('data/setNewForm', val === null);
+    },
+    list(val) {
+      this.listInt = val;
+      // this.activeEntry = this.$store.getters['data/getCurrentItemIndex'];
+    },
+  },
+  created() {
+    this.$store.commit('data/setNewForm', !this.$store.state.data.currentItemId);
+    this.listInt = this.list;
   },
   methods: {
     showEntry(index) {
+      this.$store.commit('data/setCurrentItem', this.list[index]);
       this.$emit('showEntry', this.list[index]);
     },
+    selectEntry(index) {
+      this.selectedMenuEntries.push(this.list[index].id);
+    },
     getNewForm() {
-      this.newFormInt = true;
-      this.$store.commit('data/setCurrentItem', {})
+      this.$store.commit('data/setCurrentItem', {});
       this.$emit('newForm');
+    },
+    deleteEntries() {
+      this.$store.commit('data/deleteSidebarItems', this.selectedMenuEntries);
+      this.selectedMenuEntries = [];
+      this.showCheckbox = false;
+      // TODO: check if currently displayed item is one of the deleted and remove from form
+      // if necessary! (and change route)
+    },
+    sortEntries(evt) {
+      this.$store.commit('data/sortEntries', evt);
+    },
+    filterEntries(evt) {
+      // TODO: CONTINUE HERE!!
+      // TODO: also use this for SEARCH!!
+      console.log(evt);
     },
   },
 };

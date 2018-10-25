@@ -5,57 +5,48 @@ module.exports = {
       id: '1',
       title: 'On a lovely Summers Day',
       subtitle: 'A Show',
-      active: false,
       type: 'Bild',
-      description: [
-        {
-          de: 'Alles Neu',
-          en: 'And so on',
-          type: 'Ausstellungsankündigung',
-        },
-      ],
+      description:
+      {
+        English: 'Alles Neu',
+        German: 'And so on',
+        type: 'Ausstellungsankündigung',
+      },
       keywords: ['Schmerz', 'Leid'],
-      selected: false,
       shared: true,
       error: true,
     },
     {
       id: '2',
       title: 'Oh this hot hot heat',
-      active: false,
       type: 'Bild',
-      selected: false,
     },
     {
       id: '3',
       title: 'And then again a different title',
-      active: false,
       type: 'Ausstellung',
-      selected: false,
       shared: true,
     },
     {
       id: '4',
       title: 'Allons-y!!',
-      active: false,
       type: 'Bild',
-      selected: false,
     },
   ],
   FORM_MAPPINGS: {
     common: [
       {
-        name: 'Title',
+        name: 'title',
         type: 'autocomplete',
         size: 'half',
       },
       {
-        name: 'Subtitle',
+        name: 'subtitle',
         type: 'text',
         size: 'half',
       },
       {
-        name: 'Typ',
+        name: 'type',
         type: 'chips',
         mode: 'single',
         source: 'cv',
@@ -63,13 +54,13 @@ module.exports = {
         size: 'full',
       },
       {
-        name: 'Description',
+        name: 'description',
         type: 'multiline',
         size: 'full',
         lang: ['English', 'German'],
       },
       {
-        name: 'Schlagwörter',
+        name: 'keywords',
         type: 'chips',
         source: 'static',
         unknown: true,
@@ -77,14 +68,14 @@ module.exports = {
         size: 'full',
       },
       {
-        name: 'Notizen',
+        name: 'notes',
         type: 'multiline',
         size: 'full',
       },
     ],
     document: [
       {
-        name: 'Authors',
+        name: 'authors',
         type: 'chips',
         source: 'dynamic',
         unknown: true,
@@ -92,7 +83,7 @@ module.exports = {
         size: 'full',
       },
       {
-        name: 'Editors',
+        name: 'editors',
         type: 'chips',
         source: 'dynamic',
         unknown: true,
@@ -100,7 +91,7 @@ module.exports = {
         size: 'full',
       },
       {
-        name: 'Publisher',
+        name: 'publisher',
         type: 'chips',
         source: 'dynamic',
         unknown: true,
@@ -108,12 +99,12 @@ module.exports = {
         size: 'full',
       },
       {
-        name: 'City',
+        name: 'city',
         type: 'autocomplete',
         size: 'half',
       },
       {
-        name: 'Date',
+        name: 'date',
         type: 'date',
         size: 'half',
         dateType: 'single',

@@ -3,8 +3,10 @@
 import axios from 'axios';
 
 const state = {
-  isAuthenticated: false,
-  profile: null,
+  isAuthenticated: true,
+  profile: {
+    name: 'Florian Bettel',
+  },
 };
 
 const getters = {

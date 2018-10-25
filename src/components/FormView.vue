@@ -6,7 +6,7 @@
           <base-menu-entry
             :id="'asingleentry'"
             :icon="'sheet-empty'"
-            :title="formList[0].value"
+            :title="valueList.title"
             :title-bold="true"
             :subtext="formType" />
         </div>
@@ -20,14 +20,14 @@
             icon="arrow-left"
             button-style="row"
             class="form-button-inner"
-            @clicked="newForm = false"/>
+            @clicked="$store.commit('data/setNewForm' ,false)"/>
           <base-button
             v-else
             text="Abbrechen"
             icon-size="small"
             button-style="row"
             class="form-button-inner"
-            @clicked="newForm = false"/>
+            @clicked="$store.commit('data/setNewForm' ,false)"/>
         </div>
         <div
           id="form-save-button"
@@ -70,15 +70,34 @@
               text="Publikation löschen"
               icon-size="large"
               icon="waste-bin"
-              button-style="single" />
+              button-style="single"
+              @clicked="showPopUp = !$store.state.data.isNewForm"/>
           </div>
         </transition>
       </div>
     </div>
 
+    <base-pop-up
+      :show="showPopUp"
+      :title="'Eintrag löschen?'"
+      :button-left-text="'Abbrechen'"
+      :button-right-text="'Eintrag löschen'"
+      button-right-icon="waste-bin"
+      @close="showPopUp = false"
+      @clicked="removeEntryAction">
+      <div class="delete-pop-up">
+        <div>
+          <p class="delete-pop-up-text">
+            {{ 'Soll "' + valueList.title + '" wirklich gelöscht werden?' }}
+          </p>
+        </div>
+      </div>
+    </base-pop-up>
+
     <!-- FORM -->
     <base-form
       :list="formList"
+      :form-values="valueList"
       class="form"
       @selected="changed"/>
     <transition-group
@@ -146,6 +165,7 @@ import {
   BaseMenuEntry,
   BaseBoxButton,
   BaseDropBox,
+  BasePopUp,
 } from 'base-components';
 import 'base-components/dist/lib/base-components.min.css';
 import BaseForm from './BaseForm';
@@ -153,6 +173,7 @@ import { FORM_MAPPINGS } from '../assets/data';
 
 export default {
   components: {
+    BasePopUp,
     BaseButton,
     BaseSearch,
     BaseDropDown,
@@ -166,32 +187,62 @@ export default {
     return {
       formType: null,
       extend: false,
-      newForm: false,
       formList: FORM_MAPPINGS.common,
+      valueList: {},
       formExtended: [],
       showCheckbox: false,
       showFormMenu: true,
       unsavedChanges: false,
+      showPopUp: false,
+      popUpText: '',
     };
   },
   watch: {
-    $route() {
-      // TODO: this could be used to fetch the new item?
+    $route(to) {
+      if (to.params.id) {
+        try {
+          // fetch entity
+          // this.axios.get('get the entity');
+          const { type } = this.$store.state.data.currentItem;
+          this.valueList = Object.assign({}, this.$store.state.data.currentItem, {
+            type: type ? [type] : [],
+          });
+          this.formType = type || '';
+        } catch (err) {
+          console.error(err);
+        }
+      } else {
+        this.valueList = {};
+        this.formType = '';
+      }
     },
   },
-  created() {
+  async created() {
     if (window.innerWidth <= 640) {
       this.showFormMenu = false;
     }
-    if (this.$route.params.id) {
-      try {
-        // fetch entity
-        // this.axios.get('get the entity');
-      } catch (err) {
-        console.error(err);
+    const entryId = this.$route.params.id;
+    if (entryId) {
+      const entryExists = await this.$store.dispatch('data/setCurrentItemById', entryId);
+      if (entryExists) {
+        try {
+          // fetch entity
+          // this.axios.get('get the entity');
+          const { type } = this.$store.state.data.currentItem;
+          this.valueList = Object.assign({}, this.$store.state.data.currentItem, {
+            type: type ? [type] : [],
+          });
+          this.formType = type || '';
+        } catch (err) {
+          console.error(err);
+        }
+      } else {
+        // TODO: create a not found info (page?) for user!!
+        // (redirect to new form (for now at least))
+        this.$router.push('/dashboard/newItem');
       }
     } else {
-      this.newForm = true;
+      this.$store.commit('data/setNewForm', true);
     }
   },
   methods: {
@@ -200,16 +251,31 @@ export default {
       this.formExtended = await this.$store.dispatch('data/fetchFormExtension', field);
     },
     saveForm() {
+      if (this.valueList.title) {
+        if (this.$store.state.data.isNewForm) {
+          this.$store.commit('data/setNewForm', false);
+          this.$store.commit('data/addSidebarItem', this.valueList);
+        } else {
+          this.$store.commit('data/updateEntry', this.valueList);
+        }
+        this.unsavedChanges = false;
+        this.$router.push(`/dashboard/item/${this.$store.state.data.currentItemId}`);
 
-      this.newForm = false;
-      this.unsavedChanges = false;
-      this.$store.commit('data/addSidebarItem');
-      this.$emit('saveForm');
-      // TODO:
-      // a) check if title was set
-      // b) save form
-      // c) create new menu entry (or fetch entries from db)
-      // d) push new item id to router
+        this.$emit('saveForm');
+      } else {
+        // TODO: make known to user that title is missing!
+      }
+    },
+    removeEntryAction(evt) {
+      if (evt === 'buttonRight') {
+        this.deleteEntry();
+      }
+      this.showPopUp = false;
+    },
+    deleteEntry() {
+      this.$store.commit('data/deleteSidebarItems', [this.$store.state.data.currentItemId]);
+      this.$store.commit('data/deleteCurrentItem');
+      this.$router.push('/dashboard');
     },
   },
 };
@@ -276,6 +342,22 @@ export default {
     height: $row-height-small;
     line-height: $row-height-small;
     margin: $spacing-small $spacing;
+  }
+
+  .delete-pop-up {
+    text-align: center;
+    font-size: $font-size-large;
+    min-height: 150px;
+    max-width: 80%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: auto;
+
+    .delete-pop-up-text {
+      margin: auto;
+      text-align: center;
+    }
   }
 
   @media screen and (max-width: $mobile) {

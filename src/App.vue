@@ -3,7 +3,7 @@
     <base-header
       :lang="'en'"
       :active="'recherche'"
-      :profile.prop="null"
+      :profile.prop="$store.state.auth.profile"
       :emit-navigation="true"
       :urls.prop="{
         de:'/portfolio/de/',

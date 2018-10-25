@@ -2,7 +2,7 @@
   <div id="app-container">
     <sidebar
       ref="sidebar"
-      :new-form="isNewForm"
+      :new-form="$store.state.data.isNewForm"
       :class="['sidebar', { 'sidebar-full': !showForm }]"
       @newForm="createNewForm"
       @showEntry="fetchEntryData"/>
@@ -24,7 +24,6 @@ export default {
   },
   data() {
     return {
-      isNewForm: false,
       showForm: false,
     };
   },
@@ -39,12 +38,12 @@ export default {
   methods: {
     createNewForm() {
       this.showForm = true;
-      this.isNewForm = true;
+      this.$store.commit('data/setNewForm', true);
       this.$router.push('/dashboard/newItem');
     },
     fetchEntryData(item) {
       this.showForm = true;
-      this.isNewForm = false;
+      this.$store.commit('data/setNewForm', false);
       this.$router.push(`/dashboard/Item/${item.id}`);
     },
     saveForm() {

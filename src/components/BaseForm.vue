@@ -7,8 +7,9 @@
       <base-autocomplete-input
         v-if="element.type === 'autocomplete'"
         :key="index"
-        :label="element.name"
-        :placeholder="'Select ' + element.name"
+        :label="$te('form.' + element.name) ? $t('form.' + element.name) : element.name"
+        :placeholder="$t('form.select') + ' '
+        + ($te('form.' + element.name) ? $t('form.' + element.name) : element.name)"
         :list="dropdownLists[element.name]"
         :object-prop="element.name.toLowerCase()"
         v-model="formValues[element.name]"
@@ -22,23 +23,25 @@
         v-else-if="element.type === 'multiline'"
         :key="index"
         :tabs="element.lang"
-        :label="element.name"
-        :placeholder="'Write a ' + element.name"
+        :label="$te('form.' + element.name) ? $t('form.' + element.name) : element.name"
+        :placeholder="$t('form.write') + ' '
+        + ($te('form.' + element.name) ? $t('form.' + element.name) : element.name)"
         v-model="formValues[element.name]"
         class="base-form-field base-form-field-full">
         <div
           v-if="element.name === 'Description'"
           class="multiline-dropdown">
           <base-drop-down
-            :default-select="'Textart'"
+            :default-select="formValues[element.name].type || 'Textart'"
             :selection-list="['Beschreibung', 'Ausstellungseinladung', 'Zeitungsartikel']" />
         </div>
       </base-multiline-text-input>
       <base-chips-input
         v-else-if="element.type === 'chips'"
         :key="index"
-        :placeholder="'Select ' + element.name"
-        :label="element.name"
+        :placeholder="$t('form.select') + ' '
+        + ($te('form.' + element.name) ? $t('form.' + element.name) : element.name)"
+        :label="$te('form.' + element.name) ? $t('form.' + element.name) : element.name"
         :object-prop="element.name"
         :list="dropdownLists[element.name]"
         v-model="formValues[element.name]"
@@ -54,8 +57,9 @@
       <base-input
         v-else-if="element.type === 'text'"
         :key="index"
-        :label="element.name"
-        :placeholder="'Select ' + element.name"
+        :label="$te('form.' + element.name) ? $t('form.' + element.name) : element.name"
+        :placeholder="$t('form.select') + ' '
+        + ($te('form.' + element.name) ? $t('form.' + element.name) : element.name)"
         :id="index"
         v-model="formValues[element.name]"
         :class="[
@@ -66,8 +70,9 @@
       <base-date-input
         v-else-if="element.type === 'date'"
         :key="index"
-        :label="element.name"
-        :placeholder="'Select ' + element.name"
+        :label="$te('form.' + element.name) ? $t('form.' + element.name) : element.name"
+        :placeholder="$t('form.select') + ' '
+        + ($te('form.' + element.name) ? $t('form.' + element.name) : element.name)"
         :id="index"
         :type="element.dateType"
         v-model="formValues[element.name]"
@@ -119,7 +124,7 @@ export default {
       const obj = {};
       this.$props.list.filter(element => element.type === 'autocomplete' || element.type === 'chips')
         .forEach((autoField) => {
-          if (autoField.name === 'Schlagwörter') {
+          if (autoField.name === 'keywords') {
             this.$set(obj, autoField.name, [
               'Art',
               'Collage',
@@ -130,7 +135,7 @@ export default {
               'Classic',
               'Fashion',
             ]);
-          } else if (autoField.name === 'Typ') {
+          } else if (autoField.name === 'type') {
             this.$set(obj, autoField.name, [
               'Publikation',
               'Text',

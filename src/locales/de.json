@@ -1,4 +1,14 @@
 {
   "test": "test",
-  "new": "Neu"
+  "new": "Neu",
+  "form": {
+    "select": "Wähle",
+    "write": "Schreibe eine",
+    "title": "Titel",
+    "subtitle": "Untertitel",
+    "type": "Typ",
+    "description": "Beschreibung",
+    "keywords": "Schlagwörter",
+    "notes": "Notizen (werden nicht exportiert)"
+  }
 }

@@ -1,4 +1,14 @@
 {
   "test": "test",
-  "new": "New"
+  "new": "New",
+  "form": {
+    "select": "Select",
+    "write": "Write (a)",
+    "title": "Title",
+    "subtitle": "Subtitle",
+    "type": "Type",
+    "description": "Description",
+    "keywords": "Keywords",
+    "notes": "Notes (will not be exported)"
+  }
 }
