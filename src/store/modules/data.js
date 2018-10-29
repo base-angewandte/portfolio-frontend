@@ -3,15 +3,27 @@ import Vue from 'vue';
 import DATA from '../../assets/data';
 
 const state = {
-  sidebarData: DATA.EXISTING_ENTRIES,
+  sidebarData: JSON.parse(sessionStorage.getItem('sidebarItems')) || DATA.EXISTING_ENTRIES,
+  sidebarDataFiltered: JSON.parse(sessionStorage.getItem('sidebarItems')) || DATA.EXISTING_ENTRIES,
   currentItem: {},
   currentItemId: null,
   isNewForm: false,
+  showOptions: false,
+  popUp: {
+    show: false,
+    header: '',
+    text: '',
+    icon: '',
+    buttonText: '',
+  },
+  deletableEntries: [],
+  filtered: false,
+  sortBy: '',
 };
 
 const getters = {
   getSidebarData(state) {
-    return state.sidebarData;
+    return state.filtered ? state.sidebarDataFiltered : state.sidebarData;
   },
   getCurrentItemIndex(state) {
     return state.sidebarData.indexOf(state.sidebarData
@@ -25,7 +37,7 @@ const getters = {
   },
   getLastId(state) {
     return state.sidebarData.reduce((prev, curr) => {
-      const prevNum = parseInt(prev.id, 10);
+      const prevNum = parseInt(prev, 10);
       const currNum = parseInt(curr.id, 10);
       if (prevNum > currNum) {
         return prevNum;
@@ -51,14 +63,16 @@ const mutations = {
     state.currentItem = {};
   },
   addSidebarItem(state, obj) {
+    const type = obj.type || '';
     const newItem = Object.assign({}, obj, {
-      type: obj.type && obj.type.length ? obj.type[0].type : '',
+      type: type && typeof type === 'object' ? type[0].type : type,
       id: (parseInt(this.getters['data/getLastId'], 10) + 1).toString(),
     });
     // TODO: consider sorting!!
     state.sidebarData.push(newItem);
     state.currentItemId = newItem.id;
     state.currentItem = newItem;
+    sessionStorage.setItem('sidebarItems', JSON.stringify(state.sidebarData));
   },
   updateEntry(state, obj) {
     // state.currentItem = Object.assign({}, state.currentItem, obj);
@@ -68,38 +82,77 @@ const mutations = {
       state.sidebarData,
       index,
       Object.assign({}, state.currentItem, obj, {
-        type: obj.type && obj.type.length ? obj.type[0] : '',
+        type: obj.type && obj.type.length ? obj.type[0].type : '',
       }),
     );
     state.currentItem = Object.assign({}, state.sidebarData[index]);
+    sessionStorage.setItem('sidebarItems', JSON.stringify(state.sidebarData));
   },
-  deleteSidebarItems(state, delArr) {
-    state.sidebarData = state.sidebarData.filter(item => !delArr.includes(item.id));
+  deleteSidebarItems(state) {
+    state.sidebarData = state.sidebarData.filter(item => !state.deletableEntries.includes(item.id));
+    sessionStorage.setItem('sidebarItems', JSON.stringify(state.sidebarData));
   },
   sortEntries(state, sortVal) {
     if (sortVal === 'Nach Typ') {
-      state.sidebarData.sort((a, b) => {
+      this.getters['data/getSidebarData'].sort((a, b) => {
         if (a.type > b.type) {
           return 1;
         }
         return -1;
       });
     } else if (sortVal === 'A-Z') {
-      state.sidebarData.sort((a, b) => {
+      this.getters['data/getSidebarData'].sort((a, b) => {
         if (a.title.toLowerCase() > b.title.toLowerCase()) {
           return 1;
         }
         return -1;
       });
     } else if (sortVal === 'Z-A') {
-      state.sidebarData.sort((a, b) => {
+      this.getters['data/getSidebarData'].sort((a, b) => {
         if (a.title.toLowerCase() > b.title.toLowerCase()) {
           return -1;
         }
         return 1;
       });
     }
-  }
+  },
+  filterEntries(state, val) {
+    if ((val.prop === 'type' && val.value === 'Alle Typen')
+      || (val.prop === 'title' && !val.value)) {
+      state.filtered = false;
+      state.sidebarDataFiltered = state.sidebarData;
+    } else {
+      const filteredEntries = state.sidebarData
+        .filter(entry => entry[val.prop].toLowerCase().includes(val.value.toLowerCase()));
+      state.filtered = true;
+      state.sidebarDataFiltered = filteredEntries;
+    }
+  },
+  setOptions(state, val) {
+    state.showOptions = val;
+  },
+  setPopUp(state, data) {
+    state.popUp = data;
+  },
+  hidePopUp(state) {
+    state.popUp = {
+      show: false,
+      header: '',
+      text: '',
+      icon: '',
+      buttonText: '',
+    };
+  },
+  setDeletable(state, entryArr) {
+    state.deletableEntries = entryArr;
+  },
+  duplicateEntries(state, entryArr) {
+    entryArr.forEach((id) => {
+      const newEntry = state.sidebarData.find(entry => entry.id === id);
+      this.commit('data/addSidebarItem', newEntry);
+    });
+    state.showOptions = false;
+  },
 };
 
 const actions = {

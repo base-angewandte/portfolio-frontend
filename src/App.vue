@@ -58,6 +58,7 @@ export default {
       .form-view {
         flex: 0 1 66%;
         margin-left: 16px;
+        max-width: 66%;
       }
     }
   }

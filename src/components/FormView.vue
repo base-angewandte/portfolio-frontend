@@ -71,28 +71,11 @@
               icon-size="large"
               icon="waste-bin"
               button-style="single"
-              @clicked="showPopUp = !$store.state.data.isNewForm"/>
+              @clicked="confirmDelete"/>
           </div>
         </transition>
       </div>
     </div>
-
-    <base-pop-up
-      :show="showPopUp"
-      :title="'Eintrag löschen?'"
-      :button-left-text="'Abbrechen'"
-      :button-right-text="'Eintrag löschen'"
-      button-right-icon="waste-bin"
-      @close="showPopUp = false"
-      @clicked="removeEntryAction">
-      <div class="delete-pop-up">
-        <div>
-          <p class="delete-pop-up-text">
-            {{ 'Soll "' + valueList.title + '" wirklich gelöscht werden?' }}
-          </p>
-        </div>
-      </div>
-    </base-pop-up>
 
     <!-- FORM -->
     <base-form
@@ -165,7 +148,6 @@ import {
   BaseMenuEntry,
   BaseBoxButton,
   BaseDropBox,
-  BasePopUp,
 } from 'base-components';
 import 'base-components/dist/lib/base-components.min.css';
 import BaseForm from './BaseForm';
@@ -173,7 +155,6 @@ import { FORM_MAPPINGS } from '../assets/data';
 
 export default {
   components: {
-    BasePopUp,
     BaseButton,
     BaseSearch,
     BaseDropDown,
@@ -193,8 +174,6 @@ export default {
       showCheckbox: false,
       showFormMenu: true,
       unsavedChanges: false,
-      showPopUp: false,
-      popUpText: '',
     };
   },
   watch: {
@@ -266,16 +245,17 @@ export default {
         // TODO: make known to user that title is missing!
       }
     },
-    removeEntryAction(evt) {
-      if (evt === 'buttonRight') {
-        this.deleteEntry();
+    confirmDelete() {
+      if (!this.$store.state.data.isNewForm) {
+        this.$store.commit('data/setDeletable', [this.$store.state.data.currentItemId]);
+        this.$store.commit('data/setPopUp', {
+          show: true,
+          header: 'Eintrag wirklich löschen?',
+          text: `Wollen sie den Eintrag "${this.valueList.title}" wirklich löschen?`,
+          icon: 'waste-bin',
+          buttonText: 'Eintrag löschen',
+        });
       }
-      this.showPopUp = false;
-    },
-    deleteEntry() {
-      this.$store.commit('data/deleteSidebarItems', [this.$store.state.data.currentItemId]);
-      this.$store.commit('data/deleteCurrentItem');
-      this.$router.push('/dashboard');
     },
   },
 };
@@ -342,22 +322,6 @@ export default {
     height: $row-height-small;
     line-height: $row-height-small;
     margin: $spacing-small $spacing;
-  }
-
-  .delete-pop-up {
-    text-align: center;
-    font-size: $font-size-large;
-    min-height: 150px;
-    max-width: 80%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: auto;
-
-    .delete-pop-up-text {
-      margin: auto;
-      text-align: center;
-    }
   }
 
   @media screen and (max-width: $mobile) {

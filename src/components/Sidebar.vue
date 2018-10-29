@@ -11,7 +11,8 @@
         button-style="row"
         @clicked="getNewForm"/>
       <base-search
-        :show-image="true" />
+        :show-image="true"
+        @input="filterEntries($event, 'title')"/>
     </div>
     <div class="options-row">
       <div class="options">
@@ -20,7 +21,7 @@
           :icon="'options-menu'"
           icon-size="small"
           icon-position="left"
-          @clicked="showCheckbox = !showCheckbox"/>
+          @clicked="$store.commit('data/setOptions', !showCheckbox)"/>
       </div>
       <base-drop-down
         :placeholder="'Sortieren nach'"
@@ -29,7 +30,7 @@
       <base-drop-down
         :default-select="'Alle Typen'"
         :selection-list="availableEntryTypes"
-        @selected="filterEntries"/>
+        @selected="filterEntries($event, 'type')"/>
     </div>
     <transition-group
       name="slide-fade2"
@@ -47,7 +48,8 @@
         text="Einträge duplizieren"
         icon-size="large"
         icon="duplicate"
-        button-style="single" />
+        button-style="single"
+        @clicked="duplicateEntries"/>
       <base-button
         v-if="showCheckbox"
         key="delete"
@@ -86,16 +88,19 @@ export default {
   },
   data() {
     return {
-      showCheckbox: false,
       selectedMenuEntries: [],
       listInt: [],
       activeEntryInt: null,
     };
   },
   computed: {
+    showCheckbox() {
+      return this.$store.state.data.showOptions;
+    },
     activeEntry: {
       get() {
-        if (this.$store.state.data.currentItemId) {
+        const id = this.$store.state.data.currentItemId;
+        if (id && this.$store.getters['data/getSidebarData'].find(entry => entry.id === id)) {
           return this.activeEntryInt || this.$store.getters['data/getCurrentItemIndex'];
         }
         return null;
@@ -123,7 +128,7 @@ export default {
     },
   },
   created() {
-    this.$store.commit('data/setNewForm', !this.$store.state.data.currentItemId);
+    this.$store.commit('data/setNewForm', !!this.$store.state.data.currentItemId);
     this.listInt = this.list;
   },
   methods: {
@@ -139,19 +144,30 @@ export default {
       this.$emit('newForm');
     },
     deleteEntries() {
-      this.$store.commit('data/deleteSidebarItems', this.selectedMenuEntries);
+      this.$store.commit('data/setDeletable', this.selectedMenuEntries);
+      this.$store.commit('data/setPopUp', {
+        show: true,
+        header: 'Einträgeg wirklich löschen?',
+        text: 'Wollen sie die ausgewählten Einträge wirklich löschen?',
+        icon: 'waste-bin',
+        buttonText: 'Einträg löschen',
+      });
       this.selectedMenuEntries = [];
-      this.showCheckbox = false;
       // TODO: check if currently displayed item is one of the deleted and remove from form
       // if necessary! (and change route)
     },
     sortEntries(evt) {
       this.$store.commit('data/sortEntries', evt);
     },
-    filterEntries(evt) {
-      // TODO: CONTINUE HERE!!
-      // TODO: also use this for SEARCH!!
-      console.log(evt);
+    filterEntries(val, type) {
+      this.$store.commit('data/filterEntries', { value: val, prop: type });
+    },
+    duplicateEntries() {
+      this.$store.commit('data/duplicateEntries', this.selectedMenuEntries);
+      this.selectedMenuEntries = [];
+      // TODO: to have consistency this route is set since for now in store current item is set to
+      // newly created one...but dont know if we want that??
+      this.$router.push(`/dashboard/item/${this.$store.state.data.currentItemId}`);
     },
   },
 };
