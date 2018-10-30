@@ -130,7 +130,7 @@ module.exports = {
     ],
     image: [
       {
-        name: 'Photographer',
+        name: 'photographer',
         type: 'chips',
         source: 'dynamic',
         unknown: true,
@@ -138,7 +138,7 @@ module.exports = {
         size: 'full',
       },
       {
-        name: 'Participants',
+        name: 'participants',
         type: 'chips-below',
         source: 'dynamic',
         unknown: true,
@@ -146,12 +146,12 @@ module.exports = {
         size: 'full',
       },
       {
-        name: 'Location',
+        name: 'location',
         type: 'autocomplete',
         size: 'half',
       },
       {
-        name: 'Date',
+        name: 'date',
         type: 'date',
         size: 'half',
         dateType: 'single',
@@ -159,7 +159,7 @@ module.exports = {
     ],
     film: [
       {
-        name: 'Director',
+        name: 'director',
         type: 'chips',
         source: 'dynamic',
         unknown: true,
@@ -167,7 +167,7 @@ module.exports = {
         size: 'full',
       },
       {
-        name: 'Participants',
+        name: 'participants',
         type: 'chips-below',
         source: 'dynamic',
         unknown: true,
@@ -180,12 +180,12 @@ module.exports = {
         size: 'half',
       },
       {
-        name: 'City',
+        name: 'city',
         type: 'autocomplete',
         size: 'half',
       },
       {
-        name: 'Date',
+        name: 'date',
         type: 'date',
         size: 'half',
         dateType: 'single',
@@ -193,7 +193,7 @@ module.exports = {
     ],
     exhibition: [
       {
-        name: 'Artist',
+        name: 'artist',
         type: 'chips',
         source: 'dynamic',
         unknown: true,
@@ -201,7 +201,7 @@ module.exports = {
         size: 'full',
       },
       {
-        name: 'Curator',
+        name: 'curator',
         type: 'chips',
         source: 'dynamic',
         unknown: true,
@@ -209,7 +209,7 @@ module.exports = {
         size: 'full',
       },
       {
-        name: 'Participants',
+        name: 'participants',
         type: 'chips-below',
         source: 'dynamic',
         unknown: true,
@@ -217,13 +217,13 @@ module.exports = {
         size: 'full',
       },
       {
-        name: 'Date',
+        name: 'date',
         type: 'date',
         size: 'half',
         dateType: 'range',
       },
       {
-        name: 'Opening',
+        name: 'opening',
         type: 'date',
         size: 'half',
         dateType: 'datetime',

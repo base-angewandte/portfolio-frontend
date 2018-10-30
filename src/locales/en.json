@@ -9,6 +9,17 @@
     "type": "Type",
     "description": "Description",
     "keywords": "Keywords",
-    "notes": "Notes (will not be exported)"
+    "notes": "Notes (will not be exported)",
+    "photographer": "Photographer",
+    "artist": "Artist",
+    "location": "Location",
+    "date": "Date",
+    "opening": "Opening",
+    "editors": "Editors",
+    "publisher": "Publisher",
+    "authors": "Authors",
+    "city": "City",
+    "curator": "Curator",
+    "participants": "Participants"
   }
 }

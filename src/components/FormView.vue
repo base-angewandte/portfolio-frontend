@@ -92,50 +92,63 @@
         <div
           key="extended-title"
           class="subtitle">Weitere Angaben</div>
+
+        <!-- FORM EXTENSION -->
         <base-form
           key="extended-form"
           :list="formExtended"
           class="form" />
       </div>
+      <div
+        key="file-area-header"
+        class="subtitle"
+        @click="extend = !extend">Angeängte Objekte und Medien</div>
+      <div
+        key="file-area"
+        class="file-boxes mobile-hidden">
+        <base-drop-box
+          key="addEntry"
+          :show-plus="true"
+          :box-size="{ width: '25%' }"
+          icon="camera"
+          text="Vorhandenen Eintrag hinzufügen"
+          subtext="(Click oder Drag'n Drop)"/>
+        <base-box-button
+          key="addNew"
+          :show-plus="true"
+          :box-size="{ width: '25%'}"
+          icon="sheet-empty"
+          text="Neuen Eintrag anhängen"/>
+        <base-drop-box
+          key="addFile"
+          :show-plus="true"
+          :box-size="{ width: '50%' }"
+          :box-ratio="'50'"
+          icon="camera"
+          text="Dateien anhängen"
+          subtext="(Click oder Drag'n Drop)"
+          @dropped="dropped($event)"/>
+      </div>
+      <div
+        key="mobile-file-area"
+        class="file-list mobile-elements">
+        <base-menu-entry
+          id="addFile"
+          key="mobile-addFile"
+          icon="sheet-plus"
+          title="Vorhandenen Eintrag hinzufügen" />
+        <base-menu-entry
+          id="addNew"
+          key="mobile-addNew"
+          icon="sheet-plus"
+          title="Neuen Eintrag anhängen"/>
+        <base-menu-entry
+          id="addExisting"
+          key="mobile-addExisting"
+          icon="sheet-plus"
+          title="Datei anhängen"/>
+      </div>
     </transition-group>
-    <div
-      class="subtitle"
-      @click="extend = !extend">Angeängte Objekte und Medien</div>
-    <div class="file-boxes mobile-hidden">
-      <base-drop-box
-        :show-plus="true"
-        :box-size="{ width: '25%' }"
-        icon="camera"
-        text="Vorhandenen Eintrag hinzufügen"
-        subtext="(Click oder Drag'n Drop)"/>
-      <base-box-button
-        :show-plus="true"
-        :box-size="{ width: '25%'}"
-        icon="sheet-empty"
-        text="Neuen Eintrag anhängen"/>
-      <base-drop-box
-        :show-plus="true"
-        :box-size="{ width: '50%' }"
-        :box-ratio="'50'"
-        icon="camera"
-        text="Dateien anhängen"
-        subtext="(Click oder Drag'n Drop)"
-        @dropped="dropped($event)"/>
-    </div>
-    <div class="file-list mobile-elements">
-      <base-menu-entry
-        id="addFile"
-        icon="sheet-plus"
-        title="Vorhandenen Eintrag hinzufügen" />
-      <base-menu-entry
-        id="addNew"
-        icon="sheet-plus"
-        title="Neuen Eintrag anhängen"/>
-      <base-menu-entry
-        id="addExisting"
-        icon="sheet-plus"
-        title="Datei anhängen"/>
-    </div>
   </div>
 </template>
 
@@ -179,17 +192,7 @@ export default {
   watch: {
     $route(to) {
       if (to.params.id) {
-        try {
-          // fetch entity
-          // this.axios.get('get the entity');
-          const { type } = this.$store.state.data.currentItem;
-          this.valueList = Object.assign({}, this.$store.state.data.currentItem, {
-            type: type ? [type] : [],
-          });
-          this.formType = type || '';
-        } catch (err) {
-          console.error(err);
-        }
+        this.updateForm();
       } else {
         this.valueList = {};
         this.formType = '';
@@ -204,17 +207,7 @@ export default {
     if (entryId) {
       const entryExists = await this.$store.dispatch('data/setCurrentItemById', entryId);
       if (entryExists) {
-        try {
-          // fetch entity
-          // this.axios.get('get the entity');
-          const { type } = this.$store.state.data.currentItem;
-          this.valueList = Object.assign({}, this.$store.state.data.currentItem, {
-            type: type ? [type] : [],
-          });
-          this.formType = type || '';
-        } catch (err) {
-          console.error(err);
-        }
+        this.updateForm();
       } else {
         // TODO: create a not found info (page?) for user!!
         // (redirect to new form (for now at least))
@@ -225,9 +218,12 @@ export default {
     }
   },
   methods: {
-    async changed(field) {
-      this.formType = field;
-      this.formExtended = await this.$store.dispatch('data/fetchFormExtension', field);
+    async changed(evt) {
+      const { value, field } = evt;
+      if (field === 'type') {
+        this.formType = value;
+        this.formExtended = await this.$store.dispatch('data/fetchFormExtension', value);
+      }
     },
     saveForm() {
       if (this.valueList.title) {
@@ -257,6 +253,22 @@ export default {
         });
       }
     },
+    async updateForm() {
+      try {
+        // fetch entity
+        // this.axios.get('get the entity');
+        const { type } = this.$store.state.data.currentItem;
+        this.valueList = Object.assign({}, this.$store.state.data.currentItem, {
+          type: type ? [type] : [],
+        });
+        this.formType = type || '';
+        if (this.formType) {
+          this.formExtended = await this.$store.dispatch('data/fetchFormExtension', this.formType);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
   },
 };
 </script>

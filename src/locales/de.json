@@ -9,6 +9,17 @@
     "type": "Typ",
     "description": "Beschreibung",
     "keywords": "Schlagwörter",
-    "notes": "Notizen (werden nicht exportiert)"
+    "notes": "Notizen (werden nicht exportiert)",
+    "photographer": "FotographIn",
+    "artist": "KünstlerIn",
+    "location": "Ort",
+    "date": "Datum",
+    "opening": "Eröffnung",
+    "editors": "Redaktion",
+    "publisher": "HerausgeberIn",
+    "authors": "AutorInnen",
+    "city": "Stadt",
+    "curator": "KuratorInnen",
+    "participants": "Beteiligte"
   }
 }

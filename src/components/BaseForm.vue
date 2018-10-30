@@ -28,13 +28,13 @@
         + ($te('form.' + element.name) ? $t('form.' + element.name) : element.name)"
         v-model="formValues[element.name]"
         class="base-form-field base-form-field-full">
-        <div
-          v-if="element.name === 'Description'"
-          class="multiline-dropdown">
+        <template
+          v-if="element.name === 'description' && formValues[element.name] && formValues[element.name].type">
+          <!-- TODO: replace hardcoded types!  -->
           <base-drop-down
             :default-select="formValues[element.name].type || 'Textart'"
-            :selection-list="['Beschreibung', 'Ausstellungseinladung', 'Zeitungsartikel']" />
-        </div>
+            :selection-list="['Beschreibung', 'Ausstellungseinladung', 'Zeitungsartikel']"/>
+        </template>
       </base-multiline-text-input>
       <base-chips-input
         v-else-if="element.type === 'chips'"
@@ -53,7 +53,7 @@
           'base-form-field-' + getSizeClass(element.size),
           { 'base-form-field-spacing': element.size === 'half' && getClassIndex(element) }
         ]"
-        @selected="$emit('selected', $event && $event.length ? $event[0][element.name] : null)"/>
+        @selected="$emit('selected', $event && $event.length ? { value: $event[0][element.name], field: element.name } : null)"/>
       <base-input
         v-else-if="element.type === 'text'"
         :key="index"
@@ -114,7 +114,9 @@ export default {
       type: Object,
       default() {
         const obj = {};
-        this.list.forEach(field => this.$set(obj, field.name, null));
+        if (this.list.length) {
+          this.list.forEach(field => this.$set(obj, field.name, null));
+        }
         return obj;
       },
     },
@@ -188,10 +190,6 @@ export default {
     display: flex;
     flex-wrap: wrap;
     padding: 16px;
-
-    .multiline-dropdown {
-      margin-bottom: -10px;
-    }
   }
 
   .base-form-field:not(:last-of-type) {
