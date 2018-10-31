@@ -77,12 +77,13 @@ const mutations = {
   updateEntry(state, obj) {
     // state.currentItem = Object.assign({}, state.currentItem, obj);
     const index = this.getters['data/getCurrentItemIndex'];
+    const type = obj.type && obj.type.length ? obj.type[0].type || obj.type[0] : '';
     // TODO: consider sorting!!
     Vue.set(
       state.sidebarData,
       index,
       Object.assign({}, state.currentItem, obj, {
-        type: obj.type && obj.type.length ? obj.type[0].type : '',
+        type,
       }),
     );
     state.currentItem = Object.assign({}, state.sidebarData[index]);
