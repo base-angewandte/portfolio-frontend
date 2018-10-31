@@ -20,6 +20,8 @@
     "authors": "AutorInnen",
     "city": "Stadt",
     "curator": "KuratorInnen",
-    "participants": "Beteiligte"
+    "participants": "Beteiligte",
+    "en": "Englisch",
+    "de": "Deutsch"
   }
 }

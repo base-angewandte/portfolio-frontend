@@ -71,7 +71,7 @@ const mutations = {
     // TODO: consider sorting!!
     state.sidebarData.push(newItem);
     state.currentItemId = newItem.id;
-    state.currentItem = newItem;
+    state.currentItem = Object.assign({}, newItem);
     sessionStorage.setItem('sidebarItems', JSON.stringify(state.sidebarData));
   },
   updateEntry(state, obj) {

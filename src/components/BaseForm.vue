@@ -26,14 +26,17 @@
         :label="$te('form.' + element.name) ? $t('form.' + element.name) : element.name"
         :placeholder="$t('form.write') + ' '
         + ($te('form.' + element.name) ? $t('form.' + element.name) : element.name)"
-        v-model="formValues[element.name]"
-        class="base-form-field base-form-field-full">
+        :input="formValues[element.name]"
+        class="base-form-field base-form-field-full"
+        @textInput="addType(element, $event)">
         <template
-          v-if="element.name === 'description' && formValues[element.name] && formValues[element.name].type">
+          v-if="element.setType">
           <!-- TODO: replace hardcoded types!  -->
           <base-drop-down
-            :default-select="formValues[element.name].type || 'Textart'"
-            :selection-list="['Beschreibung', 'Ausstellungseinladung', 'Zeitungsartikel']"/>
+            :selected="formValues[element.name] && formValues[element.name].type
+            ? formValues[element.name].type : 'Wähle Textart'"
+            :selection-list="['Beschreibung', 'Ausstellungseinladung', 'Zeitungsartikel', 'Ausstellungsankündigung']"
+            @selected="addType(element, { type: $event })"/>
         </template>
       </base-multiline-text-input>
       <base-chips-input
@@ -53,7 +56,8 @@
           'base-form-field-' + getSizeClass(element.size),
           { 'base-form-field-spacing': element.size === 'half' && getClassIndex(element) }
         ]"
-        @selected="$emit('selected', $event && $event.length ? { value: $event[0][element.name], field: element.name } : null)"/>
+        @selected="$emit('selected', $event && $event.length
+        ? { value: $event[0][element.name], field: element.name } : null)"/>
       <base-input
         v-else-if="element.type === 'text'"
         :key="index"
@@ -81,6 +85,15 @@
           'base-form-field-' + getSizeClass(element.size),
           { 'base-form-field-spacing': element.size === 'half' && getClassIndex(element) }
       ]"/>
+      <base-chips-below
+        v-else-if="element.type === 'chips-below'"
+        :key="index"
+        :label="$te('form.' + element.name) ? $t('form.' + element.name) : element.name"
+        :placeholder="$t('form.select') + ' '
+        + ($te('form.' + element.name) ? $t('form.' + element.name) : element.name)"
+        :list="['Valie Export', 'Frida']"
+        v-model="formValues[element.name]"
+        class="base-form-field base-form-field-full"/>
     </template>
   </div>
 </template>
@@ -94,10 +107,12 @@ import {
   BaseAutocompleteInput,
   BaseMultilineTextInput,
   BaseDropDown,
+  BaseChipsBelow,
 } from 'base-components';
 
 export default {
   components: {
+    BaseChipsBelow,
     BaseMultilineTextInput,
     BaseChipsInput,
     BaseInput,
@@ -115,7 +130,21 @@ export default {
       default() {
         const obj = {};
         if (this.list.length) {
-          this.list.forEach(field => this.$set(obj, field.name, null));
+          this.list.forEach((field) => {
+            if (field.addType) {
+              this.$set(obj, field.name, {
+                type: null,
+              });
+            } else {
+              let initial = '';
+              if (['chips-below', 'chips'].includes(field.type)) {
+                initial = [];
+              } else if (['date', 'multi'].includes(field.type)) {
+                initial = {};
+              }
+              this.$set(obj, field.name, initial);
+            }
+          });
         }
         return obj;
       },
@@ -124,7 +153,7 @@ export default {
   computed: {
     dropdownLists() {
       const obj = {};
-      this.$props.list.filter(element => element.type === 'autocomplete' || element.type === 'chips')
+      this.list.filter(element => element.type === 'autocomplete' || element.type === 'chips')
         .forEach((autoField) => {
           if (autoField.name === 'keywords') {
             this.$set(obj, autoField.name, [
@@ -177,6 +206,9 @@ export default {
           this.$set(this.dropdownLists, [item.name], result.data);
         }
       }
+    },
+    addType(val, text) {
+      this.formValues[val.name] = Object.assign({}, { type: '' }, this.formValues[val.name], text);
     },
   },
 };

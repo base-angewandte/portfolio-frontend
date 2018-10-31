@@ -58,6 +58,7 @@ module.exports = {
         type: 'multiline',
         size: 'full',
         lang: ['English', 'German'],
+        setType: true,
       },
       {
         name: 'keywords',

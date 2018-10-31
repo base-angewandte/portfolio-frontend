@@ -97,6 +97,7 @@
         <base-form
           key="extended-form"
           :list="formExtended"
+          :form-values="extendedValueList"
           class="form" />
       </div>
       <div
@@ -184,6 +185,7 @@ export default {
       formList: FORM_MAPPINGS.common,
       valueList: {},
       formExtended: [],
+      extendedValueList: {},
       showCheckbox: false,
       showFormMenu: true,
       unsavedChanges: false,
@@ -227,11 +229,12 @@ export default {
     },
     saveForm() {
       if (this.valueList.title) {
+        const data = Object.assign({}, this.extendedValueList);
         if (this.$store.state.data.isNewForm) {
           this.$store.commit('data/setNewForm', false);
-          this.$store.commit('data/addSidebarItem', this.valueList);
+          this.$store.commit('data/addSidebarItem', Object.assign({}, this.valueList, { data }));
         } else {
-          this.$store.commit('data/updateEntry', this.valueList);
+          this.$store.commit('data/updateEntry', Object.assign({}, this.valueList, { data }));
         }
         this.unsavedChanges = false;
         this.$router.push(`/dashboard/item/${this.$store.state.data.currentItemId}`);
@@ -261,6 +264,7 @@ export default {
         this.valueList = Object.assign({}, this.$store.state.data.currentItem, {
           type: type ? [type] : [],
         });
+        this.extendedValueList = Object.assign({}, this.$store.state.data.currentItem.data);
         this.formType = type || '';
         if (this.formType) {
           this.formExtended = await this.$store.dispatch('data/fetchFormExtension', this.formType);
@@ -268,7 +272,7 @@ export default {
       } catch (err) {
         console.error(err);
       }
-    }
+    },
   },
 };
 </script>

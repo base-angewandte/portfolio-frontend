@@ -20,6 +20,8 @@
     "authors": "Authors",
     "city": "City",
     "curator": "Curator",
-    "participants": "Participants"
+    "participants": "Participants",
+    "en": "English",
+    "de": "German"
   }
 }
