@@ -1,13 +1,17 @@
 <template>
   <div id="app-container">
+    <div
+      v-if="$store.state.data.popUp.show"
+      id="popup-overlay" />
     <base-pop-up
       :show="$store.state.data.popUp.show"
       :title="$store.state.data.popUp.header"
       :button-left-text="'Abbrechen'"
       :button-right-text="$store.state.data.popUp.buttonText"
       :button-right-icon="$store.state.data.popUp.icon"
-      @close="$store.commit('data/hidePopUp')"
-      @clicked="removeEntryAction">
+      @close="cancelAction"
+      @buttonLeft="cancelAction"
+      @buttonRight="removeEntryAction">
       <div class="delete-pop-up">
         <div>
           <p class="delete-pop-up-text">
@@ -67,10 +71,14 @@ export default {
     saveForm() {
       console.log('saved');
     },
-    removeEntryAction(evt) {
-      if (evt === 'buttonRight') {
-        this.deleteEntry();
-      }
+    removeEntryAction() {
+      this.deleteEntry();
+      this.clearSelected();
+    },
+    cancelAction() {
+      this.clearSelected();
+    },
+    clearSelected() {
       this.$store.commit('data/setDeletable', []);
       this.$store.commit('data/hidePopUp');
     },
@@ -90,6 +98,13 @@ export default {
 
 <style lang="scss" scoped>
   @import "../styles/variables.scss";
+
+  #popup-overlay {
+    position: absolute;
+    height: 100%;
+    width: calc(#{$page-max-width} - 2 * #{$spacing});
+    z-index: 99;
+  }
 
   .delete-pop-up {
     text-align: center;

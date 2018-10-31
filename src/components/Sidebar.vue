@@ -65,7 +65,7 @@
         :list="listInt"
         :active-entry="activeEntry"
         @clicked="showEntry"
-        @selected="selectEntry($event)"/>
+        @selected="selectEntry"/>
     </transition-group>
   </div>
 </template>
@@ -136,8 +136,13 @@ export default {
       this.$store.commit('data/setCurrentItem', this.list[index]);
       this.$emit('showEntry', this.list[index]);
     },
-    selectEntry(index) {
-      this.selectedMenuEntries.push(this.list[index].id);
+    selectEntry(evt) {
+      if (evt.selected) {
+        this.selectedMenuEntries.push(this.list[evt.index].id);
+      } else {
+        this.selectedMenuEntries = this.selectedMenuEntries
+          .filter(entry => entry !== this.list[evt.index].id);
+      }
     },
     getNewForm() {
       this.$store.commit('data/setCurrentItem', {});
