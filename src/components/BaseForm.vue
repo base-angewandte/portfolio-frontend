@@ -91,7 +91,7 @@
         :label="$te('form.' + element.name) ? $t('form.' + element.name) : element.name"
         :placeholder="$t('form.select') + ' '
         + ($te('form.' + element.name) ? $t('form.' + element.name) : element.name)"
-        :list="['Valie Export', 'Frida']"
+        :list="['Valie Export', 'Frida Kahlo', 'Gustav Klimt', 'Adolf Loos']"
         v-model="formValues[element.name]"
         class="base-form-field base-form-field-full"/>
     </template>

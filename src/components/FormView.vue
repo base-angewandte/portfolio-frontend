@@ -33,6 +33,7 @@
           id="form-save-button"
           class="form-button">
           <base-button
+            :active="unsavedChanges"
             text="Save"
             icon-size="small"
             icon="save-file"
@@ -119,7 +120,8 @@
           :show-plus="true"
           :box-size="{ width: '25%'}"
           icon="sheet-empty"
-          text="Neuen Eintrag anhängen"/>
+          text="Neuen Eintrag anhängen"
+          @clicked="openNewForm"/>
         <base-drop-box
           key="addFile"
           :show-plus="true"
@@ -142,7 +144,8 @@
           id="addNew"
           key="mobile-addNew"
           icon="sheet-plus"
-          title="Neuen Eintrag anhängen"/>
+          title="Neuen Eintrag anhängen"
+          @activated="openNewForm"/>
         <base-menu-entry
           id="addExisting"
           key="mobile-addExisting"
@@ -199,6 +202,18 @@ export default {
         this.valueList = {};
         this.formType = '';
       }
+    },
+    valueList: {
+      handler() {
+        this.unsavedChanges = true;
+      },
+      deep: true,
+    },
+    extendedValueList: {
+      handler() {
+        this.unsavedChanges = true;
+      },
+      deep: true,
     },
   },
   async created() {
@@ -272,6 +287,13 @@ export default {
       } catch (err) {
         console.error(err);
       }
+    },
+    openNewForm() {
+      this.saveForm();
+      this.$store.commit('data/setNewForm', true);
+      this.unsavedChanges = false;
+      // TODO: actually this should open a new form below the old header
+      this.$router.push('/dashboard/newItem');
     },
   },
 };
