@@ -27,7 +27,8 @@ const getters = {
     return state.filtered ? state.sidebarDataFiltered : state.sidebarData;
   },
   getCurrentItemIndex(state) {
-    return state.sidebarData.indexOf(state.sidebarData
+    const data = state.filtered ? state.sidebarDataFiltered : state.sidebarData;
+    return data.indexOf(data
       .find(item => item.id === state.currentItemId));
   },
   getCurrentItem(state) {
@@ -50,7 +51,6 @@ const getters = {
     return [...new Set(state.sidebarData.map(entry => entry.type))];
   },
   getLatestParentItem(state) {
-    debugger;
     const id = state.parentItems[state.parentItems.length - 1];
     return state.sidebarData.find(item => item.id === id);
   },
@@ -68,17 +68,9 @@ const mutations = {
     state.currentItemId = null;
     state.currentItem = {};
   },
-  addSidebarItem(state, obj) {
-    const type = obj.type || '';
-    const newItem = Object.assign({}, obj, {
-      type: type && typeof type === 'object' ? type[0].type : type,
-      id: (parseInt(this.getters['data/getLastId'], 10) + 1).toString(),
-    });
+  addSidebarItem(state, item) {
     // TODO: consider sorting!!
-    state.sidebarData.push(newItem);
-    state.currentItemId = newItem.id;
-    state.currentItem = Object.assign({}, newItem);
-    sessionStorage.setItem('sidebarItems', JSON.stringify(state.sidebarData));
+    state.sidebarData.push(item);
   },
   updateEntry(state, obj) {
     // state.currentItem = Object.assign({}, state.currentItem, obj);
@@ -156,7 +148,7 @@ const mutations = {
   duplicateEntries(state, entryArr) {
     entryArr.forEach((id) => {
       const newEntry = state.sidebarData.find(entry => entry.id === id);
-      this.commit('data/addSidebarItem', newEntry);
+      this.dispatch('data/addSidebarItem', newEntry);
     });
     state.showOptions = false;
   },
@@ -187,6 +179,17 @@ const actions = {
       commit('setCurrentItem', entry);
     }
     return !!entry;
+  },
+  addSidebarItem({ commit }, obj) {
+    const type = obj.type || '';
+    const newItem = Object.assign({}, obj, {
+      type: type && typeof type === 'object' ? type[0].type : type,
+      id: (parseInt(this.getters['data/getLastId'], 10) + 1).toString(),
+    });
+    // TODO: consider sorting!!
+    commit('addSidebarItem', newItem);
+    commit('setCurrentItem', newItem);
+    sessionStorage.setItem('sidebarItems', JSON.stringify(state.sidebarData));
   },
 };
 

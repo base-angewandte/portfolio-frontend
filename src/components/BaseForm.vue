@@ -87,8 +87,7 @@
         :class="[
           'base-form-field',
           'base-form-field-' + getSizeClass(element.size),
-          { 'base-form-field-spacing': element.size === 'half' && getClassIndex(element) }
-        ]"/>
+          { 'base-form-field-spacing': element.size === 'half' && getClassIndex(element) }]"/>
       <base-chips-below
         v-else-if="element.type === 'chips-below'"
         :key="index"

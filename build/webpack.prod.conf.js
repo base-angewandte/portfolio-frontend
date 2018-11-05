@@ -32,17 +32,6 @@ const webpackConfig = merge(baseWebpackConfig, {
   },
   optimization: {
     minimize: true,
-    splitChunks: {
-      cacheGroups: {
-        // split vendor js into its own file
-        vendor: {
-          chunks: "initial",
-          test: /\.js$/,
-          name: "vendor",
-          enforce: true
-        },
-      },
-    },
     // extract webpack runtime and module manifest to its own file in order to
     // prevent vendor hash from being updated whenever app bundle is updated
     runtimeChunk: {

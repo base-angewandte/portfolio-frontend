@@ -28,7 +28,7 @@
         :selection-list="['Nach Typ', 'A-Z', 'Z-A', 'Neueste', 'Älteste']"
         @selected="sortEntries"/>
       <base-drop-down
-        :default-select="'Alle Typen'"
+        :selected="'Alle Typen'"
         :selection-list="availableEntryTypes"
         @selected="filterEntries($event, 'type')"/>
     </div>
@@ -147,6 +147,7 @@ export default {
     },
     getNewForm() {
       this.$store.commit('data/setCurrentItem', {});
+      this.$store.commit('data/deleteParentItems');
       this.$emit('newForm');
     },
     deleteEntries() {

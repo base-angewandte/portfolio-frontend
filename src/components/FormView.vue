@@ -244,6 +244,7 @@ export default {
       showFormMenu: true,
       unsavedChanges: false,
       routeChanged: false,
+      parentHasUnsaved: false,
       linkedItems: [],
       filesToUpload: [],
     };
@@ -256,7 +257,6 @@ export default {
   watch: {
     $route(to) {
       this.routeChanged = true;
-      console.log('routechange');
       if (to.params.id) {
         this.updateForm();
       } else {
@@ -265,28 +265,45 @@ export default {
       }
       window.scrollTo(0, 0);
       this.unsavedChanges = false;
+      this.parentHasUnsaved = false;
     },
     valueList: {
       handler(val, oldVal) {
         if (oldVal.title && !this.routeChanged) {
+          this.unsavedChanges = true;
+          this.parentHasUnsaved = true;
+        }
+      },
+      deep: true,
+    },
+    extendedValueList: {
+      handler(val, oldVal) {
+        const formVal = {};
+        const itemVal = {};
+        if (val) {
+          Object.keys(val).forEach((key) => {
+            if (val[key]) {
+              this.$set(formVal, key, val[key]);
+            }
+          });
+        }
+        const item = this.$store.state.data.currentItem.data;
+        if (item) {
+          Object.keys(item).forEach((key) => {
+            if (item[key]) {
+              this.$set(itemVal, key, item[key]);
+            }
+          });
+        }
+        if (Object.keys(oldVal).length && !(JSON.stringify(formVal) === JSON.stringify(itemVal))) {
           this.unsavedChanges = true;
         }
         this.routeChanged = false;
       },
       deep: true,
     },
-    extendedValueList: {
-      handler(val, oldVal) {
-        if (Object.keys(oldVal).length) {
-          Object.keys(oldVal);
-          // this.unsavedChanges = true;
-        }
-      },
-      deep: true,
-    },
   },
   async created() {
-    console.log('created');
     if (window.innerWidth <= 640) {
       this.showFormMenu = false;
     }
@@ -305,8 +322,8 @@ export default {
     }
   },
   mounted() {
-    console.log('mounted');
     this.unsavedChanges = false;
+    this.parentHasUnsaved = false;
   },
   methods: {
     async changed(evt) {
@@ -324,11 +341,12 @@ export default {
         if (!this.$route.params.id) {
           this.$store.commit('data/setNewForm', false);
           // TODO: check somewhere if the entry should be linked to a parent
-          this.$store.commit('data/addSidebarItem', Object.assign({}, this.valueList, { data }));
+          this.$store.dispatch('data/addSidebarItem', Object.assign({}, this.valueList, { data }));
         } else {
           this.$store.commit('data/updateEntry', Object.assign({}, this.valueList, { data }));
         }
         this.unsavedChanges = false;
+        this.parentHasUnsaved = false;
         this.$router.push(`/dashboard/item/${this.$store.state.data.currentItemId}`);
 
         this.$emit('saveForm');
@@ -387,10 +405,8 @@ export default {
         }
         // TODO: some action to actually link the items (database save!)
       }
-      debugger;
     },
     returnToParent(id) {
-      debugger;
       this.$store.commit('data/deleteLastParentItem');
       this.$store.dispatch('data/setCurrentItemById', id);
       this.$router.push(`/dashboard/item/${id}`);
