@@ -8,6 +8,7 @@
     "subtitle": "Subtitle",
     "type": "Type",
     "description": "Description",
+    "text": "Text",
     "keywords": "Keywords",
     "notes": "Notes (will not be exported)",
     "photographer": "Photographer",
@@ -21,7 +22,7 @@
     "city": "City",
     "curator": "Curator",
     "participants": "Participants",
-    "en": "English",
-    "de": "German"
+    "English": "English",
+    "German": "German"
   }
 }

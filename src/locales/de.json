@@ -8,6 +8,7 @@
     "subtitle": "Untertitel",
     "type": "Typ",
     "description": "Beschreibung",
+    "text": "Text",
     "keywords": "Schlagwörter",
     "notes": "Notizen (werden nicht exportiert)",
     "photographer": "FotographIn",
@@ -21,7 +22,7 @@
     "city": "Stadt",
     "curator": "KuratorInnen",
     "participants": "Beteiligte",
-    "en": "Englisch",
-    "de": "Deutsch"
+    "English": "Englisch",
+    "German": "Deutsch"
   }
 }

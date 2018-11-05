@@ -3,23 +3,37 @@ module.exports = {
   EXISTING_ENTRIES: [
     {
       id: '1',
-      title: 'On a lovely Summers Day',
-      subtitle: 'A Show',
-      type: 'Bild',
-      description:
+      title: 'Buch: Omi',
+      subtitle: '',
+      type: 'Lithographie',
+      text:
       {
-        English: 'Alles Neu',
-        German: 'And so on',
-        type: 'Ausstellungsankündigung',
+        Englisch: 'Technical Specifications: stone lithography handcolored 7,4 x 5,2 cm, 49 Pages',
+        Deutsch: 'technische Angaben: Steinlithographie handcoloriert 7,4 x 5,2 cm, 49 Seiten',
+        type: 'Beschreibung',
       },
       keywords: ['Schmerz', 'Leid'],
-      shared: true,
-      error: true,
+      data: {
+        artist: ['Susanna Eva Gartmayer'],
+      },
+      shared: false,
+      error: false,
     },
     {
       id: '2',
-      title: 'Oh this hot hot heat',
-      type: 'Bild',
+      title: 'Valie Export',
+      type: 'Buch',
+      text:
+        {
+          Englisch: 'Exhibitions:\nCnp, Centre national de la photographie, Paris, September - December 2003\nCAAC, Centro Andaluz de Arte Contemporáneo, Sevilla, January - April 2004\nMamco, Musée d’art moderne et contemporain, Geneva, May - August 2004\nCamden Arts Centre, London, September - November 2004\nSammlung Essl Privatstiftung, Klosterneuburg, Vienna, February - April 2005\n\nLanguage: EN, FR',
+          Deutsch: 'Ausstellungen:\nCnp, Centre national de la photographie, Paris, September - Dezember 2003\nCAAC, Centro Andaluz de Arte Contemporáneo, Sevilla, Jänner - April 2004\nMamco, Musée d’art moderne et contemporain, Geneva, Mai - August 2004\nCamden Arts Centre, London, September - November 2004\nSammlung Essl Privatstiftung, Klosterneuburg, Wien, Februar - April 2005\n\nSprache: EN, FR',
+          type: 'Beschreibung',
+        },
+      keywords: ['Performance', 'Photographie', 'Kunst im öffentlichen Raum'],
+      data: {
+        authors: ['VALIE EXPORT'],
+        ISBN: '2-912415-77-2',
+      },
     },
     {
       id: '3',
@@ -54,10 +68,10 @@ module.exports = {
         size: 'full',
       },
       {
-        name: 'description',
+        name: 'text',
         type: 'multiline',
         size: 'full',
-        lang: ['English', 'German'],
+        lang: ['Englisch', 'Deutsch'],
         setType: true,
       },
       {
@@ -131,7 +145,7 @@ module.exports = {
     ],
     image: [
       {
-        name: 'photographer',
+        name: 'artist',
         type: 'chips',
         source: 'dynamic',
         unknown: true,
@@ -233,8 +247,8 @@ module.exports = {
   },
   GENERAL_TYPES: ['document', 'image', 'film', 'audio', 'exhibition'],
   TYPE_MAPPINGS: {
-    document: ['Publikation', 'Text', 'Monograph', 'Periodikum', 'Sammelband', 'Aufsatzsammlung', 'Interview', 'Zeitungsartikel', 'Kritik', 'Essay'],
-    image: ['Bild', 'Fotografie', 'Gemälde', 'Zeichnung', 'Collage'],
+    document: ['Buch', 'Publikation', 'Text', 'Monograph', 'Periodikum', 'Sammelband', 'Aufsatzsammlung', 'Interview', 'Zeitungsartikel', 'Kritik', 'Essay'],
+    image: ['Bild', 'Fotografie', 'Gemälde', 'Zeichnung', 'Collage', 'Lithographie'],
     film: ['Fernsebericht', 'Dokumentation', 'Film', 'Spielfilm', 'Fernsehbeitrag', 'TV-Beitrag', 'Kurzfilm'],
     audio: ['Podcast', 'Radiointerview', 'Radiofeature', 'Audiobeitrag', 'Reportage', 'Hörspiel', 'Rundfunkausstrahlung'],
     exhibition: ['Ausstellung', 'Einzelausstellung', 'Gruppenausstellung'],

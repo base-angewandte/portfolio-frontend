@@ -35,7 +35,11 @@
           <base-drop-down
             :selected="formValues[element.name] && formValues[element.name].type
             ? formValues[element.name].type : 'Wähle Textart'"
-            :selection-list="['Beschreibung', 'Ausstellungseinladung', 'Zeitungsartikel', 'Ausstellungsankündigung']"
+            :selection-list="[
+              'Beschreibung',
+              'Ausstellungseinladung',
+              'Zeitungsartikel',
+              'Ausstellungsankündigung']"
             @selected="addType(element, { type: $event })"/>
         </template>
       </base-multiline-text-input>
@@ -56,8 +60,8 @@
           'base-form-field-' + getSizeClass(element.size),
           { 'base-form-field-spacing': element.size === 'half' && getClassIndex(element) }
         ]"
-        @selected="$emit('selected', $event && $event.length
-        ? { value: $event[0][element.name], field: element.name } : null)"/>
+        @selected="$emit('selected', { value: $event && $event.length
+        ? $event[0][element.name] : null, field: element.name })"/>
       <base-input
         v-else-if="element.type === 'text'"
         :key="index"
@@ -84,7 +88,7 @@
           'base-form-field',
           'base-form-field-' + getSizeClass(element.size),
           { 'base-form-field-spacing': element.size === 'half' && getClassIndex(element) }
-      ]"/>
+        ]"/>
       <base-chips-below
         v-else-if="element.type === 'chips-below'"
         :key="index"

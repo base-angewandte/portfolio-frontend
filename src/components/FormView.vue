@@ -1,6 +1,17 @@
 <template>
   <div id="form-component">
     <div id="form-head">
+      <div
+        v-if="parent"
+        class="base-row-parent base-row-header"
+        @click="returnToParent(parent.id)">
+        <base-menu-entry
+          id="parentheader"
+          :title="parent.title"
+          :title-bold="true"
+          :subtext="parent.type"
+          icon="sheet-empty"/>
+      </div>
       <div class="base-row">
         <div class="base-row-header">
           <base-menu-entry
@@ -12,7 +23,7 @@
         </div>
         <div
           id="form-back-button"
-          class="form-button mobile-elements">
+          :class="['form-button', 'mobile-elements', { 'form-button-child' : parent }]">
           <base-button
             v-if="!unsavedChanges"
             text="Zurück"
@@ -153,6 +164,40 @@
           title="Datei anhängen"/>
       </div>
     </transition-group>
+    <base-pop-up
+      :show="!!filesToUpload.length"
+      title="Dateien hochladen"
+      button-left-text="Abbrechen"
+      button-right-text="Hochladen">
+      <div class="popup-upload-area">
+        <base-upload-bar
+          v-for="(file, index) of filesToUpload"
+          :key="index"
+          :filename="file.name"/>
+      </div>
+      <base-input
+        :label="'Test1'"
+        :show-label="false"
+        placeholder="Phaidra URL hier eingeben"
+        class="files-popup-input-field"/>
+      <div class="popup-text">
+        <base-drop-down
+          :label="'Lizenz auswählen'"
+          :selected="'Wähle die Lizenz aus'"
+          :selection-list="['CC-0', 'CC-BY', 'CC-BY-SA',
+                            'CC-BY-ND', 'CC-BY-NC', 'CC-BY-NC-SA', 'CC-BY-NY-DD']"
+          :background-color="'rgb(240, 240, 240)'"
+          :fixed-width="true"
+          header-style="inline"/>
+        <base-drop-down
+          :selected="'Bilder veröffentlichen?'"
+          :selection-list="['Bilder anzeigen', 'Bilder nicht veröffentlichen']"
+          :background-color="'rgb(240, 240, 240)'"
+          :fixed-width="true"
+          label="Bilder im Showroom anzeigen?"
+          header-style="inline"/>
+      </div>
+    </base-pop-up>
   </div>
 </template>
 
@@ -165,6 +210,9 @@ import {
   BaseMenuEntry,
   BaseBoxButton,
   BaseDropBox,
+  BasePopUp,
+  BaseInput,
+  BaseUploadBar,
 } from 'base-components';
 import 'base-components/dist/lib/base-components.min.css';
 import BaseForm from './BaseForm';
@@ -172,6 +220,8 @@ import { FORM_MAPPINGS } from '../assets/data';
 
 export default {
   components: {
+    BaseUploadBar,
+    BasePopUp,
     BaseButton,
     BaseSearch,
     BaseDropDown,
@@ -180,6 +230,7 @@ export default {
     BaseForm,
     BaseBoxButton,
     BaseDropBox,
+    BaseInput,
   },
   data() {
     return {
@@ -192,31 +243,50 @@ export default {
       showCheckbox: false,
       showFormMenu: true,
       unsavedChanges: false,
+      routeChanged: false,
+      linkedItems: [],
+      filesToUpload: [],
     };
+  },
+  computed: {
+    parent() {
+      return this.$store.getters['data/getLatestParentItem'];
+    },
   },
   watch: {
     $route(to) {
+      this.routeChanged = true;
+      console.log('routechange');
       if (to.params.id) {
         this.updateForm();
       } else {
         this.valueList = {};
         this.formType = '';
       }
+      window.scrollTo(0, 0);
+      this.unsavedChanges = false;
     },
     valueList: {
-      handler() {
-        this.unsavedChanges = true;
+      handler(val, oldVal) {
+        if (oldVal.title && !this.routeChanged) {
+          this.unsavedChanges = true;
+        }
+        this.routeChanged = false;
       },
       deep: true,
     },
     extendedValueList: {
-      handler() {
-        this.unsavedChanges = true;
+      handler(val, oldVal) {
+        if (Object.keys(oldVal).length) {
+          Object.keys(oldVal);
+          // this.unsavedChanges = true;
+        }
       },
       deep: true,
     },
   },
   async created() {
+    console.log('created');
     if (window.innerWidth <= 640) {
       this.showFormMenu = false;
     }
@@ -234,19 +304,26 @@ export default {
       this.$store.commit('data/setNewForm', true);
     }
   },
+  mounted() {
+    console.log('mounted');
+    this.unsavedChanges = false;
+  },
   methods: {
     async changed(evt) {
       const { value, field } = evt;
       if (field === 'type') {
         this.formType = value;
         this.formExtended = await this.$store.dispatch('data/fetchFormExtension', value);
+        this.extendedValueList = {};
       }
     },
     saveForm() {
       if (this.valueList.title) {
         const data = Object.assign({}, this.extendedValueList);
-        if (this.$store.state.data.isNewForm) {
+        console.log(this.$store.state.data.isNewForm);
+        if (!this.$route.params.id) {
           this.$store.commit('data/setNewForm', false);
+          // TODO: check somewhere if the entry should be linked to a parent
           this.$store.commit('data/addSidebarItem', Object.assign({}, this.valueList, { data }));
         } else {
           this.$store.commit('data/updateEntry', Object.assign({}, this.valueList, { data }));
@@ -289,11 +366,34 @@ export default {
       }
     },
     openNewForm() {
+      // TODO: check if this is the desired behaviour
       this.saveForm();
+      this.$store.commit('data/setParentItem', this.valueList.id);
       this.$store.commit('data/setNewForm', true);
-      this.unsavedChanges = false;
-      // TODO: actually this should open a new form below the old header
+      this.$store.commit('data/deleteCurrentItem');
       this.$router.push('/dashboard/newItem');
+    },
+    dropped(e) {
+      for (let i = 0; i < e.dataTransfer.files.length; i += 1) {
+        this.filesToUpload.push(e.dataTransfer.files[i]);
+      }
+      if (e.dataTransfer.items) {
+        const linkedArr = [];
+        const id = e.dataTransfer.getData('text/plain');
+        if (!linkedArr.find(item => item.id === id)) {
+          // TODO: do i actually need complete object or would id also be sufficient
+          const linkedElement = this.$store.getters['data/getEntryById'](id);
+          linkedArr.push(linkedElement);
+        }
+        // TODO: some action to actually link the items (database save!)
+      }
+      debugger;
+    },
+    returnToParent(id) {
+      debugger;
+      this.$store.commit('data/deleteLastParentItem');
+      this.$store.dispatch('data/setCurrentItemById', id);
+      this.$router.push(`/dashboard/item/${id}`);
     },
   },
 };
@@ -311,6 +411,32 @@ export default {
       z-index: 5;
       padding-top: $spacing;
       padding-bottom: 8px;
+
+      .base-row-parent {
+        border-bottom: $separation-line;
+        position: relative;
+        cursor: pointer;
+
+        &:hover {
+          color: $app-color;
+        }
+
+        &::after {
+          content: '';
+          position:absolute;
+          height: 100%;
+          width: 100%;
+          z-index: 10;
+          top: 0;
+          left: 0;
+          background-color: rgb(240, 240, 240);
+          opacity: 0.5;
+        }
+
+        &:hover::after {
+          opacity: 0;
+        }
+      }
     }
   }
 
@@ -360,6 +486,28 @@ export default {
     height: $row-height-small;
     line-height: $row-height-small;
     margin: $spacing-small $spacing;
+  }
+
+  .form-button-child {
+    display: block;
+    border-left: $separation-line;
+  }
+
+  .popup-text {
+    display: flex;
+    align-items: flex-end;
+  }
+
+  .popup-text > div:first-of-type {
+    margin-right: 16px;
+  }
+
+  .files-popup-input-field {
+    margin-bottom: $spacing;
+  }
+
+  .popup-upload-area {
+    margin: $spacing 0;
   }
 
   @media screen and (max-width: $mobile) {

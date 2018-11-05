@@ -7,6 +7,7 @@ const state = {
   sidebarDataFiltered: JSON.parse(sessionStorage.getItem('sidebarItems')) || DATA.EXISTING_ENTRIES,
   currentItem: {},
   currentItemId: null,
+  parentItems: [],
   isNewForm: false,
   showOptions: false,
   popUp: {
@@ -30,7 +31,7 @@ const getters = {
       .find(item => item.id === state.currentItemId));
   },
   getCurrentItem(state) {
-    state.sidebarData.filter(item => item.id === state.currentItemId);
+    return state.sidebarData.find(item => item.id === state.currentItemId);
   },
   getEntryById(state) {
     return id => state.sidebarData.find(item => item.id === id);
@@ -47,6 +48,11 @@ const getters = {
   },
   getEntryTypes(state) {
     return [...new Set(state.sidebarData.map(entry => entry.type))];
+  },
+  getLatestParentItem(state) {
+    debugger;
+    const id = state.parentItems[state.parentItems.length - 1];
+    return state.sidebarData.find(item => item.id === id);
   },
 };
 
@@ -153,6 +159,15 @@ const mutations = {
       this.commit('data/addSidebarItem', newEntry);
     });
     state.showOptions = false;
+  },
+  setParentItem(state, id) {
+    state.parentItems.push(id);
+  },
+  deleteLastParentItem(state) {
+    state.parentItems.pop();
+  },
+  deleteParentItems(state) {
+    state.parentItems = [];
   },
 };
 

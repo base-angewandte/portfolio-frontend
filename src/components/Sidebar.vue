@@ -134,6 +134,7 @@ export default {
   methods: {
     showEntry(index) {
       this.$store.commit('data/setCurrentItem', this.list[index]);
+      this.$store.commit('data/deleteParentItems');
       this.$emit('showEntry', this.list[index]);
     },
     selectEntry(evt) {

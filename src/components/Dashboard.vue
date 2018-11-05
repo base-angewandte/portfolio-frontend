@@ -1,8 +1,5 @@
 <template>
   <div id="app-container">
-    <div
-      v-if="$store.state.data.popUp.show"
-      id="popup-overlay" />
     <base-pop-up
       :show="$store.state.data.popUp.show"
       :title="$store.state.data.popUp.header"
@@ -98,13 +95,6 @@ export default {
 
 <style lang="scss" scoped>
   @import "../styles/variables.scss";
-
-  #popup-overlay {
-    position: absolute;
-    height: 100%;
-    width: calc(#{$page-max-width} - 2 * #{$spacing});
-    z-index: 99;
-  }
 
   .delete-pop-up {
     text-align: center;
