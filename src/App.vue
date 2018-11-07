@@ -49,6 +49,7 @@ export default {
         position: sticky;
         top: $header-height;
         padding-top: $spacing;
+        z-index: 6;
       }
 
       & .sidebar-full {
@@ -76,6 +77,7 @@ export default {
     width: 100%;
     display: flex;
     background-color: $background-color;
+    overflow: hidden;
 
     &.flex-align-right {
       justify-content: flex-end;
