@@ -71,7 +71,7 @@ export default {
   }
 
   .options-row {
-    height: $row-height-small;
+    min-height: $row-height-small;
     width: 100%;
     display: flex;
     background-color: $background-color;
