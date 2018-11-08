@@ -49,20 +49,20 @@ export default {
   watch: {
     $route() {
       this.showForm = this.$route.name !== 'Dashboard';
+      this.$store.commit('data/setNewForm', this.$route.name === 'newItem');
     },
   },
   mounted() {
     this.showForm = this.$route.name !== 'Dashboard';
+    this.$store.commit('data/setNewForm', this.$route.name === 'newItem');
   },
   methods: {
     createNewForm() {
       this.showForm = true;
-      this.$store.commit('data/setNewForm', true);
       this.$router.push('/dashboard/newItem');
     },
     fetchEntryData(item) {
       this.showForm = true;
-      this.$store.commit('data/setNewForm', false);
       this.$router.push(`/dashboard/Item/${item.id}`);
     },
     saveForm() {

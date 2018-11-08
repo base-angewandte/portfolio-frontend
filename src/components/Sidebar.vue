@@ -120,7 +120,8 @@ export default {
   },
   watch: {
     activeEntry(val) {
-      this.$store.commit('data/setNewForm', val === null);
+      console.log('Active etnry changed');
+      console.log(val);
     },
     list(val) {
       this.listInt = val;
@@ -128,7 +129,6 @@ export default {
     },
   },
   created() {
-    this.$store.commit('data/setNewForm', !!this.$store.state.data.currentItemId);
     this.listInt = this.list;
   },
   methods: {

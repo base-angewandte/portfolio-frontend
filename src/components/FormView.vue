@@ -19,6 +19,7 @@
             :icon="'sheet-empty'"
             :title="valueList.title"
             :title-bold="true"
+            :is-activatable="false"
             :subtext="formType" />
         </div>
         <div
@@ -317,8 +318,6 @@ export default {
         // (redirect to new form (for now at least))
         this.$router.push('/dashboard/newItem');
       }
-    } else {
-      this.$store.commit('data/setNewForm', true);
     }
   },
   mounted() {
@@ -337,9 +336,7 @@ export default {
     saveForm() {
       if (this.valueList.title) {
         const data = Object.assign({}, this.extendedValueList);
-        console.log(this.$store.state.data.isNewForm);
         if (!this.$route.params.id) {
-          this.$store.commit('data/setNewForm', false);
           // TODO: check somewhere if the entry should be linked to a parent
           this.$store.dispatch('data/addSidebarItem', Object.assign({}, this.valueList, { data }));
         } else {
@@ -387,7 +384,6 @@ export default {
       // TODO: check if this is the desired behaviour
       this.saveForm();
       this.$store.commit('data/setParentItem', this.valueList.id);
-      this.$store.commit('data/setNewForm', true);
       this.$store.commit('data/deleteCurrentItem');
       this.$router.push('/dashboard/newItem');
     },
