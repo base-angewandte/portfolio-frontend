@@ -111,6 +111,7 @@ module.exports = {
         name: 'notes',
         type: 'multiline',
         size: 'full',
+        setType: false,
       },
     ],
     document: [

@@ -27,6 +27,7 @@
       v-if="showForm"
       class="form-view">
       <router-view
+        ref="view"
         @formSaved="saveForm"/>
     </div>
   </div>
@@ -58,6 +59,7 @@ export default {
   },
   methods: {
     createNewForm() {
+      this.$refs.view.resetForm();
       this.showForm = true;
       this.$router.push('/dashboard/newItem');
     },

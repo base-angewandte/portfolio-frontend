@@ -259,18 +259,18 @@ export default {
     $route(to) {
       this.routeChanged = true;
       if (to.params.id) {
+        this.resetForm();
         this.updateForm();
       } else {
-        this.valueList = {};
-        this.formType = '';
+        this.resetForm();
       }
       window.scrollTo(0, 0);
-      this.unsavedChanges = false;
-      this.parentHasUnsaved = false;
     },
     valueList: {
       handler(val, oldVal) {
-        if (oldVal.title && !this.routeChanged) {
+        // determine if any prop has content
+        const populatedProps = Object.keys(val).filter(prop => val[prop] && val[prop].length);
+        if (populatedProps.length && oldVal.title && !this.routeChanged) {
           this.unsavedChanges = true;
           this.parentHasUnsaved = true;
         }
@@ -296,7 +296,9 @@ export default {
             }
           });
         }
-        if (Object.keys(oldVal).length && !(JSON.stringify(formVal) === JSON.stringify(itemVal))) {
+        const populatedProps = Object.keys(val).filter(prop => val[prop] && val[prop].length);
+        if (populatedProps.length && Object.keys(oldVal).length
+          && !(JSON.stringify(formVal) === JSON.stringify(itemVal))) {
           this.unsavedChanges = true;
         }
         this.routeChanged = false;
@@ -406,6 +408,13 @@ export default {
       this.$store.commit('data/deleteLastParentItem');
       this.$store.dispatch('data/setCurrentItemById', id);
       this.$router.push(`/dashboard/item/${id}`);
+    },
+    resetForm() {
+      this.valueList = {};
+      this.extendedValueList = {};
+      this.unsavedChanges = false;
+      this.parentHasUnsaved = false;
+      this.formType = '';
     },
   },
 };

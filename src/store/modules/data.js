@@ -183,7 +183,7 @@ const actions = {
   addSidebarItem({ commit }, obj) {
     const type = obj.type || '';
     const newItem = Object.assign({}, obj, {
-      type: type && typeof type === 'object' ? type[0].type : type,
+      type: typeof type === 'object' && type ? type[0].type : type,
       id: (parseInt(this.getters['data/getLastId'], 10) + 1).toString(),
     });
     // TODO: consider sorting!!

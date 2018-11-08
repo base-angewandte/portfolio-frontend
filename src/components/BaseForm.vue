@@ -211,7 +211,11 @@ export default {
       }
     },
     addType(val, text) {
-      this.formValues[val.name] = Object.assign({}, { type: '' }, this.formValues[val.name], text);
+      if (val.setType) {
+        this.$set(this.formValues, val.name, Object.assign({}, { type: '' }, this.formValues[val.name], text));
+      } else {
+        this.$set(this.formValues, val.name, text);
+      }
     },
   },
 };
