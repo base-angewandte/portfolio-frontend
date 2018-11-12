@@ -60,6 +60,7 @@ export default {
         flex: 0 1 66%;
         margin-left: 16px;
         max-width: 66%;
+        width: 65%;
       }
     }
   }

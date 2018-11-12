@@ -59,7 +59,10 @@ export default {
   },
   methods: {
     createNewForm() {
-      this.$refs.view.resetForm();
+      const formView = this.$refs.view;
+      if (formView) {
+        formView.resetForm();
+      }
       this.showForm = true;
       this.$router.push('/dashboard/newItem');
     },

@@ -91,6 +91,8 @@ export default {
       selectedMenuEntries: [],
       listInt: [],
       activeEntryInt: null,
+      filterExpr: '',
+      filterType: '',
     };
   },
   computed: {
@@ -119,13 +121,8 @@ export default {
     },
   },
   watch: {
-    activeEntry(val) {
-      console.log('Active etnry changed');
-      console.log(val);
-    },
     list(val) {
-      this.listInt = val;
-      // this.activeEntry = this.$store.getters['data/getCurrentItemIndex'];
+      this.listInt = [].concat(val);
     },
   },
   created() {
@@ -164,13 +161,13 @@ export default {
       // if necessary! (and change route)
     },
     sortEntries(evt) {
-      this.$store.commit('data/sortEntries', evt);
+      this.$store.dispatch('data/sortEntries', evt);
     },
     filterEntries(val, type) {
-      this.$store.commit('data/filterEntries', { value: val, prop: type });
+      this.$store.dispatch('data/filterEntries', { val, type });
     },
     duplicateEntries() {
-      this.$store.commit('data/duplicateEntries', this.selectedMenuEntries);
+      this.$store.dispatch('data/duplicateEntries', this.selectedMenuEntries);
       this.selectedMenuEntries = [];
       // TODO: to have consistency this route is set since for now in store current item is set to
       // newly created one...but dont know if we want that??

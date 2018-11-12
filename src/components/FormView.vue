@@ -342,7 +342,7 @@ export default {
           // TODO: check somewhere if the entry should be linked to a parent
           this.$store.dispatch('data/addSidebarItem', Object.assign({}, this.valueList, { data }));
         } else {
-          this.$store.commit('data/updateEntry', Object.assign({}, this.valueList, { data }));
+          this.$store.dispatch('data/updateEntry', Object.assign({}, this.valueList, { data }));
         }
         this.unsavedChanges = false;
         this.parentHasUnsaved = false;

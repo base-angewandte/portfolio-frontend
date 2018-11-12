@@ -20,6 +20,8 @@ const state = {
   deletableEntries: [],
   filtered: false,
   sortBy: '',
+  filterType: '',
+  filterExpr: '',
 };
 
 const getters = {
@@ -69,14 +71,10 @@ const mutations = {
     state.currentItem = {};
   },
   addSidebarItem(state, item) {
-    // TODO: consider sorting!!
     state.sidebarData.push(item);
+    // consider filtered entries!
   },
-  updateEntry(state, obj) {
-    // state.currentItem = Object.assign({}, state.currentItem, obj);
-    const index = this.getters['data/getCurrentItemIndex'];
-    const type = obj.type && obj.type.length ? obj.type[0].type || obj.type[0] : '';
-    // TODO: consider sorting!!
+  updateEntry(state, { obj, index, type }) {
     Vue.set(
       state.sidebarData,
       index,
@@ -84,48 +82,10 @@ const mutations = {
         type,
       }),
     );
-    state.currentItem = Object.assign({}, state.sidebarData[index]);
-    sessionStorage.setItem('sidebarItems', JSON.stringify(state.sidebarData));
   },
   deleteSidebarItems(state) {
     state.sidebarData = state.sidebarData.filter(item => !state.deletableEntries.includes(item.id));
     sessionStorage.setItem('sidebarItems', JSON.stringify(state.sidebarData));
-  },
-  sortEntries(state, sortVal) {
-    if (sortVal === 'Nach Typ') {
-      this.getters['data/getSidebarData'].sort((a, b) => {
-        if (a.type > b.type) {
-          return 1;
-        }
-        return -1;
-      });
-    } else if (sortVal === 'A-Z') {
-      this.getters['data/getSidebarData'].sort((a, b) => {
-        if (a.title.toLowerCase() > b.title.toLowerCase()) {
-          return 1;
-        }
-        return -1;
-      });
-    } else if (sortVal === 'Z-A') {
-      this.getters['data/getSidebarData'].sort((a, b) => {
-        if (a.title.toLowerCase() > b.title.toLowerCase()) {
-          return -1;
-        }
-        return 1;
-      });
-    }
-  },
-  filterEntries(state, val) {
-    if ((val.prop === 'type' && val.value === 'Alle Typen')
-      || (val.prop === 'title' && !val.value)) {
-      state.filtered = false;
-      state.sidebarDataFiltered = state.sidebarData;
-    } else {
-      const filteredEntries = state.sidebarData
-        .filter(entry => entry[val.prop].toLowerCase().includes(val.value.toLowerCase()));
-      state.filtered = true;
-      state.sidebarDataFiltered = filteredEntries;
-    }
   },
   setOptions(state, val) {
     state.showOptions = val;
@@ -142,15 +102,54 @@ const mutations = {
       buttonText: '',
     };
   },
+  setFiltered(state, val) {
+    state.filtered = val;
+  },
+  setSort(state, val) {
+    state.sortBy = val;
+  },
+  setFilterType(state, val) {
+    if (val) {
+      state.filterType = val;
+    } else {
+      state.filterType = '';
+    }
+  },
+  setFilterExpression(state, val) {
+    state.filterExpr = val;
+  },
+  sort(state) {
+    const data = state.filtered ? state.sidebarDataFiltered : state.sidebarData;
+    if (data.length) {
+      if (state.sortBy === 'Nach Typ') {
+        data.sort((a, b) => {
+          if (a.type > b.type) {
+            return 1;
+          }
+          return -1;
+        });
+      } else if (state.sortBy === 'A-Z') {
+        data.sort((a, b) => {
+          if (a.title.toLowerCase() > b.title.toLowerCase()) {
+            return 1;
+          }
+          return -1;
+        });
+      } else if (state.sortBy === 'Z-A') {
+        data.sort((a, b) => {
+          if (a.title.toLowerCase() > b.title.toLowerCase()) {
+            return -1;
+          }
+          return 1;
+        });
+      }
+    }
+  },
+  setFilteredSidebarData(state, val) {
+    state.sidebarDataFiltered = val || [];
+  },
   setDeletable(state, entryArr) {
     state.deletableEntries = entryArr;
-  },
-  duplicateEntries(state, entryArr) {
-    entryArr.forEach((id) => {
-      const newEntry = state.sidebarData.find(entry => entry.id === id);
-      this.dispatch('data/addSidebarItem', newEntry);
-    });
-    state.showOptions = false;
   },
   setParentItem(state, id) {
     state.parentItems.push(id);
@@ -188,8 +187,57 @@ const actions = {
     });
     // TODO: consider sorting!!
     commit('addSidebarItem', newItem);
+    commit('sort');
     commit('setCurrentItem', newItem);
     sessionStorage.setItem('sidebarItems', JSON.stringify(state.sidebarData));
+  },
+  updateEntry({ state, commit, dispatch }, obj) {
+    // state.currentItem = Object.assign({}, state.currentItem, obj);
+    const index = this.getters['data/getCurrentItemIndex'];
+    const type = obj.type && obj.type.length ? obj.type[0].type || obj.type[0] : '';
+    commit('updateEntry', { obj, index, type });
+    commit('sort');
+    dispatch('setCurrentItemById', obj.id);
+    sessionStorage.setItem('sidebarItems', JSON.stringify(state.sidebarData));
+  },
+  duplicateEntries({ state, commit }, entryArr) {
+    entryArr.forEach((id) => {
+      const newEntry = state.sidebarData.find(entry => entry.id === id);
+      this.dispatch('data/addSidebarItem', newEntry);
+    });
+    commit('showOptions', false);
+  },
+  sortEntries({ commit }, sortVal) {
+    if (sortVal) {
+      commit('setSort', sortVal);
+    }
+    commit('sort');
+  },
+  filterEntries({ state, commit, dispatch }, { type, val }) {
+    if (type === 'type') {
+      if (val === 'Alle Typen') {
+        commit('setFilterType');
+      } else {
+        commit('setFilterType', val);
+      }
+    } else if (type === 'title') {
+      commit('setFilterExpression', val);
+    }
+    let filteredEntries = [].concat(state.sidebarData);
+    if (filteredEntries.length) {
+      if (state.filterExpr) {
+        filteredEntries = filteredEntries
+          .filter(entry => entry.title.toLowerCase()
+            .includes(state.filterExpr.toLowerCase()));
+      }
+      if (state.filterType) {
+        filteredEntries = filteredEntries
+          .filter(entry => entry.type === state.filterType);
+      }
+    }
+    commit('setFiltered', !!(state.filterExpr || state.filterType));
+    commit('setFilteredSidebarData', filteredEntries);
+    dispatch('sortEntries');
   },
 };
 
