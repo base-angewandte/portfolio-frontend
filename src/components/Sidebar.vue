@@ -91,8 +91,6 @@ export default {
       selectedMenuEntries: [],
       listInt: [],
       activeEntryInt: null,
-      filterExpr: '',
-      filterType: '',
     };
   },
   computed: {
