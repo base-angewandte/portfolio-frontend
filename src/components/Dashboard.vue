@@ -8,10 +8,10 @@
       :button-right-icon="$store.state.data.popUp.icon"
       @close="cancelAction"
       @buttonLeft="cancelAction"
-      @buttonRight="removeEntryAction">
-      <div class="delete-pop-up">
+      @buttonRight="popUpAction">
+      <div class="sidebar-pop-up">
         <div>
-          <p class="delete-pop-up-text">
+          <p class="sidebar-pop-up-text">
             {{ $store.state.data.popUp.text }}
           </p>
         </div>
@@ -73,8 +73,8 @@ export default {
     saveForm() {
       console.log('saved');
     },
-    removeEntryAction() {
-      this.deleteEntry();
+    popUpAction() {
+      this.action();
       this.clearSelected();
     },
     cancelAction() {
@@ -84,15 +84,22 @@ export default {
       this.$store.commit('data/setDeletable', []);
       this.$store.commit('data/hidePopUp');
     },
-    deleteEntry() {
-      const deleteCurrentlyDisplayed = this.$store.state.data.deletableEntries
-        .includes(this.$route.params.id);
-      this.$store.commit('data/deleteSidebarItems');
-      this.$store.commit('data/setOptions', false);
-      if (deleteCurrentlyDisplayed) {
-        this.$store.commit('data/deleteCurrentItem');
-        this.$router.push('/dashboard');
+    action() {
+      const { action } = this.$store.state.data.popUp;
+      if (action === 'delete') {
+        const deleteCurrentlyDisplayed = this.$store.state.data.deletableEntries
+          .includes(this.$route.params.id);
+        this.$store.commit('data/deleteSidebarItems');
+        if (deleteCurrentlyDisplayed) {
+          this.$store.commit('data/deleteCurrentItem');
+          this.$router.push('/dashboard');
+        }
+      } else if (action === 'publish') {
+        this.$store.dispatch('data/modifyEntries', { prop: 'published', value: true });
+      } else if (action === 'offline') {
+        this.$store.dispatch('data/modifyEntries', { prop: 'published', value: false });
       }
+      this.$store.commit('data/setOptions', false);
     },
   },
 };
@@ -101,7 +108,7 @@ export default {
 <style lang="scss" scoped>
   @import "../styles/variables.scss";
 
-  .delete-pop-up {
+  .sidebar-pop-up {
     text-align: center;
     font-size: $font-size-large;
     min-height: 150px;
@@ -111,7 +118,7 @@ export default {
     align-items: center;
     margin: auto;
 
-    .delete-pop-up-text {
+    .sidebar-pop-up-text {
       margin: auto;
       text-align: center;
     }

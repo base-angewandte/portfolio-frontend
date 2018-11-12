@@ -362,6 +362,7 @@ export default {
           text: `Wollen sie den Eintrag "${this.valueList.title}" wirklich löschen?`,
           icon: 'waste-bin',
           buttonText: 'Eintrag löschen',
+          action: 'delete',
         });
       }
     },

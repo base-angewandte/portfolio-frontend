@@ -41,7 +41,16 @@
         text="In Showroom veröffentlichen"
         icon-size="large"
         icon="eye"
-        button-style="single" />
+        button-style="single"
+        @clicked="publishEntries(true)"/>
+      <base-button
+        v-if="showCheckbox"
+        key="offline"
+        text="Einträge offline stellen"
+        icon-size="large"
+        icon="forbidden"
+        button-style="single"
+        @clicked="publishEntries(false)"/>
       <base-button
         v-if="showCheckbox"
         key="duplicate"
@@ -153,6 +162,7 @@ export default {
         text: 'Wollen sie die ausgewählten Einträge wirklich löschen?',
         icon: 'waste-bin',
         buttonText: 'Einträg löschen',
+        action: 'delete',
       });
       this.selectedMenuEntries = [];
       // TODO: check if currently displayed item is one of the deleted and remove from form
@@ -170,6 +180,18 @@ export default {
       // TODO: to have consistency this route is set since for now in store current item is set to
       // newly created one...but dont know if we want that??
       this.$router.push(`/dashboard/item/${this.$store.state.data.currentItemId}`);
+    },
+    publishEntries(value) {
+      this.$store.commit('data/setDeletable', this.selectedMenuEntries);
+      this.$store.commit('data/setPopUp', {
+        show: true,
+        header: 'Einträge veröffentlichen?',
+        text: 'Wollen Sie diese Einträge wirklich veröffentlichen',
+        icon: 'eye',
+        buttonText: 'Einträg veröffentlichen',
+        action: value ? 'publish' : 'offline',
+      });
+      this.selectedMenuEntries = [];
     },
   },
 };
