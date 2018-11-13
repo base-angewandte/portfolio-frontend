@@ -73,7 +73,8 @@
               :text="valueList.published ? 'Aus Showroom entfernen' : 'In Showroom veröffentlichen'"
               icon-size="large"
               icon="eye"
-              button-style="single" />
+              button-style="single"
+              @clicked="actionEntry(valueList.published)"/>
             <base-button
               :disabled="true"
               text="Bearbeitung ermöglichen"
@@ -366,6 +367,18 @@ export default {
           action: 'delete',
         });
       }
+    },
+    // TODO: refactor so that delete (above) and publish can have same method
+    actionEntry(published) {
+      this.$store.commit('data/setDeletable', [this.$store.state.data.currentItemId]);
+      this.$store.commit('data/setPopUp', {
+        show: true,
+        header: `Eintrag wirklich ${published ? 'entfernen' : 'veröffentlichen'}?`,
+        text: `Wollen sie den Eintrag "${this.valueList.title}" wirklich ${published ? 'entfernen' : 'veröffentlichen'}?`,
+        icon: 'waste-bin',
+        buttonText: `Eintrag ${published ? 'entfernen' : 'veröffentlichen'}`,
+        action: published ? 'offline' : 'publish',
+      });
     },
     async updateForm() {
       try {
