@@ -70,11 +70,12 @@
             v-if="showFormMenu"
             class="options-row flex-align-right" >
             <base-button
-              text="In Showroom veröffentlichen"
+              :text="valueList.published ? 'Aus Showroom entfernen' : 'In Showroom veröffentlichen'"
               icon-size="large"
               icon="eye"
               button-style="single" />
             <base-button
+              :disabled="true"
               text="Bearbeitung ermöglichen"
               icon-size="large"
               icon="people"

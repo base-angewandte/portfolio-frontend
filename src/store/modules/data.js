@@ -209,12 +209,15 @@ const actions = {
     });
     commit('setOptions', false);
   },
-  modifyEntries({ state, commit }, { prop, value }) {
+  modifyEntries({ state, commit, dispatch }, { prop, value }) {
     state.deletableEntries.forEach((e) => {
       const obj = state.sidebarData.find(o => o.id === e);
       const index = state.sidebarData.indexOf(obj);
       if (index >= 0) {
         commit('updateEntry', { obj: Object.assign({}, state.sidebarData[index], { [prop]: value }), index, type: obj.type });
+      }
+      if (obj.id === state.currentItemId) {
+        dispatch('setCurrentItemById', obj.id);
       }
     });
   },
