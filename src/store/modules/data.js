@@ -181,14 +181,14 @@ const actions = {
     }
     return !!entry;
   },
-  addSidebarItem({ commit }, obj) {
+  addSidebarItem({ commit, dispatch }, obj) {
     const type = obj.type || '';
     const newItem = Object.assign({}, obj, {
       type: typeof type === 'object' && type ? type[0].type : type,
       id: (parseInt(this.getters['data/getLastId'], 10) + 1).toString(),
     });
-    // TODO: consider sorting!!
     commit('addSidebarItem', newItem);
+    dispatch('applyFilters');
     commit('sort');
     commit('setCurrentItem', newItem);
     sessionStorage.setItem('sidebarItems', JSON.stringify(state.sidebarData));
@@ -227,7 +227,7 @@ const actions = {
     }
     commit('sort');
   },
-  filterEntries({ state, commit, dispatch }, { type, val }) {
+  filterEntries({ commit, dispatch }, { type, val }) {
     if (type === 'type') {
       if (val === 'Alle Typen') {
         commit('setFilterType');
@@ -237,6 +237,9 @@ const actions = {
     } else if (type === 'title') {
       commit('setFilterExpression', val);
     }
+    dispatch('applyFilters');
+  },
+  applyFilters({ state, commit, dispatch }) {
     let filteredEntries = [].concat(state.sidebarData);
     if (filteredEntries.length) {
       if (state.filterExpr) {
