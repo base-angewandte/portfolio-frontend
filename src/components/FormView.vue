@@ -446,7 +446,7 @@ export default {
       top: $header-height;
       z-index: 5;
       padding-top: $spacing;
-      padding-bottom: 8px;
+      padding-bottom: $spacing-small;
 
       .base-row-parent {
         border-bottom: $separation-line;

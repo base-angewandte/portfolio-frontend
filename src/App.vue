@@ -48,7 +48,6 @@ export default {
         align-self: flex-start;
         position: sticky;
         top: $header-height;
-        padding-top: $spacing;
         z-index: 6;
       }
 

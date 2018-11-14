@@ -2,80 +2,80 @@
   <div
     id="menu-sidebar"
     class="mobile-hidden">
-    <div class="base-row">
-      <base-button
-        :active="$store.state.data.isNewForm"
-        :text="$t('new')"
-        icon="sheet-plus"
-        icon-size="large"
-        button-style="row"
-        @clicked="getNewForm"/>
-      <base-search
-        :show-image="true"
-        @input="filterEntries($event, 'title')"/>
-    </div>
-    <div class="options-row">
-      <div class="options">
+
+    <div class="sidebar-head">
+      <div class="base-row">
         <base-button
-          :text="'Optionen'"
-          :icon="'options-menu'"
-          icon-size="small"
-          icon-position="left"
-          @clicked="$store.commit('data/setOptions', !showCheckbox)"/>
+          :active="$store.state.data.isNewForm"
+          :text="$t('new')"
+          icon="sheet-plus"
+          icon-size="large"
+          button-style="row"
+          @clicked="getNewForm"/>
+        <base-search
+          :show-image="true"
+          @input="filterEntries($event, 'title')"/>
       </div>
-      <base-drop-down
-        :placeholder="'Sortieren nach'"
-        :selection-list="['Nach Typ', 'A-Z', 'Z-A', 'Neueste', 'Älteste']"
-        @selected="sortEntries"/>
-      <base-drop-down
-        :selected="'Alle Typen'"
-        :selection-list="availableEntryTypes"
-        @selected="filterEntries($event, 'type')"/>
+      <div class="options-row">
+        <div class="options">
+          <base-button
+            :text="'Optionen'"
+            :icon="'options-menu'"
+            icon-size="small"
+            icon-position="left"
+            @clicked="$store.commit('data/setOptions', !showCheckbox)"/>
+        </div>
+        <base-drop-down
+          :placeholder="'Sortieren nach'"
+          :selection-list="['Nach Typ', 'A-Z', 'Z-A', 'Neueste', 'Älteste']"
+          @selected="sortEntries"/>
+        <base-drop-down
+          :selected="'Alle Typen'"
+          :selection-list="availableEntryTypes"
+          @selected="filterEntries($event, 'type')"/>
+      </div>
+      <transition
+        name="slide-toggle"
+        class="options-extend">
+        <div
+          v-if="showCheckbox"
+          class="options-extend-box">
+          <base-button
+            text="In Showroom veröffentlichen"
+            icon-size="large"
+            icon="eye"
+            button-style="single"
+            @clicked="publishEntries(true)"/>
+          <base-button
+            text="Einträge offline stellen"
+            icon-size="large"
+            icon="forbidden"
+            button-style="single"
+            @clicked="publishEntries(false)"/>
+          <base-button
+            text="Einträge duplizieren"
+            icon-size="large"
+            icon="duplicate"
+            button-style="single"
+            @clicked="duplicateEntries"/>
+          <base-button
+            text="Einträge löschen"
+            icon-size="large"
+            icon="waste-bin"
+            button-style="single"
+            @clicked="deleteEntries"/>
+        </div>
+      </transition>
     </div>
-    <transition-group
-      name="slide-fade2"
-      class="options-extend">
-      <base-button
-        v-if="showCheckbox"
-        key="publish"
-        text="In Showroom veröffentlichen"
-        icon-size="large"
-        icon="eye"
-        button-style="single"
-        @clicked="publishEntries(true)"/>
-      <base-button
-        v-if="showCheckbox"
-        key="offline"
-        text="Einträge offline stellen"
-        icon-size="large"
-        icon="forbidden"
-        button-style="single"
-        @clicked="publishEntries(false)"/>
-      <base-button
-        v-if="showCheckbox"
-        key="duplicate"
-        text="Einträge duplizieren"
-        icon-size="large"
-        icon="duplicate"
-        button-style="single"
-        @clicked="duplicateEntries"/>
-      <base-button
-        v-if="showCheckbox"
-        key="delete"
-        text="Einträge löschen"
-        icon-size="large"
-        icon="waste-bin"
-        button-style="single"
-        @clicked="deleteEntries"/>
-      <base-menu-list
-        id="menu-list"
-        key="menu-list"
-        :selected="showCheckbox"
-        :list="listInt"
-        :active-entry="activeEntry"
-        @clicked="showEntry"
-        @selected="selectEntry"/>
-    </transition-group>
+
+    <base-menu-list
+      id="menu-list"
+      key="menu-list"
+      :selected="showCheckbox"
+      :list="listInt"
+      :active-entry="activeEntry"
+      @clicked="showEntry"
+      @selected="selectEntry"/>
   </div>
 </template>
 
@@ -201,27 +201,52 @@ export default {
   @import "../styles/variables.scss";
 
   #menu-sidebar {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - #{$header-height} - #{$row-height-small});
 
     button + div {
       border-left: $separation-line;
     }
+
+    .sidebar-head {
+      position: sticky;
+      top: $header-height;
+      z-index: 5;
+      padding-top: $spacing;
+      padding-bottom: $spacing-small;
+      background-color: $background-color;
+      flex: 0 0 auto;
+
+      .options-extend-box {
+        width: 100%;
+        background-color: $background-color;
+        overflow: hidden;
+      }
+
+      .options-extend {
+      }
+    }
   }
 
   #menu-list {
-    margin-top: $spacing-small;
+    flex: 1 1 auto;
+    overflow-y: scroll;
   }
 
-  .slide-fade2-enter-active, .slide-fade2-move {
-    transition: all 0.5s ease;
+  .slide-toggle-enter-active,
+  .slide-toggle-leave-active {
+    transition: height .5s ease;
   }
-  .slide-fade2-enter, .slide-fade2-leave-to {
-    opacity: 0;
-    transform: translateY(-#{$spacing});
+  .slide-toggle-enter-active {
+    height: calc(4 * #{$row-height-small});
   }
-
-  .slide-fade2-leave-active {
-    position: absolute;
-    transition: all 0.3s ease;
+  .slide-toggle-enter,
+  .slide-toggle-leave-active {
+    height: 0;
+  }
+  .slide-toggle-leave {
+    height: calc(4 * #{$row-height-small});
   }
 
   @media screen and (max-width: $mobile) {
