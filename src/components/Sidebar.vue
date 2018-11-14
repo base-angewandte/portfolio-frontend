@@ -172,7 +172,7 @@ export default {
       this.selectedMenuEntries = [];
       // TODO: to have consistency this route is set since for now in store current item is set to
       // newly created one...but dont know if we want that??
-      this.$router.push(`/dashboard/item/${this.$store.state.data.currentItemId}`);
+      this.$router.push(`/entry/${this.$store.state.data.currentItemId}`);
     },
     actionEntries(value) {
       if (this.selectedMenuEntries.length) {

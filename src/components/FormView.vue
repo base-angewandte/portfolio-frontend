@@ -322,7 +322,7 @@ export default {
       } else {
         // TODO: create a not found info (page?) for user!!
         // (redirect to new form (for now at least))
-        this.$router.push('/dashboard/newItem');
+        this.$router.push('/new');
       }
     }
   },
@@ -350,7 +350,7 @@ export default {
         }
         this.unsavedChanges = false;
         this.parentHasUnsaved = false;
-        this.$router.push(`/dashboard/item/${this.$store.state.data.currentItemId}`);
+        this.$router.push(`/entry/${this.$store.state.data.currentItemId}`);
 
         this.$emit('saveForm');
       } else {
@@ -389,7 +389,7 @@ export default {
       this.saveForm();
       this.$store.commit('data/setParentItem', this.valueList.id);
       this.$store.commit('data/deleteCurrentItem');
-      this.$router.push('/dashboard/newItem');
+      this.$router.push('/new');
     },
     dropped(e) {
       for (let i = 0; i < e.dataTransfer.files.length; i += 1) {
@@ -409,7 +409,7 @@ export default {
     returnToParent(id) {
       this.$store.commit('data/deleteLastParentItem');
       this.$store.dispatch('data/setCurrentItemById', id);
-      this.$router.push(`/dashboard/item/${id}`);
+      this.$router.push(`/entry/${id}`);
     },
     resetForm() {
       this.valueList = {};

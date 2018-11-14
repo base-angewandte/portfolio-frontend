@@ -50,12 +50,12 @@ export default {
   watch: {
     $route() {
       this.showForm = this.$route.name !== 'Dashboard';
-      this.$store.commit('data/setNewForm', this.$route.name === 'newItem');
+      this.$store.commit('data/setNewForm', this.$route.name === 'newEntry');
     },
   },
   mounted() {
     this.showForm = this.$route.name !== 'Dashboard';
-    this.$store.commit('data/setNewForm', this.$route.name === 'newItem');
+    this.$store.commit('data/setNewForm', this.$route.name === 'newEntry');
   },
   methods: {
     createNewForm() {
@@ -64,11 +64,11 @@ export default {
         formView.resetForm();
       }
       this.showForm = true;
-      this.$router.push('/dashboard/newItem');
+      this.$router.push('/new');
     },
     fetchEntryData(item) {
       this.showForm = true;
-      this.$router.push(`/dashboard/Item/${item.id}`);
+      this.$router.push(`/entry/${item.id}`);
     },
     saveForm() {
       console.log('saved');
@@ -92,7 +92,7 @@ export default {
         this.$store.commit('data/deleteSidebarItems');
         if (deleteCurrentlyDisplayed) {
           this.$store.commit('data/deleteCurrentItem');
-          this.$router.push('/dashboard');
+          this.$router.push('/');
         }
       } else if (action === 'publish') {
         this.$store.dispatch('data/modifyEntries', { prop: 'published', value: true });

@@ -17,22 +17,18 @@ export default new Router({
     },
     {
       path: '/',
-      redirect: '/dashboard',
-    },
-    {
-      path: '/dashboard',
       name: 'Dashboard',
       component: Dashboard,
       meta: { requiresAuth: true },
       children: [
         {
-          path: 'item/:id',
-          name: 'Item',
+          path: 'entry/:id',
+          name: 'Entry',
           component: FormView,
         },
         {
-          path: 'newItem',
-          name: 'newItem',
+          path: 'new',
+          name: 'newEntry',
           component: FormView,
         },
       ],

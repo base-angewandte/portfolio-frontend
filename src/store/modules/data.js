@@ -191,7 +191,6 @@ const actions = {
     });
     commit('addSidebarItem', newItem);
     dispatch('applyFilters');
-    commit('sort');
     commit('setCurrentItem', newItem);
     sessionStorage.setItem('sidebarItems', JSON.stringify(state.sidebarData));
   },
