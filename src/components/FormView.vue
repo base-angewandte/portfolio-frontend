@@ -74,7 +74,7 @@
               icon-size="large"
               icon="eye"
               button-style="single"
-              @clicked="actionEntry(valueList.published)"/>
+              @clicked="actionEntry(valueList.published ? 'offline' : 'publish')"/>
             <base-button
               :disabled="true"
               text="Bearbeitung ermöglichen"
@@ -86,7 +86,7 @@
               icon-size="large"
               icon="waste-bin"
               button-style="single"
-              @clicked="confirmDelete"/>
+              @clicked="actionEntry('delete')"/>
           </div>
         </transition>
       </div>
@@ -271,10 +271,9 @@ export default {
     valueList: {
       handler(val) {
         // determine if any prop has content
-        const populatedProps = Object.keys(val).filter((prop) => {
-          return val[prop] && (val[prop].length || Object.keys(val[prop])
-            .filter(cprop => val[prop][cprop] && val[prop][cprop].length));
-        });
+        const populatedProps = Object.keys(val)
+          .filter(prop => val[prop] && (val[prop].length || Object.keys(val[prop])
+            .filter(cprop => val[prop][cprop] && val[prop][cprop].length)));
         if (populatedProps.length && !this.routeChanged) {
           this.unsavedChanges = true;
           this.parentHasUnsaved = true;
@@ -358,30 +357,15 @@ export default {
         // TODO: make known to user that title is missing!
       }
     },
-    confirmDelete() {
+    actionEntry(action) {
       if (!this.$store.state.data.isNewForm) {
-        this.$store.commit('data/setDeletable', [this.$store.state.data.currentItemId]);
-        this.$store.commit('data/setPopUp', {
-          show: true,
-          header: 'Eintrag wirklich löschen?',
-          text: `Wollen sie den Eintrag "${this.valueList.title}" wirklich löschen?`,
-          icon: 'waste-bin',
-          buttonText: 'Eintrag löschen',
-          action: 'delete',
+        this.$store.dispatch('data/actionEntries', {
+          action,
+          entries: [this.$store.state.data.currentItemId]
         });
+      } else {
+        // TODO: inform user that he needs to save the form first!
       }
-    },
-    // TODO: refactor so that delete (above) and publish can have same method
-    actionEntry(published) {
-      this.$store.commit('data/setDeletable', [this.$store.state.data.currentItemId]);
-      this.$store.commit('data/setPopUp', {
-        show: true,
-        header: `Eintrag wirklich ${published ? 'entfernen' : 'veröffentlichen'}?`,
-        text: `Wollen sie den Eintrag "${this.valueList.title}" wirklich ${published ? 'entfernen' : 'veröffentlichen'}?`,
-        icon: 'waste-bin',
-        buttonText: `Eintrag ${published ? 'entfernen' : 'veröffentlichen'}`,
-        action: published ? 'offline' : 'publish',
-      });
     },
     async updateForm() {
       try {

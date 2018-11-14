@@ -45,13 +45,13 @@
             icon-size="large"
             icon="eye"
             button-style="single"
-            @clicked="publishEntries(true)"/>
+            @clicked="actionEntries('publish')"/>
           <base-button
             text="Einträge offline stellen"
             icon-size="large"
             icon="forbidden"
             button-style="single"
-            @clicked="publishEntries(false)"/>
+            @clicked="actionEntries('offline')"/>
           <base-button
             text="Einträge duplizieren"
             icon-size="large"
@@ -63,7 +63,7 @@
             icon-size="large"
             icon="waste-bin"
             button-style="single"
-            @clicked="deleteEntries"/>
+            @clicked="actionEntries('delete')"/>
         </div>
       </transition>
     </div>
@@ -131,6 +131,13 @@ export default {
     list(val) {
       this.listInt = [].concat(val);
     },
+    showCheckbox(val) {
+      // delete selected when options menu is closed
+      if (!val) {
+        // TODO: this does not update checkboxes!!
+        this.selectedMenuEntries = [];
+      }
+    },
   },
   created() {
     this.listInt = this.list;
@@ -154,20 +161,6 @@ export default {
       this.$store.commit('data/deleteParentItems');
       this.$emit('newForm');
     },
-    deleteEntries() {
-      this.$store.commit('data/setDeletable', this.selectedMenuEntries);
-      this.$store.commit('data/setPopUp', {
-        show: true,
-        header: 'Einträgeg wirklich löschen?',
-        text: 'Wollen sie die ausgewählten Einträge wirklich löschen?',
-        icon: 'waste-bin',
-        buttonText: 'Einträg löschen',
-        action: 'delete',
-      });
-      this.selectedMenuEntries = [];
-      // TODO: check if currently displayed item is one of the deleted and remove from form
-      // if necessary! (and change route)
-    },
     sortEntries(evt) {
       this.$store.dispatch('data/sortEntries', evt);
     },
@@ -181,17 +174,12 @@ export default {
       // newly created one...but dont know if we want that??
       this.$router.push(`/dashboard/item/${this.$store.state.data.currentItemId}`);
     },
-    publishEntries(value) {
-      this.$store.commit('data/setDeletable', this.selectedMenuEntries);
-      this.$store.commit('data/setPopUp', {
-        show: true,
-        header: 'Einträge veröffentlichen?',
-        text: 'Wollen Sie diese Einträge wirklich veröffentlichen',
-        icon: 'eye',
-        buttonText: 'Einträg veröffentlichen',
-        action: value ? 'publish' : 'offline',
-      });
-      this.selectedMenuEntries = [];
+    actionEntries(value) {
+      if (this.selectedMenuEntries.length) {
+        this.$store.dispatch('data/actionEntries', { action: value, entries: this.selectedMenuEntries });
+      } else {
+        // TODO: inform user that no entries were selected!
+      }
     },
   },
 };

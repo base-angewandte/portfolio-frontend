@@ -18,7 +18,7 @@ const state = {
     buttonText: '',
     action: '',
   },
-  deletableEntries: [],
+  selectedEntries: [],
   filtered: false,
   sortBy: '',
   filterType: '',
@@ -38,7 +38,9 @@ const getters = {
     return state.sidebarData.find(item => item.id === state.currentItemId);
   },
   getEntryById(state) {
-    return id => state.sidebarData.find(item => item.id === id);
+    return (id) => {
+      return state.sidebarData.find(item => item.id === id);
+    };
   },
   getLastId(state) {
     return state.sidebarData.reduce((prev, curr) => {
@@ -85,7 +87,7 @@ const mutations = {
     );
   },
   deleteSidebarItems(state) {
-    state.sidebarData = state.sidebarData.filter(item => !state.deletableEntries.includes(item.id));
+    state.sidebarData = state.sidebarData.filter(item => !state.selectedEntries.includes(item.id));
     sessionStorage.setItem('sidebarItems', JSON.stringify(state.sidebarData));
   },
   setOptions(state, val) {
@@ -150,8 +152,8 @@ const mutations = {
   setFilteredSidebarData(state, val) {
     state.sidebarDataFiltered = val || [];
   },
-  setDeletable(state, entryArr) {
-    state.deletableEntries = entryArr;
+  setSelected(state, entryArr) {
+    state.selectedEntries = entryArr;
   },
   setParentItem(state, id) {
     state.parentItems.push(id);
@@ -210,7 +212,7 @@ const actions = {
     commit('setOptions', false);
   },
   modifyEntries({ state, commit, dispatch }, { prop, value }) {
-    state.deletableEntries.forEach((e) => {
+    state.selectedEntries.forEach((e) => {
       const obj = state.sidebarData.find(o => o.id === e);
       const index = state.sidebarData.indexOf(obj);
       if (index >= 0) {
@@ -255,6 +257,31 @@ const actions = {
     commit('setFiltered', !!(state.filterExpr || state.filterType));
     commit('setFilteredSidebarData', filteredEntries);
     dispatch('sortEntries');
+  },
+  actionEntries({ commit }, { action, entries }) {
+    let actionText = 'löschen';
+    if (action === 'publish') {
+      actionText = 'veröffentlichen';
+    } else if (action === 'offline') {
+      actionText = 'entfernen';
+    }
+    commit('setSelected', entries);
+    const titles = [];
+    entries.forEach((entryId) => {
+      const entry = this.getters['data/getEntryById'](entryId);
+      if (entry && entry.title) {
+        titles.push(entry.title);
+      }
+    });
+    commit('setPopUp', {
+      show: true,
+      header: `${titles.length > 1 ? 'Einträge' : 'Eintrag'} ${actionText}?`,
+      text: `Wollen Sie ${titles.length > 1 ? 'diese Einträge' : 'diesen Eintrag'} wirklich
+          ${action === 'offline' ? 'aus Showroom' : ''} ${actionText}:<br>${titles.join(',<br>')}`,
+      icon: action === 'delete' ? 'waste-bin' : 'eye',
+      buttonText: `${titles.length > 1 ? 'Einträge' : 'Eintrag'} ${actionText}`,
+      action,
+    });
   },
 };
 

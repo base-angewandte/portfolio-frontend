@@ -11,9 +11,9 @@
       @buttonRight="popUpAction">
       <div class="sidebar-pop-up">
         <div>
-          <p class="sidebar-pop-up-text">
-            {{ $store.state.data.popUp.text }}
-          </p>
+          <p
+            class="sidebar-pop-up-text"
+            v-html="$store.state.data.popUp.text" />
         </div>
       </div>
     </base-pop-up>
@@ -81,13 +81,13 @@ export default {
       this.clearSelected();
     },
     clearSelected() {
-      this.$store.commit('data/setDeletable', []);
+      this.$store.commit('data/setSelected', []);
       this.$store.commit('data/hidePopUp');
     },
     action() {
       const { action } = this.$store.state.data.popUp;
       if (action === 'delete') {
-        const deleteCurrentlyDisplayed = this.$store.state.data.deletableEntries
+        const deleteCurrentlyDisplayed = this.$store.state.data.selectedEntries
           .includes(this.$route.params.id);
         this.$store.commit('data/deleteSidebarItems');
         if (deleteCurrentlyDisplayed) {
@@ -100,6 +100,11 @@ export default {
         this.$store.dispatch('data/modifyEntries', { prop: 'published', value: false });
       }
       this.$store.commit('data/setOptions', false);
+      this.$refs.sidebar.selectedMenuEntries = [];
+      const { view } = this.$refs;
+      if (view) {
+        this.$refs.view.updateForm();
+      }
     },
   },
 };
