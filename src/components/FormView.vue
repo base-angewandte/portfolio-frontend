@@ -269,10 +269,13 @@ export default {
       window.scrollTo(0, 0);
     },
     valueList: {
-      handler(val, oldVal) {
+      handler(val) {
         // determine if any prop has content
-        const populatedProps = Object.keys(val).filter(prop => val[prop] && val[prop].length);
-        if (populatedProps.length && oldVal.title && !this.routeChanged) {
+        const populatedProps = Object.keys(val).filter((prop) => {
+          return val[prop] && (val[prop].length || Object.keys(val[prop])
+            .filter(cprop => val[prop][cprop] && val[prop][cprop].length));
+        });
+        if (populatedProps.length && !this.routeChanged) {
           this.unsavedChanges = true;
           this.parentHasUnsaved = true;
         }
