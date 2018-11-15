@@ -118,7 +118,7 @@
       <div
         key="file-area-header"
         class="subtitle"
-        @click="extend = !extend">Angeängte Objekte und Medien</div>
+        @click="extend = !extend">Angehängte Objekte und Medien</div>
       <div
         key="file-area"
         class="file-boxes mobile-hidden">
@@ -136,15 +136,22 @@
           icon="sheet-empty"
           text="Neuen Eintrag anhängen"
           @clicked="openNewForm"/>
-        <base-drop-box
-          key="addFile"
-          :show-plus="true"
-          :box-size="{ width: '50%' }"
-          :box-ratio="'50'"
-          icon="camera"
-          text="Dateien anhängen"
-          subtext="(Click oder Drag'n Drop)"
-          @dropped="dropped($event)"/>
+        <label class="file-select">
+          <base-drop-box
+            key="addFile"
+            :show-plus="true"
+            :box-size="{ width: '100%' }"
+            :box-ratio="'50'"
+            icon="camera"
+            text="Dateien anhängen"
+            subtext="(Click oder Drag'n Drop)"
+            @dropped="dropped($event)"/>
+          <input
+            type="file"
+            multiple
+            @change="handleFileSelect">
+        </label>
+
       </div>
       <div
         key="mobile-file-area"
@@ -166,41 +173,16 @@
           icon="sheet-plus"
           title="Datei anhängen"/>
       </div>
+      <AttachmentArea
+        :key="'attachmentArea'"
+        :linked-list="linkedList"
+        :attached-list="[]"/>
     </transition-group>
-    <base-pop-up
-      :show="!!filesToUpload.length"
-      title="Dateien hochladen"
-      button-left-text="Abbrechen"
-      button-right-text="Hochladen">
-      <div class="popup-upload-area">
-        <base-upload-bar
-          v-for="(file, index) of filesToUpload"
-          :key="index"
-          :filename="file.name"/>
-      </div>
-      <base-input
-        :label="'Test1'"
-        :show-label="false"
-        placeholder="Phaidra URL hier eingeben"
-        class="files-popup-input-field"/>
-      <div class="popup-text">
-        <base-drop-down
-          :label="'Lizenz auswählen'"
-          :selected="'Wähle die Lizenz aus'"
-          :selection-list="['CC-0', 'CC-BY', 'CC-BY-SA',
-                            'CC-BY-ND', 'CC-BY-NC', 'CC-BY-NC-SA', 'CC-BY-NY-DD']"
-          :background-color="'rgb(240, 240, 240)'"
-          :fixed-width="true"
-          header-style="inline"/>
-        <base-drop-down
-          :selected="'Bilder veröffentlichen?'"
-          :selection-list="['Bilder anzeigen', 'Bilder nicht veröffentlichen']"
-          :background-color="'rgb(240, 240, 240)'"
-          :fixed-width="true"
-          label="Bilder im Showroom anzeigen?"
-          header-style="inline"/>
-      </div>
-    </base-pop-up>
+    <uploader
+      v-if="!!filesToUpload.length"
+      :file-list="filesToUpload"
+      @cancel="filesToUpload = []"
+      @success="filesToUpload = []"/>
   </div>
 </template>
 
@@ -208,32 +190,28 @@
 import {
   BaseButton,
   BaseSearch,
-  BaseDropDown,
   BaseMenuList,
   BaseMenuEntry,
   BaseBoxButton,
   BaseDropBox,
-  BasePopUp,
-  BaseInput,
-  BaseUploadBar,
 } from 'base-components';
 import 'base-components/dist/lib/base-components.min.css';
 import BaseForm from './BaseForm';
+import Uploader from './Uploader';
 import { FORM_MAPPINGS } from '../assets/data';
+import AttachmentArea from './AttachmentArea';
 
 export default {
   components: {
-    BaseUploadBar,
-    BasePopUp,
+    AttachmentArea,
     BaseButton,
     BaseSearch,
-    BaseDropDown,
     BaseMenuList,
     BaseMenuEntry,
     BaseForm,
     BaseBoxButton,
     BaseDropBox,
-    BaseInput,
+    Uploader,
   },
   data() {
     return {
@@ -250,6 +228,28 @@ export default {
       parentHasUnsaved: false,
       linkedItems: [],
       filesToUpload: [],
+      linkedList: [
+        {
+          id: '1',
+          title: 'Buch Omi',
+        },
+        {
+          id: '2',
+          title: 'Valie Export',
+        },
+        {
+          id: '3',
+          title: 'Valie Export',
+        },
+        {
+          id: '4',
+          title: 'Valie Export',
+        },
+        {
+          id: '5',
+          title: 'Valie Export',
+        },
+      ],
     };
   },
   computed: {
@@ -406,6 +406,11 @@ export default {
         // TODO: some action to actually link the items (database save!)
       }
     },
+    handleFileSelect(e) {
+      for (let i = 0; i < e.target.files.length; i += 1) {
+        this.filesToUpload.push(e.target.files[i]);
+      }
+    },
     returnToParent(id) {
       this.$store.commit('data/deleteLastParentItem');
       this.$store.dispatch('data/setCurrentItemById', id);
@@ -516,21 +521,12 @@ export default {
     border-left: $separation-line;
   }
 
-  .popup-text {
-    display: flex;
-    align-items: flex-end;
-  }
+  .file-select {
+    width: 50%;
 
-  .popup-text > div:first-of-type {
-    margin-right: 16px;
-  }
-
-  .files-popup-input-field {
-    margin-bottom: $spacing;
-  }
-
-  .popup-upload-area {
-    margin: $spacing 0;
+    & > input[type='file'] {
+      display: none;
+    }
   }
 
   @media screen and (max-width: $mobile) {

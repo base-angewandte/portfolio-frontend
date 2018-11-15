@@ -190,6 +190,14 @@ export default {
       return this.list.filter(elem => elem.size === 'half');
     },
   },
+  watch: {
+    list() {
+      console.log('list');
+    },
+    $route() {
+      console.log('route');
+    },
+  },
   methods: {
     getSizeClass(val) {
       return val && ['half', 'full'].includes(val) ? val : 'full';

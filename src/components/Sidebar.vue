@@ -219,7 +219,7 @@ export default {
 
   #menu-list {
     flex: 1 1 auto;
-    overflow-y: scroll;
+    overflow-y: auto;
   }
 
   .slide-toggle-enter-active,
