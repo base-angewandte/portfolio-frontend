@@ -361,7 +361,7 @@ export default {
       if (!this.$store.state.data.isNewForm) {
         this.$store.dispatch('data/actionEntries', {
           action,
-          entries: [this.$store.state.data.currentItemId]
+          entries: [this.$store.state.data.currentItemId],
         });
       } else {
         // TODO: inform user that he needs to save the form first!
@@ -369,8 +369,6 @@ export default {
     },
     async updateForm() {
       try {
-        // fetch entity
-        // this.axios.get('get the entity');
         const { type } = this.$store.state.data.currentItem;
         this.valueList = Object.assign({}, this.$store.state.data.currentItem, {
           type: type ? [type] : [],

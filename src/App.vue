@@ -2,7 +2,7 @@
   <div class="wrapper">
     <base-header
       :lang="'en'"
-      :active="'recherche'"
+      :active="'portfolio'"
       :profile.prop="$store.state.auth.profile"
       :emit-navigation="true"
       :urls.prop="{

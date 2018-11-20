@@ -18,7 +18,11 @@
           'base-form-field-' + getSizeClass(element.size),
           { 'base-form-field-spacing': element.size === 'half' && getClassIndex(element) }
         ]"
-        @autocomplete="fetchAutocomplete({ value: $event, name: element.name })"/>
+        @autocomplete="fetchAutocomplete({
+          value: $event,
+          name: element.name,
+          source: element.source
+      })"/>
       <base-multiline-text-input
         v-else-if="element.type === 'multiline'"
         :key="index"
@@ -52,7 +56,7 @@
         :object-prop="element.name"
         :list="dropdownLists[element.name]"
         v-model="formValues[element.name]"
-        :allow-dynamic-drop-down-entries="element.source === 'dynamic'"
+        :allow-dynamic-drop-down-entries="element.sourceType === 'dynamic'"
         :allow-multiple-entries="element.mode === 'multi'"
         :allow-unknown-entries="element.unknown"
         :class="[
@@ -61,7 +65,12 @@
           { 'base-form-field-spacing': element.size === 'half' && getClassIndex(element) }
         ]"
         @selected="$emit('selected', { value: $event && $event.length
-        ? $event[0][element.name] : null, field: element.name })"/>
+        ? $event[0][element.name] : null, field: element.name })"
+        @fetchDropDownEntries="fetchAutocomplete({
+          value: $event.value,
+          name: element.name,
+          source: element.source
+      })"/>
       <base-input
         v-else-if="element.type === 'text'"
         :key="index"
@@ -94,7 +103,7 @@
         :label="$te('form.' + element.name) ? $t('form.' + element.name) : element.name"
         :placeholder="$t('form.select') + ' '
         + ($te('form.' + element.name) ? $t('form.' + element.name) : element.name)"
-        :list="['Valie Export', 'Frida Kahlo', 'Gustav Klimt', 'Adolf Loos']"
+        :list="dropdownLists[element.name]"
         v-model="formValues[element.name]"
         class="base-form-field base-form-field-full"/>
     </template>
@@ -153,10 +162,28 @@ export default {
       },
     },
   },
+  data() {
+    return {
+      dropdownLists: {},
+    };
+  },
   computed: {
-    dropdownLists() {
+    halfElements() {
+      return this.list.filter(elem => elem.size === 'half');
+    },
+  },
+  watch: {
+    list() {
+      console.log('list');
+    },
+    $route() {
+      console.log('route');
+    },
+  },
+  created() {
+    if (this.list) {
       const obj = {};
-      this.list.filter(element => element.type === 'autocomplete' || element.type === 'chips')
+      this.list.filter(element => element.type === 'autocomplete' || element.type === 'chips' || element.type === 'chips-below')
         .forEach((autoField) => {
           if (autoField.name === 'keywords') {
             this.$set(obj, autoField.name, [
@@ -184,19 +211,8 @@ export default {
             this.$set(obj, autoField.name, []);
           }
         });
-      return obj;
-    },
-    halfElements() {
-      return this.list.filter(elem => elem.size === 'half');
-    },
-  },
-  watch: {
-    list() {
-      console.log('list');
-    },
-    $route() {
-      console.log('route');
-    },
+      this.dropdownLists = obj;
+    }
   },
   methods: {
     getSizeClass(val) {
@@ -205,16 +221,21 @@ export default {
     getClassIndex(val) {
       return this.halfElements.indexOf(val) % 2;
     },
-    async fetchAutocomplete(item) {
-      if (!item.value || item.value.length > 3) {
-        const result = await axios.get(`http://localhost:9900/fetchAutocomplete/${item.name.toLowerCase()}`, {
+    async fetchAutocomplete({ value, name, source }) {
+      // TODO: this is currently giving a error for certain types (axios library buildURL.js)
+      // but not sure if worth fixing hopefully will disappear with the real thing
+      // UPDATE: for the artist field e.g.
+      // TODO: use time out function (in base component or here?)
+      if (!value || value.length > 3) {
+        const result = await axios.get(source, {
           params:
             {
-              string: item.value,
+              string: value,
+              resource: 'viaf',
             },
         });
-        if (this.dropdownLists && this.dropdownLists[item.name]) {
-          this.$set(this.dropdownLists, [item.name], result.data);
+        if (this.dropdownLists && this.dropdownLists[name]) {
+          this.$set(this.dropdownLists, [name], result.data);
         }
       }
     },

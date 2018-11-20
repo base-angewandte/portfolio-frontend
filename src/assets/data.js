@@ -78,6 +78,7 @@ module.exports = {
         name: 'title',
         type: 'autocomplete',
         size: 'half',
+        source: 'http://localhost:9900/fetchAutocomplete/title',
       },
       {
         name: 'subtitle',
@@ -88,7 +89,8 @@ module.exports = {
         name: 'type',
         type: 'chips',
         mode: 'single',
-        source: 'cv',
+        sourceType: 'static',
+        source: 'http://localhost:9900/api/type',
         unknown: false,
         size: 'full',
       },
@@ -102,7 +104,8 @@ module.exports = {
       {
         name: 'keywords',
         type: 'chips',
-        source: 'static',
+        sourceType: 'static',
+        source: 'http://localhost:9900/api/keywords',
         unknown: true,
         mode: 'multi',
         size: 'full',
@@ -118,20 +121,23 @@ module.exports = {
       {
         name: 'authors',
         type: 'chips',
-        source: 'dynamic',
+        sourceType: 'dynamic',
+        source: 'http://localhost:9900/fetchAutocomplete/authors',
         unknown: true,
         mode: 'multi',
         size: 'full',
       },
       {
         name: 'erschienen in',
-        type: 'text',
+        type: 'autocomplete',
+        source: 'http://localhost:9900/fetchAutocomplete/journal',
         size: 'full',
       },
       {
         name: 'editors',
         type: 'chips',
-        source: 'dynamic',
+        sourceType: 'dynamic',
+        source: 'http://localhost:9900/fetchAutocomplete/author',
         unknown: true,
         mode: 'multi',
         size: 'full',
@@ -139,7 +145,8 @@ module.exports = {
       {
         name: 'publisher',
         type: 'chips',
-        source: 'dynamic',
+        sourceType: 'dynamic',
+        source: 'http://localhost:9900/fetchAutocomplete/author',
         unknown: true,
         mode: 'multi',
         size: 'full',
@@ -147,6 +154,7 @@ module.exports = {
       {
         name: 'city',
         type: 'autocomplete',
+        source: 'http://localhost:9900/fetchAutocomplete/city',
         size: 'half',
       },
       {
@@ -158,17 +166,19 @@ module.exports = {
       {
         name: 'ISBN',
         type: 'autocomplete',
+        source: 'http://localhost:9900/fetchAutocomplete/doi',
         size: 'half',
       },
       {
         name: 'DOI',
         type: 'autocomplete',
+        source: 'http://localhost:9900/fetchAutocomplete/doi',
         size: 'half',
       },
       {
         name: 'Participants',
         type: 'chips-below',
-        source: 'dynamic',
+        sourceType: 'dynamic',
         unknown: true,
         mode: 'multi',
         size: 'full',
@@ -178,7 +188,7 @@ module.exports = {
       {
         name: 'artist',
         type: 'chips',
-        source: 'dynamic',
+        sourceType: 'dynamic',
         unknown: true,
         mode: 'multi',
         size: 'full',
@@ -186,7 +196,7 @@ module.exports = {
       {
         name: 'participants',
         type: 'chips-below',
-        source: 'dynamic',
+        sourceType: 'dynamic',
         unknown: true,
         mode: 'multi',
         size: 'full',
@@ -207,7 +217,7 @@ module.exports = {
       {
         name: 'director',
         type: 'chips',
-        source: 'dynamic',
+        sourceType: 'dynamic',
         unknown: true,
         mode: 'multi',
         size: 'full',
@@ -215,7 +225,7 @@ module.exports = {
       {
         name: 'participants',
         type: 'chips-below',
-        source: 'dynamic',
+        sourceType: 'dynamic',
         unknown: true,
         mode: 'multi',
         size: 'full',
@@ -241,7 +251,7 @@ module.exports = {
       {
         name: 'artist',
         type: 'chips',
-        source: 'dynamic',
+        sourceType: 'dynamic',
         unknown: true,
         mode: 'multi',
         size: 'full',
@@ -249,7 +259,7 @@ module.exports = {
       {
         name: 'curator',
         type: 'chips',
-        source: 'dynamic',
+        sourceType: 'dynamic',
         unknown: true,
         mode: 'multi',
         size: 'full',
@@ -257,7 +267,7 @@ module.exports = {
       {
         name: 'participants',
         type: 'chips-below',
-        source: 'dynamic',
+        sourceType: 'dynamic',
         unknown: true,
         mode: 'multi',
         size: 'full',

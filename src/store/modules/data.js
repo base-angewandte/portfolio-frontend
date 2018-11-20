@@ -174,7 +174,7 @@ const actions = {
   async fetchFormExtension(context, type) {
     const commonType = await Object.keys(DATA.TYPE_MAPPINGS)
       .find(key => DATA.TYPE_MAPPINGS[key].includes(type));
-    return DATA.FORM_MAPPINGS[commonType];
+    return DATA.FORM_MAPPINGS[commonType] || [];
   },
   setCurrentItemById({ commit }, id) {
     const entry = this.getters['data/getEntryById'](id);
