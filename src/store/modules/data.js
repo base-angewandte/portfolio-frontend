@@ -38,9 +38,7 @@ const getters = {
     return state.sidebarData.find(item => item.id === state.currentItemId);
   },
   getEntryById(state) {
-    return (id) => {
-      return state.sidebarData.find(item => item.id === id);
-    };
+    return id => state.sidebarData.find(item => item.id === id);
   },
   getLastId(state) {
     return state.sidebarData.reduce((prev, curr) => {

@@ -23,7 +23,7 @@
             :icon="'options-menu'"
             icon-size="small"
             icon-position="left"
-            @clicked="$store.commit('data/setOptions', !showCheckbox)"/>
+            @clicked="toggleSidebarOptions"/>
         </div>
         <base-drop-down
           :placeholder="'Sortieren nach'"
@@ -71,6 +71,7 @@
     <base-menu-list
       id="menu-list"
       key="menu-list"
+      ref="menuList"
       :selected="showCheckbox"
       :list="listInt"
       :active-entry="activeEntry"
@@ -180,6 +181,10 @@ export default {
       } else {
         // TODO: inform user that no entries were selected!
       }
+    },
+    toggleSidebarOptions() {
+      this.$refs.menuList.entryProps.forEach(entry => this.$set(entry, 'selected', false));
+      this.$store.commit('data/setOptions', !this.showCheckbox);
     },
   },
 };

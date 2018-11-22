@@ -97,7 +97,8 @@
       :list="formList"
       :form-values="valueList"
       class="form"
-      @selected="changed"/>
+      @selected="changed"
+      @valuesChanged="valuesChanged($event)"/>
     <transition-group
       name="slide-fade2">
       <div
@@ -113,7 +114,8 @@
           key="extended-form"
           :list="formExtended"
           :form-values="extendedValueList"
-          class="form" />
+          class="form"
+          @valuesChanged="valuesChanged($event, 'data')"/>
       </div>
       <div
         key="file-area-header"
@@ -219,6 +221,7 @@ export default {
       extend: false,
       formList: FORM_MAPPINGS.common,
       valueList: {},
+      valueListCopy: {},
       formExtended: [],
       extendedValueList: {},
       showCheckbox: false,
@@ -258,56 +261,17 @@ export default {
     },
   },
   watch: {
-    $route(to) {
+    async $route(to) {
       this.routeChanged = true;
       if (to.params.id) {
         this.resetForm();
-        this.updateForm();
+        await this.updateForm();
       } else {
-        this.resetForm();
+        await this.resetForm();
       }
       window.scrollTo(0, 0);
-    },
-    valueList: {
-      handler(val) {
-        // determine if any prop has content
-        const populatedProps = Object.keys(val)
-          .filter(prop => val[prop] && (val[prop].length || Object.keys(val[prop])
-            .filter(cprop => val[prop][cprop] && val[prop][cprop].length)));
-        if (populatedProps.length && !this.routeChanged) {
-          this.unsavedChanges = true;
-          this.parentHasUnsaved = true;
-        }
-      },
-      deep: true,
-    },
-    extendedValueList: {
-      handler(val, oldVal) {
-        const formVal = {};
-        const itemVal = {};
-        if (val) {
-          Object.keys(val).forEach((key) => {
-            if (val[key]) {
-              this.$set(formVal, key, val[key]);
-            }
-          });
-        }
-        const item = this.$store.state.data.currentItem.data;
-        if (item) {
-          Object.keys(item).forEach((key) => {
-            if (item[key]) {
-              this.$set(itemVal, key, item[key]);
-            }
-          });
-        }
-        const populatedProps = Object.keys(val).filter(prop => val[prop] && val[prop].length);
-        if (populatedProps.length && Object.keys(oldVal).length
-          && !(JSON.stringify(formVal) === JSON.stringify(itemVal))) {
-          this.unsavedChanges = true;
-        }
-        this.routeChanged = false;
-      },
-      deep: true,
+      this.unsavedChanges = false;
+      this.routeChanged = false;
     },
   },
   async created() {
@@ -329,6 +293,8 @@ export default {
   mounted() {
     this.unsavedChanges = false;
     this.parentHasUnsaved = false;
+    this.routeChanged = true;
+    this.valueListCopy = Object.assign({}, this.valueList);
   },
   methods: {
     async changed(evt) {
@@ -350,6 +316,7 @@ export default {
         }
         this.unsavedChanges = false;
         this.parentHasUnsaved = false;
+        this.valueListCopy = Object.assign({}, this.valueList);
         this.$router.push(`/entry/${this.$store.state.data.currentItemId}`);
 
         this.$emit('saveForm');
@@ -373,6 +340,7 @@ export default {
         this.valueList = Object.assign({}, this.$store.state.data.currentItem, {
           type: type ? [type] : [],
         });
+        this.valueListCopy = Object.assign({}, this.valueList);
         this.extendedValueList = Object.assign({}, this.$store.state.data.currentItem.data);
         this.formType = type || '';
         if (this.formType) {
@@ -416,10 +384,31 @@ export default {
     },
     resetForm() {
       this.valueList = {};
+      this.valueListCopy = Object.assign({}, this.valueList);
       this.extendedValueList = {};
       this.unsavedChanges = false;
       this.parentHasUnsaved = false;
       this.formType = '';
+    },
+    valuesChanged(val, prop) {
+      let dataDiff = false;
+      // update the value lists with the provided changes
+      if (prop) {
+        dataDiff = JSON.stringify(val) !== JSON.stringify(this.extendedValueList);
+        this.extendedValueList = Object.assign({}, this.extendedValueList, val);
+        // this.$set(this.valueList, prop, val);
+      } else {
+        this.valueList = Object.assign({}, this.valueList, val);
+        dataDiff = JSON.stringify(this.valueListCopy) !== JSON.stringify(this.valueList);
+      }
+      this.unsavedChanges = !this.routeChanged
+        && (JSON.stringify(this.valueListCopy) !== JSON.stringify(this.valueList)
+          || dataDiff);
+      // special hack to reset route change after page reload
+      if (this.routeChanged
+        && JSON.stringify(this.valueListCopy) === JSON.stringify(this.valueList)) {
+        this.routeChanged = false;
+      }
     },
   },
 };
