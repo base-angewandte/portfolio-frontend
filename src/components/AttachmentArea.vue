@@ -27,7 +27,7 @@
 import { BaseImageBox } from 'base-components';
 
 export default {
-  components:{
+  components: {
     BaseImageBox,
   },
   props: {
