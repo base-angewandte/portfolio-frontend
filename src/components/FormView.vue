@@ -97,7 +97,8 @@
       :list="formList"
       :form-values="valueList"
       class="form"
-      @selected="changed"/>
+      @selected="changed"
+      @valuesChanged="valuesChanged($event)"/>
     <transition-group
       name="slide-fade2">
       <div
@@ -112,8 +113,9 @@
         <base-form
           key="extended-form"
           :list="formExtended"
-          :form-values="extendedValueList"
-          class="form" />
+          :form-values="valueList.data"
+          class="form"
+          @valuesChanged="valuesChanged($event, 'data')"/>
       </div>
       <div
         key="file-area-header"
@@ -219,13 +221,12 @@ export default {
       extend: false,
       formList: FORM_MAPPINGS.common,
       valueList: {},
+      valueListCopy: {},
       formExtended: [],
-      extendedValueList: {},
       showCheckbox: false,
       showFormMenu: true,
       unsavedChanges: false,
       routeChanged: false,
-      parentHasUnsaved: false,
       linkedItems: [],
       filesToUpload: [],
       linkedList: [
@@ -258,59 +259,31 @@ export default {
     },
   },
   watch: {
-    $route(to) {
+    async $route(to) {
       this.routeChanged = true;
       if (to.params.id) {
-        this.resetForm();
-        this.updateForm();
+        await this.resetForm();
+        await this.updateForm();
       } else {
-        this.resetForm();
+        await this.resetForm();
       }
       window.scrollTo(0, 0);
+      this.routeChanged = false;
     },
     valueList: {
       handler(val) {
-        // determine if any prop has content
+        // determine if any prop has content (necessary for new form)
         const populatedProps = Object.keys(val)
-          .filter(prop => val[prop] && (val[prop].length || Object.keys(val[prop])
-            .filter(cprop => val[prop][cprop] && val[prop][cprop].length)));
-        if (populatedProps.length && !this.routeChanged) {
-          this.unsavedChanges = true;
-          this.parentHasUnsaved = true;
-        }
-      },
-      deep: true,
-    },
-    extendedValueList: {
-      handler(val, oldVal) {
-        const formVal = {};
-        const itemVal = {};
-        if (val) {
-          Object.keys(val).forEach((key) => {
-            if (val[key]) {
-              this.$set(formVal, key, val[key]);
-            }
-          });
-        }
-        const item = this.$store.state.data.currentItem.data;
-        if (item) {
-          Object.keys(item).forEach((key) => {
-            if (item[key]) {
-              this.$set(itemVal, key, item[key]);
-            }
-          });
-        }
-        const populatedProps = Object.keys(val).filter(prop => val[prop] && val[prop].length);
-        if (populatedProps.length && Object.keys(oldVal).length
-          && !(JSON.stringify(formVal) === JSON.stringify(itemVal))) {
-          this.unsavedChanges = true;
-        }
-        this.routeChanged = false;
+          .filter(prop => (val[prop] && val[prop].length)
+            || Object.keys(val[prop]).find(cprop => val[prop][cprop] && val[prop][cprop].length));
+        this.unsavedChanges = !!populatedProps.length && !this.routeChanged
+          && JSON.stringify(val) !== JSON.stringify(this.valueListCopy);
       },
       deep: true,
     },
   },
   async created() {
+    this.routeChanged = true;
     if (window.innerWidth <= 640) {
       this.showFormMenu = false;
     }
@@ -318,17 +291,17 @@ export default {
     if (entryId) {
       const entryExists = await this.$store.dispatch('data/setCurrentItemById', entryId);
       if (entryExists) {
-        this.updateForm();
+        await this.updateForm();
       } else {
         // TODO: create a not found info (page?) for user!!
         // (redirect to new form (for now at least))
         this.$router.push('/new');
       }
     }
+    this.routeChanged = false;
   },
   mounted() {
     this.unsavedChanges = false;
-    this.parentHasUnsaved = false;
   },
   methods: {
     async changed(evt) {
@@ -336,12 +309,13 @@ export default {
       if (field === 'type') {
         this.formType = value;
         this.formExtended = await this.$store.dispatch('data/fetchFormExtension', value);
-        this.extendedValueList = {};
+        // TODO: find logic to keep as many data as possible not just empty extension!
+        this.$set(this.valueList, 'data', {});
       }
     },
     saveForm() {
       if (this.valueList.title) {
-        const data = Object.assign({}, this.extendedValueList);
+        const data = Object.assign({}, this.valueList.data);
         if (!this.$route.params.id) {
           // TODO: check somewhere if the entry should be linked to a parent
           this.$store.dispatch('data/addSidebarItem', Object.assign({}, this.valueList, { data }));
@@ -349,7 +323,8 @@ export default {
           this.$store.dispatch('data/updateEntry', Object.assign({}, this.valueList, { data }));
         }
         this.unsavedChanges = false;
-        this.parentHasUnsaved = false;
+        // this (JSON...) is necessary to destroy any links between the two objects...
+        this.valueListCopy = Object.assign({}, JSON.parse(JSON.stringify(this.valueList)));
         this.$router.push(`/entry/${this.$store.state.data.currentItemId}`);
 
         this.$emit('saveForm');
@@ -372,8 +347,10 @@ export default {
         const { type } = this.$store.state.data.currentItem;
         this.valueList = Object.assign({}, this.$store.state.data.currentItem, {
           type: type ? [type] : [],
+          data: Object.assign({}, this.$store.state.data.currentItem.data),
         });
-        this.extendedValueList = Object.assign({}, this.$store.state.data.currentItem.data);
+        // this (JSON...) is necessary to destroy any links between the two objects...
+        this.valueListCopy = Object.assign({}, JSON.parse(JSON.stringify(this.valueList)));
         this.formType = type || '';
         if (this.formType) {
           this.formExtended = await this.$store.dispatch('data/fetchFormExtension', this.formType);
@@ -416,10 +393,17 @@ export default {
     },
     resetForm() {
       this.valueList = {};
-      this.extendedValueList = {};
+      this.valueListCopy = {};
       this.unsavedChanges = false;
-      this.parentHasUnsaved = false;
       this.formType = '';
+    },
+    valuesChanged(val, prop) {
+      // update the value lists with the provided changes
+      if (prop) {
+        this.$set(this.valueList, prop, val);
+      } else {
+        this.valueList = Object.assign({}, val);
+      }
     },
   },
 };

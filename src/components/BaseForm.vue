@@ -12,7 +12,7 @@
         + ($te('form.' + element.name) ? $t('form.' + element.name) : element.name)"
         :list="dropdownLists[element.name]"
         :object-prop="element.name.toLowerCase()"
-        v-model="formValues[element.name]"
+        v-model="formValuesInt[element.name]"
         :class="[
           'base-form-field',
           'base-form-field-' + getSizeClass(element.size),
@@ -30,15 +30,15 @@
         :label="$te('form.' + element.name) ? $t('form.' + element.name) : element.name"
         :placeholder="$t('form.write') + ' '
         + ($te('form.' + element.name) ? $t('form.' + element.name) : element.name)"
-        :input="formValues[element.name]"
+        :input="formValuesInt[element.name]"
         class="base-form-field base-form-field-full"
         @textInput="addType(element, $event)">
         <template
           v-if="element.setType">
           <!-- TODO: replace hardcoded types!  -->
           <base-drop-down
-            :selected="formValues[element.name] && formValues[element.name].type
-            ? formValues[element.name].type : 'Wähle Textart'"
+            :selected="formValuesInt[element.name] && formValuesInt[element.name].type
+            ? formValuesInt[element.name].type : 'Wähle Textart'"
             :selection-list="[
               'Beschreibung',
               'Ausstellungseinladung',
@@ -55,7 +55,7 @@
         :label="$te('form.' + element.name) ? $t('form.' + element.name) : element.name"
         :object-prop="element.name"
         :list="dropdownLists[element.name]"
-        v-model="formValues[element.name]"
+        v-model="formValuesInt[element.name]"
         :allow-dynamic-drop-down-entries="element.sourceType === 'dynamic'"
         :allow-multiple-entries="element.mode === 'multi'"
         :allow-unknown-entries="element.unknown"
@@ -64,6 +64,7 @@
           'base-form-field-' + getSizeClass(element.size),
           { 'base-form-field-spacing': element.size === 'half' && getClassIndex(element) }
         ]"
+        :draggable="true"
         @selected="$emit('selected', { value: $event && $event.length
         ? $event[0][element.name] : null, field: element.name })"
         @fetchDropDownEntries="fetchAutocomplete({
@@ -78,7 +79,7 @@
         :placeholder="$t('form.select') + ' '
         + ($te('form.' + element.name) ? $t('form.' + element.name) : element.name)"
         :id="index"
-        v-model="formValues[element.name]"
+        v-model="formValuesInt[element.name]"
         :class="[
           'base-form-field',
           'base-form-field-' + getSizeClass(element.size),
@@ -92,7 +93,7 @@
         + ($te('form.' + element.name) ? $t('form.' + element.name) : element.name)"
         :id="index"
         :type="element.dateType"
-        v-model="formValues[element.name]"
+        v-model="formValuesInt[element.name]"
         :class="[
           'base-form-field',
           'base-form-field-' + getSizeClass(element.size),
@@ -104,7 +105,7 @@
         :placeholder="$t('form.select') + ' '
         + ($te('form.' + element.name) ? $t('form.' + element.name) : element.name)"
         :list="dropdownLists[element.name]"
-        v-model="formValues[element.name]"
+        v-model="formValuesInt[element.name]"
         class="base-form-field base-form-field-full"/>
     </template>
   </div>
@@ -140,31 +141,14 @@ export default {
     formValues: {
       type: Object,
       default() {
-        const obj = {};
-        if (this.list.length) {
-          this.list.forEach((field) => {
-            if (field.addType) {
-              this.$set(obj, field.name, {
-                type: null,
-              });
-            } else {
-              let initial = '';
-              if (['chips-below', 'chips'].includes(field.type)) {
-                initial = [];
-              } else if (['date', 'multi'].includes(field.type)) {
-                initial = {};
-              }
-              this.$set(obj, field.name, initial);
-            }
-          });
-        }
-        return obj;
+        return {};
       },
     },
   },
   data() {
     return {
       dropdownLists: {},
+      formValuesInt: {},
     };
   },
   computed: {
@@ -173,11 +157,21 @@ export default {
     },
   },
   watch: {
-    list() {
-      console.log('list');
-    },
     $route() {
-      console.log('route');
+      this.setFormValues(this.formValues);
+    },
+    formValuesInt: {
+      handler(val) {
+        if (JSON.stringify(this.formValues) !== JSON.stringify(val)) {
+          this.$emit('valuesChanged', this.formValuesInt);
+        }
+      },
+      deep: true,
+    },
+    formValues(val) {
+      if (JSON.stringify(this.formValuesInt) !== JSON.stringify(val)) {
+        this.setFormValues(val);
+      }
     },
   },
   created() {
@@ -212,6 +206,7 @@ export default {
           }
         });
       this.dropdownLists = obj;
+      this.setFormValues(this.formValues);
     }
   },
   methods: {
@@ -241,10 +236,33 @@ export default {
     },
     addType(val, text) {
       if (val.setType) {
-        this.$set(this.formValues, val.name, Object.assign({}, { type: '' }, this.formValues[val.name], text));
+        this.$set(this.formValuesInt, val.name, Object.assign({}, { type: '' }, this.formValues[val.name], text));
       } else {
-        this.$set(this.formValues, val.name, text);
+        this.$set(this.formValuesInt, val.name, text);
       }
+    },
+    setFormValues(val) {
+      const obj = {};
+      if (this.list.length) {
+        this.list.forEach((field) => {
+          if (val[field.name]) {
+            this.$set(obj, field.name, val[field.name]);
+          } else if (field.setType) {
+            this.$set(obj, field.name, {
+              type: null,
+            });
+          } else {
+            let initial = '';
+            if (['chips-below', 'chips'].includes(field.type)) {
+              initial = [];
+            } else if (['date'].includes(field.type)) {
+              initial = {};
+            }
+            this.$set(obj, field.name, initial);
+          }
+        });
+      }
+      this.formValuesInt = Object.assign({}, val, obj);
     },
   },
 };
