@@ -206,6 +206,7 @@ export default {
           }
         });
       this.dropdownLists = obj;
+      this.setFormValues(this.formValues);
     }
   },
   methods: {
