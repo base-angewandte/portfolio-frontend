@@ -182,9 +182,9 @@ const actions = {
     return !!entry;
   },
   addSidebarItem({ commit, dispatch }, obj) {
-    const type = obj.type || '';
+    const type = obj.type && obj.type.length ? obj.type : '';
     const newItem = Object.assign({}, obj, {
-      type: typeof type === 'object' && type ? type[0].type : type,
+      type: typeof type === 'object' ? type[0].type : type,
       id: (parseInt(this.getters['data/getLastId'], 10) + 1).toString(),
     });
     commit('addSidebarItem', newItem);
