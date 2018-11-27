@@ -59,6 +59,8 @@
         :allow-dynamic-drop-down-entries="element.sourceType === 'dynamic'"
         :allow-multiple-entries="element.mode === 'multi'"
         :allow-unknown-entries="element.unknown"
+        :always-linked="element.sourceType === 'static'"
+        :identifier="element.sourceType === 'dynamic' ? 'uuid' : ''"
         :class="[
           'base-form-field',
           'base-form-field-' + getSizeClass(element.size),
@@ -105,6 +107,7 @@
         :placeholder="$t('form.select') + ' '
         + ($te('form.' + element.name) ? $t('form.' + element.name) : element.name)"
         :list="dropdownLists[element.name]"
+        :allow-unknown-entries="true"
         v-model="formValuesInt[element.name]"
         class="base-form-field base-form-field-full"/>
     </template>

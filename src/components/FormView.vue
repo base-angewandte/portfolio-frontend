@@ -26,20 +26,12 @@
           id="form-back-button"
           :class="['form-button', 'mobile-elements', { 'form-button-child' : parent }]">
           <base-button
-            v-if="!unsavedChanges"
-            text="Zurück"
-            icon-size="small"
-            icon="arrow-left"
-            button-style="row"
-            class="form-button-inner"
-            @clicked="$store.commit('data/setNewForm' ,false)"/>
-          <base-button
-            v-else
-            text="Abbrechen"
+            :text="unsavedChanges ? 'Abbrechen' : 'Zurück'"
+            :icon="unsavedChanges ? '' : 'arrow-left'"
             icon-size="small"
             button-style="row"
             class="form-button-inner"
-            @clicked="$store.commit('data/setNewForm' ,false)"/>
+            @clicked="returnFromForm"/>
         </div>
         <div
           id="form-save-button"
@@ -130,7 +122,9 @@
           :box-size="{ width: '25%' }"
           icon="camera"
           text="Vorhandenen Eintrag hinzufügen"
-          subtext="(Click oder Drag'n Drop)"/>
+          subtext="(Click oder Drag'n Drop)"
+          @dropped="dropped($event)"
+          @clicked="showEntryPopUp = true"/>
         <base-box-button
           key="addNew"
           :show-plus="true"
@@ -185,6 +179,23 @@
       :file-list="filesToUpload"
       @cancel="filesToUpload = []"
       @success="filesToUpload = []"/>
+    <BasePopUp
+      :show="showEntryPopUp"
+      title="Select Entries to Link"
+      button-right-text="Link Selected"
+      @buttonLeft="showEntryPopUp = false"
+      @buttonRight="linkEntries(selectedEntries)">
+      <div class="menu-wrapper">
+        <!-- TODO: sidebar functionality!!! (filter, sort) -->
+        <Sidebar
+          :select-active="true"
+          :options-visible="false"
+          :new-enabled="false"
+          :height="'62vh'"
+          class="menu"
+          @selectedChanged="selectedEntries = [].concat($event)"/>
+      </div>
+    </BasePopUp>
   </div>
 </template>
 
@@ -196,15 +207,19 @@ import {
   BaseMenuEntry,
   BaseBoxButton,
   BaseDropBox,
+  BasePopUp,
 } from 'base-components';
 import 'base-components/dist/lib/base-components.min.css';
 import BaseForm from './BaseForm';
 import Uploader from './Uploader';
 import { FORM_MAPPINGS } from '../assets/data';
 import AttachmentArea from './AttachmentArea';
+import Sidebar from './Sidebar';
 
 export default {
   components: {
+    Sidebar,
+    BasePopUp,
     AttachmentArea,
     BaseButton,
     BaseSearch,
@@ -229,26 +244,12 @@ export default {
       routeChanged: false,
       linkedItems: [],
       filesToUpload: [],
+      showEntryPopUp: false,
+      selectedEntries: [],
       linkedList: [
         {
           id: '1',
           title: 'Buch Omi',
-        },
-        {
-          id: '2',
-          title: 'Valie Export',
-        },
-        {
-          id: '3',
-          title: 'Valie Export',
-        },
-        {
-          id: '4',
-          title: 'Valie Export',
-        },
-        {
-          id: '5',
-          title: 'Valie Export',
         },
       ],
     };
@@ -280,6 +281,9 @@ export default {
           && JSON.stringify(val) !== JSON.stringify(this.valueListCopy);
       },
       deep: true,
+    },
+    showEntryPopUp() {
+      this.selectedEntries = [];
     },
   },
   async created() {
@@ -317,7 +321,9 @@ export default {
       if (this.valueList.title) {
         const data = Object.assign({}, this.valueList.data);
         if (!this.$route.params.id) {
-          // TODO: check somewhere if the entry should be linked to a parent
+          // TODO: check somewhere if the entry should be linked to a parent and
+          // a) link to parent entry b) save to database
+          // --> do this.linkEntries(this.$store.data.currentItemId)
           this.$store.dispatch('data/addSidebarItem', Object.assign({}, this.valueList, { data }));
         } else {
           this.$store.dispatch('data/updateEntry', Object.assign({}, this.valueList, { data }));
@@ -371,14 +377,8 @@ export default {
         this.filesToUpload.push(e.dataTransfer.files[i]);
       }
       if (e.dataTransfer.items) {
-        const linkedArr = [];
         const id = e.dataTransfer.getData('text/plain');
-        if (!linkedArr.find(item => item.id === id)) {
-          // TODO: do i actually need complete object or would id also be sufficient
-          const linkedElement = this.$store.getters['data/getEntryById'](id);
-          linkedArr.push(linkedElement);
-        }
-        // TODO: some action to actually link the items (database save!)
+        this.linkEntries([id]);
       }
     },
     handleFileSelect(e) {
@@ -403,6 +403,27 @@ export default {
         this.$set(this.valueList, prop, val);
       } else {
         this.valueList = Object.assign({}, val);
+      }
+    },
+    async linkEntries(val) {
+      // TODO communicate this to database!
+      // also linked entries should actually be connected to the entry at hand not hardcoded
+      // --> should be done in store!!!
+      await val.forEach((entryId) => {
+        const entry = this.$store.getters['data/getEntryById'](entryId);
+        if (!this.linkedList.map(e => e.id).includes(entryId)) {
+          this.linkedList.unshift(entry);
+        } else {
+          // TODO: save and inform user which entries were already linked and not added again
+        }
+      });
+      this.showEntryPopUp = false;
+    },
+    returnFromForm() {
+      if (this.parent) {
+        this.returnToParent(this.parent.id);
+      } else {
+        this.$router.push('/');
       }
     },
   },
@@ -509,6 +530,11 @@ export default {
     & > input[type='file'] {
       display: none;
     }
+  }
+
+  .menu-wrapper {
+    padding: 0 $spacing $spacing;
+    background-color: rgb(240, 240, 240);
   }
 
   @media screen and (max-width: $mobile) {

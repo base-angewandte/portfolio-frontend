@@ -21,6 +21,8 @@
       ref="sidebar"
       :new-form="$store.state.data.isNewForm"
       :class="['sidebar', { 'sidebar-full': !showForm }]"
+      @sort="$store.dispatch('data/sortEntries', $event)"
+      @filter="$store.dispatch('data/filterEntries', $event)"
       @newForm="createNewForm"
       @showEntry="fetchEntryData"/>
     <div
@@ -67,6 +69,8 @@ export default {
       this.$router.push('/new');
     },
     fetchEntryData(item) {
+      this.$store.commit('data/setCurrentItem', item);
+      this.$store.commit('data/deleteParentItems');
       this.showForm = true;
       this.$router.push(`/entry/${item.id}`);
     },

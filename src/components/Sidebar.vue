@@ -1,11 +1,13 @@
 <template>
   <div
     id="menu-sidebar"
+    :style="calcStyle"
     class="mobile-hidden">
 
     <div class="sidebar-head">
       <div class="base-row">
         <base-button
+          v-if="newEnabled"
           :active="$store.state.data.isNewForm"
           :text="$t('new')"
           icon="sheet-plus"
@@ -17,7 +19,9 @@
           @input="filterEntries($event, 'title')"/>
       </div>
       <div class="options-row">
-        <div class="options">
+        <div
+          v-if="optionsVisible"
+          class="options">
           <base-button
             :text="'Optionen'"
             :icon="'options-menu'"
@@ -72,7 +76,7 @@
       id="menu-list"
       key="menu-list"
       ref="menuList"
-      :selected="showCheckbox"
+      :selected="selectActive || showCheckbox"
       :list="listInt"
       :active-entry="activeEntry"
       @clicked="showEntry"
@@ -95,6 +99,24 @@ export default {
     BaseButton,
     BaseDropDown,
     BaseSearch,
+  },
+  props: {
+    optionsVisible: {
+      type: Boolean,
+      default: true,
+    },
+    newEnabled: {
+      type: Boolean,
+      default: true,
+    },
+    selectActive: {
+      type: Boolean,
+      default: false,
+    },
+    height: {
+      type: String,
+      default: '',
+    },
   },
   data() {
     return {
@@ -127,6 +149,9 @@ export default {
         return [].concat(this.$store.getters['data/getSidebarData']);
       },
     },
+    calcStyle() {
+      return this.height ? { height: this.height } : {};
+    },
   },
   watch: {
     list(val) {
@@ -145,8 +170,6 @@ export default {
   },
   methods: {
     showEntry(index) {
-      this.$store.commit('data/setCurrentItem', this.list[index]);
-      this.$store.commit('data/deleteParentItems');
       this.$emit('showEntry', this.list[index]);
     },
     selectEntry(evt) {
@@ -156,6 +179,7 @@ export default {
         this.selectedMenuEntries = this.selectedMenuEntries
           .filter(entry => entry !== this.list[evt.index].id);
       }
+      this.$emit('selectedChanged', this.selectedMenuEntries);
     },
     getNewForm() {
       this.$store.commit('data/setCurrentItem', {});
@@ -163,10 +187,10 @@ export default {
       this.$emit('newForm');
     },
     sortEntries(evt) {
-      this.$store.dispatch('data/sortEntries', evt);
+      this.$emit('sort', evt);
     },
     filterEntries(val, type) {
-      this.$store.dispatch('data/filterEntries', { val, type });
+      this.$emit('filter', { val, type });
     },
     duplicateEntries() {
       this.$store.dispatch('data/duplicateEntries', this.selectedMenuEntries);

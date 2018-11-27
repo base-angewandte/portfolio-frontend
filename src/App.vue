@@ -12,12 +12,31 @@
         logout:'/portfolio/logout/'}"
       @navigate="navigate($event.detail[0])" />
     <router-view />
+    <base-footer
+      :base-url="linkUrl"
+      :lang="lang"
+      :logged-in="$store.state.isAuthenticated"
+      :emit-navigation="true"
+      :urls.prop="{
+        de:'/recherche/de/',
+        en:'/recherche/en/',
+        login:'/recherche/login/',
+        logout:'/recherche/logout/'}"
+      @navigate="navigate($event.detail[0])" />
   </div>
 </template>
 
 <script>
 export default {
   name: 'App',
+  computed: {
+    linkUrl() {
+      return 'replace this at some point';
+    },
+    lang() {
+      return 'get lang stored in store here';
+    },
+  },
   methods: {
     async navigate(val) {
       console.log(val);

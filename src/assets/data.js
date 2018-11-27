@@ -14,7 +14,10 @@ module.exports = {
       },
       keywords: ['Schmerz', 'Leid'],
       data: {
-        artist: ['Susanna Eva Gartmayer'],
+        artist: [{
+          uuid: '1',
+          artist: 'Susanna Eva Gartmayer',
+        }],
       },
       shared: false,
       error: false,
@@ -31,7 +34,10 @@ module.exports = {
         },
       keywords: ['Performance', 'Photographie', 'Kunst im öffentlichen Raum'],
       data: {
-        authors: ['VALIE EXPORT'],
+        authors: [{
+          authors: 'VALIE EXPORT',
+          uuid: 'xuyasdf',
+        }],
         ISBN: '2-912415-77-2',
       },
     },
@@ -59,7 +65,22 @@ module.exports = {
         },
       keywords: ['Nitrification', 'Microbial Ecology', 'Freshwater Sediment'],
       data: {
-        authors: ['Kofoed MV', 'Stief P', 'Hauzmayer S', 'Schramm A', 'Herrmann M.'],
+        authors: [{
+          authors: 'Kofoed MV',
+          uuid: '1',
+        }, {
+          authors: 'Stief P',
+          uuid: '2',
+        }, {
+          authors: 'Hauzmayer S',
+          uuid: '3',
+        }, {
+          authors: 'Schramm A',
+          uuid: '4',
+        }, {
+          authors: 'Herrmann M.',
+          uuid: '5',
+        }],
         'erschienen in': 'Systems of Applied Microbiology',
         publisher: ['Elvisier'],
         editors: ['Rudolf Amann', 'Ramon Rosselló-Móra', 'Karl-Heinz Schleifer'],
