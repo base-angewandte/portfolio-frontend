@@ -23,6 +23,7 @@ const state = {
   sortBy: '',
   filterType: '',
   filterExpr: '',
+  linkedEntries: [],
 };
 
 const getters = {
@@ -57,6 +58,9 @@ const getters = {
     const id = state.parentItems[state.parentItems.length - 1];
     return state.sidebarData.find(item => item.id === id);
   },
+  getCurrentLinked(state) {
+    return state.linkedEntries;
+  },
 };
 
 const mutations = {
@@ -70,6 +74,7 @@ const mutations = {
   deleteCurrentItem(state) {
     state.currentItemId = null;
     state.currentItem = {};
+    state.linkedEntries = [];
   },
   addSidebarItem(state, item) {
     state.sidebarData.push(item);
@@ -162,23 +167,24 @@ const mutations = {
   deleteParentItems(state) {
     state.parentItems = [];
   },
+  setLinked(state, { list, replace }) {
+    const existingEntries = replace ? [] : state.linkedEntries;
+    state.linkedEntries = [].concat(list, existingEntries);
+  },
 };
 
 const actions = {
-  fetchItem({ state, commit }, id) {
-    const obj = state.sidebarData.filter(item => item.id === id);
-    commit('setCurrentItem', obj);
-  },
   async fetchFormExtension(context, type) {
     const commonType = await Object.keys(DATA.TYPE_MAPPINGS)
       .find(key => DATA.TYPE_MAPPINGS[key].includes(type));
     return DATA.FORM_MAPPINGS[commonType] || [];
   },
-  setCurrentItemById({ commit }, id) {
+  setCurrentItemById({ commit, dispatch }, id) {
     const entry = this.getters['data/getEntryById'](id);
     if (entry) {
       commit('setCurrentItem', entry);
     }
+    dispatch('fetchLinked');
     return !!entry;
   },
   addSidebarItem({ commit, dispatch }, obj) {
@@ -279,6 +285,11 @@ const actions = {
       buttonText: `${titles.length > 1 ? 'Einträge' : 'Eintrag'} ${actionText}`,
       action,
     });
+  },
+  fetchLinked({ commit }) {
+    // TODO: fetch linked entries from database!
+    const list = [];
+    commit('setLinked', { list, replace: true });
   },
 };
 

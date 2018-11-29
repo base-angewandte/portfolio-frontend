@@ -192,6 +192,7 @@
           :options-visible="false"
           :new-enabled="false"
           :height="'62vh'"
+          :hide-active="true"
           class="menu"
           @selected-changed="selectedEntries = [].concat($event)"/>
       </div>
@@ -246,24 +247,20 @@ export default {
       filesToUpload: [],
       showEntryPopUp: false,
       selectedEntries: [],
-      linkedList: [
-        {
-          id: '1',
-          title: 'Buch Omi',
-        },
-      ],
     };
   },
   computed: {
     parent() {
       return this.$store.getters['data/getLatestParentItem'];
     },
+    linkedList() {
+      return this.$store.getters['data/getCurrentLinked'];
+    },
   },
   watch: {
     async $route(to) {
       this.routeChanged = true;
       if (to.params.id) {
-        await this.resetForm();
         await this.updateForm();
       } else {
         await this.resetForm();
@@ -409,14 +406,16 @@ export default {
       // TODO communicate this to database!
       // also linked entries should actually be connected to the entry at hand not hardcoded
       // --> should be done in store!!!
+      const list = [];
       await val.forEach((entryId) => {
         const entry = this.$store.getters['data/getEntryById'](entryId);
         if (!this.linkedList.map(e => e.id).includes(entryId)) {
-          this.linkedList.unshift(entry);
+          list.push(entry);
         } else {
           // TODO: save and inform user which entries were already linked and not added again
         }
       });
+      this.$store.commit('data/setLinked', { list });
       this.showEntryPopUp = false;
     },
     returnFromForm() {

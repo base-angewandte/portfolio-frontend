@@ -101,21 +101,40 @@ export default {
     BaseSearch,
   },
   props: {
+    /**
+     * make optional for link entries functionality
+     */
     optionsVisible: {
       type: Boolean,
       default: true,
     },
+    /**
+     * make optional for link entries functionality
+     */
     newEnabled: {
       type: Boolean,
       default: true,
     },
+    /**
+     * need to set from outside for link entries functionality
+     */
     selectActive: {
       type: Boolean,
       default: false,
     },
+    /**
+     * custom height needed for link entries functionality
+     */
     height: {
       type: String,
       default: '',
+    },
+    /**
+     * to hide the active entry from the link entries functionality
+     */
+    hideActive: {
+      type: Boolean,
+      default: false,
     },
   },
   data() {
@@ -132,7 +151,7 @@ export default {
     activeEntry: {
       get() {
         const id = this.$store.state.data.currentItemId;
-        if (id && this.$store.getters['data/getSidebarData'].find(entry => entry.id === id)) {
+        if (!this.hideActive && id && this.$store.getters['data/getSidebarData'].find(entry => entry.id === id)) {
           return this.activeEntryInt || this.$store.getters['data/getCurrentItemIndex'];
         }
         return null;
@@ -146,6 +165,10 @@ export default {
     },
     list: {
       get() {
+        if (this.hideActive) {
+          return [].concat(this.$store.getters['data/getSidebarData']
+            .filter(entry => entry.id !== this.$store.state.data.currentItemId));
+        }
         return [].concat(this.$store.getters['data/getSidebarData']);
       },
     },
@@ -183,6 +206,7 @@ export default {
     },
     getNewForm() {
       this.$store.commit('data/setCurrentItem', {});
+      this.$store.commit('data/setLinked', { list: [], replace: true });
       this.$store.commit('data/deleteParentItems');
       this.$emit('new-form');
     },
@@ -220,7 +244,7 @@ export default {
   #menu-sidebar {
     display: flex;
     flex-direction: column;
-    height: calc(100vh - #{$header-height} - #{$row-height-small});
+    height: calc(100vh - #{$header-height} - #{$row-height-small} - 40px);
 
     button + div {
       border-left: $separation-line;

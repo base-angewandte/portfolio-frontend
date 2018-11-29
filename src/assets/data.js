@@ -21,6 +21,10 @@ module.exports = {
       },
       shared: false,
       error: false,
+      linked: [{
+        id: '2',
+        title: 'VALIE EXPORT',
+      }],
     },
     {
       id: '2',

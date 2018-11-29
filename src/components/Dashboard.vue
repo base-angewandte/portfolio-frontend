@@ -70,6 +70,7 @@ export default {
     },
     fetchEntryData(item) {
       this.$store.commit('data/setCurrentItem', item);
+      this.$store.dispatch('data/fetchLinked');
       this.$store.commit('data/deleteParentItems');
       this.showForm = true;
       this.$router.push(`/entry/${item.id}`);
