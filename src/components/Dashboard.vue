@@ -7,8 +7,8 @@
       :button-right-text="$store.state.data.popUp.buttonText"
       :button-right-icon="$store.state.data.popUp.icon"
       @close="cancelAction"
-      @buttonLeft="cancelAction"
-      @buttonRight="popUpAction">
+      @button-left="cancelAction"
+      @button-right="popUpAction">
       <div class="sidebar-pop-up">
         <div>
           <p
@@ -23,14 +23,14 @@
       :class="['sidebar', { 'sidebar-full': !showForm }]"
       @sort="$store.dispatch('data/sortEntries', $event)"
       @filter="$store.dispatch('data/filterEntries', $event)"
-      @newForm="createNewForm"
-      @showEntry="fetchEntryData"/>
+      @new-form="createNewForm"
+      @show-entry="fetchEntryData"/>
     <div
       v-if="showForm"
       class="form-view">
       <router-view
         ref="view"
-        @formSaved="saveForm"/>
+        @form-saved="saveForm"/>
     </div>
   </div>
 </template>

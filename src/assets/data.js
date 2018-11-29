@@ -127,7 +127,7 @@ module.exports = {
         type: 'chips',
         sourceType: 'static',
         source: 'http://localhost:9900/api/keywords',
-        unknown: true,
+        unknown: false,
         mode: 'multi',
         size: 'full',
       },

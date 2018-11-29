@@ -170,7 +170,7 @@ export default {
   },
   methods: {
     showEntry(index) {
-      this.$emit('showEntry', this.list[index]);
+      this.$emit('show-entry', this.list[index]);
     },
     selectEntry(evt) {
       if (evt.selected) {
@@ -179,12 +179,12 @@ export default {
         this.selectedMenuEntries = this.selectedMenuEntries
           .filter(entry => entry !== this.list[evt.index].id);
       }
-      this.$emit('selectedChanged', this.selectedMenuEntries);
+      this.$emit('selected-changed', this.selectedMenuEntries);
     },
     getNewForm() {
       this.$store.commit('data/setCurrentItem', {});
       this.$store.commit('data/deleteParentItems');
-      this.$emit('newForm');
+      this.$emit('new-form');
     },
     sortEntries(evt) {
       this.$emit('sort', evt);

@@ -90,7 +90,7 @@
       :form-values="valueList"
       class="form"
       @selected="changed"
-      @valuesChanged="valuesChanged($event)"/>
+      @values-changed="valuesChanged($event)"/>
     <transition-group
       name="slide-fade2">
       <div
@@ -107,7 +107,7 @@
           :list="formExtended"
           :form-values="valueList.data"
           class="form"
-          @valuesChanged="valuesChanged($event, 'data')"/>
+          @values-changed="valuesChanged($event, 'data')"/>
       </div>
       <div
         key="file-area-header"
@@ -183,8 +183,8 @@
       :show="showEntryPopUp"
       title="Select Entries to Link"
       button-right-text="Link Selected"
-      @buttonLeft="showEntryPopUp = false"
-      @buttonRight="linkEntries(selectedEntries)">
+      @button-left="showEntryPopUp = false"
+      @button-right="linkEntries(selectedEntries)">
       <div class="menu-wrapper">
         <!-- TODO: sidebar functionality!!! (filter, sort) -->
         <Sidebar
@@ -193,7 +193,7 @@
           :new-enabled="false"
           :height="'62vh'"
           class="menu"
-          @selectedChanged="selectedEntries = [].concat($event)"/>
+          @selected-changed="selectedEntries = [].concat($event)"/>
       </div>
     </BasePopUp>
   </div>
@@ -333,7 +333,7 @@ export default {
         this.valueListCopy = Object.assign({}, JSON.parse(JSON.stringify(this.valueList)));
         this.$router.push(`/entry/${this.$store.state.data.currentItemId}`);
 
-        this.$emit('saveForm');
+        this.$emit('save-form');
       } else {
         // TODO: make known to user that title is missing!
       }

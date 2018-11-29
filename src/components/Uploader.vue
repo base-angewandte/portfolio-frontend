@@ -4,8 +4,8 @@
     :button-right-text="isSuccess ? 'Fertig' : 'Hochladen'"
     title="Dateien hochladen"
     button-left-text="Abbrechen"
-    @buttonRight="startUpload"
-    @buttonLeft="$emit('cancel')"
+    @button-right="startUpload"
+    @button-left="$emit('cancel')"
     @close="$emit('cancel')">
     <div
       class="popup-upload-area">

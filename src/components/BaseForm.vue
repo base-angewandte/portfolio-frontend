@@ -32,7 +32,7 @@
         + ($te('form.' + element.name) ? $t('form.' + element.name) : element.name)"
         :input="formValuesInt[element.name]"
         class="base-form-field base-form-field-full"
-        @textInput="addType(element, $event)">
+        @text-input="addType(element, $event)">
         <template
           v-if="element.setType">
           <!-- TODO: replace hardcoded types!  -->
@@ -69,7 +69,7 @@
         :draggable="true"
         @selected="$emit('selected', { value: $event && $event.length
         ? $event[0][element.name] : null, field: element.name })"
-        @fetchDropDownEntries="fetchAutocomplete({
+        @fetch-dropdown-entries="fetchAutocomplete({
           value: $event.value,
           name: element.name,
           source: element.source
@@ -162,11 +162,12 @@ export default {
   watch: {
     $route() {
       this.setFormValues(this.formValues);
+      this.setDropDownLists();
     },
     formValuesInt: {
       handler(val) {
         if (JSON.stringify(this.formValues) !== JSON.stringify(val)) {
-          this.$emit('valuesChanged', this.formValuesInt);
+          this.$emit('values-changed', this.formValuesInt);
         }
       },
       deep: true,
@@ -179,36 +180,7 @@ export default {
   },
   created() {
     if (this.list) {
-      const obj = {};
-      this.list.filter(element => element.type === 'autocomplete' || element.type === 'chips' || element.type === 'chips-below')
-        .forEach((autoField) => {
-          if (autoField.name === 'keywords') {
-            this.$set(obj, autoField.name, [
-              'Art',
-              'Collage',
-              'Photography',
-              'Drawing',
-              'Painting',
-              'Concert',
-              'Classic',
-              'Fashion',
-            ]);
-          } else if (autoField.name === 'type') {
-            this.$set(obj, autoField.name, [
-              'Publikation',
-              'Text',
-              'Bild',
-              'Konzert',
-              'Ausstellung',
-              'Collage',
-              'Skulptur',
-              'Werk',
-            ]);
-          } else {
-            this.$set(obj, autoField.name, []);
-          }
-        });
-      this.dropdownLists = obj;
+      this.setDropDownLists();
       this.setFormValues(this.formValues);
     }
   },
@@ -232,7 +204,7 @@ export default {
               resource: 'viaf',
             },
         });
-        if (this.dropdownLists && this.dropdownLists[name]) {
+        if (this.dropdownLists) {
           this.$set(this.dropdownLists, [name], result.data);
         }
       }
@@ -266,6 +238,38 @@ export default {
         });
       }
       this.formValuesInt = Object.assign({}, val, obj);
+    },
+    setDropDownLists() {
+      const obj = {};
+      this.list.filter(element => element.type === 'autocomplete' || element.type === 'chips' || element.type === 'chips-below')
+        .forEach((autoField) => {
+          if (autoField.name === 'keywords') {
+            this.$set(obj, autoField.name, [
+              'Art',
+              'Collage',
+              'Photography',
+              'Drawing',
+              'Painting',
+              'Concert',
+              'Classic',
+              'Fashion',
+            ]);
+          } else if (autoField.name === 'type') {
+            this.$set(obj, autoField.name, [
+              'Publikation',
+              'Text',
+              'Bild',
+              'Konzert',
+              'Ausstellung',
+              'Collage',
+              'Skulptur',
+              'Werk',
+            ]);
+          } else {
+            this.$set(obj, autoField.name, []);
+          }
+        });
+      this.dropdownLists = obj;
     },
   },
 };
