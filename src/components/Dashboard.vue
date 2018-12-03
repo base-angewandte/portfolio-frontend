@@ -10,7 +10,7 @@
       @button-left="cancelAction"
       @button-right="popUpAction">
       <div class="sidebar-pop-up">
-        <div>
+        <div class="pop-up-text-container">
           <p
             class="sidebar-pop-up-text"
             v-html="$store.state.data.popUp.text" />
@@ -128,9 +128,16 @@ export default {
     align-items: center;
     margin: auto;
 
-    .sidebar-pop-up-text {
-      margin: auto;
-      text-align: center;
+    .pop-up-text-container {
+      max-width: 100%;
+
+      .sidebar-pop-up-text {
+        margin: auto;
+        text-align: center;
+        overflow-wrap: break-word;
+        word-wrap: break-word;
+        hyphens: auto;
+      }
     }
   }
 </style>

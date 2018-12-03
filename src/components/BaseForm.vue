@@ -4,6 +4,10 @@
     class="base-form">
     <template
       v-for="(element, index) in list">
+      <div
+        :key="element.name">
+        {{ formValues[element.name] }}
+      </div>
       <base-autocomplete-input
         v-if="element.type === 'autocomplete'"
         :key="index"
@@ -73,7 +77,15 @@
           value: $event.value,
           name: element.name,
           source: element.source
-      })"/>
+      })">
+        <template
+          slot="drop-down-entry"
+          slot-scope="props">
+          <span>{{ props.item[element.name] }}</span>
+          <span class="chips-dropdown-second">{{ props.item.born }}</span>
+          <span class="chips-dropdown-third">{{ props.item.source }}</span>
+        </template>
+      </base-chips-input>
       <base-input
         v-else-if="element.type === 'text'"
         :key="index"
@@ -108,8 +120,22 @@
         + ($te('form.' + element.name) ? $t('form.' + element.name) : element.name)"
         :list="dropdownLists[element.name]"
         :allow-unknown-entries="true"
+        :allow-dynamic-drop-down-entries="true"
+        :identifier="'uuid'"
         v-model="formValuesInt[element.name]"
-        class="base-form-field base-form-field-full"/>
+        class="base-form-field base-form-field-full"
+        @fetch-dropdown-entries="fetchAutocomplete({
+          value: $event.value,
+          name: 'authors',
+          source: element.source })">
+        <template
+          slot="drop-down-entry"
+          slot-scope="props">
+          <span>{{ props.item[element.name] }}</span>
+          <span class="chips-dropdown-second">{{ props.item.born }}</span>
+          <span class="chips-dropdown-third">{{ props.item.source }}</span>
+        </template>
+      </base-chips-below>
     </template>
   </div>
 </template>
@@ -301,6 +327,15 @@ export default {
     margin-left: 16px;
   }
 
+  .chips-dropdown-second {
+    color: $font-color-second;
+  }
+
+  .chips-dropdown-third {
+    font-size: $font-size-small;
+    color: $font-color-second;
+    float: right;
+  }
   @media screen and (max-width: $mobile) {
     .base-form-field-half {
       flex: 0 0 100%;
