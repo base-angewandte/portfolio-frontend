@@ -94,7 +94,7 @@
     <transition-group
       name="slide-fade2">
       <div
-        v-if="formType || extend"
+        v-if="formType"
         key="extended-section"
         class="subsection">
         <div
@@ -112,31 +112,34 @@
       <div
         key="file-area-header"
         class="subtitle"
-        @click="extend = !extend">Angehängte Objekte und Medien</div>
+        @click="clickHeader">
+        Angehängte Objekte und Medien</div>
       <div
         key="file-area"
         class="file-boxes mobile-hidden">
         <base-drop-box
           key="addEntry"
           :show-plus="true"
-          :box-size="{ width: '25%' }"
+          :box-size="{ width: 'calc(25% - 8px)' }"
           icon="camera"
           text="Vorhandenen Eintrag hinzufügen"
           subtext="(Click oder Drag'n Drop)"
+          class="file-boxes-margin"
           @dropped="dropped($event)"
           @clicked="showEntryPopUp = true"/>
         <base-box-button
           key="addNew"
           :show-plus="true"
-          :box-size="{ width: '25%'}"
+          :box-size="{ width: 'calc(25% - 8px)'}"
           icon="sheet-empty"
           text="Neuen Eintrag anhängen"
+          class="file-boxes-margin"
           @clicked="openNewForm"/>
         <label class="file-select">
           <base-drop-box
             key="addFile"
             :show-plus="true"
-            :box-size="{ width: '100%' }"
+            :box-size="{ width: 'calc(100%)' }"
             :box-ratio="'50'"
             icon="camera"
             text="Dateien anhängen"
@@ -172,7 +175,9 @@
       <AttachmentArea
         :key="'attachmentArea'"
         :linked-list="linkedList"
-        :attached-list="[]"/>
+        :attached-list="['1', '2', '3', '4', '5']"
+        :text="text"
+        subtext="Die Objekte werden für Showroom freigegeben"/>
     </transition-group>
     <uploader
       v-if="!!filesToUpload.length"
@@ -247,6 +252,7 @@ export default {
       filesToUpload: [],
       showEntryPopUp: false,
       selectedEntries: [],
+      text: '',
     };
   },
   computed: {
@@ -425,6 +431,9 @@ export default {
         this.$router.push('/');
       }
     },
+    clickHeader() {
+      this.text = this.text ? '' : 'Bitte Objekte Wählen';
+    },
   },
 };
 </script>
@@ -494,7 +503,7 @@ export default {
   .file-boxes {
     display: flex;
 
-    div:not(:last-child) {
+    .file-boxes-margin {
       margin-right: 16px;
     }
   }
