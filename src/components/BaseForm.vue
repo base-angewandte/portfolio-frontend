@@ -5,9 +5,7 @@
     <template
       v-for="(element, index) in list">
       <div
-        :key="element.name">
-        {{ formValues[element.name] }}
-      </div>
+        :key="element.name" />
       <base-autocomplete-input
         v-if="element.type === 'autocomplete'"
         :key="index"
@@ -72,7 +70,7 @@
         ]"
         :draggable="true"
         @selected="$emit('selected', { value: $event && $event.length
-        ? $event[0][element.name] : null, field: element.name })"
+        ? $event[0][element.name] || $event[0] : null, field: element.name })"
         @fetch-dropdown-entries="fetchAutocomplete({
           value: $event.value,
           name: element.name,
