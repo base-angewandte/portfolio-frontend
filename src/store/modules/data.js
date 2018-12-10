@@ -188,43 +188,71 @@ const actions = {
     return !!entry;
   },
   addSidebarItem({ commit, dispatch }, obj) {
-    const type = obj.type && obj.type.length ? obj.type : '';
-    const newItem = Object.assign({}, obj, {
-      type: typeof type === 'object' ? type[0].type : type,
-      id: (parseInt(this.getters['data/getLastId'], 10) + 1).toString(),
+    return new Promise((resolve, reject) => {
+      try {
+        const type = obj.type && obj.type.length ? obj.type : '';
+        const newItem = Object.assign({}, obj, {
+          type: typeof type === 'object' ? type[0].type : type,
+          id: (parseInt(this.getters['data/getLastId'], 10) + 1).toString(),
+        });
+        // TODO: save to DATABASE!
+        commit('addSidebarItem', newItem);
+        dispatch('applyFilters');
+        commit('setCurrentItem', newItem);
+        sessionStorage.setItem('sidebarItems', JSON.stringify(state.sidebarData));
+        resolve();
+      } catch (e) {
+        reject(e);
+      }
     });
-    commit('addSidebarItem', newItem);
-    dispatch('applyFilters');
-    commit('setCurrentItem', newItem);
-    sessionStorage.setItem('sidebarItems', JSON.stringify(state.sidebarData));
   },
   updateEntry({ state, commit, dispatch }, obj) {
-    // state.currentItem = Object.assign({}, state.currentItem, obj);
-    const index = this.getters['data/getCurrentItemIndex'];
-    const type = obj.type && obj.type.length ? obj.type[0].type || obj.type[0] : '';
-    commit('updateEntry', { obj, index, type });
-    commit('sort');
-    dispatch('setCurrentItemById', obj.id);
-    sessionStorage.setItem('sidebarItems', JSON.stringify(state.sidebarData));
+    return new Promise(async (resolve, reject) => {
+      try {
+        // state.currentItem = Object.assign({}, state.currentItem, obj);
+        const index = this.getters['data/getCurrentItemIndex'];
+        const type = obj.type && obj.type.length ? obj.type[0].type || obj.type[0] : '';
+        // TODO: save to DATABASE!!
+        commit('updateEntry', {
+          obj,
+          index,
+          type,
+        });
+        commit('sort');
+        await dispatch('setCurrentItemById', obj.id);
+        sessionStorage.setItem('sidebarItems', JSON.stringify(state.sidebarData));
+        resolve();
+      } catch (e) {
+        reject(e);
+      }
+    });
   },
   duplicateEntries({ state, commit }, entryArr) {
-    entryArr.forEach((id) => {
-      const newEntry = state.sidebarData.find(entry => entry.id === id);
-      this.dispatch('data/addSidebarItem', newEntry);
-    });
-    commit('setOptions', false);
+    try {
+      entryArr.forEach((id) => {
+        const newEntry = state.sidebarData.find(entry => entry.id === id);
+        this.dispatch('data/addSidebarItem', newEntry);
+      });
+      commit('setOptions', false);
+    } catch (e) {
+      // TODO: error handling (user info)
+    }
   },
   modifyEntries({ state, commit, dispatch }, { prop, value }) {
-    state.selectedEntries.forEach((e) => {
-      const obj = state.sidebarData.find(o => o.id === e);
-      const index = state.sidebarData.indexOf(obj);
-      if (index >= 0) {
-        commit('updateEntry', { obj: Object.assign({}, state.sidebarData[index], { [prop]: value }), index, type: obj.type });
-      }
-      if (obj.id === state.currentItemId) {
-        dispatch('setCurrentItemById', obj.id);
-      }
-    });
+    try {
+      state.selectedEntries.forEach((e) => {
+        const obj = state.sidebarData.find(o => o.id === e);
+        const index = state.sidebarData.indexOf(obj);
+        if (index >= 0) {
+          commit('updateEntry', { obj: Object.assign({}, state.sidebarData[index], { [prop]: value }), index, type: obj.type });
+        }
+        if (obj.id === state.currentItemId) {
+          dispatch('setCurrentItemById', obj.id);
+        }
+      });
+    } catch (e) {
+      // TODO: error handling! (user info)
+    }
   },
   sortEntries({ commit }, sortVal) {
     if (sortVal) {

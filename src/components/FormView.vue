@@ -13,14 +13,15 @@
           icon="sheet-empty"/>
       </div>
       <div class="base-row">
-        <div class="base-row-header">
+        <div
+          class="base-row-header">
           <base-menu-entry
             :id="'asingleentry'"
             :icon="'sheet-empty'"
             :title="valueList.title"
             :title-bold="true"
             :is-activatable="false"
-            :subtext="formType" />
+            :subtext="formType"/>
         </div>
         <div
           id="form-back-button"
@@ -320,35 +321,53 @@ export default {
         this.$set(this.valueList, 'data', {});
       }
     },
-    saveForm() {
+    async saveForm() {
       if (this.valueList.title) {
         const data = Object.assign({}, this.valueList.data);
-        if (!this.$route.params.id) {
-          // TODO: check somewhere if the entry should be linked to a parent and
-          // a) link to parent entry b) save to database
-          // --> do this.linkEntries(this.$store.data.currentItemId)
-          this.$store.dispatch('data/addSidebarItem', Object.assign({}, this.valueList, { data }));
-        } else {
-          this.$store.dispatch('data/updateEntry', Object.assign({}, this.valueList, { data }));
+        try {
+          if (!this.$route.params.id) {
+            // TODO: check somewhere if the entry should be linked to a parent and
+            // a) link to parent entry b) save to database
+            // --> do this.linkEntries(this.$store.data.currentItemId)
+            await this.$store.dispatch('data/addSidebarItem', Object.assign({}, this.valueList, { data }));
+          } else {
+            await this.$store.dispatch('data/updateEntry', Object.assign({}, this.valueList, { data }));
+          }
+          // this (JSON...) is necessary to destroy any links between the two objects...
+          this.valueListCopy = Object.assign({}, JSON.parse(JSON.stringify(this.valueList)));
+          this.$router.push(`/entry/${this.$store.state.data.currentItemId}`);
+          this.unsavedChanges = false;
+          this.$emit('save-form');
+        } catch (e) {
+          this.$notify({
+            group: 'request-notifications',
+            title: 'Saving to database failed',
+            text: e.message,
+            type: 'warn',
+          });
         }
-        this.unsavedChanges = false;
-        // this (JSON...) is necessary to destroy any links between the two objects...
-        this.valueListCopy = Object.assign({}, JSON.parse(JSON.stringify(this.valueList)));
-        this.$router.push(`/entry/${this.$store.state.data.currentItemId}`);
-
-        this.$emit('save-form');
       } else {
-        // TODO: make known to user that title is missing!
+        this.$notify({
+          group: 'request-notifications',
+          title: 'Title missing',
+          text: 'In order to save please specify a title!',
+          type: 'warn',
+        });
       }
     },
     actionEntry(action) {
-      if (!this.$store.state.data.isNewForm) {
+      if (!this.$store.state.data.isNewForm && !this.unsavedChanges) {
         this.$store.dispatch('data/actionEntries', {
           action,
           entries: [this.$store.state.data.currentItemId],
         });
       } else {
-        // TODO: inform user that he needs to save the form first!
+        this.$notify({
+          group: 'request-notifications',
+          title: 'Unsaved Changes',
+          text: `Please save your ${this.$store.state.data.isNewForm ? 'new Form' : 'Changes'} first!`,
+          type: 'warn',
+        });
       }
     },
     async updateForm() {
