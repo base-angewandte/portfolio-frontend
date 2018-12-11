@@ -11,44 +11,7 @@
         login:'portfolio/login/',
         logout:'/portfolio/logout/'}"
       @navigate="navigate($event.detail[0])" />
-    <div
-      :class="['notification-container']">
-      <div class="notification-box">
-        <notifications
-          :duration="3000"
-          :width="'100%'"
-          group="request-notifications"
-          position="top right"
-          animation-name="v-slide">
-          <template
-            slot="body"
-            slot-scope="props">
-            <div
-              :class="[props.item.type, 'notification']"
-              @click="props.close">
-              <div class="notification-text">
-                <div
-                  class="notification-title"
-                  v-html="props.item.title" />
-                <div class="notification-message">
-                  {{ props.item.text }}
-                </div>
-
-              </div>
-
-              <div
-                class="notification-close"
-                @click="props.close">
-                <img
-                  :alt="'remove Message'"
-                  src="./static/remove.svg"
-                  class="icon notification-icon" >
-              </div>
-            </div>
-          </template>
-        </notifications>
-      </div>
-    </div>
+    <BaseNotification />
     <router-view />
     <base-footer
       :base-url="linkUrl"
@@ -65,13 +28,20 @@
 </template>
 
 <script>
+import BaseNotification from './components/BaseNotification';
+
 export default {
   name: 'App',
+  components: {
+    BaseNotification,
+  },
   computed: {
     linkUrl() {
+      // TODO
       return 'replace this at some point';
     },
     lang() {
+      // TODO
       return 'get lang stored in store here';
     },
   },
@@ -291,6 +261,11 @@ export default {
   }
 
   @media screen and (max-width: $mobile) {
+
+    .notification-container{
+      max-width: 100%;
+    }
+
     .wrapper {
       padding: $spacing-small;
     }
