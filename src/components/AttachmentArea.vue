@@ -25,6 +25,7 @@
           :key="linked.id"
           :box-size="{ width: 'calc(25% - 12px)' }"
           :title="linked.title"
+          :description="linked.type"
           show-title
           class="linked-base-box"/>
       </div>

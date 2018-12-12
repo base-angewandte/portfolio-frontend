@@ -126,7 +126,7 @@
           text="Vorhandenen Eintrag hinzufügen"
           subtext="(Click oder Drag'n Drop)"
           class="file-boxes-margin"
-          @dropped="dropped($event)"
+          @dropped="droppedEntries($event)"
           @clicked="showEntryPopUp = true"/>
         <base-box-button
           key="addNew"
@@ -145,7 +145,7 @@
             icon="camera"
             text="Dateien anhängen"
             subtext="(Click oder Drag'n Drop)"
-            @dropped="dropped($event)"/>
+            @dropped="handleFileSelect($event)"/>
           <input
             type="file"
             multiple
@@ -394,18 +394,34 @@ export default {
       this.$store.commit('data/deleteCurrentItem');
       this.$router.push('/new');
     },
-    dropped(e) {
-      for (let i = 0; i < e.dataTransfer.files.length; i += 1) {
-        this.filesToUpload.push(e.dataTransfer.files[i]);
-      }
-      if (e.dataTransfer.items) {
+    droppedEntries(e) {
+      // check if it was not a file that was dragged in and if anything is attached to event at all
+      if (!e.dataTransfer.files.length && e.dataTransfer.items) {
+        // get the id of the dragged item
         const id = e.dataTransfer.getData('text/plain');
-        this.linkEntries([id]);
+        // check if the dragged item was actually the one already open
+        if (id !== this.valueList.id) {
+          // if not link the entry
+          this.linkEntries([id]);
+        } else {
+          // otherwise issue a warning that entry can not be linked to itself
+          this.$notify({
+            group: 'request-notifications',
+            title: 'Linking not possible',
+            text: 'You can not link an entry to itself.',
+            type: 'warn',
+          });
+        }
       }
     },
     handleFileSelect(e) {
-      for (let i = 0; i < e.target.files.length; i += 1) {
-        this.filesToUpload.push(e.target.files[i]);
+      // get files - depending if dragged or selected from file browse different event prop
+      const files = e.dataTransfer ? e.dataTransfer.files : e.target.files;
+      // check if it was actual files that were dragged in
+      if (files && files.length) {
+        for (let i = 0; i < files.length; i += 1) {
+          this.filesToUpload.push(files[i]);
+        }
       }
     },
     returnToParent(id) {
