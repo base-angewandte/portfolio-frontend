@@ -136,6 +136,12 @@ export default {
       type: Boolean,
       default: false,
     },
+    list: {
+      type: Array,
+      default() {
+        return [];
+      },
+    },
   },
   data() {
     return {
@@ -163,15 +169,6 @@ export default {
     availableEntryTypes() {
       return this.$store.getters['data/getEntryTypes'];
     },
-    list: {
-      get() {
-        if (this.hideActive) {
-          return [].concat(this.$store.getters['data/getSidebarData']
-            .filter(entry => entry.id !== this.$store.state.data.currentItemId));
-        }
-        return [].concat(this.$store.getters['data/getSidebarData']);
-      },
-    },
     calcStyle() {
       return this.height ? { height: this.height } : {};
     },
@@ -188,7 +185,7 @@ export default {
       }
     },
   },
-  created() {
+  mounted() {
     this.listInt = this.list;
   },
   methods: {

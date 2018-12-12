@@ -28,12 +28,10 @@
 </template>
 
 <script>
-import BaseNotification from './components/BaseNotification';
-
 export default {
   name: 'App',
   components: {
-    BaseNotification,
+    BaseNotification: () => import('./components/BaseNotification'),
   },
   computed: {
     linkUrl() {
@@ -158,90 +156,14 @@ export default {
     }
   }
 
-  .notification-container{
-    position: sticky;
-    top: $header-height;
-    z-index: 10;
-    width: 450px;
-    margin-left: auto;
-    margin-top: $header-height;
+  /* for some reason this is only working here not in
+  BaseNotification component ... */
+  .notification-wrapper {
+    box-shadow: 0 3px 3px rgba(0, 0, 0, .05);
 
-    &.fixed {
-      position: fixed;
-      top: $header-height;
+    &:not(:first-child) {
+      border-top: $separation-line;
     }
-
-    .notification-box {
-      position: relative;
-    }
-
-    .notifications {
-      position: absolute;
-      background-color: white;
-
-      .notification-wrapper {
-        box-shadow: 0 3px 3px rgba(0, 0, 0, .05);
-
-        &:not(:first-child) {
-          border-top: $separation-line;
-        }
-      }
-    }
-  }
-
-  .notification {
-    position: relative;
-    padding: $spacing;
-
-    font-size: $font-size-small;
-
-    border-left: 5px solid $app-color;
-    display: flex;
-    align-items: center;
-
-    .notification-text {
-      flex-grow: 1;
-
-      .notification-title {
-        font-weight: 600;
-      }
-    }
-
-    .notification-close {
-      margin: auto;
-      cursor: pointer;
-
-      .notification-icon {
-        width: $icon-medium;
-        max-height: $icon-medium;
-        vertical-align: middle;
-        margin-left: $spacing;
-      }
-    }
-    /**
-    &.warn {
-      border-left-color: #f48a06;
-    }
-
-    &.success {
-      border-left-color: #42A85F;
-    }
-
-    &.error {
-      border-left-color: #B82E24;
-    }
-
-    &.warn .notification-title {
-      color: #e58206;
-    }
-
-    &.error .notification-title {
-      color: #B82E24;
-    }
-
-    &.success .notification-title {
-      color: #3b9655;
-    } **/
   }
 
   .v-slide-enter-active,
@@ -261,11 +183,6 @@ export default {
   }
 
   @media screen and (max-width: $mobile) {
-
-    .notification-container{
-      max-width: 100%;
-    }
-
     .wrapper {
       padding: $spacing-small;
     }

@@ -21,6 +21,7 @@
       ref="sidebar"
       :new-form="$store.state.data.isNewForm"
       :class="['sidebar', { 'sidebar-full': !showForm }]"
+      :list="[].concat(this.$store.getters['data/getSidebarData'])"
       @sort="$store.dispatch('data/sortEntries', $event)"
       @filter="$store.dispatch('data/filterEntries', $event)"
       @new-form="createNewForm"

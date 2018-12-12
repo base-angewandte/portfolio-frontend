@@ -3,7 +3,7 @@
     class="notification-container">
     <div class="notification-box">
       <notifications
-        :duration="3000"
+        :duration="5000"
         :width="'100%'"
         group="request-notifications"
         position="top right"
@@ -67,14 +67,6 @@ export default {
     .notifications {
       position: absolute;
       background-color: white;
-
-      .notification-wrapper {
-        box-shadow: 0 3px 3px rgba(0, 0, 0, .05);
-
-        &:not(:first-child) {
-          border-top: $separation-line;
-        }
-      }
     }
   }
 
@@ -107,46 +99,14 @@ export default {
         margin-left: $spacing;
       }
     }
-    /**
-    &.warn {
-      border-left-color: #f48a06;
-    }
-
-    &.success {
-      border-left-color: #42A85F;
-    }
-
-    &.error {
-      border-left-color: #B82E24;
-    }
-
-    &.warn .notification-title {
-      color: #e58206;
-    }
-
-    &.error .notification-title {
-      color: #B82E24;
-    }
-
-    &.success .notification-title {
-      color: #3b9655;
-    } **/
   }
 
-  .v-slide-enter-active,
-  .v-slide-leave-active,
-  .v-slide-move {
-    transition: all 0.8s;
-  }
+  .notification-wrapper {
+    box-shadow: 0 3px 3px rgba(0, 0, 0, .05);
 
-  .v-slide-leave-active {
-    z-index: 0;
-    position: absolute;
-  }
-
-  .v-slide-leave-to, .v-slide-enter-from {
-    transition: all 1s ease-out;
-    opacity: 0;
+    &:not(:first-child) {
+      border-top: $separation-line;
+    }
   }
 
   @media screen and (max-width: $mobile) {

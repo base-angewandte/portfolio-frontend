@@ -111,11 +111,6 @@
           @values-changed="valuesChanged($event, 'data')"/>
       </div>
       <div
-        key="file-area-header"
-        class="subtitle"
-        @click="clickHeader">
-        Angehängte Objekte und Medien</div>
-      <div
         key="file-area"
         class="file-boxes mobile-hidden">
         <base-drop-box
@@ -127,7 +122,7 @@
           subtext="(Click oder Drag'n Drop)"
           class="file-boxes-margin"
           @dropped="droppedEntries($event)"
-          @clicked="showEntryPopUp = true"/>
+          @clicked="openEntrySelect"/>
         <base-box-button
           key="addNew"
           :show-plus="true"
@@ -194,12 +189,15 @@
       <div class="menu-wrapper">
         <!-- TODO: sidebar functionality!!! (filter, sort) -->
         <Sidebar
+          :list="selectableEntries"
           :select-active="true"
           :options-visible="false"
           :new-enabled="false"
           :height="'62vh'"
           :hide-active="true"
           class="menu"
+          @sort="sortSelectable"
+          @filter="filterSelectable"
           @selected-changed="selectedEntries = [].concat($event)"/>
       </div>
     </BasePopUp>
@@ -253,6 +251,9 @@ export default {
       filesToUpload: [],
       showEntryPopUp: false,
       selectedEntries: [],
+      selectableEntries: [],
+      sortValue: '',
+      filterValues: { title: '', type: '' },
       text: '',
     };
   },
@@ -469,6 +470,51 @@ export default {
     clickHeader() {
       this.text = this.text ? '' : 'Bitte Objekte Wählen';
     },
+    openEntrySelect() {
+      this.selectableEntries = this.filterSelected();
+      this.showEntryPopUp = true;
+    },
+    filterSelectable(val) {
+      const data = this.filterSelected();
+      this.$set(this.filterValues, val.type, val.val === 'Alle Typen' ? '' : val.val);
+      this.selectableEntries = data.filter(entry => entry.title
+        .includes(this.filterValues.title)
+        && (!this.filterValues.type || entry.type === this.filterValues.type));
+      this.sortSelectable(this.sortValue);
+    },
+    sortSelectable(val) {
+      this.sortValue = val;
+      const data = this.selectableEntries;
+      if (data.length) {
+        if (val === 'Nach Typ') {
+          data.sort((a, b) => {
+            if (a.type > b.type) {
+              return 1;
+            }
+            return -1;
+          });
+        } else if (val === 'A-Z') {
+          data.sort((a, b) => {
+            if (a.title.toLowerCase() > b.title.toLowerCase()) {
+              return 1;
+            }
+            return -1;
+          });
+        } else if (val === 'Z-A') {
+          data.sort((a, b) => {
+            if (a.title.toLowerCase() > b.title.toLowerCase()) {
+              return -1;
+            }
+            return 1;
+          });
+        }
+      }
+    },
+    filterSelected() {
+      return [].concat(this.$store.getters['data/getSidebarData']
+        .filter(entry => entry.id !== this.$store.state.data.currentItemId
+          && !this.$store.getters['data/getCurrentLinked'].includes(entry)));
+    },
   },
 };
 </script>
@@ -537,6 +583,7 @@ export default {
 
   .file-boxes {
     display: flex;
+    margin-top: $spacing;
 
     .file-boxes-margin {
       margin-right: 16px;
@@ -553,13 +600,6 @@ export default {
 
   #form-save-button {
     border-left: $separation-line;
-  }
-
-  .subtitle {
-    color: $font-color-second;
-    height: $row-height-small;
-    line-height: $row-height-small;
-    margin: $spacing-small $spacing;
   }
 
   .form-button-child {
