@@ -27,7 +27,7 @@
           id="form-back-button"
           :class="['form-button', 'mobile-elements', { 'form-button-child' : parent }]">
           <base-button
-            :text="unsavedChanges ? 'Abbrechen' : 'Zurück'"
+            :text="unsavedChanges ? $t('cancel') : $t('back')"
             :icon="unsavedChanges ? '' : 'arrow-left'"
             icon-size="small"
             button-style="row"
@@ -51,7 +51,7 @@
       <div class="form-options">
         <div class="options-button-row mobile-elements">
           <base-button
-            :text="'Optionen'"
+            :text="$t('options')"
             :icon="'remove'"
             :hide-icon="!showFormMenu"
             icon-position="right"
@@ -63,19 +63,21 @@
             v-if="showFormMenu"
             class="options-row flex-align-right" >
             <base-button
-              :text="valueList.published ? 'Aus Showroom entfernen' : 'In Showroom veröffentlichen'"
+              :disabled="$store.state.data.isNewForm"
+              :text="valueList.published ? $t('form-view.offline') : $t('form-view.publish')"
               icon-size="large"
               icon="eye"
               button-style="single"
               @clicked="actionEntry(valueList.published ? 'offline' : 'publish')"/>
             <base-button
               :disabled="true"
-              text="Bearbeitung ermöglichen"
+              :text="$t('form-view.edit')"
               icon-size="large"
               icon="people"
               button-style="single" />
             <base-button
-              text="Publikation löschen"
+              :disabled="$store.state.data.isNewForm"
+              :text="$t('form-view.delete', { type: formType ? formType : $t('entry') })"
               icon-size="large"
               icon="waste-bin"
               button-style="single"
@@ -100,7 +102,7 @@
         class="subsection">
         <div
           key="extended-title"
-          class="subtitle">Weitere Angaben</div>
+          class="subtitle">{{ $t('form-view.formExtended') }}</div>
 
         <!-- FORM EXTENSION -->
         <base-form
@@ -187,7 +189,6 @@
       @button-left="showEntryPopUp = false"
       @button-right="linkEntries(selectedEntries)">
       <div class="menu-wrapper">
-        <!-- TODO: sidebar functionality!!! (filter, sort) -->
         <Sidebar
           :list="selectableEntries"
           :select-active="true"
@@ -408,8 +409,8 @@ export default {
           // otherwise issue a warning that entry can not be linked to itself
           this.$notify({
             group: 'request-notifications',
-            title: 'Linking not possible',
-            text: 'You can not link an entry to itself.',
+            title: this.$t('notify.linkingNotPossible'),
+            text: this.$t('notify.selfLinked'),
             type: 'warn',
           });
         }
@@ -451,10 +452,16 @@ export default {
       const list = [];
       await val.forEach((entryId) => {
         const entry = this.$store.getters['data/getEntryById'](entryId);
+        // TODO: also check if it is a parent already!!!!!
         if (!this.linkedList.map(e => e.id).includes(entryId)) {
           list.push(entry);
         } else {
-          // TODO: save and inform user which entries were already linked and not added again
+          this.$notify({
+            group: 'request-notifications',
+            title: this.$t('notify.linkingNotPossible'),
+            text: this.$t('notify.alreadyLinked'),
+            type: 'warn',
+          });
         }
       });
       this.$store.commit('data/setLinked', { list });
@@ -618,6 +625,11 @@ export default {
   .menu-wrapper {
     padding: 0 $spacing $spacing;
     background-color: rgb(240, 240, 240);
+  }
+
+  .subtitle {
+    color: $font-color-second;
+    padding: $spacing;
   }
 
   @media screen and (max-width: $mobile) {

@@ -1,6 +1,10 @@
 {
-  "test": "test",
   "new": "Neu",
+  "search": "Durchsuche Deine Einträge",
+  "options": "Optionen",
+  "cancel": "Abbrechen",
+  "back": "Zurück",
+  "entry": "Eintrag",
   "form": {
     "select": "Wähle",
     "write": "Schreibe eine",
@@ -24,5 +28,33 @@
     "participants": "Beteiligte",
     "English": "Englisch",
     "German": "Deutsch"
+  },
+  "form-view": {
+    "formExtended": "Weitere Angaben",
+    "attachedEntries": "Verlinkte Einträge",
+    "attachedFiles": "Angehängte Dateien",
+    "changeLicence": "Lizenz ändern",
+    "publish": "In Showroom veröffentlichen",
+    "offline": "Offline schalten",
+    "delete": "{type} löschen",
+    "edit": "Bearbeitung ermöglichen",
+    "deleteFile": "Dateien löschen",
+    "deleteLinked": "Verknüpfung löschen",
+    "licenceText": "lizenzierenden",
+    "publishText": "veröffentlichenden",
+    "deleteText": "löschenden",
+    "licenceSubtext": "Die Lizenz der ausgewählten Dateien wird geändert.",
+    "deleteSubtext": "Diese Dateien werden gelöscht.",
+    "publishSubtext": "Diese Dateien werden für Showroom freigegeben.",
+    "licenceButton": "Lizenz Ändern",
+    "publishButton": "Veröffentlichen",
+    "deleteButton": "Löschen",
+    "deleteLinkedText": "Bitte Einträge auswählen:",
+    "deleteLinkedSubtext": "Die Verknüfung zu diesen Einträgen wird gelöscht."
+  },
+  "notify": {
+    "linkingNotPossible": "Verknüpfung nicht möglich",
+    "alreadyLinked": "Dieser Eintrag ist bereits verknüpft.",
+    "selfLinked": "Einträge können nicht mit sich selbst verknüpft werden."
   }
 }

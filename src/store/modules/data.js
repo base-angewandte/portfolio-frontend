@@ -171,6 +171,9 @@ const mutations = {
     const existingEntries = replace ? [] : state.linkedEntries;
     state.linkedEntries = [].concat(list, existingEntries);
   },
+  deleteLinked(state, list) {
+    state.linkedEntries = state.linkedEntries.filter(entry => !list.includes(entry.id));
+  },
 };
 
 const actions = {

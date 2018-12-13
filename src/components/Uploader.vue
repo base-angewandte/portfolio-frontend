@@ -16,11 +16,6 @@
         :filename="file.name"
         class="upload-bar"/>
     </div>
-    <base-input
-      :label="'Test1'"
-      :show-label="false"
-      placeholder="Phaidra URL hier eingeben"
-      class="files-popup-input-field"/>
     <div class="popup-text">
       <base-drop-down
         :label="'Lizenz auswählen'"

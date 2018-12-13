@@ -1,6 +1,9 @@
 {
-  "test": "test",
   "new": "New",
+  "search": "Search Your Works and Events",
+  "options": "Options",
+  "cancel": "Abbrechen",
+  "back": "Zurück",
   "form": {
     "select": "Select",
     "write": "Write (a)",
@@ -24,5 +27,33 @@
     "participants": "Participants",
     "English": "English",
     "German": "German"
+  },
+  "form-view": {
+    "formExtended": "Weitere Angaben",
+    "attachedEntries": "Verlinkte Einträge",
+    "attachedFiles": "Angehängte Dateien",
+    "changeLicence": "Lizenz ändern",
+    "publish": "In Showroom veröffentlichen",
+    "offline": "Offline schalten",
+    "delete": "löschen",
+    "edit": "Bearbeitung ermöglichen",
+    "deleteFile": "Dateien löschen",
+    "deleteLinked": "Verknüpfung löschen",
+    "licenceText": "lizenzierenden",
+    "publishText": "veröffentlichenden",
+    "deleteText": "löschenden",
+    "licenceSubtext": "The licence of the selected files will be changed.",
+    "deleteSubtext": "These files will be deleted.",
+    "publishSubtext": "These files will be published to Showroom.",
+    "licenceButton": "Change Licence",
+    "publishButton": "Publish",
+    "deleteButton": "Delete",
+    "deleteLinkedText": "Bitte Einträge auswählen",
+    "deleteLinkedSubtext": "Die Verknüfung zu diesen Einträgen wird gelöscht"
+  },
+  "notify": {
+    "linkingNotPossible": "Verknüpfung nicht möglich",
+    "alreadyLinked": "Dieser Eintrag ist bereits verknüpft.",
+    "selfLinked": "Einträge können nicht mit sich selbst verknüpft werden."
   }
 }

@@ -16,6 +16,7 @@
           @clicked="getNewForm"/>
         <base-search
           :show-image="true"
+          :placeholder="$t('search')"
           @input="filterEntries($event, 'title')"/>
       </div>
       <div class="options-row">
@@ -23,7 +24,7 @@
           v-if="optionsVisible"
           class="options">
           <base-button
-            :text="'Optionen'"
+            :text="$t('options')"
             :icon="'options-menu'"
             icon-size="small"
             icon-position="left"
