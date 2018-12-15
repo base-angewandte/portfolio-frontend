@@ -183,7 +183,6 @@
           v-if="showOverlay"
           ref="overlay"
           :list="formList"
-          :form-values="[]"
           class="form slide-in-form"/>
       </transition>
     </div>
