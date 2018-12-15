@@ -18,7 +18,7 @@
           <base-menu-entry
             :id="'asingleentry'"
             :icon="'sheet-empty'"
-            :title="valueList.title"
+            :title="showOverlay ? '' : valueList.title"
             :title-bold="true"
             :is-activatable="false"
             :subtext="formType"/>
@@ -88,95 +88,106 @@
     </div>
 
     <!-- FORM -->
-    <base-form
-      :list="formList"
-      :form-values="valueList"
-      class="form"
-      @selected="changed"
-      @values-changed="valuesChanged($event)"/>
-    <transition-group
-      name="slide-fade2">
-      <div
-        v-if="formType"
-        key="extended-section"
-        class="subsection">
+    <div class="form-container">
+      <base-form
+        :list="formList"
+        :form-values="valueList"
+        class="form"
+        @selected="changed"
+        @values-changed="valuesChanged($event)"/>
+      <transition-group
+        name="slide-fade2">
         <div
-          key="extended-title"
-          class="subtitle">{{ $t('form-view.formExtended') }}</div>
+          v-if="formType"
+          key="extended-section"
+          class="subsection">
+          <div
+            key="extended-title"
+            class="subtitle">{{ $t('form-view.formExtended') }}</div>
 
-        <!-- FORM EXTENSION -->
-        <base-form
-          key="extended-form"
-          :list="formExtended"
-          :form-values="valueList.data"
-          class="form"
-          @values-changed="valuesChanged($event, 'data')"/>
-      </div>
-      <div
-        key="file-area"
-        class="file-boxes mobile-hidden">
-        <base-drop-box
-          key="addEntry"
-          :show-plus="true"
-          :box-size="{ width: 'calc(25% - 8px)' }"
-          icon="camera"
-          text="Vorhandenen Eintrag hinzufügen"
-          subtext="(Click oder Drag'n Drop)"
-          class="file-boxes-margin"
-          @dropped="droppedEntries($event)"
-          @clicked="openEntrySelect"/>
-        <base-box-button
-          key="addNew"
-          :show-plus="true"
-          :box-size="{ width: 'calc(25% - 8px)'}"
-          icon="sheet-empty"
-          text="Neuen Eintrag anhängen"
-          class="file-boxes-margin"
-          @clicked="openNewForm"/>
-        <label class="file-select">
+          <!-- FORM EXTENSION -->
+          <base-form
+            key="extended-form"
+            :list="formExtended"
+            :form-values="valueList.data"
+            class="form"
+            @values-changed="valuesChanged($event, 'data')"/>
+        </div>
+        <div
+          key="file-area"
+          class="file-boxes mobile-hidden">
           <base-drop-box
-            key="addFile"
+            key="addEntry"
             :show-plus="true"
-            :box-size="{ width: 'calc(100%)' }"
-            :box-ratio="'50'"
+            :box-size="{ width: 'calc(25% - 8px)' }"
             icon="camera"
-            text="Dateien anhängen"
+            text="Vorhandenen Eintrag hinzufügen"
             subtext="(Click oder Drag'n Drop)"
-            @dropped="handleFileSelect($event)"/>
-          <input
-            type="file"
-            multiple
-            @change="handleFileSelect">
-        </label>
+            class="file-boxes-margin"
+            @dropped="droppedEntries($event)"
+            @clicked="openEntrySelect"/>
+          <base-box-button
+            key="addNew"
+            :show-plus="true"
+            :box-size="{ width: 'calc(25% - 8px)'}"
+            icon="sheet-empty"
+            text="Neuen Eintrag anhängen"
+            class="file-boxes-margin"
+            @clicked="openNewForm"/>
+          <label class="file-select">
+            <base-drop-box
+              key="addFile"
+              :show-plus="true"
+              :box-size="{ width: 'calc(100%)' }"
+              :box-ratio="'50'"
+              icon="camera"
+              text="Dateien anhängen"
+              subtext="(Click oder Drag'n Drop)"
+              @dropped="handleFileSelect($event)"/>
+            <input
+              type="file"
+              multiple
+              @change="handleFileSelect">
+          </label>
 
-      </div>
-      <div
-        key="mobile-file-area"
-        class="file-list mobile-elements">
-        <base-menu-entry
-          id="addFile"
-          key="mobile-addFile"
-          icon="sheet-plus"
-          title="Vorhandenen Eintrag hinzufügen" />
-        <base-menu-entry
-          id="addNew"
-          key="mobile-addNew"
-          icon="sheet-plus"
-          title="Neuen Eintrag anhängen"
-          @activated="openNewForm"/>
-        <base-menu-entry
-          id="addExisting"
-          key="mobile-addExisting"
-          icon="sheet-plus"
-          title="Datei anhängen"/>
-      </div>
-      <AttachmentArea
-        :key="'attachmentArea'"
-        :linked-list="linkedList"
-        :attached-list="['1', '2', '3', '4', '5']"
-        :text="text"
-        subtext="Die Objekte werden für Showroom freigegeben"/>
-    </transition-group>
+        </div>
+        <div
+          key="mobile-file-area"
+          class="file-list mobile-elements">
+          <base-menu-entry
+            id="addFile"
+            key="mobile-addFile"
+            icon="sheet-plus"
+            title="Vorhandenen Eintrag hinzufügen" />
+          <base-menu-entry
+            id="addNew"
+            key="mobile-addNew"
+            icon="sheet-plus"
+            title="Neuen Eintrag anhängen"
+            @activated="openNewForm"/>
+          <base-menu-entry
+            id="addExisting"
+            key="mobile-addExisting"
+            icon="sheet-plus"
+            title="Datei anhängen"/>
+        </div>
+        <AttachmentArea
+          :key="'attachmentArea'"
+          :linked-list="linkedList"
+          :attached-list="['1', '2', '3', '4', '5']"
+          :text="text"
+          subtext="Die Objekte werden für Showroom freigegeben"/>
+      </transition-group>
+      <transition name="slide">
+        <BaseForm
+          v-if="showOverlay"
+          ref="overlay"
+          :list="formList"
+          :form-values="[]"
+          class="form slide-in-form"/>
+      </transition>
+    </div>
+
     <uploader
       v-if="!!filesToUpload.length"
       :file-list="filesToUpload"
@@ -256,6 +267,7 @@ export default {
       sortValue: '',
       filterValues: { title: '', type: '' },
       text: '',
+      showOverlay: false,
     };
   },
   computed: {
@@ -276,6 +288,7 @@ export default {
       }
       window.scrollTo(0, 0);
       this.routeChanged = false;
+      this.showOverlay = false;
     },
     valueList: {
       handler(val) {
@@ -332,12 +345,12 @@ export default {
             // a) link to parent entry b) save to database
             // --> do this.linkEntries(this.$store.data.currentItemId)
             await this.$store.dispatch('data/addSidebarItem', Object.assign({}, this.valueList, { data }));
+            this.$router.push(`/entry/${this.$store.state.data.currentItemId}`);
           } else {
             await this.$store.dispatch('data/updateEntry', Object.assign({}, this.valueList, { data }));
           }
           // this (JSON...) is necessary to destroy any links between the two objects...
           this.valueListCopy = Object.assign({}, JSON.parse(JSON.stringify(this.valueList)));
-          this.$router.push(`/entry/${this.$store.state.data.currentItemId}`);
           this.unsavedChanges = false;
           this.$emit('save-form');
         } catch (e) {
@@ -390,11 +403,25 @@ export default {
       }
     },
     openNewForm() {
-      // TODO: check if this is the desired behaviour
-      this.saveForm();
-      this.$store.commit('data/setParentItem', this.valueList.id);
-      this.$store.commit('data/deleteCurrentItem');
-      this.$router.push('/new');
+      if (this.valueList.title) {
+        this.showOverlay = true;
+        this.formType = '';
+        this.$store.commit('data/setParentItem', this.valueList.id);
+        this.$store.commit('data/setNewForm', true);
+        window.scrollTo(0, 0);
+        setTimeout(() => {
+          this.saveForm();
+          this.$store.commit('data/deleteCurrentItem');
+          this.$router.push('/new');
+        }, 1800);
+      } else {
+        this.$notify({
+          group: 'request-notifications',
+          title: 'Linking not possible',
+          text: 'Please specify a title for this entry first',
+          type: 'warn',
+        });
+      }
     },
     droppedEntries(e) {
       // check if it was not a file that was dragged in and if anything is attached to event at all
@@ -630,6 +657,29 @@ export default {
   .subtitle {
     color: $font-color-second;
     padding: $spacing;
+  }
+
+  .form-container {
+    position: relative;
+
+    .slide-in-form {
+      top: 0;
+      position: absolute;
+    }
+  }
+
+  .slide-enter-active {
+    box-shadow: $pop-up-shadow;
+    transition: transform 1s ease-in, box-shadow 2s ease-in;
+  }
+
+  .slide-enter-to {
+    box-shadow: none;
+  }
+
+  .slide-enter {
+    transform: translateY(800px);
+    box-shadow: $pop-up-shadow;
   }
 
   @media screen and (max-width: $mobile) {
