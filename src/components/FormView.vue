@@ -412,7 +412,7 @@ export default {
           this.saveForm();
           this.$store.commit('data/deleteCurrentItem');
           this.$router.push('/new');
-        }, 1800);
+        }, 700);
       } else {
         this.$notify({
           group: 'request-notifications',
@@ -669,7 +669,7 @@ export default {
 
   .slide-enter-active {
     box-shadow: $pop-up-shadow;
-    transition: transform 1s ease-in, box-shadow 2s ease-in;
+    transition: opacity 0.4s ease-in, transform 0.5s ease-in, box-shadow 0.7s ease-in;
   }
 
   .slide-enter-to {
@@ -677,7 +677,8 @@ export default {
   }
 
   .slide-enter {
-    transform: translateY(800px);
+    transform: translateY(400px);
+    opacity: 0;
     box-shadow: $pop-up-shadow;
   }
 
