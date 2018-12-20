@@ -39,7 +39,7 @@
           class="form-button">
           <base-button
             :active="unsavedChanges"
-            text="Save"
+            :text="$t('save')"
             icon-size="small"
             icon="save-file"
             button-style="row"
@@ -174,7 +174,30 @@
         <AttachmentArea
           :key="'attachmentArea'"
           :linked-list="linkedList"
-          :attached-list="['1', '2', '3', '4', '5']"
+          :attached-list="[
+            {
+              id: '1',
+              filename: 'test.jpg',
+              licence: 'CC-BY',
+              published: false,
+              url: '/static/img1.png',
+            },
+            {
+              id: '2',
+              filename: 'test.jpeg',
+              published: true,
+              url: '~/static/img1.png',
+            },
+            {
+              id: '4',
+              published: false,
+              url: '../static/img1.png',
+            },
+            {
+              id: '10',
+              published: false,
+              url: '../static/img1.png',
+          },]"
           :text="text"
           subtext="Die Objekte werden für Showroom freigegeben"/>
       </transition-group>

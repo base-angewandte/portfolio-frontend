@@ -27,21 +27,24 @@ const i18n = new VueI18n({
   },
 });
 
-
 // store.registerModule('api', Api);
+
 // TODO: this is throwing an error (.keys of undefined)
 // store.registerModule('skosmos', Skosmos);
 
-/* this is not working!
+// TODO: need to add proper authentication check / mechanism here!
 router.beforeEach((to, from, next) => {
-  if (to.matched.some(record => record.meta.requiresAuth)) {
-    debugger;
-    if (!store.auth.state.isAuthenticated) {
-      window.location.href = 'http://localhost:8200/accounts/login';
+  /* if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (sessionStorage.getItem('auth')) {
+      store.commit('auth/setAuth');
     }
-  }
+    if (!store.state.auth.isAuthenticated) {
+      window.location.href = 'http://basedev.uni-ak.ac.at/portfolio/accounts/login';
+      sessionStorage.setItem('auth', 'true');
+    }
+  } */
   next();
-}); */
+});
 
 /* eslint-disable no-new */
 new Vue({
@@ -49,7 +52,6 @@ new Vue({
   i18n,
   router,
   store,
-  // store,
   components: { App },
   template: '<App/>',
 });

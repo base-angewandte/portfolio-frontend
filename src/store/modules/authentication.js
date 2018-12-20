@@ -3,7 +3,7 @@
 import axios from 'axios';
 
 const state = {
-  isAuthenticated: true,
+  isAuthenticated: false,
   profile: {
     name: 'Florian Bettel',
   },
@@ -16,6 +16,9 @@ const getters = {
 const mutations = {
   setUser(state, userData) {
     state.profile = userData;
+  },
+  setAuth(state) {
+    state.isAuthenticated = true;
   },
 };
 

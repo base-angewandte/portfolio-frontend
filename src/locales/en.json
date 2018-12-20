@@ -4,6 +4,8 @@
   "options": "Options",
   "cancel": "Abbrechen",
   "back": "Zurück",
+  "entry": "Entry",
+  "save": "Save",
   "form": {
     "select": "Select",
     "write": "Write (a)",
