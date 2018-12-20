@@ -160,7 +160,8 @@
           :description="getFileType(attached.filename)"
           :box-size="{ width: 'calc(25% - 12px)' }"
           :box-ratio="100"
-          :image-url="require('../static/img1.png')"
+          :box-text="['Size: 200kb', 'Creator: S.H.', 'Last Modified: xxxxx', 'xxxxx',
+                      'xxxxx', 'yyyyyyyyyyyyyyy']"
           :key="index"
           class="linked-base-box"
           @select-triggered="filesSelected(index, $event)">
@@ -267,8 +268,9 @@ export default {
     },
     getFileType(file) {
       if (file) {
+        // TODO: also catch 4 letter ending (jpeg)
         const fileEnding = file.match(/\.([a-z]{3}$)/);
-        if (fileEnding && ['jpg', 'gif', 'jpeg'].includes(fileEnding[1])) {
+        if (fileEnding && ['jpg', 'gif', 'jpeg', 'png'].includes(fileEnding[1])) {
           return 'Picture';
         } if (fileEnding && ['mp4', 'mvw'].includes(fileEnding[1])) {
           return 'Video';
