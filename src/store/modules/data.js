@@ -322,6 +322,11 @@ const actions = {
     const list = [];
     commit('setLinked', { list, replace: true });
   },
+  fetchInfoBoxData(context, entry) {
+    console.log(entry);
+    // TODO: fetch info data - from where???
+    return { title: 'title' };
+  },
 };
 
 export default {

@@ -69,13 +69,15 @@
           { 'base-form-field-spacing': element.size === 'half' && getClassIndex(element) }
         ]"
         :draggable="true"
+        :hoverbox-content="hoverBoxData"
         @selected="$emit('selected', { value: $event && $event.length
         ? $event[0][element.name] || $event[0] : null, field: element.name })"
         @fetch-dropdown-entries="fetchAutocomplete({
           value: $event.value,
           name: element.name,
           source: element.source
-      })">
+        })"
+        @hoverbox-active="fetchInfoData">
         <template
           slot="drop-down-entry"
           slot-scope="props">
@@ -120,12 +122,15 @@
         :allow-unknown-entries="true"
         :allow-dynamic-drop-down-entries="true"
         :identifier="'uuid'"
+        :hoverbox-content="hoverBoxData"
+        :object-prop="element.name"
         v-model="formValuesInt[element.name]"
         class="base-form-field base-form-field-full"
         @fetch-dropdown-entries="fetchAutocomplete({
           value: $event.value,
           name: 'authors',
-          source: element.source })">
+          source: element.source })"
+        @hoverbox-active="fetchInfoData">
         <template
           slot="drop-down-entry"
           slot-scope="props">
@@ -148,10 +153,12 @@ import {
   BaseMultilineTextInput,
   BaseDropDown,
   BaseChipsBelow,
+  BaseHoverBox,
 } from 'base-components';
 
 export default {
   components: {
+    BaseHoverBox,
     BaseChipsBelow,
     BaseMultilineTextInput,
     BaseChipsInput,
@@ -176,6 +183,7 @@ export default {
     return {
       dropdownLists: {},
       formValuesInt: {},
+      hoverBoxData: {},
     };
   },
   computed: {
@@ -294,6 +302,16 @@ export default {
           }
         });
       this.dropdownLists = obj;
+    },
+    async fetchInfoData(val, entry) {
+      console.log(entry);
+      if (val) {
+        const data = await this.$store.dispatch('data/fetchInfoBoxData', entry);
+        console.log(data);
+        this.hoverBoxData = data;
+      } else {
+        this.hoverBoxData = {};
+      }
     },
   },
 };
