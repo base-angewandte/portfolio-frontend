@@ -53,6 +53,9 @@ export default {
   watch: {
     $route() {
       this.showForm = this.$route.name !== 'Dashboard';
+      if (!this.showForm) {
+        this.$store.commit('data/deleteCurrentItem');
+      }
       this.$store.commit('data/setNewForm', this.$route.name === 'newEntry');
     },
   },
