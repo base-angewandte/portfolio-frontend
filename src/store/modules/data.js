@@ -233,7 +233,8 @@ const actions = {
   duplicateEntries({ state, commit }, entryArr) {
     try {
       entryArr.forEach((id) => {
-        const newEntry = state.sidebarData.find(entry => entry.id === id);
+        const newEntry = Object.assign({}, state.sidebarData.find(entry => entry.id === id));
+        Vue.set(newEntry, 'title', `${newEntry.title} (Copy)`);
         this.dispatch('data/addSidebarItem', newEntry);
       });
       commit('setOptions', false);
