@@ -180,13 +180,13 @@
               filename: 'test.jpg',
               licence: 'CC-BY',
               published: false,
-              url: '/static/img1.png',
+              url: '../static/img1.png',
             },
             {
               id: '2',
               filename: 'test.jpeg',
               published: true,
-              url: '~/static/img1.png',
+              url: '../static/img1.png',
             },
             {
               id: '4',
@@ -199,7 +199,8 @@
               url: '../static/img1.png',
           },]"
           :text="text"
-          subtext="Die Objekte werden für Showroom freigegeben"/>
+          subtext="Die Objekte werden für Showroom freigegeben"
+          @show-preview="$emit('show-preview', $event)"/>
       </transition-group>
       <transition name="slide">
         <BaseForm

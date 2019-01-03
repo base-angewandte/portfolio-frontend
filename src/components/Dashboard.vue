@@ -17,6 +17,23 @@
         </div>
       </div>
     </base-pop-up>
+    <div
+      v-if="showPreview"
+      class="preview-background"
+      @wheel="scrollAction">
+      <div
+        class="preview-close"
+        @click="showPreview = false">
+        <img
+          :src="require('../static/remove.svg')"
+          class="preview-close-icon">
+      </div>
+      <transition name="grow">
+        <div class="preview-image">
+          <img :src="previewUrl">
+        </div>
+      </transition>
+    </div>
     <sidebar
       ref="sidebar"
       :new-form="$store.state.data.isNewForm"
@@ -31,7 +48,8 @@
       class="form-view">
       <router-view
         ref="view"
-        @form-saved="saveForm"/>
+        @form-saved="saveForm"
+        @show-preview="loadPreview"/>
     </div>
   </div>
 </template>
@@ -48,6 +66,8 @@ export default {
   data() {
     return {
       showForm: false,
+      showPreview: false,
+      previewUrl: '',
     };
   },
   watch: {
@@ -115,6 +135,17 @@ export default {
         this.$refs.view.updateForm();
       }
     },
+    loadPreview(img) {
+      /* eslint-disable-next-line */
+      this.previewUrl = 'https://picsum.photos/200/200';
+      this.showPreview = true;
+      console.log(img);
+    },
+    scrollAction(evt) {
+      // disable page scrolling
+      evt.preventDefault();
+      // TODO: image zoom?
+    },
   },
 };
 </script>
@@ -144,4 +175,43 @@ export default {
       }
     }
   }
+
+  .preview-background {
+    z-index: 10000000;
+    position: fixed;
+    overflow: hidden;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+
+    .preview-close {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      height: 16px;
+      width: 16px;
+      z-index: 10000001;
+      cursor: pointer;
+    }
+
+    .preview-image {
+      margin: auto;
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  }
+
+  .grow-enter-active {
+    transition: all 1s ease-in-out;
+  }
+
+  .grow-enter {
+
+  }
+
 </style>

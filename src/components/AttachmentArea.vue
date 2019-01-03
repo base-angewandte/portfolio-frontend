@@ -160,11 +160,13 @@
           :description="getFileType(attached.filename)"
           :box-size="{ width: 'calc(25% - 12px)' }"
           :box-ratio="100"
+          :image-url="require('../static/img1.png')"
           :box-text="['Size: 200kb', 'Creator: S.H.', 'Last Modified: xxxxx', 'xxxxx',
                       'xxxxx', 'yyyyyyyyyyyyyyy']"
           :key="index"
           class="linked-base-box"
-          @select-triggered="filesSelected(index, $event)">
+          @select-triggered="filesSelected(index, $event)"
+          @clicked="$emit('show-preview', attached.url)">
           <template slot="top">
             <div
               v-if="attached.published"
