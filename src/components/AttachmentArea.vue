@@ -64,6 +64,7 @@
           :box-size="{ width: 'calc(25% - 12px)' }"
           :title="linked.title"
           :description="linked.type"
+          :image-url="linked.files && linked.files.length ? getImagePath(linked.files[0].url) : ''"
           show-title
           class="linked-base-box"
           @select-triggered="entrySelected(linked.id, $event)"/>
