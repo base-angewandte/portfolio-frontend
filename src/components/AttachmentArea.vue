@@ -285,13 +285,15 @@ export default {
     getImagePath(iconName) {
       // for local images
       // TODO: remove for production!
-      if (iconName.includes('assets')) {
-        const match = /\/assets\/(\w+)\.\w+$/.exec(iconName)[1];
+      if (iconName.includes('images')) {
+        const match = /\/assets\/images\/(\w+)\.\w+$/.exec(iconName)[1];
         const images = require.context('../assets/images', false, /\.png$/)
         /* eslint-disable-next-line */
         return images(`./${match}.png`);
+      } else if (iconName.includes('http')) {
+        return iconName;
       }
-      return iconName;
+      return '';
     },
   },
 };
