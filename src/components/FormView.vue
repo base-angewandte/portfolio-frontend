@@ -390,16 +390,22 @@ export default {
     async updateForm() {
       try {
         const { type } = this.$store.state.data.currentItem;
-        this.valueList = Object.assign({}, this.$store.state.data.currentItem, {
-          type: type ? [type] : [],
-          data: Object.assign({}, this.$store.state.data.currentItem.data),
-        });
-        // this (JSON...) is necessary to destroy any links between the two objects...
-        this.valueListCopy = Object.assign({}, JSON.parse(JSON.stringify(this.valueList)));
         this.formType = type || '';
         if (this.formType) {
           this.formExtended = await this.$store.dispatch('data/fetchFormExtension', this.formType);
         }
+        // set the current data from store item
+        // use initializeObject() to have all properties present
+        // from the beginning and prevent false "unsavedChanges"
+        this.valueList = Object.assign({}, this.initializeObject(this.formList),
+          this.$store.state.data.currentItem, {
+            type: type ? [type] : [],
+            data: Object.assign({}, this.initializeObject(this.formExtended),
+              this.$store.state.data.currentItem.data),
+          });
+        debugger;
+        // this (JSON...) is necessary to destroy any links between the two objects...
+        this.valueListCopy = Object.assign({}, JSON.parse(JSON.stringify(this.valueList)));
       } catch (err) {
         console.error(err);
       }
@@ -550,6 +556,19 @@ export default {
       return [].concat(this.$store.getters['data/getSidebarData']
         .filter(entry => entry.id !== this.$store.state.data.currentItemId
           && !this.$store.getters['data/getCurrentLinked'].includes(entry)));
+    },
+    initializeObject(formData) {
+      const formValues = {};
+      formData.forEach((field) => {
+        let initVal = '';
+        if (field.dataType === Array) {
+          initVal = [];
+        } else if (field.dataType === Object) {
+          initVal = {};
+        }
+        this.$set(formValues, field.name, initVal);
+      });
+      return formValues;
     },
   },
 };
