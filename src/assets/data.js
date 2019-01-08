@@ -55,6 +55,14 @@ module.exports = {
       id: '4',
       title: 'Allons-y!!',
       type: 'Bild',
+      files: [
+        {
+          filename: 'Allons-y!!!!!!!!!!!!!!!!!!!!!!!!',
+          published: true,
+          license: 'CC-BY',
+          url: 'https://pm1.narvii.com/5723/17dbba1b3fea1be63dc2970ce3289c9cf27b925e_hq.jpg',
+        },
+      ],
     },
     {
       id: '5',

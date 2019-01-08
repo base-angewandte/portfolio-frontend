@@ -403,7 +403,6 @@ export default {
             data: Object.assign({}, this.initializeObject(this.formExtended),
               this.$store.state.data.currentItem.data),
           });
-        debugger;
         // this (JSON...) is necessary to destroy any links between the two objects...
         this.valueListCopy = Object.assign({}, JSON.parse(JSON.stringify(this.valueList)));
       } catch (err) {
