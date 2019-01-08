@@ -174,30 +174,7 @@
         <AttachmentArea
           :key="'attachmentArea'"
           :linked-list="linkedList"
-          :attached-list="[
-            {
-              id: '1',
-              filename: 'test.jpg',
-              licence: 'CC-BY',
-              published: false,
-              url: '/static/img1.png',
-            },
-            {
-              id: '2',
-              filename: 'test.jpeg',
-              published: true,
-              url: '~/static/img1.png',
-            },
-            {
-              id: '4',
-              published: false,
-              url: '../static/img1.png',
-            },
-            {
-              id: '10',
-              published: false,
-              url: '../static/img1.png',
-          },]"
+          :attached-list="fileList"
           :text="text"
           subtext="Die Objekte werden für Showroom freigegeben"/>
       </transition-group>
@@ -298,6 +275,9 @@ export default {
     },
     linkedList() {
       return this.$store.getters['data/getCurrentLinked'];
+    },
+    fileList() {
+      return this.valueList.files;
     },
   },
   watch: {

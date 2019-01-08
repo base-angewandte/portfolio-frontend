@@ -158,6 +158,7 @@
           :title="attached.filename"
           :subtext="attached.licence"
           :description="getFileType(attached.filename)"
+          :image-url="getImagePath(attached.url)"
           :box-size="{ width: 'calc(25% - 12px)' }"
           :box-ratio="100"
           :box-text="['Size: 200kb', 'Creator: S.H.', 'Last Modified: xxxxx', 'xxxxx',
@@ -280,6 +281,17 @@ export default {
         return 'Document';
       }
       return '';
+    },
+    getImagePath(iconName) {
+      // for local images
+      // TODO: remove for production!
+      if (iconName.includes('assets')) {
+        const match = /\/assets\/(\w+)\.\w+$/.exec(iconName)[1];
+        const images = require.context('../assets/images', false, /\.png$/)
+        /* eslint-disable-next-line */
+        return images(`./${match}.png`);
+      }
+      return iconName;
     },
   },
 };
