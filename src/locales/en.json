@@ -28,7 +28,8 @@
     "curator": "Curator",
     "participants": "Participants",
     "English": "English",
-    "German": "German"
+    "German": "German",
+    "location description": "Location Description"
   },
   "form-view": {
     "formExtended": "Weitere Angaben",
