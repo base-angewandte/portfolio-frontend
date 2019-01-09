@@ -55,10 +55,18 @@ module.exports = {
       id: '4',
       title: 'Allons-y!!',
       type: 'Bild',
+      files: [
+        {
+          filename: 'Allons-y!!!!!!!!!!!!!!!!!!!!!!!!',
+          published: true,
+          license: 'CC-BY',
+          url: 'https://pm1.narvii.com/5723/17dbba1b3fea1be63dc2970ce3289c9cf27b925e_hq.jpg',
+        },
+      ],
     },
     {
       id: '5',
-      title: 'Freshwater Sediment',
+      title: 'Higher nitrate-reducer diversity in macrophyte-colonized compared to unvegetated freshwater sediment.',
       subtitle: '',
       type: 'Publikation',
       text:
@@ -101,17 +109,20 @@ module.exports = {
     common: [
       {
         name: 'title',
+        dataType: String,
         type: 'autocomplete',
         size: 'half',
         source: 'http://localhost:9900/fetchAutocomplete/title',
       },
       {
         name: 'subtitle',
+        dataType: String,
         type: 'text',
         size: 'half',
       },
       {
         name: 'type',
+        dataType: Array,
         type: 'chips',
         mode: 'single',
         sourceType: 'static',
@@ -121,6 +132,7 @@ module.exports = {
       },
       {
         name: 'text',
+        dataType: Object,
         type: 'multiline',
         size: 'full',
         lang: ['Englisch', 'Deutsch'],
@@ -128,6 +140,7 @@ module.exports = {
       },
       {
         name: 'keywords',
+        dataType: Array,
         type: 'chips',
         sourceType: 'static',
         source: 'http://localhost:9900/api/keywords',
@@ -137,6 +150,7 @@ module.exports = {
       },
       {
         name: 'notes',
+        dataType: String,
         type: 'multiline',
         size: 'full',
         setType: false,
@@ -145,6 +159,7 @@ module.exports = {
     document: [
       {
         name: 'authors',
+        dataType: Array,
         type: 'chips',
         sourceType: 'dynamic',
         source: 'http://localhost:9900/fetchAutocomplete/authors',
@@ -154,12 +169,14 @@ module.exports = {
       },
       {
         name: 'erschienen in',
+        dataType: String,
         type: 'autocomplete',
         source: 'http://localhost:9900/fetchAutocomplete/journal',
         size: 'full',
       },
       {
         name: 'editors',
+        dataType: Array,
         type: 'chips',
         sourceType: 'dynamic',
         source: 'http://localhost:9900/fetchAutocomplete/authors',
@@ -169,6 +186,7 @@ module.exports = {
       },
       {
         name: 'publisher',
+        dataType: Array,
         type: 'chips',
         sourceType: 'dynamic',
         source: 'http://localhost:9900/fetchAutocomplete/authors',
@@ -178,30 +196,35 @@ module.exports = {
       },
       {
         name: 'city',
+        dataType: String,
         type: 'autocomplete',
         source: 'http://localhost:9900/fetchAutocomplete/city',
         size: 'half',
       },
       {
         name: 'date',
+        dataType: Object,
         type: 'date',
         size: 'half',
         dateType: 'single',
       },
       {
         name: 'ISBN',
+        dataType: String,
         type: 'autocomplete',
         source: 'http://localhost:9900/fetchAutocomplete/doi',
         size: 'half',
       },
       {
         name: 'DOI',
+        dataType: String,
         type: 'autocomplete',
         source: 'http://localhost:9900/fetchAutocomplete/doi',
         size: 'half',
       },
       {
         name: 'Participants',
+        dataType: Array,
         type: 'chips-below',
         sourceType: 'dynamic',
         unknown: true,
@@ -212,6 +235,7 @@ module.exports = {
     image: [
       {
         name: 'artist',
+        dataType: Array,
         type: 'chips',
         sourceType: 'dynamic',
         unknown: true,
@@ -220,6 +244,7 @@ module.exports = {
       },
       {
         name: 'participants',
+        dataType: Array,
         type: 'chips-below',
         sourceType: 'dynamic',
         unknown: true,
@@ -228,11 +253,13 @@ module.exports = {
       },
       {
         name: 'location',
+        dataType: String,
         type: 'autocomplete',
         size: 'half',
       },
       {
         name: 'date',
+        dataType: Object,
         type: 'date',
         size: 'half',
         dateType: 'single',
@@ -241,6 +268,7 @@ module.exports = {
     film: [
       {
         name: 'director',
+        dataType: Array,
         type: 'chips',
         sourceType: 'dynamic',
         unknown: true,
@@ -249,6 +277,7 @@ module.exports = {
       },
       {
         name: 'participants',
+        dataType: Array,
         type: 'chips-below',
         sourceType: 'dynamic',
         unknown: true,
@@ -275,6 +304,7 @@ module.exports = {
     exhibition: [
       {
         name: 'artist',
+        dataType: Array,
         type: 'chips',
         sourceType: 'dynamic',
         unknown: true,
@@ -283,6 +313,7 @@ module.exports = {
       },
       {
         name: 'curator',
+        dataType: Array,
         type: 'chips',
         sourceType: 'dynamic',
         unknown: true,
@@ -291,6 +322,7 @@ module.exports = {
       },
       {
         name: 'participants',
+        dataType: Array,
         type: 'chips-below',
         sourceType: 'dynamic',
         unknown: true,
@@ -299,15 +331,35 @@ module.exports = {
       },
       {
         name: 'date',
+        dataType: Object,
         type: 'date',
         size: 'half',
         dateType: 'range',
       },
       {
         name: 'opening',
+        dataType: Object,
         type: 'date',
         size: 'half',
         dateType: 'datetime',
+      },
+      {
+        name: 'location',
+        dataType: String,
+        type: 'text',
+        size: 'half',
+      },
+      {
+        name: 'location description',
+        dataType: String,
+        type: 'text',
+        size: 'half',
+      },
+      {
+        name: 'URL',
+        dataType: String,
+        type: 'text',
+        size: 'full',
       },
     ],
   },

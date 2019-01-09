@@ -2,7 +2,8 @@
 // Template version: 1.3.1
 // see http://vuejs-templates.github.io/webpack for documentation.
 
-const path = require('path')
+const path = require('path');
+var dotenv = require('dotenv').config({path: __dirname + '/.env'});
 
 module.exports = {
   dev: {
@@ -50,7 +51,7 @@ module.exports = {
     // Paths
     assetsRoot: path.resolve(__dirname, '../dist'),
     assetsSubDirectory: 'static',
-    assetsPublicPath: './',
+    assetsPublicPath: dotenv.parsed.APP_PREFIX + '/',
 
     /**
      * Source Maps

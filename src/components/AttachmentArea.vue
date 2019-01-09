@@ -64,6 +64,7 @@
           :box-size="{ width: 'calc(25% - 12px)' }"
           :title="linked.title"
           :description="linked.type"
+          :image-url="linked.files && linked.files.length ? getImagePath(linked.files[0].url) : ''"
           show-title
           class="linked-base-box"
           @select-triggered="entrySelected(linked.id, $event)"/>
@@ -158,6 +159,7 @@
           :title="attached.filename"
           :subtext="attached.licence"
           :description="getFileType(attached.filename)"
+          :image-url="getImagePath(attached.url)"
           :box-size="{ width: 'calc(25% - 12px)' }"
           :box-ratio="100"
           :image-url="require('../static/img1.png')"
@@ -280,6 +282,18 @@ export default {
           return 'Audio';
         }
         return 'Document';
+      }
+      return '';
+    },
+    getImagePath(iconName) {
+      // for local images
+      // TODO: remove for production!
+      if (iconName.includes('images')) {
+        const match = /\/assets\/images\/(\w+\.\w+)$/.exec(iconName);
+        /* eslint-disable-next-line */
+        return require(`@/assets/images/${match[1]}`);
+      } if (iconName.includes('http')) {
+        return iconName;
       }
       return '';
     },
