@@ -287,10 +287,9 @@ export default {
       // for local images
       // TODO: remove for production!
       if (iconName.includes('images')) {
-        const match = /\/assets\/images\/(\w+)\.(\w+)$/.exec(iconName);
-        const images = require.context('../assets/images', false, /\.jpg$/)
+        const match = /\/assets\/images\/(\w+\.\w+)$/.exec(iconName);
         /* eslint-disable-next-line */
-        return images(`./${match[1]}.${match[2]}`);
+        return require(`@/assets/images/${match[1]}`);
       } if (iconName.includes('http')) {
         return iconName;
       }
