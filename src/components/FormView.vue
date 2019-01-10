@@ -171,6 +171,8 @@
             icon="sheet-plus"
             title="Datei anhängen"/>
         </div>
+
+        <!-- ATTACHMENTS -->
         <AttachmentArea
           :key="'attachmentArea'"
           :linked-list="linkedList"

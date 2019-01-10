@@ -17,23 +17,11 @@
         </div>
       </div>
     </base-pop-up>
-    <div
-      v-if="showPreview"
-      class="preview-background"
-      @wheel="scrollAction">
-      <div
-        class="preview-close"
-        @click="showPreview = false">
-        <img
-          :src="require('../static/remove.svg')"
-          class="preview-close-icon">
-      </div>
-      <transition name="grow">
-        <div class="preview-image">
-          <img :src="previewUrl">
-        </div>
-      </transition>
-    </div>
+    <BaseMediaPreview
+      :show-preview="showPreview"
+      :image-url="previewUrl"
+      @hide-preview="showPreview = false"/>
+
     <sidebar
       ref="sidebar"
       :new-form="$store.state.data.isNewForm"
@@ -55,11 +43,12 @@
 </template>
 
 <script>
-import { BasePopUp } from 'base-components';
+import { BasePopUp, BaseMediaPreview } from 'base-components';
 import Sidebar from './Sidebar';
 
 export default {
   components: {
+    BaseMediaPreview,
     Sidebar,
     BasePopUp,
   },
@@ -136,8 +125,9 @@ export default {
       }
     },
     loadPreview(img) {
+      console.log(img);
       /* eslint-disable-next-line */
-      this.previewUrl = 'https://picsum.photos/200/200';
+      this.previewUrl = img;
       this.showPreview = true;
       console.log(img);
     },
@@ -175,43 +165,4 @@ export default {
       }
     }
   }
-
-  .preview-background {
-    z-index: 10000000;
-    position: fixed;
-    overflow: hidden;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-
-    .preview-close {
-      position: fixed;
-      top: 16px;
-      right: 16px;
-      height: 16px;
-      width: 16px;
-      z-index: 10000001;
-      cursor: pointer;
-    }
-
-    .preview-image {
-      margin: auto;
-      height: 100vh;
-      width: 100vw;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-  }
-
-  .grow-enter-active {
-    transition: all 1s ease-in-out;
-  }
-
-  .grow-enter {
-
-  }
-
 </style>

@@ -162,7 +162,6 @@
           :image-url="getImagePath(attached.url)"
           :box-size="{ width: 'calc(25% - 12px)' }"
           :box-ratio="100"
-          :image-url="require('../static/img1.png')"
           :box-text="['Size: 200kb', 'Creator: S.H.', 'Last Modified: xxxxx', 'xxxxx',
                       'xxxxx', 'yyyyyyyyyyyyyyy']"
           :key="index"
