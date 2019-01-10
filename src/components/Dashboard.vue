@@ -127,8 +127,16 @@ export default {
     loadPreview(img) {
       console.log(img);
       /* eslint-disable-next-line */
-      this.previewUrl = img;
-      this.showPreview = true;
+      if (img.includes('http')) {
+        this.previewUrl = img;
+      } else if (img.includes('/images')) {
+        const match = /\/assets\/images\/(\w+\.\w+)$/.exec(img);
+        /* eslint-disable-next-line */
+        this.previewUrl = match[1] ? require(`@/assets/images/${match[1]}`) : '';
+      } else {
+        this.previewUrl = '';
+      }
+      this.showPreview = !!this.previewUrl;
       console.log(img);
     },
     scrollAction(evt) {
