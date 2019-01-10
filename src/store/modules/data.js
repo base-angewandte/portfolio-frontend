@@ -318,9 +318,9 @@ const actions = {
       action,
     });
   },
-  fetchLinked({ commit }) {
+  fetchLinked({ state, commit }) {
     // TODO: fetch linked entries from database!
-    const list = [];
+    const list = state.currentItem.linked || [];
     commit('setLinked', { list, replace: true });
   },
   fetchInfoBoxData(context, entry) {

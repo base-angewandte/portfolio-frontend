@@ -29,7 +29,20 @@
     "participants": "Participants",
     "English": "English",
     "German": "German",
-    "location description": "Location Description"
+    "location_description": "Location Description",
+    "volume": "Volume",
+    "pages": "Pages",
+    "language": "Language",
+    "format": "Format",
+    "edition": "Edition",
+    "material": "Material",
+    "url": "URL",
+    "isbn": "ISSN/ISBN",
+    "project_lead": "Project Lead",
+    "funding_institution": "Funding Institution",
+    "orgainiser": "Organiser",
+    "lecturer": "Lecturer",
+    "title_of_contribution": "Title of Contribution"
   },
   "form-view": {
     "formExtended": "Weitere Angaben",

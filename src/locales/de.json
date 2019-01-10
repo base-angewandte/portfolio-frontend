@@ -29,7 +29,21 @@
     "participants": "Beteiligte",
     "English": "Englisch",
     "German": "Deutsch",
-    "location description": "Ortsbeschreibung"
+    "location_description": "Ortsbeschreibung",
+    "volume": "Band/Nummer",
+    "pages": "Seitenangaben",
+    "language": "Sprache",
+    "format": "Format",
+    "edition": "Edition",
+    "material": "Material",
+    "url": "URL",
+    "isbn": "ISSN/ISBN",
+    "project_lead": "Projektleitung",
+    "funding_institution": "Fördergeber",
+    "orgainiser": "OrganisatorInnen",
+    "lecturer": "Vortragende",
+    "title_of_contribution": "Vortragstitel"
+
   },
   "form-view": {
     "formExtended": "Weitere Angaben",

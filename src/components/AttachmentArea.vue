@@ -63,11 +63,13 @@
           :key="linked.id"
           :box-size="{ width: 'calc(25% - 12px)' }"
           :title="linked.title"
+          :subtext="linked.subtitle"
           :description="linked.type"
           :image-url="linked.files && linked.files.length ? getImagePath(linked.files[0].url) : ''"
           show-title
           class="linked-base-box"
-          @select-triggered="entrySelected(linked.id, $event)"/>
+          @select-triggered="entrySelected(linked.id, $event)"
+          @clicked="goToLinked(linked.id)"/>
         <BaseBoxButton
           v-if="!!showEntryAction"
           :text="$t('form-view.deleteLinked')"
@@ -295,6 +297,11 @@ export default {
         return iconName;
       }
       return '';
+    },
+    goToLinked(id) {
+      this.$store.commit('data/deleteLastParentItem');
+      this.$store.dispatch('data/setCurrentItemById', id);
+      this.$router.push(`/entry/${id}`);
     },
   },
 };

@@ -125,7 +125,6 @@ export default {
       }
     },
     loadPreview(img) {
-      console.log(img);
       /* eslint-disable-next-line */
       if (img.includes('http')) {
         this.previewUrl = img;
