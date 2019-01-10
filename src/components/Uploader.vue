@@ -104,7 +104,7 @@ export default {
       this.$emit('upload-start');
 
       try {
-        const res = await axios.post('http://localhost:9900/file-progress',
+        const res = await axios.post('/data-api/file-progress',
           formData,
           {
             headers: {
