@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import Router from 'vue-router';
 import Dashboard from '../components/Dashboard';
-import FormView from '../components/FormView';
+import FormView from '../components/FormViewNew';
 import Login from '../components/Login';
 import NotFoundComponent from '../components/NotFoundComponent';
 

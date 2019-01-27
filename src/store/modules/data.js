@@ -1,5 +1,6 @@
 /* eslint no-shadow: ["error", { "allow": ["state", "getters"] }] */
 import Vue from 'vue';
+import axios from 'axios';
 import DATA from '../../assets/data';
 
 const state = {
@@ -180,7 +181,7 @@ const actions = {
   async fetchFormExtension(context, type) {
     const commonType = await Object.keys(DATA.TYPE_MAPPINGS)
       .find(key => DATA.TYPE_MAPPINGS[key].includes(type));
-    return DATA.FORM_MAPPINGS[commonType] || [];
+    return DATA.FORM_MAPPINGS[commonType].properties || {};
   },
   setCurrentItemById({ commit, dispatch }, id) {
     const entry = this.getters['data/getEntryById'](id);
@@ -189,6 +190,25 @@ const actions = {
     }
     dispatch('fetchLinked');
     return !!entry;
+  },
+  async fetchEntryData({ commit, dispatch, state }, id) {
+    try {
+      // TODO: either call C. module or do db request
+      // const entryData = await axios(`http://localhost:8200/api/v1/entity/${id}`).data;
+      const entryData = DATA.EXISTING_ENTRIES.filter(entry => id === entry.id);
+      if (entryData.length) {
+        const data = entryData[0];
+        // TODO: bring data in the form they need to be here already!
+        // type needs to be array in logic here!
+        commit('setCurrentItem', Object.assign({}, data, { type: [data.type] }));
+        dispatch('fetchLinked');
+        return state.currentItem;
+      }
+    } catch (e) {
+      // TODO: inform user that fetching of entry failed
+      console.error(e);
+    }
+    return {};
   },
   addSidebarItem({ commit, dispatch }, obj) {
     return new Promise((resolve, reject) => {
