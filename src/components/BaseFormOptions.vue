@@ -69,7 +69,23 @@ export default {
       formType: 'test',
     };
   },
-
+  methods: {
+    actionEntry(action) {
+      if (!this.$store.state.data.isNewForm && !this.unsavedChanges) {
+        this.$store.dispatch('data/actionEntries', {
+          action,
+          entries: [this.$store.state.data.currentItemId],
+        });
+      } else {
+        this.$notify({
+          group: 'request-notifications',
+          title: 'Unsaved Changes',
+          text: `Please save your ${this.$store.state.data.isNewForm ? 'new Form' : 'Changes'} first!`,
+          type: 'warn',
+        });
+      }
+    },
+  },
 };
 </script>
 

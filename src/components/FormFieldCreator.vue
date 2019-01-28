@@ -31,7 +31,7 @@
       v-model="fieldValueInt"
       class="base-form-field base-form-field-full">
       <template
-        v-if="field.setType">
+        v-if="fieldValueInt && fieldValueInt.type">
         <!-- TODO: replace hardcoded types!  -->
         <BaseDropDown
           :selected="fieldValueInt && fieldValueInt.type
@@ -52,7 +52,7 @@
       :label="label"
       :placeholder="placeholder"
       :list="dropDownList"
-      :object-prop="field.name.toLowerCase()"
+      :object-prop="'label'"
       v-model="fieldValueInt"
       :class="['base-form-field']"
       @autocomplete="$emit('fetch-autocomplete', {
@@ -70,10 +70,10 @@
       :object-prop="'commonname'"
       :list="dropDownList"
       v-model="fieldValueInt"
-      :allow-dynamic-drop-down-entries="field.sourceType === 'dynamic'"
-      :allow-multiple-entries="field.mode === 'multi'"
+      :allow-dynamic-drop-down-entries="!['type', 'keywords'].includes(field.name)"
+      :allow-multiple-entries="field.name !== 'type'"
       :allow-unknown-entries="true"
-      :always-linked="field.sourceType === 'static'"
+      :always-linked="field.name === 'type'"
       :identifier="field.sourceType === 'dynamic' ? 'uuid' : ''"
       :class="['base-form-field']"
       :draggable="true"
@@ -82,18 +82,65 @@
       ? $event[0][field.name] || $event[0] : null, field: field.name })"
       @fetch-dropdown-entries="$emit('fetch-autocomplete', {
         value: $event.value,
-        name: element.name,
-        source: element.source
+        name: field.name,
+        source: field['x-attrs'].source
       })"
       @hoverbox-active="$emit('fetch-info-data')">
       <template
         slot="drop-down-entry"
         slot-scope="props">
-        <span>{{ props.item[field.name] }}</span>
+        <span>{{ props.item.commonname }}</span>
         <span class="chips-dropdown-second">{{ props.item.born }}</span>
         <span class="chips-dropdown-third">{{ props.item.source }}</span>
       </template>
     </BaseChipsInput>
+
+    <!-- CHIPS-BELOW -->
+    <BaseChipsBelow
+      v-else-if="fieldType === 'chips-below'"
+      :key="fieldKey"
+      :label="label"
+      :placeholder="placeholder"
+      :list="fieldValueInt"
+      :allow-unknown-entries="true"
+      :allow-dynamic-drop-down-entries="true"
+      :identifier="'uuid'"
+      :hoverbox-content="hoverBoxData"
+      :object-prop="'commonname'"
+      v-model="fieldValueInt"
+      class="base-form-field base-form-field-full"
+      @fetch-dropdown-entries="$emit('fetch-autocomplete',{
+        value: $event.value,
+        name: field.name,
+        source: field['x-attrs'].source })"
+      @hoverbox-active="$emit('fetch-info-data')">
+      <template
+        slot="drop-down-entry"
+        slot-scope="props">
+        <span>{{ props.item.commonname }}</span>
+        <span class="chips-dropdown-second">{{ props.item.born }}</span>
+        <span class="chips-dropdown-third">{{ props.item.source }}</span>
+      </template>
+    </BaseChipsBelow>
+
+    <!-- FIELD GROUPS -->
+    <div
+      v-else-if="fieldType === 'group'"
+      :key="fieldKey"
+      class="base-form-field base-form-field-array">
+      <div class="base-form-field-array-label">
+        {{ $t('form.' + field.name) + ':' }}
+      </div>
+      <div
+        :key="fieldKey"
+        class="base-form-subform-wrapper">
+        <BaseFormNew
+          :form-field-json="field.items.properties"
+          :value-list="fieldValueInt"
+          class="base-form-subform"
+          @values-changed="$emit('subform-input', $event)"/>
+      </div>
+    </div>
 
   </div>
 </template>
@@ -106,16 +153,20 @@ import {
   BaseDropDown,
   BaseAutocompleteInput,
   BaseChipsInput,
+  BaseChipsBelow,
 } from 'base-components';
 
 export default {
+  name: 'FormFieldCreator',
   components: {
+    BaseChipsBelow,
     BaseAutocompleteInput,
     BaseInput,
     BaseDateInput,
     BaseMultilineTextInput,
     BaseDropDown,
     BaseChipsInput,
+    BaseFormNew: () => import('./BaseFormNew'),
   },
   props: {
     fieldKey: {
@@ -129,10 +180,18 @@ export default {
     fieldValue: {
       type: [Object, String, Array],
       required: true,
+      validator(val) {
+        console.log(val);
+        return true;
+      },
     },
     fieldType: {
       type: String,
       default: 'text',
+      validator(val) {
+        console.log(val);
+        return true;
+      },
     },
     label: {
       type: String,
@@ -168,13 +227,20 @@ export default {
   },
   watch: {
     fieldValue(val) {
-      this.fieldValueInt = val;
+      console.log('watcher');
+      console.log(val);
+      console.log(JSON.stringify(this.fieldValueInt));
+      console.log(JSON.stringify(val));
+      if (JSON.stringify(this.fieldValueInt) !== JSON.stringify(val)) {
+        console.log('change from outside');
+        this.fieldValueInt = val;
+      }
     },
     fieldValueInt(val) {
       // prevent event being fired when change comes from outside
-      if (this.fieldValue !== val) {
+      if (JSON.stringify(this.fieldValue) !== JSON.stringify(val)) {
         console.log('changed');
-        this.$emit('field-value-changed', this.fieldValueInt);
+        this.$emit('field-value-changed', val);
       }
     },
   },
@@ -182,5 +248,26 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+  @import "../styles/variables.scss";
 
+  .base-form-field-array {
+    margin-top: $spacing-small;
+    display: flex;
+    flex-direction: column;
+
+    .base-form-field-array-label {
+      color: $font-color-second;
+    }
+
+    .base-form-subform-wrapper {
+      border-right: 3px solid rgb(240, 240, 240);
+      border-left: 3px solid rgb(240, 240, 240);
+      margin: $spacing 0;
+
+      .base-form-subform {
+        margin: -16px auto;
+        width: calc(100% - 6px);
+      }
+    }
+  }
 </style>

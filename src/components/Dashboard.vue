@@ -82,6 +82,7 @@ export default {
       this.$router.push('/new');
     },
     fetchEntryData(item) {
+      console.log('fetchentrydata');
       this.$store.commit('data/setCurrentItem', item);
       this.$store.dispatch('data/fetchLinked');
       this.$store.commit('data/deleteParentItems');

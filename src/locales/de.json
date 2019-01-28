@@ -14,6 +14,8 @@
     "type": "Typ",
     "description": "Beschreibung",
     "text": "Text",
+    "english": "Englisch",
+    "german":  "Deutsch",
     "keywords": "Schlagwörter",
     "notes": "Notizen (werden nicht exportiert)",
     "photographer": "FotographIn",
@@ -38,11 +40,14 @@
     "material": "Material",
     "url": "URL",
     "isbn": "ISSN/ISBN",
+    "doi": "DOI",
     "project_lead": "Projektleitung",
     "funding_institution": "Fördergeber",
     "orgainiser": "OrganisatorInnen",
     "lecturer": "Vortragende",
-    "title_of_contribution": "Vortragstitel"
+    "title_of_contribution": "Vortragstitel",
+    "published_in": "Erschienen In",
+    "addGroup": "\"{fieldType}\" hinzufügen"
 
   },
   "form-view": {

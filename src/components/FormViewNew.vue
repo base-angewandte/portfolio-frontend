@@ -31,13 +31,16 @@
           <!-- FORM EXTENSION -->
           <BaseFormNew
             key="extended-form"
+            ref="formExtension"
             :form-field-json="formFieldsExtension"
             :value-list="valueList.data"
             class="form"
             @values-changed="handleInput($event, 'data')"/>
 
           <!-- ATTACHMENTS -->
-          <AttachmentAreaNew />
+          <AttachmentAreaNew
+            :file-list="valueList.files"/>
+
         </div>
       </transition-group>
 
@@ -52,9 +55,11 @@ import BaseFormNew from './BaseFormNew';
 
 import { FORM_MAPPINGS } from '../assets/data';
 import AttachmentAreaNew from './AttachmentAreaNew';
+import AttachmentArea from './Attachments';
 
 export default {
   components: {
+    AttachmentArea,
     AttachmentAreaNew,
     BaseFormOptions,
     BaseRow,
@@ -70,6 +75,7 @@ export default {
   },
   computed: {
     currentItemId() {
+      console.log(this.$route.params.id);
       return this.$route.params.id;
     },
     title() {
@@ -85,11 +91,18 @@ export default {
   watch: {
     currentItemId(val) {
       if (val) {
+        this.resetForm();
         this.updateForm();
       } else {
-        // TODO: remove values
+        this.resetForm();
       }
       window.scrollTo(0, 0);
+    },
+    async type(val) {
+      if (val) {
+        console.log('from type');
+        this.formFieldsExtension = await this.$store.dispatch('data/fetchFormExtension', val);
+      }
     },
   },
   created() {
@@ -98,24 +111,53 @@ export default {
     }
   },
   methods: {
+    resetForm() {
+      this.valueList = {};
+    },
     async updateForm() {
       const data = await this.$store.dispatch('data/fetchEntryData', this.currentItemId);
       this.valueList = Object.assign({}, data);
-      if (this.valueList.type) {
-        this.formFieldsExtension = await this.$store.dispatch('data/fetchFormExtension', this.valueList.type[0]);
-      }
     },
     handleInput(data, type) {
       console.log('handle input');
       this.unsavedChanges = true;
-      if (type === 'data') {
-        this.$set(this.valueList, 'data', Object.assign({}, JSON.parse(JSON.stringify(data))));
+      if (type) {
+        this.$set(this.valueList, type, Object.assign({}, JSON.parse(JSON.stringify(data))));
       } else {
         this.valueList = Object.assign({}, JSON.parse(JSON.stringify(data)));
       }
     },
-    saveForm() {
-      console.log('Save');
+    async saveForm() {
+      if (this.valueList.title) {
+        const data = Object.assign({}, this.valueList.data);
+        try {
+          if (!this.$route.params.id) {
+            // TODO: check somewhere if the entry should be linked to a parent and
+            // a) link to parent entry b) save to database
+            // --> do this.linkEntries(this.$store.data.currentItemId)
+            await this.$store.dispatch('data/addSidebarItem', Object.assign({}, this.valueList, { data }));
+            this.$router.push(`/entry/${this.$store.state.data.currentItemId}`);
+          } else {
+            await this.$store.dispatch('data/updateEntry', Object.assign({}, this.valueList, { data }));
+          }
+          this.unsavedChanges = false;
+          this.$emit('save-form');
+        } catch (e) {
+          this.$notify({
+            group: 'request-notifications',
+            title: 'Saving to database failed',
+            text: e.message,
+            type: 'warn',
+          });
+        }
+      } else {
+        this.$notify({
+          group: 'request-notifications',
+          title: 'Title missing',
+          text: 'In order to save please specify a title!',
+          type: 'warn',
+        });
+      }
     },
     returnFromForm() {
       console.log('return');

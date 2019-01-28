@@ -6,17 +6,17 @@
         class="base-row-parent base-row-header"
         @click="returnToParent(parent.id)">
         <base-menu-entry
-          id="parentheader"
           :title="parent.title"
           :title-bold="true"
           :subtext="parent.type"
+          entry-id="parentheader"
           icon="sheet-empty"/>
       </div>
       <div class="base-row">
         <div
           class="base-row-header">
           <base-menu-entry
-            :id="'asingleentry'"
+            :entry-id="'asingleentry'"
             :icon="'sheet-empty'"
             :title="showOverlay ? '' : valueList.title"
             :title-bold="true"
@@ -155,19 +155,19 @@
           key="mobile-file-area"
           class="file-list mobile-elements">
           <base-menu-entry
-            id="addFile"
             key="mobile-addFile"
+            entry-id="addFile"
             icon="sheet-plus"
             title="Vorhandenen Eintrag hinzufügen" />
           <base-menu-entry
-            id="addNew"
             key="mobile-addNew"
+            entry-id="addNew"
             icon="sheet-plus"
             title="Neuen Eintrag anhängen"
             @activated="openNewForm"/>
           <base-menu-entry
-            id="addExisting"
             key="mobile-addExisting"
+            entry-id="addExisting"
             icon="sheet-plus"
             title="Datei anhängen"/>
         </div>
@@ -177,8 +177,6 @@
           :key="'attachmentArea'"
           :linked-list="linkedList"
           :attached-list="fileList"
-          :text="text"
-          subtext="Die Objekte werden für Showroom freigegeben"
           @show-preview="$emit('show-preview', $event)"/>
       </transition-group>
       <transition name="slide">
@@ -232,7 +230,7 @@ import 'base-components/dist/lib/base-components.min.css';
 import BaseForm from './BaseForm';
 import Uploader from './Uploader';
 import { FORM_MAPPINGS } from '../assets/data';
-import AttachmentArea from './AttachmentArea';
+import AttachmentArea from './Attachments';
 import Sidebar from './Sidebar';
 
 export default {
@@ -281,6 +279,31 @@ export default {
     },
     fileList() {
       return this.valueList.files;
+    },
+    formList() {
+      const listArray = Object.keys(FORM_MAPPINGS.common.properties)
+        .map(key => Object.assign({}, { name: key }, FORM_MAPPINGS.common.properties[key]));
+      return listArray.sort((a, b) => {
+        if (a.order > b.order) {
+          return 1;
+        }
+        return -1;
+      });
+    },
+    formListExtended: {
+      set(val) {
+        const listArray = Object.keys(val)
+          .map(key => Object.assign({}, { name: key }, val[key]));
+        this.formExtendedInt = listArray.sort((a, b) => {
+          if (a['x-attrs'] && b['x-attrs'] && a['x-attrs'].order > b['x-attrs'].order) {
+            return 1;
+          }
+          return -1;
+        });
+      },
+      get() {
+        return this.formExtendedInt;
+      },
     },
   },
   watch: {

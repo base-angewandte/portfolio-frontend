@@ -179,9 +179,18 @@ const mutations = {
 
 const actions = {
   async fetchFormExtension(context, type) {
-    const commonType = await Object.keys(DATA.TYPE_MAPPINGS)
-      .find(key => DATA.TYPE_MAPPINGS[key].includes(type));
-    return DATA.FORM_MAPPINGS[commonType].properties || {};
+    let formData = {};
+    try {
+      console.log('fetching extension');
+      const extension = await axios.get(`http://localhost:8200/api/v1/jsonschema/${type}`,
+        {
+          withCredentials: true,
+        });
+      formData = extension.data.properties;
+    } catch (e) {
+      console.error(e);
+    }
+    return formData || [];
   },
   setCurrentItemById({ commit, dispatch }, id) {
     const entry = this.getters['data/getEntryById'](id);
@@ -195,12 +204,13 @@ const actions = {
     try {
       // TODO: either call C. module or do db request
       // const entryData = await axios(`http://localhost:8200/api/v1/entity/${id}`).data;
-      const entryData = DATA.EXISTING_ENTRIES.filter(entry => id === entry.id);
-      if (entryData.length) {
-        const data = entryData[0];
+      // const entryData = DATA.EXISTING_ENTRIES.filter(entry => id === entry.id);
+      const entryData = this.getters['data/getEntryById'](id);
+      if (entryData) {
+        const data = entryData;
         // TODO: bring data in the form they need to be here already!
         // type needs to be array in logic here!
-        commit('setCurrentItem', Object.assign({}, data, { type: [data.type] }));
+        commit('setCurrentItem', Object.assign({}, data, { type: data.type ? [data.type] : [] }));
         dispatch('fetchLinked');
         return state.currentItem;
       }

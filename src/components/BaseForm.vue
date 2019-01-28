@@ -139,6 +139,33 @@
           <span class="chips-dropdown-third">{{ props.item.source }}</span>
         </template>
       </base-chips-below>
+
+      <!-- FIELD GROUPS -->
+      <div
+        v-else-if="fieldTypes[element.name] === 'label'"
+        :key="index"
+        class="base-form-field base-form-field-full base-form-field-array">
+        <div class="base-form-field-array-label">
+          {{ $t('form.' + element.name) + ':' }}
+        </div>
+        <div
+          :key="index"
+          class="base-form-subform-wrapper">
+          <BaseForm
+            :list="prepareFormProperties(element.properties)"
+            :form-values="formValuesInt[element.name]"
+            class="base-form-subform"/>
+        </div>
+      </div>
+
+      <!-- MULTIPLY -->
+      <!-- TODO: i dont want this below each form field but only one below all of one field -->
+      <div
+        v-if="element.type === 'array' && element['x-attrs'] && !element['x-attrs'].source"
+        :key="'multiply' + index"
+        class="multiply-button">
+        {{ 'Multiply label +' }}
+      </div>
     </template>
   </div>
 </template>
@@ -157,6 +184,7 @@ import {
 } from 'base-components';
 
 export default {
+  name: 'BaseForm',
   components: {
     BaseHoverBox,
     BaseChipsBelow,
@@ -224,21 +252,25 @@ export default {
       return this.halfElements.indexOf(val) % 2;
     },
     async fetchAutocomplete({ value, name, source }) {
-      // TODO: this is currently giving a error for certain types (axios library buildURL.js)
-      // but not sure if worth fixing hopefully will disappear with the real thing
-      // UPDATE: for the artist field e.g.
-      // TODO: use time out function (in base component or here?)
-      if (!value || value.length > 3) {
-        const result = await axios.get(source, {
-          params:
-            {
-              string: value,
-              resource: 'viaf',
-            },
-        });
-        if (this.dropdownLists) {
-          this.$set(this.dropdownLists, [name], result.data);
+      if (source) {
+        // TODO: set timeout function to only fetch after user has finished typing
+        if (value && value.length > 3) {
+          try {
+            const result = await axios.get(`${source}/${value}`, {
+              withCredentials: true,
+            });
+            if (this.dropdownLists) {
+              this.$set(this.dropdownLists, [name], result.data);
+            }
+          } catch (e) {
+            console.error(e);
+          }
+        } else if (!value.length) {
+          this.$set(this.dropdownLists, [name], []);
         }
+        // TODO: remove this again as soon as everything has a source attribute
+      } else {
+        console.error('no source specified');
       }
     },
     addType(val, text) {
@@ -313,6 +345,35 @@ export default {
         this.hoverBoxData = {};
       }
     },
+    prepareFormProperties(list) {
+      const listArray = Object.keys(list)
+        .map(key => Object.assign({}, { name: key }, list[key]));
+      return listArray.sort((a, b) => {
+        if (a.order > b.order) {
+          return 1;
+        }
+        return -1;
+      });
+    },
+    determineFieldTypes() {
+      this.list.forEach(field => this.$set(this.fieldTypes, field.name, this.getFieldType(field)));
+    },
+    getFieldType(obj) {
+      if (obj.type === 'object' && obj.format === 'date') {
+        return 'date';
+      } if (obj.name === 'type') {
+        return 'chips';
+      } if (obj.type === 'string' && obj['x-attrs'] && obj['x-attrs'].source) {
+        return 'autocomplete';
+      } if (obj.name === 'text' || obj.name === 'notes') {
+        return 'multiline';
+      } if ((obj.type === 'array' || obj.type === 'object') && obj['x-attrs'] && obj['x-attrs'].source) {
+        return 'chips';
+      } if (obj.type === 'array' && !(obj['x-attrs'] || obj['x-attrs'].source)) {
+        return 'label';
+      }
+      return 'text';
+    },
   },
 };
 </script>
@@ -352,6 +413,34 @@ export default {
     color: $font-color-second;
     float: right;
   }
+
+  .base-form-field-array {
+    margin-top: $spacing-small;
+    display: flex;
+    flex-direction: column;
+
+    .base-form-field-array-label {
+      color: $font-color-second;
+    }
+  }
+
+  .base-form-subform-wrapper {
+    border-right: 3px solid rgb(240, 240, 240);
+    border-left: 3px solid rgb(240, 240, 240);
+    margin: $spacing 0;
+
+    .base-form-subform {
+      margin: -16px auto;
+      width: calc(100% - 6px);
+    }
+  }
+
+  .multiply-button {
+    width: 100%;
+    color: $font-color-second;
+    margin-bottom: $spacing + $spacing-small;
+  }
+
   @media screen and (max-width: $mobile) {
     .base-form-field-half {
       flex: 0 0 100%;

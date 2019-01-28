@@ -21,7 +21,19 @@
           class="base-form-field base-form-field-full"
           @field-value-changed="setFieldValue($event, element.name, valueIndex)"
           @fetch-autocomplete="fetchAutocomplete"
+          @subform-input="setFieldValue($event, element.name, valueIndex)"
         />
+        <div
+          :key="'multiplyButton' + index"
+          class="multiply-button"
+          @click="multiplyField(element)">
+          <span>{{ $t('form.addGroup', { fieldType: $t('form.' + element.name) }) }}</span>
+          <span>
+            <img
+              :src="require('../static/remove.svg')"
+              class="multiply-icon">
+          </span>
+        </div>
       </template>
       <template v-else>
         <FormFieldCreator
@@ -44,23 +56,14 @@
 </template>
 
 <script>
-import {
-  BaseInput,
-  BaseDateInput,
-  BaseMultilineTextInput,
-  BaseDropDown,
-} from 'base-components';
 import axios from 'axios';
 import FormFieldCreator from './FormFieldCreator';
+import DATA from '../assets/data';
 
 export default {
   name: 'BaseFormNew',
   components: {
     FormFieldCreator,
-    BaseDropDown,
-    BaseMultilineTextInput,
-    BaseDateInput,
-    BaseInput,
   },
   props: {
     formFieldJson: {
@@ -100,8 +103,14 @@ export default {
       console.log(JSON.stringify(val));
       console.log(JSON.stringify(this.valueListInt));
       if (JSON.stringify(val) !== JSON.stringify(this.valueListInt)) {
+        if (!Object.keys(val).length) {
+          this.initializeValueObject();
+        }
         console.log('receiving changes');
-        this.initializeValueObject();
+        // this.initializeValueObject();
+        this.valueListInt = Object.assign({}, this.valueListInt, val);
+        // JSON parse is necessary to destroy any references between the objects
+        this.valueListIntCopy = Object.assign({}, JSON.parse(JSON.stringify(this.valueListInt)));
       }
     },
     formFieldJson(val) {
@@ -117,6 +126,7 @@ export default {
     initializeValueObject() {
       this.formFieldListInt = [];
       console.log('initialize');
+      console.log(this.formFieldJson);
       Object.keys(this.formFieldJson)
         .forEach(key => this.formFieldListInt
           .push(Object.assign({}, { name: key }, this.formFieldJson[key])));
@@ -139,17 +149,19 @@ export default {
       this.valueListIntCopy = Object.assign({}, JSON.parse(JSON.stringify(this.valueListInt)));
     },
     getInitialFieldValue(field) {
+      if (field.name === 'published_in') {
+      }
+      // TODO: check if this can be resolved in a more generic way!
+      if (field.format === 'date') {
+        return Object.assign({}, { from: '', to: '' }, this.valueList[field.name]);
+      }
       // check if field is array
       if (field.type === 'array') {
-        // check if field contains only strings or further array/object
-        if (field.items && field.items.type === 'string') {
-          // check if values are already present
-          if (this.valueList[field.name] && this.valueList[field.name].length) {
-            return [].concat(this.valueList[field.name]);
-          }
-          return [];
+        // check if values are already present and set those if yes
+        if (this.valueList[field.name] && this.valueList[field.name].length) {
+          return [].concat(this.valueList[field.name]);
         }
-        // if array or object also set initial values for those
+        // else return empty array
         return [];
         // check if field is object
       } if (field.type === 'object') {
@@ -158,10 +170,10 @@ export default {
         Object.keys(field.properties).forEach((key) => {
           this.$set(initObj, key, this.getInitialFieldValue(field.properties[key]));
         });
-        return Object.assign({}, initObj);
+        return Object.assign({}, initObj, this.valueList[field.name]);
       }
       // if it is not a array or object simply return value from list or empty string
-      return this.valueList[field.name] || '';
+      return this.valueList[field.name] ? this.valueList[field.name] : '';
     },
     allowMultiply(el) {
       return el.type === 'array' && el['x-attrs']
@@ -175,22 +187,39 @@ export default {
       }
     },
     async fetchAutocomplete({ value, name, source }) {
-      // TODO: this is currently giving a error for certain types (axios library buildURL.js)
-      // but not sure if worth fixing hopefully will disappear with the real thing
-      // UPDATE: for the artist field e.g.
-      // TODO: use time out function (in base component or here?)
-      if (!value || value.length > 3) {
-        const result = await axios.get(source, {
-          params:
-            {
-              string: value,
-              resource: 'viaf',
-            },
-        });
-        if (this.dropdownLists) {
-          this.$set(this.dropdownLists, [name], result.data);
+      console.log('Fetch');
+      if (source) {
+        // TODO: set timeout function to only fetch after user has finished typing
+        if (value && value.length > 3) {
+          try {
+            const result = await axios.get(`${source}/${value}`, {
+              withCredentials: true,
+            });
+            if (this.dropdownLists) {
+              this.$set(this.dropdownLists, [name], result.data);
+            }
+          } catch (e) {
+            console.error(e);
+          }
+        } else if (!value.length) {
+          this.$set(this.dropdownLists, [name], []);
+        }
+        // TODO: remove this again as soon as everything has a source attribute
+      } else {
+        console.error('no source specified');
+        if (name === 'type') {
+          if (this.dropdownLists) {
+            const types = Object.keys(DATA.TYPE_MAPPINGS)
+              .reduce((prev, curr) => prev.concat(DATA.TYPE_MAPPINGS[curr]), []);
+            console.log(types);
+            this.$set(this.dropdownLists, [name], types);
+          }
         }
       }
+    },
+    multiplyField(field) {
+      this.valueListInt[field.name]
+        .push(this.getInitialFieldValue(field.items));
     },
   },
 };
@@ -215,6 +244,22 @@ export default {
 
     .base-form-field-full {
       flex: 0 0 100%;
+    }
+
+    .multiply-button {
+      color: $font-color-second;
+      margin-bottom: $spacing;
+      cursor: pointer;
+
+      &:hover {
+        color: $app-color;
+      }
+
+      .multiply-icon {
+        margin-left: $spacing;
+        height: $icon-small;
+        width: $icon-small;
+      }
     }
   }
 </style>

@@ -57,11 +57,11 @@ module.exports = {
       keywords: ['Performance', 'Photographie', 'Kunst im öffentlichen Raum'],
       data: {
         authors: [{
-          authors: 'VALIE EXPORT',
+          commonname: 'VALIE EXPORT',
           uuid: 'xuyasdf',
         }],
         ISBN: '2-912415-77-2',
-        erschienen_in: [
+        published_in: [
           {
             title: 'Poems',
             subtitle: 'A test',
@@ -149,6 +149,7 @@ module.exports = {
             placeholder: 'Specify a title',
             field_type: 'autocomplete',
             order: 1,
+            source: 'http://localhost:8200/autosuggest/v1/person/',
           },
         },
         subtitle: {

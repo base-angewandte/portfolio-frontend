@@ -14,6 +14,8 @@
     "type": "Type",
     "description": "Description",
     "text": "Text",
+    "english": "English",
+    "german":  "German",
     "keywords": "Keywords",
     "notes": "Notes (will not be exported)",
     "photographer": "Photographer",
@@ -38,11 +40,14 @@
     "material": "Material",
     "url": "URL",
     "isbn": "ISSN/ISBN",
+    "doi": "DOI",
     "project_lead": "Project Lead",
     "funding_institution": "Funding Institution",
     "orgainiser": "Organiser",
     "lecturer": "Lecturer",
-    "title_of_contribution": "Title of Contribution"
+    "title_of_contribution": "Title of Contribution",
+    "published_in": "Published In",
+    "addGroup": "Add \"{fieldType}\""
   },
   "form-view": {
     "formExtended": "Weitere Angaben",
