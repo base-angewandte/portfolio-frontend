@@ -256,7 +256,7 @@ export default {
         // TODO: set timeout function to only fetch after user has finished typing
         if (value && value.length > 3) {
           try {
-            const result = await axios.get(`${source}/${value}`, {
+            const result = await axios.get(`${source}${value}`, {
               withCredentials: true,
             });
             if (this.dropdownLists) {

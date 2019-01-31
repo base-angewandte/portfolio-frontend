@@ -68,7 +68,7 @@ export default {
   data() {
     return {
       unsavedChanges: false,
-      formFields: FORM_MAPPINGS.common.properties,
+      formFields: Object.assign({}, FORM_MAPPINGS.common.properties, { type: Object.assign({}, FORM_MAPPINGS.common.properties.type, { type: 'array' }) }),
       formFieldsExtension: {},
       valueList: {},
     };
@@ -112,6 +112,7 @@ export default {
   },
   methods: {
     resetForm() {
+      this.unsavedChanges = false;
       this.valueList = {};
     },
     async updateForm() {

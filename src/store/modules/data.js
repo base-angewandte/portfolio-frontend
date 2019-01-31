@@ -182,7 +182,7 @@ const actions = {
     let formData = {};
     try {
       console.log('fetching extension');
-      const extension = await axios.get(`http://localhost:8200/api/v1/jsonschema/${type}`,
+      const extension = await axios.get(`${process.env.API}jsonschema/${type}/`,
         {
           withCredentials: true,
         });

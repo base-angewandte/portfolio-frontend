@@ -22,13 +22,14 @@
     "artist": "KünstlerIn",
     "location": "Ort",
     "date": "Datum",
+    "date_location": "Datum und Ort",
     "opening": "Eröffnung",
-    "editors": "HerausgeberInnen",
+    "editor": "HerausgeberInnen",
     "publisher": "Verlag",
-    "authors": "AutorInnen",
+    "author": "AutorInnen",
     "city": "Stadt",
     "curator": "KuratorInnen",
-    "participants": "Beteiligte",
+    "contributors": "Beteiligung",
     "English": "Englisch",
     "German": "Deutsch",
     "location_description": "Ortsbeschreibung",
@@ -47,7 +48,7 @@
     "lecturer": "Vortragende",
     "title_of_contribution": "Vortragstitel",
     "published_in": "Erschienen In",
-    "addGroup": "\"{fieldType}\" hinzufügen"
+    "addGroup": "Weiteres \"{fieldType}\" Feld hinzufügen"
 
   },
   "form-view": {

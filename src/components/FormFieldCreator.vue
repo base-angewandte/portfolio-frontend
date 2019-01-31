@@ -17,7 +17,7 @@
       :label="label"
       :placeholder="placeholder"
       :id="fieldKey"
-      :type="field.dateType"
+      :type="dateType"
       v-model="fieldValueInt"
       :class="['base-form-field']"/>
 
@@ -31,7 +31,7 @@
       v-model="fieldValueInt"
       class="base-form-field base-form-field-full">
       <template
-        v-if="fieldValueInt && fieldValueInt.type">
+        v-if="field.items && field.items.properties && field.items.properties.type">
         <!-- TODO: replace hardcoded types!  -->
         <BaseDropDown
           :selected="fieldValueInt && fieldValueInt.type
@@ -128,14 +128,16 @@
       v-else-if="fieldType === 'group'"
       :key="fieldKey"
       class="base-form-field base-form-field-array">
-      <div class="base-form-field-array-label">
+      <div
+        v-if="field['x-attrs'] && field['x-attrs'].show_label"
+        class="base-form-field-array-label">
         {{ $t('form.' + field.name) + ':' }}
       </div>
       <div
         :key="fieldKey"
         class="base-form-subform-wrapper">
         <BaseFormNew
-          :form-field-json="field.items.properties"
+          :form-field-json="groupFormFields"
           :value-list="fieldValueInt"
           class="base-form-subform"
           @values-changed="$emit('subform-input', $event)"/>
@@ -180,18 +182,10 @@ export default {
     fieldValue: {
       type: [Object, String, Array],
       required: true,
-      validator(val) {
-        console.log(val);
-        return true;
-      },
     },
     fieldType: {
       type: String,
       default: 'text',
-      validator(val) {
-        console.log(val);
-        return true;
-      },
     },
     label: {
       type: String,
@@ -224,6 +218,30 @@ export default {
     return {
       fieldValueInt: this.fieldValue,
     };
+  },
+  computed: {
+    dateType() {
+      const props = Object.keys(this.field.properties);
+
+      if (props.includes('time')) {
+        return 'datetime';
+      }
+      if (props.includes('date')) {
+        return 'single';
+      }
+      if (props.includes('date_to')) {
+        return 'range';
+      }
+      return '';
+    },
+    groupFormFields() {
+      // check if field group is a list (=multiplyable) or not
+      if (this.field.type === 'array') {
+        return this.field.items.properties;
+      }
+      return this.field.properties;
+
+    },
   },
   watch: {
     fieldValue(val) {
@@ -262,7 +280,6 @@ export default {
     .base-form-subform-wrapper {
       border-right: 3px solid rgb(240, 240, 240);
       border-left: 3px solid rgb(240, 240, 240);
-      margin: $spacing 0;
 
       .base-form-subform {
         margin: -16px auto;

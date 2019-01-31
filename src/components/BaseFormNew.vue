@@ -14,11 +14,16 @@
           :field-value="value"
           :field-type="element['x-attrs'] ? element['x-attrs'].field_type : 'text'"
           :label="$te('form.' + element.name) ? $t('form.' + element.name) : element.name"
-          :placeholder="$t('form.select') + ' '
+          :placeholder="element['x-attrs'].placeholder || $t('form.select') + ' '
           + ($te('form.' + element.name) ? $t('form.' + element.name) : element.name)"
           :tabs="['English', 'German']"
           :drop-down-list="dropdownLists[element.name]"
-          class="base-form-field base-form-field-full"
+          :class="[
+            'base-form-field',
+            element['x-attrs'] && element['x-attrs'].field_format === 'half'
+              ? 'base-form-field-half' : 'base-form-field-full',
+            { 'base-form-field-left-margin': isHalfField(element) }
+          ]"
           @field-value-changed="setFieldValue($event, element.name, valueIndex)"
           @fetch-autocomplete="fetchAutocomplete"
           @subform-input="setFieldValue($event, element.name, valueIndex)"
@@ -43,10 +48,15 @@
           :field-value="valueListInt[element.name]"
           :field-type="element['x-attrs'] ? element['x-attrs'].field_type : 'text'"
           :label="$te('form.' + element.name) ? $t('form.' + element.name) : element.name"
-          :placeholder="$t('form.select') + ' '
+          :placeholder="element['x-attrs'].placeholder || $t('form.select') + ' '
           + ($te('form.' + element.name) ? $t('form.' + element.name) : element.name)"
           :drop-down-list="dropdownLists[element.name]"
-          class="base-form-field"
+          :class="[
+            'base-form-field',
+            element['x-attrs'] && element['x-attrs'].field_format === 'half'
+              ? 'base-form-field-half' : 'base-form-field-full',
+            { 'base-form-field-left-margin': isHalfField(element) }
+          ]"
           @field-value-changed="setFieldValue($event, element.name)"
           @fetch-autocomplete="fetchAutocomplete"
         />
@@ -58,7 +68,6 @@
 <script>
 import axios from 'axios';
 import FormFieldCreator from './FormFieldCreator';
-import DATA from '../assets/data';
 
 export default {
   name: 'BaseFormNew',
@@ -85,6 +94,11 @@ export default {
       fieldProperties: [],
       dropdownLists: {},
     };
+  },
+  computed: {
+    formFieldsHalf() {
+      return this.formFieldListInt.filter(field => field['x-attrs'] && field['x-attrs'].field_format === 'half');
+    },
   },
   watch: {
     valueListInt: {
@@ -149,17 +163,18 @@ export default {
       this.valueListIntCopy = Object.assign({}, JSON.parse(JSON.stringify(this.valueListInt)));
     },
     getInitialFieldValue(field) {
-      if (field.name === 'published_in') {
-      }
-      // TODO: check if this can be resolved in a more generic way!
-      if (field.format === 'date') {
-        return Object.assign({}, { from: '', to: '' }, this.valueList[field.name]);
+      if (field.name === 'date_location') {
+        debugger;
       }
       // check if field is array
       if (field.type === 'array') {
         // check if values are already present and set those if yes
         if (this.valueList[field.name] && this.valueList[field.name].length) {
           return [].concat(this.valueList[field.name]);
+        }
+        if (field['x-attrs'] && !field['x-attrs'].field_type.includes('chips')
+          && field.items.type === 'object') {
+          return [].concat(this.getInitialFieldValue(field.items));
         }
         // else return empty array
         return [];
@@ -209,10 +224,11 @@ export default {
         console.error('no source specified');
         if (name === 'type') {
           if (this.dropdownLists) {
-            const types = Object.keys(DATA.TYPE_MAPPINGS)
-              .reduce((prev, curr) => prev.concat(DATA.TYPE_MAPPINGS[curr]), []);
-            console.log(types);
-            this.$set(this.dropdownLists, [name], types);
+            const types = await axios.get('http://localhost:8200/api/v1/jsonschema/',
+              {
+                withCredentials: true,
+              });
+            this.$set(this.dropdownLists, [name], types.data);
           }
         }
       }
@@ -220,6 +236,10 @@ export default {
     multiplyField(field) {
       this.valueListInt[field.name]
         .push(this.getInitialFieldValue(field.items));
+    },
+    isHalfField(field) {
+      const index = this.formFieldsHalf.indexOf(field);
+      return index > 0 && !!(index % 2);
     },
   },
 };
@@ -232,23 +252,27 @@ export default {
     background-color: white;
     display: flex;
     flex-wrap: wrap;
-    padding: 16px;
+    padding: 16px 16px 0;
 
-    .base-form-field:not(:last-of-type) {
+    .base-form-field {
       margin-bottom: $spacing;
     }
 
-    .base-form-field {
+    .base-form-field-full, .multiply-button {
       flex: 0 0 100%;
     }
 
-    .base-form-field-full {
-      flex: 0 0 100%;
+    .base-form-field-half {
+      flex: 0 0 calc(50% - 8px);
+    }
+
+    .base-form-field-left-margin {
+      margin-left: $spacing;
     }
 
     .multiply-button {
       color: $font-color-second;
-      margin-bottom: $spacing;
+      margin-bottom: $spacing + $spacing-small;
       cursor: pointer;
 
       &:hover {

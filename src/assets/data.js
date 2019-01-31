@@ -5,7 +5,7 @@ module.exports = {
       id: '1',
       title: 'Buch: Omi',
       subtitle: '',
-      type: 'Lithographie',
+      type: 'Fotografie',
       text: [
         {
           type: 'Beschreibung',
@@ -25,7 +25,7 @@ module.exports = {
       data: {
         artist: [{
           uuid: '1',
-          artist: 'Susanna Eva Gartmayer',
+          commonname: 'Susanna Eva Gartmayer',
         }],
       },
       shared: false,
@@ -38,7 +38,7 @@ module.exports = {
     {
       id: '2',
       title: 'Valie Export',
-      type: 'Buch',
+      type: 'Monographie',
       text: [
         {
           type: 'Beschreibung',
@@ -56,7 +56,7 @@ module.exports = {
       ],
       keywords: ['Performance', 'Photographie', 'Kunst im öffentlichen Raum'],
       data: {
-        authors: [{
+        author: [{
           commonname: 'VALIE EXPORT',
           uuid: 'xuyasdf',
         }],
@@ -72,13 +72,13 @@ module.exports = {
     {
       id: '3',
       title: 'Again a different title',
-      type: 'Ausstellung',
+      type: 'Einzelausstellung',
       shared: true,
     },
     {
       id: '4',
       title: 'Allons-y!!',
-      type: 'Bild',
+      type: 'Zeichnung',
       files: [
         {
           filename: 'Allons-y!!!!!!!!!!!!!!!!!!!!!!!!',
@@ -92,7 +92,7 @@ module.exports = {
       id: '5',
       title: 'Higher nitrate-reducer diversity in macrophyte-colonized compared to unvegetated freshwater sediment.',
       subtitle: '',
-      type: 'Publikation',
+      type: 'wissenschaftliche Veröffentlichung',
       text: [
         {
           type: 'Beschreibung',
@@ -110,7 +110,7 @@ module.exports = {
       ],
       keywords: ['Nitrification', 'Microbial Ecology', 'Freshwater Sediment'],
       data: {
-        authors: [{
+        author: [{
           commonname: 'Kofoed MV',
           uuid: '1',
         }, {
@@ -128,7 +128,7 @@ module.exports = {
         }],
         'erschienen in': 'Systems of Applied Microbiology',
         publisher: ['Elvisier'],
-        editors: ['Rudolf Amann', 'Ramon Rosselló-Móra', 'Karl-Heinz Schleifer'],
+        editor: ['Rudolf Amann', 'Ramon Rosselló-Móra', 'Karl-Heinz Schleifer'],
         date: {
           from: new Date('2012-10'),
         },
@@ -150,6 +150,7 @@ module.exports = {
             field_type: 'autocomplete',
             order: 1,
             source: 'http://localhost:8200/autosuggest/v1/person/',
+            field_format: 'half',
           },
         },
         subtitle: {
@@ -159,6 +160,7 @@ module.exports = {
             placeholder: 'Specify a title',
             field_type: 'text',
             order: 2,
+            field_format: 'half',
           },
         },
         type: {
