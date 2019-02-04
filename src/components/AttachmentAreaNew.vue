@@ -1,7 +1,8 @@
 <template>
   <div>
     <AttachmentButtonRow
-      :current-id="entryId"/>
+      :current-id="entryId"
+      @open-new-form="$emit('open-new-form')"/>
     <Attachments
       :key="'attachmentArea'"
       :linked-list="linkedList"

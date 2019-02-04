@@ -240,25 +240,34 @@ export default {
         return this.field.items.properties;
       }
       return this.field.properties;
-
     },
   },
   watch: {
     fieldValue(val) {
-      console.log('watcher');
-      console.log(val);
-      console.log(JSON.stringify(this.fieldValueInt));
-      console.log(JSON.stringify(val));
       if (JSON.stringify(this.fieldValueInt) !== JSON.stringify(val)) {
-        console.log('change from outside');
-        this.fieldValueInt = val;
+        this.setFieldValue(val);
       }
     },
     fieldValueInt(val) {
       // prevent event being fired when change comes from outside
       if (JSON.stringify(this.fieldValue) !== JSON.stringify(val)) {
-        console.log('changed');
         this.$emit('field-value-changed', val);
+      }
+    },
+  },
+  mounted() {
+    this.setFieldValue(this.fieldValue);
+  },
+  methods: {
+    setFieldValue(val) {
+      if (typeof val === 'object') {
+        if (val.length >= 0) {
+          this.fieldValueInt = [].concat(val);
+        } else {
+          this.fieldValueInt = Object.assign({}, val);
+        }
+      } else {
+        this.fieldValueInt = val;
       }
     },
   },

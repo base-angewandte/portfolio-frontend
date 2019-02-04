@@ -1,17 +1,37 @@
 <template>
   <div class="form-component">
     <div class="form-head">
-      <!-- TODO: parent header -->
+
+
+      <!-- PARENT HEADER -->
+      <div
+        v-if="parent"
+        class="base-row-parent base-row-header"
+        @click="returnToParent(parent.id)">
+        <BaseMenuEntry
+          :title="parent.title"
+          :title-bold="true"
+          :subtext="parent.type"
+          entry-id="parentheader"
+          icon="sheet-empty"/>
+      </div>
+
+      <!-- HEADER ROW -->
       <BaseRow
         :title="title"
         :type="type"
+        :show-back-button="!!parent"
         :unsaved-changes="unsavedChanges"
         @save="saveForm"
         @return="returnFromForm"
       />
-      <BaseFormOptions />
+      <!-- OPTIONS -->
+      <BaseFormOptions
+        :is-new-form="$store.state.data.isNewForm"
+        :is-published="valueList.published"/>
     </div>
 
+    <!-- FORM -->
     <div class="form-container">
       <BaseFormNew
         :form-field-json="formFields"
@@ -19,16 +39,16 @@
         @values-changed="handleInput($event)"
       />
       <transition-group
-        name="slide-fade2">
+        name="slide-fade-form">
+
+        <!-- FORM EXTENSION -->
         <div
           v-if="type"
-          key="extended-section"
-          class="subsection">
+          key="extended-section">
           <div
             key="extended-title"
-            class="subtitle">{{ $t('form-view.formExtended') }}</div>
-
-          <!-- FORM EXTENSION -->
+            class="subtitle">{{ $t('form-view.formExtended') }}
+          </div>
           <BaseFormNew
             key="extended-form"
             ref="formExtension"
@@ -36,19 +56,28 @@
             :value-list="valueList.data"
             class="form"
             @values-changed="handleInput($event, 'data')"/>
-
-          <!-- ATTACHMENTS -->
-          <AttachmentAreaNew
-            :file-list="valueList.files"/>
-
         </div>
+
+        <!-- ATTACHMENTS -->
+        <AttachmentAreaNew
+          key="attachments"
+          :file-list="valueList.files"
+          @open-new-form="openNewForm"/>
       </transition-group>
+      <transition name="slide-child-form">
+        <BaseFormNew
+          v-if="showOverlay"
+          ref="overlay"
+          :form-field-json="formFields"
+          class="form slide-in-form"/>
+      </transition>
 
     </div>
   </div>
 </template>
 
 <script>
+import { BaseMenuEntry } from 'base-components';
 import BaseRow from './BaseRow';
 import BaseFormOptions from './BaseFormOptions';
 import BaseFormNew from './BaseFormNew';
@@ -59,6 +88,7 @@ import AttachmentArea from './Attachments';
 
 export default {
   components: {
+    BaseMenuEntry,
     AttachmentArea,
     AttachmentAreaNew,
     BaseFormOptions,
@@ -71,21 +101,22 @@ export default {
       formFields: Object.assign({}, FORM_MAPPINGS.common.properties, { type: Object.assign({}, FORM_MAPPINGS.common.properties.type, { type: 'array' }) }),
       formFieldsExtension: {},
       valueList: {},
+      showOverlay: false,
     };
   },
   computed: {
     currentItemId() {
-      console.log(this.$route.params.id);
       return this.$route.params.id;
     },
     title() {
-      return this.valueList.title;
+      return this.showOverlay ? '' : this.valueList.title;
     },
     type() {
-      console.log('get type');
-      console.log(this.valueList);
       const { type } = this.valueList;
-      return type && type.length ? type[0] : '';
+      return type && type.length && !this.showOverlay ? type[0] : '';
+    },
+    parent() {
+      return this.$store.getters['data/getLatestParentItem'];
     },
   },
   watch: {
@@ -97,11 +128,13 @@ export default {
         this.resetForm();
       }
       window.scrollTo(0, 0);
+      this.showOverlay = false;
     },
     async type(val) {
       if (val) {
-        console.log('from type');
         this.formFieldsExtension = await this.$store.dispatch('data/fetchFormExtension', val);
+      } else {
+        this.formFieldsExtension = {};
       }
     },
   },
@@ -120,7 +153,6 @@ export default {
       this.valueList = Object.assign({}, data);
     },
     handleInput(data, type) {
-      console.log('handle input');
       this.unsavedChanges = true;
       if (type) {
         this.$set(this.valueList, type, Object.assign({}, JSON.parse(JSON.stringify(data))));
@@ -161,7 +193,37 @@ export default {
       }
     },
     returnFromForm() {
-      console.log('return');
+      if (this.parent) {
+        this.returnToParent(this.parent.id);
+      } else {
+        this.$router.push('/');
+      }
+    },
+    openNewForm() {
+      if (this.valueList.title) {
+        this.showOverlay = true;
+        this.$store.commit('data/setParentItem', this.valueList.id);
+        this.$store.commit('data/setNewForm', true);
+
+        window.scrollTo(0, 0);
+        setTimeout(() => {
+          this.saveForm();
+          this.resetForm();
+          this.$store.commit('data/deleteCurrentItem');
+          this.$router.push('/new');
+        }, 700);
+      } else {
+        this.$notify({
+          group: 'request-notifications',
+          title: 'Linking not possible',
+          text: 'Please specify a title for this entry first',
+          type: 'warn',
+        });
+      }
+    },
+    returnToParent(id) {
+      this.$store.commit('data/deleteLastParentItem');
+      this.$router.push(`/entry/${id}`);
     },
   },
 };
@@ -179,10 +241,41 @@ export default {
       z-index: 5;
       padding-top: $spacing;
       padding-bottom: $spacing-small;
+
+      .base-row-parent {
+        border-bottom: $separation-line;
+        position: relative;
+        cursor: pointer;
+
+        &:hover {
+          color: $app-color;
+        }
+
+        &::after {
+          content: '';
+          position:absolute;
+          height: 100%;
+          width: 100%;
+          z-index: 10;
+          top: 0;
+          left: 0;
+          background-color: rgb(240, 240, 240);
+          opacity: 0.5;
+        }
+
+        &:hover::after {
+          opacity: 0;
+        }
+      }
     }
 
     .form-container {
       position: relative;
+
+      .slide-in-form {
+        top: 0;
+        position: absolute;
+      }
     }
 
     .subtitle {
@@ -191,16 +284,31 @@ export default {
     }
   }
 
-  .slide-fade2-enter-active, .slide-fade2-move {
+  .slide-fade-form-enter-active, .slide-fade-form-move {
     transition: all 0.5s ease;
   }
-  .slide-fade2-enter, .slide-fade2-leave-to {
+  .slide-fade-form-enter, .slide-fade-form-leave-to {
     opacity: 0;
     transform: translateY(-#{$spacing});
   }
 
-  .slide-fade2-leave-active {
+  .slide-fade-form-leave-active {
     position: absolute;
     transition: all 0.3s ease;
+  }
+
+  .slide-child-form-enter-active {
+    box-shadow: $pop-up-shadow;
+    transition: opacity 0.4s ease-in, transform 0.5s ease-in, box-shadow 0.7s ease-in;
+  }
+
+  .slide-child-form-enter-to {
+    box-shadow: none;
+  }
+
+  .slide-child-form-enter {
+    transform: translateY(400px);
+    opacity: 0;
+    box-shadow: $pop-up-shadow;
   }
 </style>

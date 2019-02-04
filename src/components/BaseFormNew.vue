@@ -14,7 +14,8 @@
           :field-value="value"
           :field-type="element['x-attrs'] ? element['x-attrs'].field_type : 'text'"
           :label="$te('form.' + element.name) ? $t('form.' + element.name) : element.name"
-          :placeholder="element['x-attrs'].placeholder || $t('form.select') + ' '
+          :placeholder="element['x-attrs'] && element['x-attrs'].placeholder
+            ? element['x-attrs'].placeholder : $t('form.select') + ' '
           + ($te('form.' + element.name) ? $t('form.' + element.name) : element.name)"
           :tabs="['English', 'German']"
           :drop-down-list="dropdownLists[element.name]"
@@ -48,7 +49,8 @@
           :field-value="valueListInt[element.name]"
           :field-type="element['x-attrs'] ? element['x-attrs'].field_type : 'text'"
           :label="$te('form.' + element.name) ? $t('form.' + element.name) : element.name"
-          :placeholder="element['x-attrs'].placeholder || $t('form.select') + ' '
+          :placeholder="element['x-attrs'] && element['x-attrs'].placeholder
+            ? element['x-attrs'].placeholder : $t('form.select') + ' '
           + ($te('form.' + element.name) ? $t('form.' + element.name) : element.name)"
           :drop-down-list="dropdownLists[element.name]"
           :class="[
@@ -101,35 +103,15 @@ export default {
     },
   },
   watch: {
-    valueListInt: {
-      handler(val) {
-        if (Object.keys(this.valueListIntCopy).length) {
-          if (JSON.stringify(val) !== JSON.stringify(this.valueListIntCopy)) {
-            console.log('Sending changes');
-            this.$emit('values-changed', this.valueListInt);
-          }
-        }
-      },
-      deep: true,
-    },
     valueList(val) {
-      console.log('valllll');
-      console.log(JSON.stringify(val));
-      console.log(JSON.stringify(this.valueListInt));
       if (JSON.stringify(val) !== JSON.stringify(this.valueListInt)) {
-        if (!Object.keys(val).length) {
-          this.initializeValueObject();
-        }
-        console.log('receiving changes');
         // this.initializeValueObject();
-        this.valueListInt = Object.assign({}, this.valueListInt, val);
+        this.initializeValueObject();
         // JSON parse is necessary to destroy any references between the objects
         this.valueListIntCopy = Object.assign({}, JSON.parse(JSON.stringify(this.valueListInt)));
       }
     },
-    formFieldJson(val) {
-      console.log('form fields changed');
-      console.log(val);
+    formFieldJson() {
       this.initializeValueObject();
     },
   },
@@ -139,8 +121,6 @@ export default {
   methods: {
     initializeValueObject() {
       this.formFieldListInt = [];
-      console.log('initialize');
-      console.log(this.formFieldJson);
       Object.keys(this.formFieldJson)
         .forEach(key => this.formFieldListInt
           .push(Object.assign({}, { name: key }, this.formFieldJson[key])));
@@ -163,9 +143,6 @@ export default {
       this.valueListIntCopy = Object.assign({}, JSON.parse(JSON.stringify(this.valueListInt)));
     },
     getInitialFieldValue(field) {
-      if (field.name === 'date_location') {
-        debugger;
-      }
       // check if field is array
       if (field.type === 'array') {
         // check if values are already present and set those if yes
@@ -200,9 +177,9 @@ export default {
       } else {
         this.$set(this.valueListInt, fieldName, value);
       }
+      this.$emit('values-changed', this.valueListInt);
     },
     async fetchAutocomplete({ value, name, source }) {
-      console.log('Fetch');
       if (source) {
         // TODO: set timeout function to only fetch after user has finished typing
         if (value && value.length > 3) {

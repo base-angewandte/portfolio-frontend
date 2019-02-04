@@ -12,7 +12,11 @@
     </div>
     <div
       id="form-back-button"
-      :class="['form-button', 'mobile-elements', { 'form-button-child' : parent }]">
+      :class="[
+        'form-button',
+        'mobile-elements',
+        { 'form-button-child' : showBackButton }
+    ]">
       <BaseButton
         :text="unsavedChanges ? $t('cancel') : $t('back')"
         :icon="unsavedChanges ? '' : 'arrow-left'"
@@ -70,8 +74,6 @@ export default {
   data() {
     return {
       showOverlay: false,
-      // TODO: remove again!!
-      parent: false,
     };
   },
 };
@@ -81,6 +83,11 @@ export default {
   @import "../styles/variables.scss";
 
   #form-save-button {
+    border-left: $separation-line;
+  }
+
+  .form-button-child {
+    display: block;
     border-left: $separation-line;
   }
 
