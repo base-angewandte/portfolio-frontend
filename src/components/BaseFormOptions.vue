@@ -61,12 +61,15 @@ export default {
       type: Boolean,
       default: false,
     },
+    // TODO: remove this and make more generalized component
+    formType: {
+      type: String,
+      default: '',
+    },
   },
   data() {
     return {
       showOptions: this.defaultExpanded,
-      // TODO: remove this and make more generalized component
-      formType: 'test',
     };
   },
   methods: {

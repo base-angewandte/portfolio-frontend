@@ -28,8 +28,9 @@
       :tabs="tabs"
       :label="label"
       :placeholder="placeholder"
-      v-model="fieldValueInt"
-      class="base-form-field base-form-field-full">
+      :input="fieldValueInt"
+      class="base-form-field base-form-field-full"
+      @text-input="setMultilineValue($event)">
       <template
         v-if="field.items && field.items.properties && field.items.properties.type">
         <!-- TODO: replace hardcoded types!  -->
@@ -41,7 +42,7 @@
             'Ausstellungseinladung',
             'Zeitungsartikel',
             'Ausstellungsankündigung']"
-          @selected="addType(element, { type: $event })"/>
+          @selected="$set(fieldValueInt, 'type', $event)"/>
       </template>
     </BaseMultilineTextInput>
 
@@ -136,7 +137,7 @@
       <div
         :key="fieldKey"
         class="base-form-subform-wrapper">
-        <BaseFormNew
+        <BaseForm
           :form-field-json="groupFormFields"
           :value-list="fieldValueInt"
           class="base-form-subform"
@@ -168,7 +169,7 @@ export default {
     BaseMultilineTextInput,
     BaseDropDown,
     BaseChipsInput,
-    BaseFormNew: () => import('./BaseFormNew'),
+    BaseForm: () => import('./BaseForm'),
   },
   props: {
     fieldKey: {
@@ -248,11 +249,14 @@ export default {
         this.setFieldValue(val);
       }
     },
-    fieldValueInt(val) {
-      // prevent event being fired when change comes from outside
-      if (JSON.stringify(this.fieldValue) !== JSON.stringify(val)) {
-        this.$emit('field-value-changed', val);
-      }
+    fieldValueInt: {
+      handler(val) {
+        // prevent event being fired when change comes from outside
+        if (JSON.stringify(this.fieldValue) !== JSON.stringify(val)) {
+          this.$emit('field-value-changed', val);
+        }
+      },
+      deep: true,
     },
   },
   mounted() {
@@ -264,10 +268,17 @@ export default {
         if (val.length >= 0) {
           this.fieldValueInt = [].concat(val);
         } else {
-          this.fieldValueInt = Object.assign({}, val);
+          this.fieldValueInt = Object.assign({}, JSON.parse(JSON.stringify(val)));
         }
       } else {
         this.fieldValueInt = val;
+      }
+    },
+    setMultilineValue(val) {
+      if (typeof val === 'string') {
+        this.fieldValueInt = val;
+      } else {
+        this.fieldValueInt = Object.assign({}, this.fieldValueInt, val);
       }
     },
   },
@@ -284,11 +295,13 @@ export default {
 
     .base-form-field-array-label {
       color: $font-color-second;
+      margin-bottom: $spacing-small;
     }
 
     .base-form-subform-wrapper {
       border-right: 3px solid rgb(240, 240, 240);
       border-left: 3px solid rgb(240, 240, 240);
+      overflow: hidden;
 
       .base-form-subform {
         margin: -16px auto;

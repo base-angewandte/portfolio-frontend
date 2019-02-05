@@ -162,6 +162,7 @@ export default {
       this.selectableEntries = this.filterSelected();
       this.showEntryPopUp = true;
     },
+    // TODO: can this be handled in child (Sidebar) directly?
     filterSelectable(val) {
       const data = this.filterSelected();
       this.$set(this.filterValues, val.type, val.val === 'Alle Typen' ? '' : val.val);
@@ -169,6 +170,7 @@ export default {
         && (!this.filterValues.type || entry.type === this.filterValues.type));
       this.sortSelectable(this.sortValue);
     },
+    // TODO: can this be handled in child (Sidebar) directly?
     sortSelectable(val) {
       this.sortValue = val;
       const data = this.selectableEntries;

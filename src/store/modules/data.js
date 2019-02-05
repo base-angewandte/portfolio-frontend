@@ -209,7 +209,15 @@ const actions = {
       if (entryData) {
         const data = entryData;
         // TODO: bring data in the form they need to be here already!
-        // type needs to be array in logic here!
+        // 1. type needs to be array in logic here!
+        // 2. Text needs to look different
+        console.log(this);
+        /* const textData = data.text.map((entry) => {
+          const textObj = {};
+          entry.text.forEach(lang => Vue.set(textObj, lang.language.toLowerCase(), lang.text));
+          return Object.assign({}, { type: entry.type }, textObj);
+        }); */
+
         commit('setCurrentItem', Object.assign({}, data, { type: data.type ? [data.type] : [] }));
         dispatch('fetchLinked');
         return state.currentItem;

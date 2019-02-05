@@ -1,206 +1,87 @@
 <template>
-  <div
-    ref="baseForm"
-    class="base-form">
+  <div class="base-form">
     <template
-      v-for="(element, index) in list">
-      <div
-        :key="element.name" />
-      <base-autocomplete-input
-        v-if="element.type === 'autocomplete'"
-        :key="index"
-        :label="$te('form.' + element.name) ? $t('form.' + element.name) : element.name"
-        :placeholder="$t('form.select') + ' '
-        + ($te('form.' + element.name) ? $t('form.' + element.name) : element.name)"
-        :list="dropdownLists[element.name]"
-        :object-prop="element.name.toLowerCase()"
-        v-model="formValuesInt[element.name]"
-        :class="[
-          'base-form-field',
-          'base-form-field-' + getSizeClass(element.size),
-          { 'base-form-field-spacing': element.size === 'half' && getClassIndex(element) }
-        ]"
-        @autocomplete="fetchAutocomplete({
-          value: $event,
-          name: element.name,
-          source: element.source
-      })"/>
-      <base-multiline-text-input
-        v-else-if="element.type === 'multiline'"
-        :key="index"
-        :tabs="element.lang"
-        :label="$te('form.' + element.name) ? $t('form.' + element.name) : element.name"
-        :placeholder="$t('form.write') + ' '
-        + ($te('form.' + element.name) ? $t('form.' + element.name) : element.name)"
-        :input="formValuesInt[element.name]"
-        class="base-form-field base-form-field-full"
-        @text-input="addType(element, $event)">
-        <template
-          v-if="element.setType">
-          <!-- TODO: replace hardcoded types!  -->
-          <base-drop-down
-            :selected="formValuesInt[element.name] && formValuesInt[element.name].type
-            ? formValuesInt[element.name].type : 'Wähle Textart'"
-            :selection-list="[
-              'Beschreibung',
-              'Ausstellungseinladung',
-              'Zeitungsartikel',
-              'Ausstellungsankündigung']"
-            @selected="addType(element, { type: $event })"/>
-        </template>
-      </base-multiline-text-input>
-      <base-chips-input
-        v-else-if="element.type === 'chips'"
-        :key="index"
-        :placeholder="$t('form.select') + ' '
-        + ($te('form.' + element.name) ? $t('form.' + element.name) : element.name)"
-        :label="$te('form.' + element.name) ? $t('form.' + element.name) : element.name"
-        :object-prop="element.name"
-        :list="dropdownLists[element.name]"
-        v-model="formValuesInt[element.name]"
-        :allow-dynamic-drop-down-entries="element.sourceType === 'dynamic'"
-        :allow-multiple-entries="element.mode === 'multi'"
-        :allow-unknown-entries="element.unknown"
-        :always-linked="element.sourceType === 'static'"
-        :identifier="element.sourceType === 'dynamic' ? 'uuid' : ''"
-        :class="[
-          'base-form-field',
-          'base-form-field-' + getSizeClass(element.size),
-          { 'base-form-field-spacing': element.size === 'half' && getClassIndex(element) }
-        ]"
-        :draggable="true"
-        :hoverbox-content="hoverBoxData"
-        @selected="$emit('selected', { value: $event && $event.length
-        ? $event[0][element.name] || $event[0] : null, field: element.name })"
-        @fetch-dropdown-entries="fetchAutocomplete({
-          value: $event.value,
-          name: element.name,
-          source: element.source
-        })"
-        @hoverbox-active="fetchInfoData">
-        <template
-          slot="drop-down-entry"
-          slot-scope="props">
-          <span>{{ props.item[element.name] }}</span>
-          <span class="chips-dropdown-second">{{ props.item.born }}</span>
-          <span class="chips-dropdown-third">{{ props.item.source }}</span>
-        </template>
-      </base-chips-input>
-      <base-input
-        v-else-if="element.type === 'text'"
-        :key="index"
-        :label="$te('form.' + element.name) ? $t('form.' + element.name) : element.name"
-        :placeholder="$t('form.select') + ' '
-        + ($te('form.' + element.name) ? $t('form.' + element.name) : element.name)"
-        :id="index"
-        v-model="formValuesInt[element.name]"
-        :class="[
-          'base-form-field',
-          'base-form-field-' + getSizeClass(element.size),
-          { 'base-form-field-spacing': element.size === 'half' && getClassIndex(element) }
-      ]"/>
-      <base-date-input
-        v-else-if="element.type === 'date'"
-        :key="index"
-        :label="$te('form.' + element.name) ? $t('form.' + element.name) : element.name"
-        :placeholder="$t('form.select') + ' '
-        + ($te('form.' + element.name) ? $t('form.' + element.name) : element.name)"
-        :id="index"
-        :type="element.dateType"
-        v-model="formValuesInt[element.name]"
-        :class="[
-          'base-form-field',
-          'base-form-field-' + getSizeClass(element.size),
-          { 'base-form-field-spacing': element.size === 'half' && getClassIndex(element) }]"/>
-      <base-chips-below
-        v-else-if="element.type === 'chips-below'"
-        :key="index"
-        :label="$te('form.' + element.name) ? $t('form.' + element.name) : element.name"
-        :placeholder="$t('form.select') + ' '
-        + ($te('form.' + element.name) ? $t('form.' + element.name) : element.name)"
-        :list="dropdownLists[element.name]"
-        :allow-unknown-entries="true"
-        :allow-dynamic-drop-down-entries="true"
-        :identifier="'uuid'"
-        :hoverbox-content="hoverBoxData"
-        :object-prop="element.name"
-        v-model="formValuesInt[element.name]"
-        class="base-form-field base-form-field-full"
-        @fetch-dropdown-entries="fetchAutocomplete({
-          value: $event.value,
-          name: 'authors',
-          source: element.source })"
-        @hoverbox-active="fetchInfoData">
-        <template
-          slot="drop-down-entry"
-          slot-scope="props">
-          <span>{{ props.item[element.name] }}</span>
-          <span class="chips-dropdown-second">{{ props.item.born }}</span>
-          <span class="chips-dropdown-third">{{ props.item.source }}</span>
-        </template>
-      </base-chips-below>
+      v-for="(element, index) in formFieldListInt">
 
-      <!-- FIELD GROUPS -->
-      <div
-        v-else-if="fieldTypes[element.name] === 'label'"
-        :key="index"
-        class="base-form-field base-form-field-full base-form-field-array">
-        <div class="base-form-field-array-label">
-          {{ $t('form.' + element.name) + ':' }}
-        </div>
+      <!-- ALLOW FOR MULTIPLE VALUES PER FIELD -->
+      <template
+        v-if="allowMultiply(element)">
+        <FormFieldCreator
+          v-for="(value, valueIndex) in valueListInt[element.name]"
+          :key="index + '-' + valueIndex"
+          :field-key="index + '-' + valueIndex"
+          :field="element"
+          :field-value="value"
+          :field-type="element['x-attrs'] ? element['x-attrs'].field_type : 'text'"
+          :label="$te('form.' + element.name) ? $t('form.' + element.name) : element.name"
+          :placeholder="element['x-attrs'] && element['x-attrs'].placeholder
+            ? element['x-attrs'].placeholder : $t('form.select') + ' '
+          + ($te('form.' + element.name) ? $t('form.' + element.name) : element.name)"
+          :tabs="[$t('english').toLowerCase(), $t('german').toLowerCase()]"
+          :drop-down-list="dropdownLists[element.name]"
+          :class="[
+            'base-form-field',
+            element['x-attrs'] && element['x-attrs'].field_format === 'half'
+              ? 'base-form-field-half' : 'base-form-field-full',
+            { 'base-form-field-left-margin': isHalfField(element) }
+          ]"
+          @field-value-changed="setFieldValue($event, element.name, valueIndex)"
+          @fetch-autocomplete="fetchAutocomplete"
+          @subform-input="setFieldValue($event, element.name, valueIndex)"
+        />
         <div
-          :key="index"
-          class="base-form-subform-wrapper">
-          <BaseForm
-            :list="prepareFormProperties(element.properties)"
-            :form-values="formValuesInt[element.name]"
-            class="base-form-subform"/>
+          :key="'multiplyButton' + index"
+          class="multiply-button"
+          @click="multiplyField(element)">
+          <span>{{ $t('form.addGroup', { fieldType: $t('form.' + element.name) }) }}</span>
+          <span>
+            <img
+              :src="require('../static/remove.svg')"
+              class="multiply-icon">
+          </span>
         </div>
-      </div>
-
-      <!-- MULTIPLY -->
-      <!-- TODO: i dont want this below each form field but only one below all of one field -->
-      <div
-        v-if="element.type === 'array' && element['x-attrs'] && !element['x-attrs'].source"
-        :key="'multiply' + index"
-        class="multiply-button">
-        {{ 'Multiply label +' }}
-      </div>
+      </template>
+      <template v-else>
+        <FormFieldCreator
+          :key="index"
+          :field-key="index"
+          :field="element"
+          :field-value="valueListInt[element.name]"
+          :field-type="element['x-attrs'] ? element['x-attrs'].field_type : 'text'"
+          :label="$te('form.' + element.name) ? $t('form.' + element.name) : element.name"
+          :placeholder="element['x-attrs'] && element['x-attrs'].placeholder
+            ? element['x-attrs'].placeholder : $t('form.select') + ' '
+          + ($te('form.' + element.name) ? $t('form.' + element.name) : element.name)"
+          :drop-down-list="dropdownLists[element.name]"
+          :class="[
+            'base-form-field',
+            element['x-attrs'] && element['x-attrs'].field_format === 'half'
+              ? 'base-form-field-half' : 'base-form-field-full',
+            { 'base-form-field-left-margin': isHalfField(element) }
+          ]"
+          @field-value-changed="setFieldValue($event, element.name)"
+          @fetch-autocomplete="fetchAutocomplete"
+        />
+      </template>
     </template>
   </div>
 </template>
 
 <script>
 import axios from 'axios';
-import {
-  BaseInput,
-  BaseDateInput,
-  BaseChipsInput,
-  BaseAutocompleteInput,
-  BaseMultilineTextInput,
-  BaseDropDown,
-  BaseChipsBelow,
-  BaseHoverBox,
-} from 'base-components';
+import FormFieldCreator from './FormFieldCreator';
 
 export default {
-  name: 'BaseForm',
+  name: 'BaseFormNew',
   components: {
-    BaseHoverBox,
-    BaseChipsBelow,
-    BaseMultilineTextInput,
-    BaseChipsInput,
-    BaseInput,
-    BaseDateInput,
-    BaseAutocompleteInput,
-    BaseDropDown,
+    FormFieldCreator,
   },
   props: {
-    list: {
-      type: Array,
+    formFieldJson: {
+      type: Object,
       required: true,
     },
-    formValues: {
+    valueList: {
       type: Object,
       default() {
         return {};
@@ -209,54 +90,102 @@ export default {
   },
   data() {
     return {
+      valueListInt: {},
+      valueListIntCopy: {},
+      formFieldListInt: [],
+      fieldProperties: [],
       dropdownLists: {},
-      formValuesInt: {},
-      hoverBoxData: {},
     };
   },
   computed: {
-    halfElements() {
-      return this.list.filter(elem => elem.size === 'half');
+    formFieldsHalf() {
+      return this.formFieldListInt.filter(field => field['x-attrs'] && field['x-attrs'].field_format === 'half');
     },
   },
   watch: {
-    $route() {
-      this.setFormValues(this.formValues);
-      this.setDropDownLists();
-    },
-    formValuesInt: {
-      handler(val) {
-        if (JSON.stringify(this.formValues) !== JSON.stringify(val)) {
-          this.$emit('values-changed', this.formValuesInt);
-        }
-      },
-      deep: true,
-    },
-    formValues(val) {
-      if (JSON.stringify(this.formValuesInt) !== JSON.stringify(val)) {
-        this.setFormValues(val);
+    valueList(val) {
+      if (JSON.stringify(val) !== JSON.stringify(this.valueListInt)) {
+        // this.initializeValueObject();
+        this.initializeValueObject();
+        // JSON parse is necessary to destroy any references between the objects
+        this.valueListIntCopy = Object.assign({}, JSON.parse(JSON.stringify(this.valueListInt)));
       }
     },
+    formFieldJson() {
+      this.initializeValueObject();
+    },
   },
-  created() {
-    if (this.list) {
-      this.setDropDownLists();
-      this.setFormValues(this.formValues);
-    }
+  mounted() {
+    this.initializeValueObject();
   },
   methods: {
-    getSizeClass(val) {
-      return val && ['half', 'full'].includes(val) ? val : 'full';
+    initializeValueObject() {
+      this.formFieldListInt = [];
+      Object.keys(this.formFieldJson)
+        .forEach(key => this.formFieldListInt
+          .push(Object.assign({}, { name: key }, this.formFieldJson[key])));
+      this.formFieldListInt.sort((a, b) => {
+        if (a['x-attrs'] && b['x-attrs']) {
+          if (a['x-attrs'].order > b['x-attrs'].order) {
+            return 1;
+          }
+          return -1;
+        }
+        return -1;
+      }).forEach((field) => {
+        this.$set(
+          this.valueListInt,
+          field.name,
+          this.getInitialFieldValue(field),
+        );
+      });
+      // JSON parse is necessary to destroy any references between the objects
+      this.valueListIntCopy = Object.assign({}, JSON.parse(JSON.stringify(this.valueListInt)));
     },
-    getClassIndex(val) {
-      return this.halfElements.indexOf(val) % 2;
+    getInitialFieldValue(field) {
+      // check if field is array
+      if (field.type === 'array') {
+        // check if values are already present and set those if yes
+        if (this.valueList[field.name] && this.valueList[field.name].length) {
+          return [].concat(this.valueList[field.name]);
+        }
+        if (field['x-attrs'] && !field['x-attrs'].field_type.includes('chips')
+          && field.items.type === 'object') {
+          return [].concat(this.getInitialFieldValue(field.items));
+        }
+        // else return empty array
+        return [];
+        // check if field is object
+      } if (field.type === 'object') {
+        const initObj = {};
+        // for each property in the object also get initial values
+        Object.keys(field.properties).forEach((key) => {
+          this.$set(initObj, key, this.getInitialFieldValue(field.properties[key]));
+        });
+        return Object.assign({}, initObj, this.valueList[field.name]);
+      }
+      // if it is not a array or object simply return value from list or empty string
+      return this.valueList[field.name] ? this.valueList[field.name] : '';
+    },
+    allowMultiply(el) {
+      return el.type === 'array' && el['x-attrs']
+        && !['chips', 'chips-below'].includes(el['x-attrs'].field_type);
+    },
+    setFieldValue(value, fieldName, index) {
+      debugger;
+      if (index >= 0) {
+        this.$set(this.valueListInt[fieldName], index, value);
+      } else {
+        this.$set(this.valueListInt, fieldName, value);
+      }
+      this.$emit('values-changed', this.valueListInt);
     },
     async fetchAutocomplete({ value, name, source }) {
       if (source) {
         // TODO: set timeout function to only fetch after user has finished typing
         if (value && value.length > 3) {
           try {
-            const result = await axios.get(`${source}${value}`, {
+            const result = await axios.get(`${source}/${value}`, {
               withCredentials: true,
             });
             if (this.dropdownLists) {
@@ -271,108 +200,24 @@ export default {
         // TODO: remove this again as soon as everything has a source attribute
       } else {
         console.error('no source specified');
-      }
-    },
-    addType(val, text) {
-      if (val.setType) {
-        this.$set(this.formValuesInt, val.name, Object.assign({}, { type: '' }, this.formValues[val.name], text));
-      } else {
-        this.$set(this.formValuesInt, val.name, text);
-      }
-    },
-    setFormValues(val) {
-      const obj = {};
-      if (this.list.length) {
-        this.list.forEach((field) => {
-          if (val[field.name]) {
-            this.$set(obj, field.name, val[field.name]);
-          } else if (field.setType) {
-            this.$set(obj, field.name, {
-              type: null,
-            });
-          } else {
-            let initial = '';
-            if (['chips-below', 'chips'].includes(field.type)) {
-              initial = [];
-            } else if (['date'].includes(field.type)) {
-              initial = {};
-            }
-            this.$set(obj, field.name, initial);
+        if (name === 'type') {
+          if (this.dropdownLists) {
+            const types = await axios.get('http://localhost:8200/api/v1/jsonschema/',
+              {
+                withCredentials: true,
+              });
+            this.$set(this.dropdownLists, [name], types.data);
           }
-        });
-      }
-      this.formValuesInt = Object.assign({}, val, obj);
-    },
-    setDropDownLists() {
-      const obj = {};
-      this.list.filter(element => element.type === 'autocomplete' || element.type === 'chips' || element.type === 'chips-below')
-        .forEach((autoField) => {
-          if (autoField.name === 'keywords') {
-            this.$set(obj, autoField.name, [
-              'Art',
-              'Collage',
-              'Photography',
-              'Drawing',
-              'Painting',
-              'Concert',
-              'Classic',
-              'Fashion',
-            ]);
-          } else if (autoField.name === 'type') {
-            this.$set(obj, autoField.name, [
-              'Publikation',
-              'Text',
-              'Bild',
-              'Konzert',
-              'Ausstellung',
-              'Collage',
-              'Skulptur',
-              'Werk',
-            ]);
-          } else {
-            this.$set(obj, autoField.name, []);
-          }
-        });
-      this.dropdownLists = obj;
-    },
-    async fetchInfoData(val, entry) {
-      console.log(entry);
-      if (val) {
-        const data = await this.$store.dispatch('data/fetchInfoBoxData', entry);
-        console.log(data);
-        this.hoverBoxData = data;
-      } else {
-        this.hoverBoxData = {};
-      }
-    },
-    prepareFormProperties(list) {
-      const listArray = Object.keys(list)
-        .map(key => Object.assign({}, { name: key }, list[key]));
-      return listArray.sort((a, b) => {
-        if (a.order > b.order) {
-          return 1;
         }
-        return -1;
-      });
-    },
-    determineFieldTypes() {
-      this.list.forEach(field => this.$set(this.fieldTypes, field.name, this.getFieldType(field)));
-    },
-    getFieldType(obj) {
-      if (obj.type === 'object' && obj.format === 'date') {
-        return 'date';
-      } if (obj.name === 'type') {
-        return 'chips';
-      } if (obj.type === 'string' && obj['x-attrs'] && obj['x-attrs'].source) {
-        return 'autocomplete';
-      } if (obj.name === 'text' || obj.name === 'notes') {
-        return 'multiline';
-      } if ((obj.type === 'array' || obj.type === 'object') && obj['x-attrs'] && obj['x-attrs'].source) {
-        return 'chips';
-      } if (obj.type === 'array' && !(obj['x-attrs'] || obj['x-attrs'].source)) {
-        return 'label';
       }
-      return 'text';
+    },
+    multiplyField(field) {
+      this.valueListInt[field.name]
+        .push(this.getInitialFieldValue(field.items));
+    },
+    isHalfField(field) {
+      const index = this.formFieldsHalf.indexOf(field);
+      return index > 0 && !!(index % 2);
     },
   },
 };
@@ -385,73 +230,38 @@ export default {
     background-color: white;
     display: flex;
     flex-wrap: wrap;
-    padding: 16px;
-  }
+    padding: 16px 16px 0;
 
-  .base-form-field:not(:last-of-type) {
-    margin-bottom: $spacing;
-  }
-
-  .base-form-field-full {
-    flex: 0 0 100%;
-  }
-
-  .base-form-field-half {
-    flex: 0 0 calc(50% - 8px);
-  }
-
-  .base-form-field-spacing {
-    margin-left: 16px;
-  }
-
-  .chips-dropdown-second {
-    color: $font-color-second;
-  }
-
-  .chips-dropdown-third {
-    font-size: $font-size-small;
-    color: $font-color-second;
-    float: right;
-  }
-
-  .base-form-field-array {
-    margin-top: $spacing-small;
-    display: flex;
-    flex-direction: column;
-
-    .base-form-field-array-label {
-      color: $font-color-second;
+    .base-form-field {
+      margin-bottom: $spacing;
     }
-  }
 
-  .base-form-subform-wrapper {
-    border-right: 3px solid rgb(240, 240, 240);
-    border-left: 3px solid rgb(240, 240, 240);
-    margin: $spacing 0;
-
-    .base-form-subform {
-      margin: -16px auto;
-      width: calc(100% - 6px);
-    }
-  }
-
-  .multiply-button {
-    width: 100%;
-    color: $font-color-second;
-    margin-bottom: $spacing + $spacing-small;
-  }
-
-  @media screen and (max-width: $mobile) {
-    .base-form-field-half {
+    .base-form-field-full, .multiply-button {
       flex: 0 0 100%;
     }
 
-    .base-form-field-spacing {
-      margin-left: 0;
+    .base-form-field-half {
+      flex: 0 0 calc(50% - 8px);
     }
 
-    .multiline-dropdown {
-      order: 0;
+    .base-form-field-left-margin {
+      margin-left: $spacing;
+    }
+
+    .multiply-button {
+      color: $font-color-second;
+      margin-bottom: $spacing + $spacing-small;
+      cursor: pointer;
+
+      &:hover {
+        color: $app-color;
+      }
+
+      .multiply-icon {
+        margin-left: $spacing;
+        height: $icon-small;
+        width: $icon-small;
+      }
     }
   }
 </style>

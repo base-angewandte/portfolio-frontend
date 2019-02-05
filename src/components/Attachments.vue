@@ -12,7 +12,7 @@
           v-if="showTitle"
           class="attachment-area-subheader">{{ $t('form-view.attachedEntries') }}</h3>
         <div class="linked-options">
-          <base-button
+          <BaseButton
             v-if="!showEntryAction"
             :text="$t('form-view.deleteLinked')"
             icon-size="large"
@@ -22,13 +22,13 @@
           <div
             v-else
             class="linked-options">
-            <base-button
+            <BaseButton
               :text="$t('cancel')"
               icon-size="large"
               icon="remove"
               button-style="single"
               @clicked="showEntryAction = false"/>
-            <base-button
+            <BaseButton
               :text="$t('form-view.deleteButton')"
               icon-size="large"
               icon="save-file"
@@ -70,6 +70,8 @@
           class="linked-base-box"
           @select-triggered="entrySelected(linked.id, $event)"
           @clicked="goToLinked(linked.id)"/>
+
+        <!-- ACTION BUTTON -->
         <BaseBoxButton
           v-if="!!showEntryAction"
           :text="$t('form-view.deleteLinked')"
@@ -77,7 +79,7 @@
           icon="save-file"
           box-style="small"
           class="linked-base-box"
-          @clicked="saveFileMeta"/>
+          @clicked="deleteLinked"/>
       </div>
     </div>
 
@@ -180,6 +182,8 @@
             </div>
           </template>
         </BaseImageBox>
+
+        <!-- ACTION BUTTON -->
         <BaseBoxButton
           v-if="action"
           :text="buttonText"
@@ -274,6 +278,7 @@ export default {
     getFileType(file) {
       if (file) {
         // TODO: also catch 4 letter ending (jpeg)
+        // TODO: for real objects from db id will allow to identify file type!!
         const fileEnding = file.match(/\.([a-z]{3}$)/);
         if (fileEnding && ['jpg', 'gif', 'jpeg', 'png'].includes(fileEnding[1])) {
           return 'Picture';
