@@ -1,6 +1,23 @@
 /* eslint no-shadow: ["error", { "allow": ["state", "getters"] }] */
 import Vue from 'vue';
+import axios from 'axios';
 import DATA from '../../assets/data';
+
+function transformTextData(data) {
+  const textData = [];
+  data.forEach((textItem) => {
+    const textObj = { type: textItem.type };
+    const text = Object.keys(textItem).filter(props => props !== 'type')
+      .map(lang => Object.assign({}, {
+        language: lang,
+        text: textItem[lang],
+      }));
+    Vue.set(textObj, 'text', text);
+    textData.push(textObj);
+  });
+  return textData;
+}
+
 
 const state = {
   sidebarData: JSON.parse(sessionStorage.getItem('sidebarItems')) || DATA.EXISTING_ENTRIES,
@@ -80,13 +97,11 @@ const mutations = {
     state.sidebarData.push(item);
     // consider filtered entries!
   },
-  updateEntry(state, { obj, index, type }) {
+  updateEntry(state, { obj, index, modifiedProps }) {
     Vue.set(
       state.sidebarData,
       index,
-      Object.assign({}, state.currentItem, obj, {
-        type,
-      }),
+      Object.assign({}, state.currentItem, obj, modifiedProps),
     );
   },
   deleteSidebarItems(state) {
@@ -178,9 +193,18 @@ const mutations = {
 
 const actions = {
   async fetchFormExtension(context, type) {
-    const commonType = await Object.keys(DATA.TYPE_MAPPINGS)
-      .find(key => DATA.TYPE_MAPPINGS[key].includes(type));
-    return DATA.FORM_MAPPINGS[commonType] || [];
+    let formData = {};
+    try {
+      console.log('fetching extension');
+      const extension = await axios.get(`${process.env.API}jsonschema/${type}/`,
+        {
+          withCredentials: true,
+        });
+      formData = extension.data.properties;
+    } catch (e) {
+      console.error(e);
+    }
+    return formData || [];
   },
   setCurrentItemById({ commit, dispatch }, id) {
     const entry = this.getters['data/getEntryById'](id);
@@ -190,12 +214,43 @@ const actions = {
     dispatch('fetchLinked');
     return !!entry;
   },
+  async fetchEntryData({ commit, dispatch, state }, id) {
+    try {
+      // TODO: either call C. module or do db request
+      // const entryData = await axios(`http://localhost:8200/api/v1/entity/${id}`).data;
+      // const entryData = DATA.EXISTING_ENTRIES.filter(entry => id === entry.id);
+      const entryData = this.getters['data/getEntryById'](id);
+      if (entryData) {
+        const data = entryData;
+        // Modifications of data received from backend needed:
+        // 1. type needs to be array in logic here!
+        // 2. Text needs to look different
+        const textData = data.text && data.text.length ? data.text.map((entry) => {
+          const textObj = {};
+          entry.text.forEach(lang => Vue.set(textObj, lang.language.toLowerCase(), lang.text));
+          return Object.assign({}, { type: entry.type }, textObj);
+        }) : [];
+
+        commit('setCurrentItem', Object.assign({}, data, { type: data.type ? [data.type] : [], text: textData }));
+        dispatch('fetchLinked');
+        return state.currentItem;
+      }
+    } catch (e) {
+      // TODO: inform user that fetching of entry failed
+      console.error(e);
+    }
+    return {};
+  },
   addSidebarItem({ commit, dispatch }, obj) {
     return new Promise((resolve, reject) => {
       try {
+        // Modify object back here before saving to database
+        // 1. type not array but string
+        // 2. text object
         const type = obj.type && obj.type.length ? obj.type : '';
         const newItem = Object.assign({}, obj, {
           type: typeof type === 'object' ? type[0].type : type,
+          text: transformTextData(obj.text),
           id: (parseInt(this.getters['data/getLastId'], 10) + 1).toString(),
         });
         // TODO: save to DATABASE!
@@ -215,11 +270,12 @@ const actions = {
         // state.currentItem = Object.assign({}, state.currentItem, obj);
         const index = this.getters['data/getCurrentItemIndex'];
         const type = obj.type && obj.type.length ? obj.type[0].type || obj.type[0] : '';
+        const modifiedProps = { type, text: transformTextData(obj.text) };
         // TODO: save to DATABASE!!
         commit('updateEntry', {
           obj,
           index,
-          type,
+          modifiedProps,
         });
         commit('sort');
         await dispatch('setCurrentItemById', obj.id);

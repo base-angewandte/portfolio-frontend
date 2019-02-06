@@ -3,7 +3,7 @@
 import VueI18n from 'vue-i18n';
 import Notifications from 'vue-notification';
 import Vue from 'vue';
-// import { Api } from 'base-components';
+// import { PortfolioAPI } from 'base-components';
 import App from './App';
 import router from './router';
 import store from './store';
@@ -27,7 +27,11 @@ const i18n = new VueI18n({
   },
 });
 
-// store.registerModule('api', Api);
+/* PortfolioAPI(store, {
+  baseURL: 'http://localhost:8200/api/v1',
+}, 'PortfolioAPI'); */
+
+// store.registerModule('api', PortfolioAPI);
 
 // TODO: this is throwing an error (.keys of undefined)
 // store.registerModule('skosmos', Skosmos);
