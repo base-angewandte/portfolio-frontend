@@ -17,7 +17,7 @@
           :placeholder="element['x-attrs'] && element['x-attrs'].placeholder
             ? element['x-attrs'].placeholder : $t('form.select') + ' '
           + ($te('form.' + element.name) ? $t('form.' + element.name) : element.name)"
-          :tabs="[$t('english').toLowerCase(), $t('german').toLowerCase()]"
+          :tabs="['english', 'german']"
           :drop-down-list="dropdownLists[element.name]"
           :class="[
             'base-form-field',
@@ -120,6 +120,7 @@ export default {
   },
   methods: {
     initializeValueObject() {
+      debugger;
       this.formFieldListInt = [];
       Object.keys(this.formFieldJson)
         .forEach(key => this.formFieldListInt
@@ -172,7 +173,6 @@ export default {
         && !['chips', 'chips-below'].includes(el['x-attrs'].field_type);
     },
     setFieldValue(value, fieldName, index) {
-      debugger;
       if (index >= 0) {
         this.$set(this.valueListInt[fieldName], index, value);
       } else {

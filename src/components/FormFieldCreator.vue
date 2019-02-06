@@ -26,6 +26,7 @@
       v-else-if="fieldType === 'multiline'"
       :key="fieldKey"
       :tabs="tabs"
+      :tab-labels="tabs.map(tab => $t(tab))"
       :label="label"
       :placeholder="placeholder"
       :input="fieldValueInt"
@@ -296,12 +297,12 @@ export default {
     .base-form-field-array-label {
       color: $font-color-second;
       margin-bottom: $spacing-small;
+      z-index: 1;
     }
 
     .base-form-subform-wrapper {
       border-right: 3px solid rgb(240, 240, 240);
       border-left: 3px solid rgb(240, 240, 240);
-      overflow: hidden;
 
       .base-form-subform {
         margin: -16px auto;

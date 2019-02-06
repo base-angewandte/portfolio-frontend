@@ -153,7 +153,6 @@ export default {
       this.valueList = Object.assign({}, data);
     },
     handleInput(data, type) {
-      debugger;
       this.unsavedChanges = true;
       if (type) {
         this.$set(this.valueList, type, Object.assign({}, this.valueList[type],
