@@ -205,15 +205,11 @@ export default {
           && !this.$store.getters['data/getCurrentLinked'].includes(entry)));
     },
     async linkEntries(val) {
-      // TODO communicate this to database!
-      // also linked entries should actually be connected to the entry at hand not hardcoded
-      // --> should be done in store!!!
       const list = [];
-      await val.forEach((entryId) => {
-        const entry = this.$store.getters['data/getEntryById'](entryId);
+      val.forEach((entryId) => {
         // TODO: also check if it is a parent already!!!!!
         if (!this.linkedList.map(e => e.id).includes(entryId)) {
-          list.push(entry);
+          list.push(entryId);
         } else {
           this.$notify({
             group: 'request-notifications',
@@ -223,7 +219,13 @@ export default {
           });
         }
       });
-      this.$store.commit('data/setLinked', { list });
+      // only save to db if entry exists in db already
+      if (this.currentId) {
+        await this.$store.dispatch('data/saveLinked', list);
+        // otherwise just save state in store for now and commit with general first save of entry
+      } else {
+        await this.$store.dispatch('data/fetchLinked', { relations: list, replace: false });
+      }
       this.showEntryPopUp = false;
     },
   },

@@ -17,7 +17,7 @@
           :placeholder="element['x-attrs'] && element['x-attrs'].placeholder
             ? element['x-attrs'].placeholder : $t('form.select') + ' '
           + ($te('form.' + element.name) ? $t('form.' + element.name) : element.name)"
-          :tabs="['english', 'german']"
+          :tabs="['en', 'de']"
           :drop-down-list="dropdownLists[element.name]"
           :class="[
             'base-form-field',
@@ -120,7 +120,6 @@ export default {
   },
   methods: {
     initializeValueObject() {
-      debugger;
       this.formFieldListInt = [];
       Object.keys(this.formFieldJson)
         .forEach(key => this.formFieldListInt

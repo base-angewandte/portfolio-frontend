@@ -3,7 +3,7 @@
 import VueI18n from 'vue-i18n';
 import Notifications from 'vue-notification';
 import Vue from 'vue';
-// import { PortfolioAPI } from 'base-components';
+import { PortfolioAPI, SkosmosAPI } from 'base-components';
 import App from './App';
 import router from './router';
 import store from './store';
@@ -27,28 +27,15 @@ const i18n = new VueI18n({
   },
 });
 
-/* PortfolioAPI(store, {
-  baseURL: 'http://localhost:8200/api/v1',
-}, 'PortfolioAPI'); */
+PortfolioAPI(store, {
+  baseURL: process.env.PORTFOLIO_API,
+  lang: 'en',
+}, 'PortfolioAPI');
 
-// store.registerModule('api', PortfolioAPI);
-
-// TODO: this is throwing an error (.keys of undefined)
-// store.registerModule('skosmos', Skosmos);
-
-// TODO: need to add proper authentication check / mechanism here!
-router.beforeEach((to, from, next) => {
-  /* if (to.matched.some(record => record.meta.requiresAuth)) {
-    if (sessionStorage.getItem('auth')) {
-      store.commit('auth/setAuth');
-    }
-    if (!store.state.auth.isAuthenticated) {
-      window.location.href = 'http://basedev.uni-ak.ac.at/portfolio/accounts/login';
-      sessionStorage.setItem('auth', 'true');
-    }
-  } */
-  next();
-});
+SkosmosAPI(store, {
+  baseURL: process.env.PORTFOLIO_API,
+  lang: 'en',
+}, 'SkosmosAPI');
 
 /* eslint-disable no-new */
 new Vue({

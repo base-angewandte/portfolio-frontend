@@ -17,7 +17,7 @@
     "subtitle": "Subtitle",
     "type": "Type",
     "description": "Description",
-    "text": "Text",
+    "texts": "Text",
     "keywords": "Keywords",
     "notes": "Notes (will not be exported)",
     "photographer": "Photographer",

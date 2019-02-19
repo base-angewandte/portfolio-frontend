@@ -26,17 +26,16 @@
       ref="sidebar"
       :new-form="$store.state.data.isNewForm"
       :class="['sidebar', { 'sidebar-full': !showForm }]"
-      :list="[].concat(this.$store.getters['data/getSidebarData'])"
+      :list="sidebarData"
       @sort="$store.dispatch('data/sortEntries', $event)"
       @filter="$store.dispatch('data/filterEntries', $event)"
       @new-form="createNewForm"
-      @show-entry="fetchEntryData"/>
+      @show-entry="routeToEntry"/>
     <div
       v-if="showForm"
       class="form-view">
       <router-view
         ref="view"
-        @form-saved="saveForm"
         @show-preview="loadPreview"/>
     </div>
   </div>
@@ -54,22 +53,46 @@ export default {
   },
   data() {
     return {
-      showForm: false,
       showPreview: false,
       previewUrl: '',
     };
   },
+  computed: {
+    sidebarData() {
+      return [].concat(this.$store.getters['data/getSidebarData']);
+    },
+    showForm() {
+      return this.$route.name !== 'Dashboard';
+    },
+  },
   watch: {
     $route() {
-      this.showForm = this.$route.name !== 'Dashboard';
       if (!this.showForm) {
         this.$store.commit('data/deleteCurrentItem');
       }
       this.$store.commit('data/setNewForm', this.$route.name === 'newEntry');
     },
   },
-  mounted() {
-    this.showForm = this.$route.name !== 'Dashboard';
+  // TODO: is this a feasible way to handle this?
+  beforeRouteEnter(to, from, next) {
+    next(async (vm) => {
+      while (vm.$store.state.PortfolioAPI.loading) {
+        console.log('waiting');
+        /* eslint-disable-next-line */
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
+      if (!vm.$store.state.PortfolioAPI.user.email) {
+        console.log('authenticating');
+        window.location.href = 'http://localhost:8200/accounts/login';
+      } else {
+        vm.$store.commit('user/setAuthenticated', true);
+      }
+      // fetch data after user authentication was checked and necessary cookies received
+      await vm.$store.dispatch('data/fetchSidebarData', { offset: 0, limit: 50 });
+      vm.calculateSidebarHeight();
+    });
+  },
+  async mounted() {
     this.$store.commit('data/setNewForm', this.$route.name === 'newEntry');
   },
   methods: {
@@ -78,18 +101,11 @@ export default {
       if (formView) {
         formView.resetForm();
       }
-      this.showForm = true;
       this.$router.push('/new');
     },
-    fetchEntryData(item) {
-      this.$store.commit('data/setCurrentItem', item);
-      this.$store.dispatch('data/fetchLinked');
+    routeToEntry(id) {
       this.$store.commit('data/deleteParentItems');
-      this.showForm = true;
-      this.$router.push(`/entry/${item.id}`);
-    },
-    saveForm() {
-      console.log('saved');
+      this.$router.push(`/entry/${id}`);
     },
     popUpAction() {
       this.action();
@@ -107,7 +123,7 @@ export default {
       if (action === 'delete') {
         const deleteCurrentlyDisplayed = this.$store.state.data.selectedEntries
           .includes(this.$route.params.id);
-        this.$store.commit('data/deleteSidebarItems');
+        this.$store.dispatch('data/deleteEntries');
         if (deleteCurrentlyDisplayed) {
           this.$store.commit('data/deleteCurrentItem');
           this.$router.push('/');
@@ -142,6 +158,16 @@ export default {
       // disable page scrolling
       evt.preventDefault();
       // TODO: image zoom?
+    },
+    calculateSidebarHeight() {
+      const top = this.$refs.sidebar.$el.offsetTop
+        + this.$refs.sidebar.$refs.menuList.$el.offsetTop;
+      const element = document.querySelector('footer');
+      const footerHeight = getComputedStyle(element).height.replace('px', '');
+      const residualHeight = window.innerHeight - top - footerHeight;
+      const entryHeight = this.$refs.sidebar.$refs.menuList.$refs.menuEntry[0].$el.clientHeight;
+      const entriesPerPage = Math.floor(residualHeight / entryHeight);
+      this.$store.commit('data/setEntriesPerRequest', entriesPerPage);
     },
   },
 };

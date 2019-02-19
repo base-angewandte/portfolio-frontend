@@ -3,7 +3,7 @@
     <base-header
       :lang="'en'"
       :active="'portfolio'"
-      :profile.prop="$store.state.auth.profile"
+      :profile.prop="profile"
       :emit-navigation="true"
       :urls.prop="{
         de:'/portfolio/de/',
@@ -14,6 +14,7 @@
     <BaseNotification />
     <router-view />
     <base-footer
+      ref="baseFooter"
       :base-url="linkUrl"
       :lang="lang"
       :logged-in="$store.state.isAuthenticated"
@@ -41,6 +42,9 @@ export default {
     lang() {
       // TODO
       return 'get lang stored in store here';
+    },
+    profile() {
+      return this.$store.state.PortfolioAPI ? this.$store.state.PortfolioAPI.user : {};
     },
   },
   methods: {

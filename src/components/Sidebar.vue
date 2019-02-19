@@ -6,7 +6,7 @@
 
     <div class="sidebar-head">
       <div class="base-row">
-        <base-button
+        <BaseButton
           v-if="newEnabled"
           :active="$store.state.data.isNewForm"
           :text="$t('new')"
@@ -14,7 +14,7 @@
           icon-size="large"
           button-style="row"
           @clicked="getNewForm"/>
-        <base-search
+        <BaseSearch
           :show-image="true"
           :placeholder="$t('search')"
           @input="filterEntries($event, 'title')"/>
@@ -23,7 +23,7 @@
         <div
           v-if="optionsVisible"
           class="options">
-          <base-button
+          <BaseButton
             :text="$t('options')"
             :icon="'options-menu'"
             icon-size="small"
@@ -45,25 +45,25 @@
         <div
           v-if="showCheckbox"
           class="options-extend-box">
-          <base-button
+          <BaseButton
             text="In Showroom veröffentlichen"
             icon-size="large"
             icon="eye"
             button-style="single"
             @clicked="actionEntries('publish')"/>
-          <base-button
+          <BaseButton
             text="Einträge offline stellen"
             icon-size="large"
             icon="forbidden"
             button-style="single"
             @clicked="actionEntries('offline')"/>
-          <base-button
+          <BaseButton
             text="Einträge duplizieren"
             icon-size="large"
             icon="duplicate"
             button-style="single"
             @clicked="duplicateEntries"/>
-          <base-button
+          <BaseButton
             text="Einträge löschen"
             icon-size="large"
             icon="waste-bin"
@@ -73,7 +73,7 @@
       </transition>
     </div>
 
-    <base-menu-list
+    <BaseMenuList
       id="menu-list"
       key="menu-list"
       ref="menuList"
@@ -191,7 +191,7 @@ export default {
   },
   methods: {
     showEntry(index) {
-      this.$emit('show-entry', this.list[index]);
+      this.$emit('show-entry', this.list[index].id);
     },
     selectEntry(evt) {
       if (evt.selected) {
@@ -204,7 +204,7 @@ export default {
     },
     getNewForm() {
       this.$store.commit('data/setCurrentItem', {});
-      this.$store.commit('data/setLinked', { list: [], replace: true });
+      this.$store.commit('data/setLinked', { list: [] });
       this.$store.commit('data/deleteParentItems');
       this.$emit('new-form');
     },

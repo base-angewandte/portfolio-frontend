@@ -175,7 +175,6 @@ export default {
             await this.$store.dispatch('data/updateEntry', Object.assign({}, this.valueList, { data }));
           }
           this.unsavedChanges = false;
-          this.$emit('save-form');
         } catch (e) {
           this.$notify({
             group: 'request-notifications',
