@@ -100,6 +100,8 @@ const mutations = {
     state.currentItem = {};
     state.linkedEntries = [];
   },
+  // TODO: all sidebar mutations will be uneccesarry since fetch
+  // from db will need to be made
   addSidebarItem(state, item) {
     state.sidebarData.push(item);
     // consider filtered entries!
@@ -110,9 +112,6 @@ const mutations = {
       index,
       Object.assign({}, obj),
     );
-  },
-  deleteSidebarEntry(state, id) {
-    state.sidebarData = state.sidebarData.filter(item => id !== item.id);
   },
   setOptions(state, val) {
     state.showOptions = val;
@@ -147,6 +146,7 @@ const mutations = {
     state.filterExpr = val;
   },
   sort(state) {
+    // TODO: this will be replaced by request!
     const data = state.filtered ? state.sidebarDataFiltered : state.sidebarData;
     if (data.length) {
       if (state.sortBy === 'Nach Typ') {
@@ -205,8 +205,9 @@ const mutations = {
   deleteParentItems(state) {
     state.parentItems = [];
   },
-  setLinked(state, { list }) {
-    state.linkedEntries = [].concat(list);
+  setLinked(state, { list, replace }) {
+    const existingEntries = replace ? [] : state.linkedEntries;
+    state.linkedEntries = [].concat(list, existingEntries);
   },
   deleteLinked(state, list) {
     state.linkedEntries = state.linkedEntries.filter(entry => !list.includes(entry.id));
@@ -234,15 +235,15 @@ const actions = {
     }
     return formData || [];
   },
-  setCurrentItemById({ commit, dispatch }, id) {
+  setCurrentItemById({ commit }, id) {
     const entry = this.getters['data/getEntryById'](id);
     if (entry) {
       commit('setCurrentItem', entry);
     }
-    dispatch('fetchLinked', { relations: entry.relations, replace: true });
+    commit('setLinked', { list: entry.relations, replace: true });
     return !!entry;
   },
-  async fetchEntryData({ commit, dispatch, state }, id) {
+  async fetchEntryData({ commit, state }, id) {
     // update: this causes a delay - better just use existing ones in sidebar
     // when sidebardata are present (not on first load)
     let entryData = {};
@@ -262,31 +263,10 @@ const actions = {
       }) : [];
 
       commit('setCurrentItem', Object.assign({}, entryData, { type: entryData.type ? [entryData.type] : [], texts: textData }));
-      dispatch('fetchLinked', { relations: entryData.relations, replace: true });
+      commit('setLinked', { list: entryData.relations, replace: true });
       return state.currentItem;
     }
     return {};
-  },
-  async fetchLinked({ state, commit }, { relations, replace }) {
-    // TODO: currently one request for each linked entry - check if this can
-    //  be done with just one request to backend!
-    const linkedArr = replace ? [] : [].concat(state.linkedEntries);
-    if (relations.length) {
-      await Promise.all(relations.map(id => new Promise(async (resolve, reject) => {
-        if (!state.linkedEntries.find(entry => entry.id === id)) {
-          try {
-            const response = await this.dispatch('PortfolioAPI/get', { kind: 'entity', id });
-            if (response) {
-              linkedArr.push(response);
-            }
-            resolve();
-          } catch (e) {
-            reject(e);
-          }
-        }
-      })));
-    }
-    commit('setLinked', { list: linkedArr });
   },
   addSidebarItem({ commit, dispatch }, obj) {
     return new Promise(async (resolve, reject) => {
@@ -312,9 +292,9 @@ const actions = {
         // also save linked if entries were added
         if (state.linkedEntries.length) {
           const list = state.linkedEntries.map(entry => entry.id);
-          dispatch('saveLinked', list);
+          await dispatch('actionLinked', { list, action: 'save' });
         }
-        resolve();
+        resolve(createdEntry.id);
       } catch (e) {
         reject(e);
       }
@@ -340,31 +320,44 @@ const actions = {
       }
     });
   },
-  async deleteEntries({ state, commit }) {
+  async deleteEntries({ state, dispatch }) {
     await Promise.all(state.selectedEntries.map(id => new Promise(async (resolve, reject) => {
       try {
         const { type } = this.getters['data/getEntryById'](id);
-        const response = await this.dispatch('PortfolioAPI/delete', { kind: 'entity', type, id });
-        if (response) {
-          commit('deleteSidebarEntry', id);
-        }
+        await this.dispatch('PortfolioAPI/delete', { kind: 'entity', type, id });
+        await dispatch('fetchSidebarData', { offset: 0 });
         resolve();
       } catch (e) {
         reject(e);
       }
     })));
   },
-  duplicateEntries({ state, commit, dispatch }, entryArr) {
-    try {
-      entryArr.forEach((id) => {
-        const newEntry = Object.assign({}, state.sidebarData.find(entry => entry.id === id));
-        Vue.set(newEntry, 'title', `${newEntry.title} (Copy)`);
-        dispatch('addSidebarItem', newEntry);
-      });
-      commit('setOptions', false);
-    } catch (e) {
-      // TODO: error handling (user info)
-    }
+  async duplicateEntries({ state, commit, dispatch }, entryArr) {
+    const addedArr = await Promise.all(entryArr.map(id => new Promise(async (resolve) => {
+      const newEntry = Object.assign({}, state.sidebarData.find(entry => entry.id === id));
+      const entryTitle = newEntry.title;
+      Vue.set(newEntry, 'title', `${newEntry.title} (Copy)`);
+      try {
+        const createdEntryId = await dispatch('addSidebarItem', newEntry);
+        Vue.notify({
+          group: 'request-notifications',
+          title: 'Entry duplicated',
+          text: `Entry ${entryTitle} was successfully duplicated`,
+          type: 'warn',
+        });
+        resolve(createdEntryId);
+      } catch (e) {
+        Vue.notify({
+          group: 'request-notifications',
+          title: 'Entry duplication failed',
+          text: `Entry ${entryTitle} could not be duplicated`,
+          type: 'warn',
+        });
+        resolve();
+      }
+    })));
+    commit('setOptions', false);
+    return addedArr.length ? addedArr.filter(id => !!id) : [];
   },
   modifyEntries({ state, commit, dispatch }, { prop, value }) {
     try {
@@ -383,12 +376,14 @@ const actions = {
     }
   },
   sortEntries({ commit }, sortVal) {
+    // TODO: replace with db request
     if (sortVal) {
       commit('setSort', sortVal);
     }
     commit('sort');
   },
   filterEntries({ commit, dispatch }, { type, val }) {
+    // TODO: replace with db request
     if (type === 'type') {
       if (val === 'Alle Typen') {
         commit('setFilterType');
@@ -401,6 +396,7 @@ const actions = {
     dispatch('applyFilters');
   },
   applyFilters({ state, commit, dispatch }) {
+    // TODO: replace with db request!!
     let filteredEntries = [].concat(state.sidebarData);
     if (filteredEntries.length) {
       if (state.filterExpr) {
@@ -447,26 +443,37 @@ const actions = {
     // TODO: fetch info data - from where???
     return { title: 'title' };
   },
-  async saveLinked({ state, commit, dispatch }, list) {
+  async actionLinked({ state, commit }, { list, action }) {
     const fromId = state.currentItem.id;
-    const sucessfullyLinked = [];
-    await Promise.all(list.map(toId => new Promise(async (resolve, reject) => {
+    await Promise.all(list.map(relationId => new Promise(async (resolve, reject) => {
       try {
-        const data = { from_entity: fromId, to_entity: toId };
-        const response = await this.dispatch('PortfolioAPI/post', { kind: 'relation', data });
-        if (response.id) {
-          sucessfullyLinked.push(response.to_entity);
+        if (action === 'save') {
+          const data = { from_entity: fromId, to_entity: relationId };
+          await this.dispatch('PortfolioAPI/post', { kind: 'relation', data });
+        } else if (action === 'delete') {
+          await this.dispatch('PortfolioAPI/delete', { kind: 'relation', id: relationId });
         }
+        // TODO: notify user? (title would be nice...)
         resolve();
       } catch (e) {
+        Vue.notify({
+          group: 'request-notifications',
+          title: `${action}ing of Entry failed`,
+          text: `The Link could not be ${action}: ${e}`,
+          type: 'warn',
+        });
         reject(e);
       }
     })));
-    await dispatch('fetchLinked', { relations: sucessfullyLinked, replace: false });
-    // also update sidebar items to have the change on client side as well
-    const index = this.getters['data/getCurrentItemIndex'];
-    const entryWithRelations = Object.assign({}, this.getters['data/getEntryById'](fromId), { relations: list });
-    commit('updateEntry', { obj: entryWithRelations, index });
+    // fetch entry new to update relations
+    try {
+      const entry = await this.dispatch('PortfolioAPI/get', { kind: 'entity', id: fromId });
+      const index = this.getters['data/getCurrentItemIndex'];
+      commit('updateEntry', { obj: entry, index });
+      commit('setLinked', { list: entry.relations, replace: true });
+    } catch (e) {
+      console.error(e);
+    }
   },
 };
 

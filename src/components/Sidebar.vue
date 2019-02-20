@@ -168,7 +168,7 @@ export default {
       },
     },
     availableEntryTypes() {
-      return this.$store.getters['data/getEntryTypes'];
+      return this.$store.getters['data/getEntryTypes'].filter(type => !!type);
     },
     calcStyle() {
       return this.height ? { height: this.height } : {};
@@ -181,7 +181,6 @@ export default {
     showCheckbox(val) {
       // delete selected when options menu is closed
       if (!val) {
-        // TODO: this does not update checkboxes!!
         this.selectedMenuEntries = [];
       }
     },
@@ -214,18 +213,35 @@ export default {
     filterEntries(val, type) {
       this.$emit('filter', { val, type });
     },
-    duplicateEntries() {
-      this.$store.dispatch('data/duplicateEntries', this.selectedMenuEntries);
-      this.selectedMenuEntries = [];
-      // TODO: to have consistency this route is set since for now in store current item is set to
-      // newly created one...but dont know if we want that??
-      this.$router.push(`/entry/${this.$store.state.data.currentItemId}`);
+    async duplicateEntries() {
+      // TODO: disable action buttons until action finished!
+      if (this.selectedMenuEntries.length) {
+        // dispatch selected entries to be duplicated and sucessfully duplicated ids are returned
+        const routingIds = await this.$store.dispatch('data/duplicateEntries', this.selectedMenuEntries);
+        this.selectedMenuEntries = [];
+        // if any entries were sucessfully duplicated route to the new entry
+        if (routingIds.length) {
+          this.$router.push(`/entry/${routingIds.pop()}`);
+        }
+      } else {
+        this.$notify({
+          group: 'request-notifications',
+          title: 'No Entries Selected',
+          text: 'Please select Entries from the Sidebar first!',
+          type: 'warn',
+        });
+      }
     },
     actionEntries(value) {
       if (this.selectedMenuEntries.length) {
         this.$store.dispatch('data/actionEntries', { action: value, entries: this.selectedMenuEntries });
       } else {
-        // TODO: inform user that no entries were selected!
+        this.$notify({
+          group: 'request-notifications',
+          title: 'No Entries Selected',
+          text: 'Please select Entries from the Sidebar first!',
+          type: 'warn',
+        });
       }
     },
     toggleSidebarOptions() {

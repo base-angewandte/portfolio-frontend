@@ -67,7 +67,7 @@ export default {
   },
   watch: {
     $route() {
-      if (!this.showForm) {
+      if (!this.showForm || this.$route.name === 'newEntry') {
         this.$store.commit('data/deleteCurrentItem');
       }
       this.$store.commit('data/setNewForm', this.$route.name === 'newEntry');
@@ -104,6 +104,7 @@ export default {
       this.$router.push('/new');
     },
     routeToEntry(id) {
+      console.log('routing');
       this.$store.commit('data/deleteParentItems');
       this.$router.push(`/entry/${id}`);
     },
@@ -165,7 +166,10 @@ export default {
       const element = document.querySelector('footer');
       const footerHeight = getComputedStyle(element).height.replace('px', '');
       const residualHeight = window.innerHeight - top - footerHeight;
-      const entryHeight = this.$refs.sidebar.$refs.menuList.$refs.menuEntry[0].$el.clientHeight;
+      const entryHeight = this.$refs.sidebar && this.$refs.sidebar.$refs.menuList
+        && this.$refs.sidebar.$refs.menuList.$refs.menuEntry
+        && this.$refs.sidebar.$refs.menuList.$refs.menuEntry.length
+        ? this.$refs.sidebar.$refs.menuList.$refs.menuEntry[0].$el.clientHeight : 0;
       const entriesPerPage = Math.floor(residualHeight / entryHeight);
       this.$store.commit('data/setEntriesPerRequest', entriesPerPage);
     },

@@ -62,10 +62,10 @@
           :selectable="!!showEntryAction"
           :key="linked.id"
           :box-size="{ width: 'calc(25% - 12px)' }"
-          :title="linked.title"
-          :subtext="linked.subtitle"
-          :description="linked.type"
-          :image-url="linked.files && linked.files.length ? getImagePath(linked.files[0].url) : ''"
+          :title="linked.to.title"
+          :subtext="linked.to.subtitle"
+          :description="linked.to.type"
+          :image-url="linked.image ? getImagePath(linked.image) : ''"
           show-title
           class="linked-base-box"
           @select-triggered="entrySelected(linked.id, $event)"
@@ -257,11 +257,11 @@ export default {
       // TODO: need to handle here or propagate action!
       this.$emit('file-action', 'action');
     },
-    deleteLinked() {
+    async deleteLinked() {
       // also check first if any entries were selected
+      await this.$store.dispatch('data/actionLinked', { list: this.selectedEntries, action: 'delete' });
       this.showEntryAction = false;
-      // TODO: this needs to be action in future communicating with the database!
-      this.$store.commit('data/deleteLinked', this.selectedEntries);
+      this.selectedEntries = [];
     },
     entrySelected(objId, sel) {
       if (sel) {

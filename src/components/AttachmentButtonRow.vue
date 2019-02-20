@@ -208,7 +208,7 @@ export default {
       const list = [];
       val.forEach((entryId) => {
         // TODO: also check if it is a parent already!!!!!
-        if (!this.linkedList.map(e => e.id).includes(entryId)) {
+        if (!this.linkedList.map(e => e.to.id).includes(entryId)) {
           list.push(entryId);
         } else {
           this.$notify({
@@ -221,10 +221,10 @@ export default {
       });
       // only save to db if entry exists in db already
       if (this.currentId) {
-        await this.$store.dispatch('data/saveLinked', list);
+        await this.$store.dispatch('data/actionLinked', { list, action: 'save' });
         // otherwise just save state in store for now and commit with general first save of entry
       } else {
-        await this.$store.dispatch('data/fetchLinked', { relations: list, replace: false });
+        await this.$store.commit('data/setLinked', { list, replace: false });
       }
       this.showEntryPopUp = false;
     },
