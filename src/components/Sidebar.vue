@@ -82,6 +82,9 @@
       :active-entry="activeEntry"
       @clicked="showEntry"
       @selected="selectEntry"/>
+
+    <BasePagination
+      :total="100" />
   </div>
 </template>
 
@@ -91,6 +94,7 @@ import {
   BaseButton,
   BaseDropDown,
   BaseSearch,
+  BasePagination,
 } from 'base-components';
 import 'base-components/dist/lib/base-components.min.css';
 
@@ -100,6 +104,7 @@ export default {
     BaseButton,
     BaseDropDown,
     BaseSearch,
+    BasePagination,
   },
   props: {
     /**
