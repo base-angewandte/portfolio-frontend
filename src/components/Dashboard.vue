@@ -1,6 +1,6 @@
 <template>
   <div id="app-container">
-    <base-pop-up
+    <BasePopUp
       :show="$store.state.data.popUp.show"
       :title="$store.state.data.popUp.header"
       :button-left-text="'Abbrechen'"
@@ -16,21 +16,23 @@
             v-html="$store.state.data.popUp.text" />
         </div>
       </div>
-    </base-pop-up>
+    </BasePopUp>
     <BaseMediaPreview
       :show-preview="showPreview"
       :image-url="previewUrl"
       @hide-preview="showPreview = false"/>
 
-    <sidebar
+    <Sidebar
       ref="sidebar"
       :new-form="$store.state.data.isNewForm"
       :class="['sidebar', { 'sidebar-full': !showForm }]"
       :list="sidebarData"
-      @sort="$store.dispatch('data/sortEntries', $event)"
+      :entry-number="entriesTotal"
+      @sort="$store.dispatch('data/filterEntries', $event)"
       @filter="$store.dispatch('data/filterEntries', $event)"
       @new-form="createNewForm"
-      @show-entry="routeToEntry"/>
+      @show-entry="routeToEntry"
+      @fetch-data="fetchSidebarData"/>
     <div
       v-if="showForm"
       class="form-view">
@@ -64,6 +66,9 @@ export default {
     showForm() {
       return this.$route.name !== 'Dashboard';
     },
+    entriesTotal() {
+      return this.$store.getters['data/getResultTotal'];
+    },
   },
   watch: {
     $route() {
@@ -87,15 +92,20 @@ export default {
       } else {
         vm.$store.commit('user/setAuthenticated', true);
       }
-      // fetch data after user authentication was checked and necessary cookies received
-      await vm.$store.dispatch('data/fetchSidebarData', { offset: 0, limit: 50 });
+      console.log('calculate');
       vm.calculateSidebarHeight();
+      // fetch data after user authentication was checked and necessary cookies received
+      console.log('dispatch');
+      await vm.$store.dispatch('data/fetchSidebarData', {});
     });
   },
   async mounted() {
     this.$store.commit('data/setNewForm', this.$route.name === 'newEntry');
   },
   methods: {
+    fetchSidebarData({ pageNumber, sort, type }) {
+      this.$store.dispatch('data/fetchSidebarData', { pageNumber, sort, type });
+    },
     createNewForm() {
       const formView = this.$refs.view;
       if (formView) {
@@ -104,7 +114,6 @@ export default {
       this.$router.push('/new');
     },
     routeToEntry(id) {
-      console.log('routing');
       this.$store.commit('data/deleteParentItems');
       this.$router.push(`/entry/${id}`);
     },
@@ -161,16 +170,10 @@ export default {
       // TODO: image zoom?
     },
     calculateSidebarHeight() {
-      const top = this.$refs.sidebar.$el.offsetTop
-        + this.$refs.sidebar.$refs.menuList.$el.offsetTop;
-      const element = document.querySelector('footer');
-      const footerHeight = getComputedStyle(element).height.replace('px', '');
-      const residualHeight = window.innerHeight - top - footerHeight;
-      const entryHeight = this.$refs.sidebar && this.$refs.sidebar.$refs.menuList
-        && this.$refs.sidebar.$refs.menuList.$refs.menuEntry
-        && this.$refs.sidebar.$refs.menuList.$refs.menuEntry.length
-        ? this.$refs.sidebar.$refs.menuList.$refs.menuEntry[0].$el.clientHeight : 0;
-      const entriesPerPage = Math.floor(residualHeight / entryHeight);
+      const sidebarHeight = this.$refs.sidebar.$refs.menuList.$el.clientHeight;
+      // hardcoded because unfortunately no other possibility found
+      const entryHeight = 56;
+      const entriesPerPage = Math.floor(sidebarHeight / entryHeight);
       this.$store.commit('data/setEntriesPerRequest', entriesPerPage);
     },
   },

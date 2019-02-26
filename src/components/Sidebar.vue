@@ -73,18 +73,39 @@
       </transition>
     </div>
 
-    <BaseMenuList
-      id="menu-list"
-      key="menu-list"
-      ref="menuList"
-      :selected="selectActive || showCheckbox"
-      :list="listInt"
-      :active-entry="activeEntry"
-      @clicked="showEntry"
-      @selected="selectEntry"/>
+    <div class="base-menu-container">
+      <div
+        v-if="isLoading"
+        class="loading-area">
+        <div class="loader">
+          <svg class="circular">
+            <circle
+              class="path"
+              cx="50"
+              cy="50"
+              r="20"
+              fill="none"
+              stroke-width="4"
+              stroke-miterlimit="10" />
+          </svg>
+        </div>
+      </div>
+
+      <BaseMenuList
+        id="menu-list"
+        key="menu-list"
+        ref="menuList"
+        :selected="selectActive || showCheckbox"
+        :list="listInt"
+        :active-entry="activeEntry"
+        @clicked="showEntry"
+        @selected="selectEntry"/>
+    </div>
 
     <BasePagination
-      :total="100" />
+      v-if="pageTotal > 1"
+      :total="pageTotal"
+      @set-page="setPage"/>
   </div>
 </template>
 
@@ -142,11 +163,22 @@ export default {
       type: Boolean,
       default: false,
     },
+    /**
+     * the list of entries to display in the sidebar
+     */
     list: {
       type: Array,
       default() {
         return [];
       },
+    },
+    /**
+     * the number of entries that are in the db (and matching filter criteria)
+     * in total
+     */
+    entryNumber: {
+      type: Number,
+      default: null,
     },
   },
   data() {
@@ -154,11 +186,21 @@ export default {
       selectedMenuEntries: [],
       listInt: [],
       activeEntryInt: null,
+      // TODO: Re-evaluate if storing these values here is necessary / desirable
+      pageNumber: 1,
+      sortParam: null,
+      filterType: null,
+      filterString: null,
+      entriesPerPage: 0,
     };
   },
   computed: {
     showCheckbox() {
       return this.$store.state.data.showOptions;
+    },
+    isLoading() {
+      // TODO: have loader showing for at least xx to avoid flashing?
+      return this.$store.getters['PortfolioAPI/isLoading'];
     },
     activeEntry: {
       get() {
@@ -178,10 +220,14 @@ export default {
     calcStyle() {
       return this.height ? { height: this.height } : {};
     },
+    pageTotal() {
+      return this.entriesPerPage ? Math.ceil(this.entryNumber / this.entriesPerPage) : 0;
+    },
   },
   watch: {
     list(val) {
       this.listInt = [].concat(val);
+      this.calcEntriesPerPage();
     },
     showCheckbox(val) {
       // delete selected when options menu is closed
@@ -191,6 +237,7 @@ export default {
     },
   },
   mounted() {
+    this.calcEntriesPerPage();
     this.listInt = this.list;
   },
   methods: {
@@ -213,10 +260,40 @@ export default {
       this.$emit('new-form');
     },
     sortEntries(evt) {
-      this.$emit('sort', evt);
+      if (evt === 'Nach Typ') {
+        this.sortParam = 'type';
+      } else if (evt === 'A-Z') {
+        this.sortParam = 'title';
+      } else if (evt === 'Z-A') {
+        this.sortParam = '-title';
+      } else if (evt === 'Neueste') {
+        this.sortParam = '-date_created';
+      } else if (evt === 'Älteste') {
+        this.sortParam = 'date_created';
+      }
+      this.$emit('sort', { sort: this.sortParam });
     },
     filterEntries(val, type) {
-      this.$emit('filter', { val, type });
+      if (type === 'type') {
+        this.filterType = val;
+        this.$emit('filter', { type: this.filterType });
+        // there is no endpoint to filter entries for strings yet!!
+      } else if (type === 'title') {
+        // TODO: add time delay! (maybe also > 3 chars)
+        this.filterString = val;
+        this.$emit('filter', { string: this.filterString });
+        // TODO: this is not working and always only gives overall number of entries!!
+      }
+    },
+    setPage(number) {
+      this.pageNumber = number;
+      this.$emit('fetch-data', {
+        entriesPerPage: this.entriesPerPage,
+        pageNumber: this.pageNumber,
+        sortParam: this.sortParam,
+        filterString: this.filterString,
+        filterType: this.filterType,
+      });
     },
     async duplicateEntries() {
       // TODO: disable action buttons until action finished!
@@ -252,6 +329,11 @@ export default {
     toggleSidebarOptions() {
       this.$refs.menuList.entryProps.forEach(entry => this.$set(entry, 'selected', false));
       this.$store.commit('data/setOptions', !this.showCheckbox);
+    },
+    calcEntriesPerPage() {
+      const sidebarHeight = this.$refs.menuList.$el.clientHeight;
+      const entryHeight = 56;
+      this.entriesPerPage = Math.floor(sidebarHeight / entryHeight);
     },
   },
 };
@@ -289,9 +371,47 @@ export default {
     }
   }
 
-  #menu-list {
+  .base-menu-container {
+    position: relative;
     flex: 1 1 auto;
     overflow-y: auto;
+
+    #menu-list {
+      height: 100%;
+    }
+
+    .loading-area {
+      position: absolute;
+      height: 100%;
+      width: 100%;
+      z-index: 2;
+      background-color: rgba(255,255,255, 0.50);
+
+      .loader{
+        position: absolute;
+        width: 100px;
+        height: 100px;
+        top: 20%;
+        left: 50%;
+        transform: translate(-50%,-50%);
+
+        .circular{
+          animation: rotate 2s linear infinite;
+          height: 100px;
+          position: relative;
+          width: 100px;
+
+          .path {
+            stroke-dasharray: 1,200;
+            stroke-dashoffset: 0;
+            stroke:$app-color;
+            color: $app-color;
+            animation:
+              dash 1.5s ease-in-out infinite;
+          }
+        }
+      }
+    }
   }
 
   .slide-toggle-enter-active,
@@ -307,6 +427,27 @@ export default {
   }
   .slide-toggle-leave {
     height: calc(4 * #{$row-height-small});
+  }
+
+  @keyframes rotate{
+    100%{
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes dash{
+    0%{
+      stroke-dasharray: 1,200;
+      stroke-dashoffset: 0;
+    }
+    50%{
+      stroke-dasharray: 89,200;
+      stroke-dashoffset: -35;
+    }
+    100%{
+      stroke-dasharray: 89,200;
+      stroke-dashoffset: -124;
+    }
   }
 
   @media screen and (max-width: $mobile) {

@@ -80,10 +80,12 @@
           :new-enabled="false"
           :height="'62vh'"
           :hide-active="true"
+          :entry-number="totalEntries"
           class="menu"
-          @sort="sortSelectable"
-          @filter="filterSelectable"
-          @selected-changed="selectedEntries = [].concat($event)"/>
+          @sort="setFilters"
+          @filter="setFilters"
+          @selected-changed="selectedEntries = [].concat($event)"
+          @fetch-data="filterSelectable"/>
       </div>
     </BasePopUp>
   </div>
@@ -120,6 +122,10 @@ export default {
       selectableEntries: [],
       selectedEntries: [],
       filesToUpload: [],
+      sortBy: '-date_created',
+      filterString: '',
+      filterType: '',
+      totalEntries: null,
     };
   },
   computed: {
@@ -159,50 +165,43 @@ export default {
       }
     },
     openEntrySelect() {
-      this.selectableEntries = this.filterSelected();
+      this.filterSelectable({ pageNumber: 1 });
       this.showEntryPopUp = true;
     },
-    // TODO: can this be handled in child (Sidebar) directly?
-    filterSelectable(val) {
-      const data = this.filterSelected();
-      this.$set(this.filterValues, val.type, val.val === 'Alle Typen' ? '' : val.val);
-      this.selectableEntries = data.filter(entry => entry.title.includes(this.filterValues.title)
-        && (!this.filterValues.type || entry.type === this.filterValues.type));
-      this.sortSelectable(this.sortValue);
-    },
-    // TODO: can this be handled in child (Sidebar) directly?
-    sortSelectable(val) {
-      this.sortValue = val;
-      const data = this.selectableEntries;
-      if (data.length) {
-        if (val === 'Nach Typ') {
-          data.sort((a, b) => {
-            if (a.type > b.type) {
-              return 1;
-            }
-            return -1;
-          });
-        } else if (val === 'A-Z') {
-          data.sort((a, b) => {
-            if (a.title.toLowerCase() > b.title.toLowerCase()) {
-              return 1;
-            }
-            return -1;
-          });
-        } else if (val === 'Z-A') {
-          data.sort((a, b) => {
-            if (a.title.toLowerCase() > b.title.toLowerCase()) {
-              return -1;
-            }
-            return 1;
-          });
-        }
+    setFilters({
+      type,
+      string,
+      sort,
+      entriesPerPage,
+    }) {
+      if (sort) {
+        this.sortBy = sort;
+      } else if (type) {
+        this.filterType = type === 'Alle Typen' ? '' : type;
+      } else if (string) {
+        this.filterString = string;
       }
+      this.filterSelectable({ pageNumber: 1, entriesPerPage });
     },
-    filterSelected() {
-      return [].concat(this.$store.getters['data/getSidebarData']
+    async filterSelectable({ pageNumber, entriesPerPage }) {
+      let offset = 0;
+      if (pageNumber) {
+        offset = entriesPerPage * (pageNumber - 1);
+      }
+      const data = await this.$store.dispatch('PortfolioAPI/get', {
+        kind: 'entity',
+        sort: this.sortBy,
+        type: this.filterType,
+        offset,
+        limit: entriesPerPage,
+      });
+      this.totalEntries = data.count;
+      // filter already linked and the current item from the list
+      // TODO: this leads to shorter lists than originally considered in request...
+      // would be nicer if i could filter for id's in request directly...
+      this.selectableEntries = data.results
         .filter(entry => entry.id !== this.$store.state.data.currentItemId
-          && !this.$store.getters['data/getCurrentLinked'].includes(entry)));
+          && !this.linkedList.map(e => e.to.id).includes(entry.id));
     },
     async linkEntries(val) {
       const list = [];

@@ -22,7 +22,6 @@ function transformTextData(data) {
 
 const state = {
   sidebarData: [],
-  sidebarDataFiltered: [],
   currentItem: {},
   currentItemId: null,
   parentItems: [],
@@ -37,21 +36,21 @@ const state = {
     action: '',
   },
   selectedEntries: [],
-  filtered: false,
-  sortBy: '',
+  sortBy: '-date_created',
   filterType: '',
   filterExpr: '',
   // saved here are all the data from linked entries (not just id as in currentItem)
   linkedEntries: [],
   entriesPerRequest: 50,
+  resultTotal: null,
 };
 
 const getters = {
   getSidebarData(state) {
-    return state.filtered ? state.sidebarDataFiltered : state.sidebarData;
+    return state.sidebarData;
   },
   getCurrentItemIndex(state) {
-    const data = state.filtered ? state.sidebarDataFiltered : state.sidebarData;
+    const data = state.sidebarData;
     return data.indexOf(data
       .find(item => item.id === state.currentItemId));
   },
@@ -82,6 +81,9 @@ const getters = {
   getCurrentLinked(state) {
     return state.linkedEntries;
   },
+  getResultTotal(state) {
+    return state.resultTotal;
+  },
 };
 
 const mutations = {
@@ -100,19 +102,6 @@ const mutations = {
     state.currentItem = {};
     state.linkedEntries = [];
   },
-  // TODO: all sidebar mutations will be uneccesarry since fetch
-  // from db will need to be made
-  addSidebarItem(state, item) {
-    state.sidebarData.push(item);
-    // consider filtered entries!
-  },
-  updateEntry(state, { obj, index }) {
-    Vue.set(
-      state.sidebarData,
-      index,
-      Object.assign({}, obj),
-    );
-  },
   setOptions(state, val) {
     state.showOptions = val;
   },
@@ -129,9 +118,6 @@ const mutations = {
       action: '',
     };
   },
-  setFiltered(state, val) {
-    state.filtered = val;
-  },
   setSort(state, val) {
     state.sortBy = val;
   },
@@ -144,54 +130,6 @@ const mutations = {
   },
   setFilterExpression(state, val) {
     state.filterExpr = val;
-  },
-  sort(state) {
-    // TODO: this will be replaced by request!
-    const data = state.filtered ? state.sidebarDataFiltered : state.sidebarData;
-    if (data.length) {
-      if (state.sortBy === 'Nach Typ') {
-        data.sort((a, b) => {
-          if (a.type > b.type) {
-            return 1;
-          }
-          return -1;
-        });
-      } else if (state.sortBy === 'A-Z') {
-        data.sort((a, b) => {
-          if (a.title.toLowerCase() > b.title.toLowerCase()) {
-            return 1;
-          }
-          return -1;
-        });
-      } else if (state.sortBy === 'Z-A') {
-        data.sort((a, b) => {
-          if (a.title.toLowerCase() > b.title.toLowerCase()) {
-            return -1;
-          }
-          return 1;
-        });
-      } else if (state.sortBy === 'Neueste') {
-        data.sort((a, b) => {
-          // TODO: consider format!!
-          if (new Date(a.date_created) > new Date(b.date_created)) {
-            return -1;
-          }
-          return 1;
-        });
-      }
-      else if (state.sortBy === 'Älteste') {
-        data.sort((a, b) => {
-          // TODO: consider format!!
-          if (new Date(a.date_created) > new Date(b.date_created)) {
-            return 1;
-          }
-          return -1;
-        });
-      }
-    }
-  },
-  setFilteredSidebarData(state, val) {
-    state.sidebarDataFiltered = val || [];
   },
   setSelected(state, entryArr) {
     state.selectedEntries = entryArr;
@@ -215,11 +153,26 @@ const mutations = {
   setEntriesPerRequest(state, number) {
     state.entriesPerRequest = number;
   },
+  setResultTotal(state, number) {
+    state.resultTotal = number;
+  },
 };
 
 const actions = {
-  async fetchSidebarData({ state, commit }, { offset }) {
-    const response = await this.dispatch('PortfolioAPI/get', { kind: 'entity', offset, limit: state.entriesPerRequest });
+  async fetchSidebarData({ state, commit }, {
+    pageNumber = 1,
+    sort = state.sortBy,
+    type = state.filterType,
+  }) {
+    const offset = state.entriesPerRequest * (pageNumber - 1);
+    const response = await this.dispatch('PortfolioAPI/get', {
+      kind: 'entity',
+      sort,
+      offset,
+      type,
+      limit: state.entriesPerRequest,
+    });
+    commit('setResultTotal', response.count);
     commit('setSidebarData', response.results);
   },
   async fetchFormExtension(context, type) {
@@ -246,11 +199,9 @@ const actions = {
   async fetchEntryData({ commit, state }, id) {
     // update: this causes a delay - better just use existing ones in sidebar
     // when sidebardata are present (not on first load)
-    let entryData = {};
-    if (!(state.sidebarData && state.sidebarData.length)) {
+    let entryData = this.getters['data/getEntryById'](id);
+    if (!entryData) {
       entryData = await this.dispatch('PortfolioAPI/get', { kind: 'entity', id });
-    } else {
-      entryData = this.getters['data/getEntryById'](id);
     }
     if (entryData) {
       // Modifications of data received from backend needed:
@@ -285,8 +236,6 @@ const actions = {
         });
         const createdEntry = await this.dispatch('PortfolioAPI/post', { kind: 'entity', data });
         if (createdEntry) {
-          commit('addSidebarItem', createdEntry);
-          dispatch('applyFilters');
           commit('setCurrentItem', createdEntry);
         }
         // also save linked if entries were added
@@ -300,19 +249,14 @@ const actions = {
       }
     });
   },
-  updateEntry({ commit }, obj) {
+  updateEntry({ commit, dispatch }, obj) {
     return new Promise(async (resolve, reject) => {
       try {
-        const index = this.getters['data/getCurrentItemIndex'];
         const type = obj.type && obj.type.length ? obj.type[0].type || obj.type[0] : '';
         const modifiedProps = { type, texts: transformTextData(obj.texts) };
         const data = Object.assign({}, obj, modifiedProps);
         const updatedEntry = await this.dispatch('PortfolioAPI/post', { kind: 'entity', id: data.id, data });
-        commit('updateEntry', {
-          obj: updatedEntry,
-          index,
-        });
-        commit('sort');
+        await dispatch('fetchSidebarData', {});
         commit('setCurrentItem', updatedEntry);
         resolve();
       } catch (e) {
@@ -325,18 +269,21 @@ const actions = {
       try {
         const { type } = this.getters['data/getEntryById'](id);
         await this.dispatch('PortfolioAPI/delete', { kind: 'entity', type, id });
-        await dispatch('fetchSidebarData', { offset: 0 });
         resolve();
       } catch (e) {
         reject(e);
       }
     })));
+    await dispatch('fetchSidebarData', {});
   },
   async duplicateEntries({ state, commit, dispatch }, entryArr) {
     const addedArr = await Promise.all(entryArr.map(id => new Promise(async (resolve) => {
       const newEntry = Object.assign({}, state.sidebarData.find(entry => entry.id === id));
       const entryTitle = newEntry.title;
       Vue.set(newEntry, 'title', `${newEntry.title} (Copy)`);
+      // new entries should not inherit the published state from the duplicate!
+      // TODO: in future also not shared state!
+      Vue.set(newEntry, 'published', false);
       try {
         const createdEntryId = await dispatch('addSidebarItem', newEntry);
         Vue.notify({
@@ -357,6 +304,7 @@ const actions = {
       }
     })));
     commit('setOptions', false);
+    await dispatch('fetchSidebarData', {});
     return addedArr.length ? addedArr.filter(id => !!id) : [];
   },
   modifyEntries({ state, commit, dispatch }, { prop, value }) {
@@ -365,7 +313,8 @@ const actions = {
         const obj = state.sidebarData.find(o => o.id === e);
         const index = state.sidebarData.indexOf(obj);
         if (index >= 0) {
-          commit('updateEntry', { obj: Object.assign({}, state.sidebarData[index], { [prop]: value }), index, type: obj.type });
+          // TODO: this needs to go to database!
+          // commit('updateEntry', { obj: Object.assign({}, state.sidebarData[index], { [prop]: value }), index, type: obj.type });
         }
         if (obj.id === state.currentItemId) {
           dispatch('setCurrentItemById', obj.id);
@@ -375,43 +324,18 @@ const actions = {
       // TODO: error handling! (user info)
     }
   },
-  sortEntries({ commit }, sortVal) {
-    // TODO: replace with db request
-    if (sortVal) {
-      commit('setSort', sortVal);
+  filterEntries({ commit, dispatch }, { type, string, sort }) {
+    if (type) {
+      commit('setFilterType', type);
     }
-    commit('sort');
-  },
-  filterEntries({ commit, dispatch }, { type, val }) {
-    // TODO: replace with db request
-    if (type === 'type') {
-      if (val === 'Alle Typen') {
-        commit('setFilterType');
-      } else {
-        commit('setFilterType', val);
-      }
-    } else if (type === 'title') {
-      commit('setFilterExpression', val);
+    if (string) {
+      commit('setFilterExpression', string);
     }
-    dispatch('applyFilters');
-  },
-  applyFilters({ state, commit, dispatch }) {
-    // TODO: replace with db request!!
-    let filteredEntries = [].concat(state.sidebarData);
-    if (filteredEntries.length) {
-      if (state.filterExpr) {
-        filteredEntries = filteredEntries
-          .filter(entry => entry.title.toLowerCase()
-            .includes(state.filterExpr.toLowerCase()));
-      }
-      if (state.filterType) {
-        filteredEntries = filteredEntries
-          .filter(entry => entry.type === state.filterType);
-      }
+    if (sort) {
+      commit('setSort', sort);
     }
-    commit('setFiltered', !!(state.filterExpr || state.filterType));
-    commit('setFilteredSidebarData', filteredEntries);
-    dispatch('sortEntries');
+    // TODO: filterExpression not considered yet!!
+    dispatch('fetchSidebarData', { type: state.filterType, sort: state.sortBy });
   },
   actionEntries({ commit }, { action, entries }) {
     let actionText = 'löschen';
@@ -467,9 +391,8 @@ const actions = {
     })));
     // fetch entry new to update relations
     try {
+      // TODO: check if this is still doing its purpose after removing update commit
       const entry = await this.dispatch('PortfolioAPI/get', { kind: 'entity', id: fromId });
-      const index = this.getters['data/getCurrentItemIndex'];
-      commit('updateEntry', { obj: entry, index });
       commit('setLinked', { list: entry.relations, replace: true });
     } catch (e) {
       console.error(e);

@@ -170,6 +170,8 @@ export default {
             // a) link to parent entry b) save to database
             // --> do this.linkEntries(this.$store.data.currentItemId)
             await this.$store.dispatch('data/addSidebarItem', Object.assign({}, this.valueList, { data }));
+            // moved this outside of addSidebar data to prevent numerous requests on duplicate items
+            this.$store.dispatch('data/fetchSidebarData', {});
             this.$router.push(`/entry/${this.$store.state.data.currentItemId}`);
           } else {
             await this.$store.dispatch('data/updateEntry', Object.assign({}, this.valueList, { data }));
