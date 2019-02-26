@@ -1,5 +1,5 @@
 <template>
-  <base-pop-up
+  <BasePopUp
     :show="!!fileList.length"
     :button-right-text="isSuccess ? 'Fertig' : 'Hochladen'"
     title="Dateien hochladen"
@@ -9,7 +9,7 @@
     @close="$emit('cancel')">
     <div
       class="popup-upload-area">
-      <base-upload-bar
+      <BaseUploadBar
         v-for="(file, index) of fileList"
         :key="index"
         :progress="uploadPercentage"
@@ -17,7 +17,7 @@
         class="upload-bar"/>
     </div>
     <div class="popup-text">
-      <base-drop-down
+      <BaseDropDown
         :label="'Lizenz auswählen'"
         :selected="'CC-0'"
         :selection-list="['CC-0', 'CC-BY', 'CC-BY-SA',
@@ -25,7 +25,7 @@
         :background-color="'rgb(240, 240, 240)'"
         :fixed-width="true"
         header-style="inline"/>
-      <base-drop-down
+      <BaseDropDown
         :selected="'Bilder nicht veröffentlichen'"
         :selection-list="['Bilder anzeigen', 'Bilder nicht veröffentlichen']"
         :background-color="'rgb(240, 240, 240)'"
@@ -33,7 +33,7 @@
         label="Bilder im Showroom anzeigen?"
         header-style="inline"/>
     </div>
-  </base-pop-up>
+  </BasePopUp>
 </template>
 
 <script>
@@ -96,19 +96,27 @@ export default {
     async startUpload() {
       const formData = new FormData();
       if (!this.fileList.length) return;
+      console.log(this.fileList);
+      console.log(Array.from(Array(this.fileList.length).keys()));
       Array.from(Array(this.fileList.length).keys())
         .map(x => formData.append('file', this.fileList[x], this.fileList[x].name));
+      // this.fileList.forEach(file => formData.append('file', file));
+      debugger;
       this.currentStatus = STATUS_SAVING;
       // TODO: check if all parameters are set and actually upload files
       // --> adjust upload bar accordingly
       this.$emit('upload-start');
 
       try {
-        const res = await axios.post('/data-api/file-progress',
-          formData,
+        console.log(formData);
+        const res = await axios.post(`${process.env.API}media/`,
+          { body: formData },
           {
+            withCredentials: true,
+            xsrfCookieName: 'csrftoken_portfolio',
+            xsrfHeaderName: 'X-CSRFToken',
             headers: {
-              'Content-Type': 'multipart/form-data',
+              'Content-Type': 'multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW',
             },
             onUploadProgress: function (progressEvent) {
               this.uploadPercentage = Math.round(progressEvent.loaded / progressEvent.total);
