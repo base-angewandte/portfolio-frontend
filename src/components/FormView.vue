@@ -59,10 +59,10 @@
         </div>
 
         <!-- ATTACHMENTS -->
-        <AttachmentAreaNew
+        <AttachmentArea
           key="attachments"
-          :file-list="valueList.files"
-          @open-new-form="openNewForm"/>
+          @open-new-form="openNewForm"
+          @show-preview="$emit('show-preview', $event)"/>
       </transition-group>
       <transition name="slide-child-form">
         <BaseForm
@@ -83,14 +83,12 @@ import BaseFormOptions from './BaseFormOptions';
 import BaseForm from './BaseForm';
 
 import { FORM_MAPPINGS } from '../assets/data';
-import AttachmentAreaNew from './AttachmentArea';
-import AttachmentArea from './Attachments';
+import AttachmentArea from './AttachmentArea';
 
 export default {
   components: {
     BaseMenuEntry,
     AttachmentArea,
-    AttachmentAreaNew,
     BaseFormOptions,
     BaseRow,
     BaseForm,

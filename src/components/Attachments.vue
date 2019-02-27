@@ -160,18 +160,19 @@
           v-for="(attached, index) of attachedList"
           :show-title="true"
           :selectable="!!fileText"
-          :title="attached.filename"
+          :title="getFileName(attached.original)"
           :subtext="attached.licence"
-          :description="getFileType(attached.filename)"
-          :image-url="getImagePath(attached.url)"
+          :description="attached.metadata && attached.metadata.FileType
+            ? getFileType(attached.metadata.FileType.val)
+          : getFileType(getFileName(attached.original))"
+          :image-url="getImagePath(attached.thumbnail)"
           :box-size="{ width: 'calc(25% - 12px)' }"
           :box-ratio="100"
-          :box-text="['Size: 200kb', 'Creator: S.H.', 'Last Modified: xxxxx', 'xxxxx',
-                      'xxxxx', 'yyyyyyyyyyyyyyy']"
+          :box-text="generateBoxText(attached.metadata)"
           :key="index"
-          class="linked-base-box"
-          @select-triggered="filesSelected(index, $event)"
-          @clicked="$emit('show-preview', attached.url)">
+          :class="['linked-base-box', { 'image-box': !!attached.thumbnail }]"
+          @select-triggered="filesSelected(attached.id, $event)"
+          @clicked="$emit('show-preview', attached.original)">
           <template slot="top">
             <div
               v-if="attached.published"
@@ -250,12 +251,9 @@ export default {
     },
   },
   methods: {
-    saveFileMeta() {
-      // TODO: take appropriate actions for files!!!
-      console.log('Saved');
+    async saveFileMeta() {
+      await this.$store.dispatch('data/actionFiles', { list: this.selectedFiles, action: this.action });
       this.action = '';
-      // TODO: need to handle here or propagate action!
-      this.$emit('file-action', 'action');
     },
     async deleteLinked() {
       // also check first if any entries were selected
@@ -270,21 +268,26 @@ export default {
         this.selectedEntries = this.selectedEntries.filter(entryId => entryId !== objId);
       }
     },
-    filesSelected(index, sel) {
-      // TODO: replace index with file identifier
-      console.log(index);
-      console.log(sel);
+    filesSelected(objId, sel) {
+      if (sel) {
+        this.selectedFiles.push(objId);
+      } else {
+        this.selectedFiles = this.selectedFiles.filter(entryId => entryId !== objId);
+      }
     },
-    getFileType(file) {
+    getFileName(file) {
       if (file) {
-        // TODO: also catch 4 letter ending (jpeg)
-        // TODO: for real objects from db id will allow to identify file type!!
-        const fileEnding = file.match(/\.([a-z]{3}$)/);
-        if (fileEnding && ['jpg', 'gif', 'jpeg', 'png'].includes(fileEnding[1])) {
+        return file.split('/').pop();
+      }
+      return '';
+    },
+    getFileType(fileType) {
+      if (fileType) {
+        if (['jpg', 'gif', 'jpeg', 'png'].includes(fileType.toLowerCase())) {
           return 'Picture';
-        } if (fileEnding && ['mp4', 'mvw'].includes(fileEnding[1])) {
+        } if (['mp4', 'mvw'].includes(fileType.toLowerCase())) {
           return 'Video';
-        } if (fileEnding && ['mp3'].includes(fileEnding[1])) {
+        } if (['mp3'].includes(fileType.toLowerCase())) {
           return 'Audio';
         }
         return 'Document';
@@ -292,16 +295,24 @@ export default {
       return '';
     },
     getImagePath(iconName) {
-      // for local images
-      // TODO: remove for production!
-      if (iconName.includes('images')) {
-        const match = /\/assets\/images\/(\w+\.\w+)$/.exec(iconName);
-        /* eslint-disable-next-line */
-        return require(`@/assets/images/${match[1]}`);
-      } if (iconName.includes('http')) {
-        return iconName;
+      if (iconName) {
+        // for local images
+        // TODO: remove for production!
+        if (iconName.includes('images')) {
+          const match = /\/assets\/images\/(\w+\.\w+)$/.exec(iconName);
+          /* eslint-disable-next-line */
+          return require(`@/assets/images/${match[1]}`);
+        } if (iconName.includes('http')) {
+          return iconName;
+        }
+        return `${process.env.PORTFOLIO_API}${iconName}`;
       }
       return '';
+    },
+    generateBoxText(metadata) {
+      const wantedAttributes = ['FileSize', 'ImageSize'];
+      return Object.keys(metadata).filter(key => wantedAttributes.includes(key))
+        .map(data => `${data}: ${metadata[data].val}`);
     },
     goToLinked(id) {
       this.$store.commit('data/deleteLastParentItem');
@@ -371,6 +382,10 @@ export default {
 
         .linked-base-box:not(:nth-child(4n)) {
           margin-right: $spacing;
+        }
+
+        .image-box {
+          cursor: pointer;
         }
       }
     }

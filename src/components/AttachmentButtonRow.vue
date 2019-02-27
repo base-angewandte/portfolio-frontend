@@ -63,7 +63,7 @@
       v-if="!!filesToUpload.length"
       :file-list="filesToUpload"
       @cancel="filesToUpload = []"
-      @success="filesToUpload = []"/>
+      @success="updateFiles"/>
 
     <BasePopUp
       :show="showEntryPopUp"
@@ -226,6 +226,9 @@ export default {
         await this.$store.commit('data/setLinked', { list, replace: false });
       }
       this.showEntryPopUp = false;
+    },
+    updateFiles() {
+      this.filesToUpload = [];
     },
   },
 };

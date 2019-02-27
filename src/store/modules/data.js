@@ -41,6 +41,7 @@ const state = {
   filterExpr: '',
   // saved here are all the data from linked entries (not just id as in currentItem)
   linkedEntries: [],
+  linkedMedia: [],
   entriesPerRequest: 50,
   resultTotal: null,
 };
@@ -83,6 +84,9 @@ const getters = {
   },
   getResultTotal(state) {
     return state.resultTotal;
+  },
+  getCurrentMedia(state) {
+    return state.linkedMedia;
   },
 };
 
@@ -150,6 +154,13 @@ const mutations = {
   deleteLinked(state, list) {
     state.linkedEntries = state.linkedEntries.filter(entry => !list.includes(entry.id));
   },
+  setMedia(state, { list, replace }) {
+    const existingMedia = replace ? [] : state.linkedMedia;
+    state.linkedMedia = [].concat(list, existingMedia);
+  },
+  deleteMedia(state, list) {
+    state.linkedMedia = state.linkedMedia.filter(entry => !list.includes(entry.id));
+  },
   setEntriesPerRequest(state, number) {
     state.entriesPerRequest = number;
   },
@@ -196,7 +207,7 @@ const actions = {
     commit('setLinked', { list: entry.relations, replace: true });
     return !!entry;
   },
-  async fetchEntryData({ commit, state }, id) {
+  async fetchEntryData({ commit, state, dispatch }, id) {
     // update: this causes a delay - better just use existing ones in sidebar
     // when sidebardata are present (not on first load)
     let entryData = this.getters['data/getEntryById'](id);
@@ -215,9 +226,38 @@ const actions = {
 
       commit('setCurrentItem', Object.assign({}, entryData, { type: entryData.type ? [entryData.type] : [], texts: textData }));
       commit('setLinked', { list: entryData.relations, replace: true });
+      await dispatch('fetchMediaData', entryData.id);
       return state.currentItem;
     }
     return {};
+  },
+  async fetchMediaData({ commit }, id) {
+    // TODO: replace with Portofolio_API
+    const res = await axios.get(`${process.env.API}entity/${id}/media/`,
+      {
+        withCredentials: true,
+        xsrfCookieName: 'csrftoken_portfolio',
+        xsrfHeaderName: 'X-CSRFToken',
+      });
+    if (res.data.length) {
+      const imageData = await Promise.all(res.data
+        .map(imageId => new Promise(async (resolve, reject) => {
+          try {
+            const result = await axios.get(`${process.env.API}media/${imageId}`,
+              {
+                withCredentials: true,
+                xsrfCookieName: 'csrftoken_portfolio',
+                xsrfHeaderName: 'X-CSRFToken',
+              });
+            resolve(result.data);
+          } catch (e) {
+            reject();
+          }
+        })));
+      commit('setMedia', { list: imageData, replace: true });
+    } else {
+      commit('setMedia', { list: [], replace: true });
+    }
   },
   addSidebarItem({ commit, dispatch }, obj) {
     return new Promise(async (resolve, reject) => {
@@ -284,6 +324,7 @@ const actions = {
       // new entries should not inherit the published state from the duplicate!
       // TODO: in future also not shared state!
       Vue.set(newEntry, 'published', false);
+      Vue.set(newEntry, 'linked');
       try {
         const createdEntryId = await dispatch('addSidebarItem', newEntry);
         Vue.notify({
@@ -307,14 +348,15 @@ const actions = {
     await dispatch('fetchSidebarData', {});
     return addedArr.length ? addedArr.filter(id => !!id) : [];
   },
-  modifyEntries({ state, commit, dispatch }, { prop, value }) {
+  modifyEntries({ state, dispatch }) {
     try {
       state.selectedEntries.forEach((e) => {
         const obj = state.sidebarData.find(o => o.id === e);
         const index = state.sidebarData.indexOf(obj);
         if (index >= 0) {
           // TODO: this needs to go to database!
-          // commit('updateEntry', { obj: Object.assign({}, state.sidebarData[index], { [prop]: value }), index, type: obj.type });
+          // commit('updateEntry', { obj: Object.assign({}, state.sidebarData[index],
+          // { [prop]: value }), index, type: obj.type });
         }
         if (obj.id === state.currentItemId) {
           dispatch('setCurrentItemById', obj.id);
@@ -367,7 +409,7 @@ const actions = {
     // TODO: fetch info data - from where???
     return { title: 'title' };
   },
-  async actionLinked({ state, commit }, { list, action }) {
+  async actionLinked({ state, commit, dispatch }, { list, action }) {
     const fromId = state.currentItem.id;
     await Promise.all(list.map(relationId => new Promise(async (resolve, reject) => {
       try {
@@ -389,14 +431,43 @@ const actions = {
         reject(e);
       }
     })));
-    // fetch entry new to update relations
+    // fetch sidebar data new and entry new to update relations
     try {
-      // TODO: check if this is still doing its purpose after removing update commit
+      await dispatch('fetchSidebarData', {});
       const entry = await this.dispatch('PortfolioAPI/get', { kind: 'entity', id: fromId });
       commit('setLinked', { list: entry.relations, replace: true });
     } catch (e) {
       console.error(e);
     }
+  },
+  async actionFiles({ state, dispatch }, { list, action }) {
+    const axiosAction = action === 'delete' ? action : 'patch';
+    const config = {
+      withCredentials: true,
+      xsrfCookieName: 'csrftoken_portfolio',
+      xsrfHeaderName: 'X-CSRFToken',
+    };
+    const changed = await Promise.all(list.map(mediaId => new Promise(async (resolve, reject) => {
+      const formData = new FormData();
+      if (action === 'publish' || action === 'offline') {
+        formData.append('published', action === 'publish');
+      } else if (action === 'license') {
+        // TODO: this does not exist in backend yet!
+      }
+      // TODO: check if this is working!
+      const requestData = formData.length ? [].concat(formData, config) : [config];
+      try {
+        // TODO: replace with Portofolio_API
+        await axios[axiosAction](`${process.env.API}media/${mediaId}`,
+          ...requestData);
+        resolve(mediaId);
+      } catch (e) {
+        reject(e);
+      }
+    })));
+    await dispatch('fetchMediaData', state.currentItemId);
+    console.log(changed);
+    // TODO: inform user of sucessfully changed items
   },
 };
 

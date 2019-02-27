@@ -6,7 +6,7 @@
     <Attachments
       :key="'attachmentArea'"
       :linked-list="linkedList"
-      :attached-list="fileList"
+      :attached-list="mediaList"
       @show-preview="$emit('show-preview', $event)"/>
   </div>
 </template>
@@ -17,17 +17,12 @@ import Attachments from './Attachments';
 
 export default {
   components: { AttachmentButtonRow, Attachments },
-  props: {
-    fileList: {
-      type: Array,
-      default() {
-        return [];
-      },
-    },
-  },
   computed: {
     linkedList() {
       return this.$store.getters['data/getCurrentLinked'];
+    },
+    mediaList() {
+      return this.$store.getters['data/getCurrentMedia'];
     },
     entryId() {
       return this.$route.params.id;

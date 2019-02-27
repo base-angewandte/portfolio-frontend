@@ -12,7 +12,7 @@
       <BaseUploadBar
         v-for="(file, index) of fileList"
         :key="index"
-        :progress="uploadPercentage"
+        :progress="uploadPercentage[index]"
         :filename="file.name"
         class="upload-bar"/>
     </div>
@@ -72,7 +72,7 @@ export default {
       uploadError: null,
       currentStatus: null,
       uploadFileName: 'photos',
-      uploadPercentage: 0,
+      uploadPercentage: [],
     };
   },
   computed: {
@@ -94,57 +94,51 @@ export default {
   },
   methods: {
     async startUpload() {
-      const formData = new FormData();
-      if (!this.fileList.length) return;
-      console.log(this.fileList);
-      console.log(Array.from(Array(this.fileList.length).keys()));
-      Array.from(Array(this.fileList.length).keys())
-        .map(x => formData.append('file', this.fileList[x], this.fileList[x].name));
-      // this.fileList.forEach(file => formData.append('file', file));
-      debugger;
-      this.currentStatus = STATUS_SAVING;
-      // TODO: check if all parameters are set and actually upload files
-      // --> adjust upload bar accordingly
-      this.$emit('upload-start');
-
-      try {
-        console.log(formData);
-        const res = await axios.post(`${process.env.API}media/`,
-          { body: formData },
-          {
-            withCredentials: true,
-            xsrfCookieName: 'csrftoken_portfolio',
-            xsrfHeaderName: 'X-CSRFToken',
-            headers: {
-              'Content-Type': 'multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW',
-            },
-            onUploadProgress: function (progressEvent) {
-              this.uploadPercentage = Math.round(progressEvent.loaded / progressEvent.total);
-            }.bind(this),
-          });
-        this.uploadedFiles = [].concat(res);
-        this.currentStatus = STATUS_SUCCESS;
-      } catch (err) {
-        this.uploadError = err.response;
-        this.currentStatus = STATUS_FAILED;
-        console.log(err);
-      }
-      /*
-      try {
-        const res = await upload(formData);
-        console.log(res);
-        this.uploadedFiles = [].concat(res);
-        this.currentStatus = STATUS_SUCCESS;
+      if (this.uploadedFiles.length) {
         this.$emit('success');
-      } catch (err) {
-        this.uploadError = err.response;
-        this.currentStatus = STATUS_FAILED;
-      } */
+      } else {
+        if (!this.fileList.length) return;
+        this.fileList.forEach(async (file, index) => {
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('entity', this.$route.params.id);
+          formData.append('published', false);
+
+          this.currentStatus = STATUS_SAVING;
+          this.$emit('upload-start');
+
+          try {
+            console.log(formData);
+            const res = await axios.post(`${process.env.API}media/`,
+              formData,
+              {
+                withCredentials: true,
+                xsrfCookieName: 'csrftoken_portfolio',
+                xsrfHeaderName: 'X-CSRFToken',
+                headers: {
+                  'Content-Type': 'multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW',
+                },
+                onUploadProgress: (progressEvent) => {
+                  this.uploadPercentage[index] = Math
+                    .round(progressEvent.loaded / progressEvent.total);
+                },
+              });
+            this.uploadedFiles = [].concat(res);
+            this.currentStatus = STATUS_SUCCESS;
+          } catch (err) {
+            this.uploadError = err.response;
+            this.currentStatus = STATUS_FAILED;
+            console.log(err);
+          }
+        });
+        this.$store.dispatch('data/fetchMediaData', this.$route.params.id);
+      }
     },
     reset() {
       this.currentStatus = STATUS_INITIAL;
       this.uploadedFiles = [];
       this.uploadError = null;
+      this.fileList.forEach((file, index) => this.$set(this.uploadPercentage, index, 0));
     },
   },
 };
