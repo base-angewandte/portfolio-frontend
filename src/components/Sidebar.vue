@@ -46,25 +46,25 @@
           v-if="showCheckbox"
           class="options-extend-box">
           <BaseButton
-            text="In Showroom veröffentlichen"
+            :text="$tc('publish', 2)"
             icon-size="large"
             icon="eye"
             button-style="single"
             @clicked="actionEntries('publish')"/>
           <BaseButton
-            text="Einträge offline stellen"
+            :text="$tc('offline', 2)"
             icon-size="large"
             icon="forbidden"
             button-style="single"
             @clicked="actionEntries('offline')"/>
           <BaseButton
-            text="Einträge duplizieren"
+            :text="$tc('duplicate', 2)"
             icon-size="large"
             icon="duplicate"
             button-style="single"
             @clicked="duplicateEntries"/>
           <BaseButton
-            text="Einträge löschen"
+            :text="$tc('delete', 2)"
             icon-size="large"
             icon="waste-bin"
             button-style="single"
@@ -73,7 +73,9 @@
       </transition>
     </div>
 
-    <div class="base-menu-container">
+    <div
+      ref="menu-container"
+      class="base-menu-container">
       <div
         v-if="isLoading"
         class="loading-area">
@@ -105,6 +107,7 @@
     <BasePagination
       v-if="pageTotal > 1"
       :total="pageTotal"
+      :current="pageNumber"
       @set-page="setPage"/>
   </div>
 </template>
@@ -180,6 +183,13 @@ export default {
       type: Number,
       default: null,
     },
+    /**
+     * define the entries that should be displayed per page
+     */
+    entriesPerPage: {
+      type: Number,
+      default: 50,
+    },
   },
   data() {
     return {
@@ -191,7 +201,6 @@ export default {
       sortParam: null,
       filterType: null,
       filterString: null,
-      entriesPerPage: 0,
     };
   },
   computed: {
@@ -227,7 +236,6 @@ export default {
   watch: {
     list(val) {
       this.listInt = [].concat(val);
-      this.calcEntriesPerPage();
     },
     showCheckbox(val) {
       // delete selected when options menu is closed
@@ -237,7 +245,6 @@ export default {
     },
   },
   mounted() {
-    this.calcEntriesPerPage();
     this.listInt = this.list;
   },
   methods: {
@@ -255,7 +262,8 @@ export default {
     },
     getNewForm() {
       this.$store.commit('data/setCurrentItem', {});
-      this.$store.commit('data/setLinked', { list: [] });
+      this.$store.commit('data/setLinked', { list: [], replace: true });
+      this.$store.commit('data/setMedia', { list: [], replace: true });
       this.$store.commit('data/deleteParentItems');
       this.$emit('new-form');
     },
@@ -271,7 +279,7 @@ export default {
       } else if (evt === 'Älteste') {
         this.sortParam = 'date_created';
       }
-      this.$emit('sort', { sort: this.sortParam });
+      this.$emit('sort', { sort: this.sortParam, page: this.pageNumber });
     },
     filterEntries(val, type) {
       if (type === 'type') {
@@ -284,6 +292,7 @@ export default {
         this.$emit('filter', { string: this.filterString });
         // TODO: this is not working and always only gives overall number of entries!!
       }
+      this.pageNumber = 1;
     },
     setPage(number) {
       this.pageNumber = number;
@@ -329,11 +338,6 @@ export default {
     toggleSidebarOptions() {
       this.$refs.menuList.entryProps.forEach(entry => this.$set(entry, 'selected', false));
       this.$store.commit('data/setOptions', !this.showCheckbox);
-    },
-    calcEntriesPerPage() {
-      const sidebarHeight = this.$refs.menuList.$el.clientHeight;
-      const entryHeight = 56;
-      this.entriesPerPage = Math.floor(sidebarHeight / entryHeight);
     },
   },
 };

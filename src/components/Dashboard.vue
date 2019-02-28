@@ -28,6 +28,7 @@
       :class="['sidebar', { 'sidebar-full': !showForm }]"
       :list="sidebarData"
       :entry-number="entriesTotal"
+      :entries-per-page="entriesPerPage"
       @sort="$store.dispatch('data/filterEntries', $event)"
       @filter="$store.dispatch('data/filterEntries', $event)"
       @new-form="createNewForm"
@@ -68,6 +69,9 @@ export default {
     },
     entriesTotal() {
       return this.$store.getters['data/getResultTotal'];
+    },
+    entriesPerPage() {
+      return this.$store.getters['data/getEntriesPerRequest'];
     },
   },
   watch: {
@@ -145,10 +149,6 @@ export default {
       }
       this.$store.commit('data/setOptions', false);
       this.$refs.sidebar.selectedMenuEntries = [];
-      const { view } = this.$refs;
-      if (view) {
-        this.$refs.view.updateForm();
-      }
     },
     loadPreview(img) {
       if (img) {
@@ -173,7 +173,7 @@ export default {
       // TODO: image zoom?
     },
     calculateSidebarHeight() {
-      const sidebarHeight = this.$refs.sidebar.$refs.menuList.$el.clientHeight;
+      const sidebarHeight = this.$refs.sidebar.$refs.menuList.$el.clientHeight - 32 - 16;
       // hardcoded because unfortunately no other possibility found
       const entryHeight = 56;
       const entriesPerPage = Math.floor(sidebarHeight / entryHeight);

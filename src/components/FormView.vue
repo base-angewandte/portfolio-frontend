@@ -168,6 +168,12 @@ export default {
             // a) link to parent entry b) save to database
             // --> do this.linkEntries(this.$store.data.currentItemId)
             await this.$store.dispatch('data/addSidebarItem', Object.assign({}, this.valueList, { data }));
+            // also add linked entries if there are already any
+            const list = this.$store.getters['data/getLinkedIds'];
+            if (list.length) {
+              await this.$store.dispatch('data/actionLinked', { list, action: 'save' });
+              // TODO: also do this for attached media??
+            }
             // moved this outside of addSidebar data to prevent numerous requests on duplicate items
             this.$store.dispatch('data/fetchSidebarData', {});
             this.$router.push(`/entry/${this.$store.state.data.currentItemId}`);

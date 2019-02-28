@@ -16,20 +16,20 @@
         class="options-row flex-align-right" >
         <BaseButton
           :disabled="isNewForm"
-          :text="isPublished ? $t('form-view.offline') : $t('form-view.publish')"
+          :text="isPublished ? $tc('offline') : $tc('publish')"
           icon-size="large"
           icon="eye"
           button-style="single"
           @clicked="actionEntry(isPublished ? 'offline' : 'publish')"/>
         <BaseButton
           :disabled="true"
-          :text="$t('form-view.edit')"
+          :text="$tc('edit')"
           icon-size="large"
           icon="people"
           button-style="single" />
         <BaseButton
           :disabled="isNewForm"
-          :text="$t('form-view.delete', { type: formType ? formType : $t('entry') })"
+          :text="$tc('delete')"
           icon-size="large"
           icon="waste-bin"
           button-style="single"

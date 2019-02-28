@@ -108,7 +108,6 @@ export default {
           this.$emit('upload-start');
 
           try {
-            console.log(formData);
             const res = await axios.post(`${process.env.API}media/`,
               formData,
               {

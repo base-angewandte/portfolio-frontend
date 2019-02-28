@@ -157,6 +157,7 @@ export default {
     handleFileSelect(e) {
       // get files - depending if dragged or selected from file browse different event prop
       const files = e.dataTransfer ? e.dataTransfer.files : e.target.files;
+      // TODO: check if item was saved already!
       // check if it was actual files that were dragged in
       if (files && files.length) {
         for (let i = 0; i < files.length; i += 1) {
@@ -223,7 +224,11 @@ export default {
         await this.$store.dispatch('data/actionLinked', { list, action: 'save' });
         // otherwise just save state in store for now and commit with general first save of entry
       } else {
-        await this.$store.commit('data/setLinked', { list, replace: false });
+        const fullList = list.map((entryId, index) => ({
+          id: `tempId${this.$store.getters['data/getCurrentLinked'].length + index}`,
+          to: Object.assign({}, this.$store.getters['data/getEntryById'](entryId)),
+        }));
+        await this.$store.commit('data/setLinked', { list: fullList || [], replace: false });
       }
       this.showEntryPopUp = false;
     },

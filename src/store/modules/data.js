@@ -82,11 +82,22 @@ const getters = {
   getCurrentLinked(state) {
     return state.linkedEntries;
   },
+  getLinkedIds(state) {
+    console.log(state.linkedEntries);
+    return state.linkedEntries.length ? state.linkedEntries.map(entry => entry.to.id)
+      : [];
+  },
   getResultTotal(state) {
     return state.resultTotal;
   },
+  getEntriesPerRequest(state) {
+    return state.entriesPerRequest;
+  },
   getCurrentMedia(state) {
     return state.linkedMedia;
+  },
+  getMediaIds(state) {
+    return state.linkedMedia.map(entry => entry.id);
   },
 };
 
@@ -204,7 +215,7 @@ const actions = {
     if (entry) {
       commit('setCurrentItem', entry);
     }
-    commit('setLinked', { list: entry.relations, replace: true });
+    commit('setLinked', { list: entry.relations || [], replace: true });
     return !!entry;
   },
   async fetchEntryData({ commit, state, dispatch }, id) {
@@ -225,7 +236,7 @@ const actions = {
       }) : [];
 
       commit('setCurrentItem', Object.assign({}, entryData, { type: entryData.type ? [entryData.type] : [], texts: textData }));
-      commit('setLinked', { list: entryData.relations, replace: true });
+      commit('setLinked', { list: entryData.relations || [], replace: true });
       await dispatch('fetchMediaData', entryData.id);
       return state.currentItem;
     }
@@ -259,7 +270,7 @@ const actions = {
       commit('setMedia', { list: [], replace: true });
     }
   },
-  addSidebarItem({ commit, dispatch }, obj) {
+  addSidebarItem({ commit }, obj) {
     return new Promise(async (resolve, reject) => {
       try {
         // Modify object back here before saving to database
@@ -277,11 +288,6 @@ const actions = {
         const createdEntry = await this.dispatch('PortfolioAPI/post', { kind: 'entity', data });
         if (createdEntry) {
           commit('setCurrentItem', createdEntry);
-        }
-        // also save linked if entries were added
-        if (state.linkedEntries.length) {
-          const list = state.linkedEntries.map(entry => entry.id);
-          await dispatch('actionLinked', { list, action: 'save' });
         }
         resolve(createdEntry.id);
       } catch (e) {
@@ -324,7 +330,7 @@ const actions = {
       // new entries should not inherit the published state from the duplicate!
       // TODO: in future also not shared state!
       Vue.set(newEntry, 'published', false);
-      Vue.set(newEntry, 'linked');
+      Vue.set(newEntry, 'linked', []);
       try {
         const createdEntryId = await dispatch('addSidebarItem', newEntry);
         Vue.notify({
@@ -366,7 +372,9 @@ const actions = {
       // TODO: error handling! (user info)
     }
   },
-  filterEntries({ commit, dispatch }, { type, string, sort }) {
+  filterEntries({ commit, dispatch }, {
+    type, string, sort, page,
+  }) {
     if (type) {
       commit('setFilterType', type);
     }
@@ -377,7 +385,7 @@ const actions = {
       commit('setSort', sort);
     }
     // TODO: filterExpression not considered yet!!
-    dispatch('fetchSidebarData', { type: state.filterType, sort: state.sortBy });
+    dispatch('fetchSidebarData', { type: state.filterType, sort: state.sortBy, pageNumber: page });
   },
   actionEntries({ commit }, { action, entries }) {
     let actionText = 'löschen';
@@ -435,18 +443,14 @@ const actions = {
     try {
       await dispatch('fetchSidebarData', {});
       const entry = await this.dispatch('PortfolioAPI/get', { kind: 'entity', id: fromId });
-      commit('setLinked', { list: entry.relations, replace: true });
+      commit('setLinked', { list: entry.relations || [], replace: true });
     } catch (e) {
       console.error(e);
     }
   },
   async actionFiles({ state, dispatch }, { list, action }) {
     const axiosAction = action === 'delete' ? action : 'patch';
-    const config = {
-      withCredentials: true,
-      xsrfCookieName: 'csrftoken_portfolio',
-      xsrfHeaderName: 'X-CSRFToken',
-    };
+
     const changed = await Promise.all(list.map(mediaId => new Promise(async (resolve, reject) => {
       const formData = new FormData();
       if (action === 'publish' || action === 'offline') {
@@ -454,12 +458,26 @@ const actions = {
       } else if (action === 'license') {
         // TODO: this does not exist in backend yet!
       }
-      // TODO: check if this is working!
-      const requestData = formData.length ? [].concat(formData, config) : [config];
       try {
-        // TODO: replace with Portofolio_API
-        await axios[axiosAction](`${process.env.API}media/${mediaId}`,
-          ...requestData);
+        if (axiosAction === 'delete') {
+          // TODO: replace with Portofolio_API
+          await axios[axiosAction](`${process.env.API}media/${mediaId}/`,
+            {
+              withCredentials: true,
+              xsrfCookieName: 'csrftoken_portfolio',
+              xsrfHeaderName: 'X-CSRFToken',
+            });
+        } else {
+          // TODO: replace with Portofolio_API
+          await axios[axiosAction](`${process.env.API}media/${mediaId}/`,
+            formData,
+            {
+              withCredentials: true,
+              xsrfCookieName: 'csrftoken_portfolio',
+              xsrfHeaderName: 'X-CSRFToken',
+            });
+        }
+
         resolve(mediaId);
       } catch (e) {
         reject(e);

@@ -97,19 +97,19 @@
           v-if="!fileText"
           class="linked-options">
           <base-button
-            :text="'Lizenz ändern'"
+            :text="$t('form-view.changeLicense')"
             icon-size="large"
             icon="licence"
             button-style="single"
             @clicked="action = 'licence'"/>
           <base-button
-            text="Im Showroom veröffentlichen"
+            :text="$t('form-view.publishMedia')"
             icon-size="large"
             icon="eye"
             button-style="single"
             @clicked="action = 'publish'"/>
           <base-button
-            text="Datei löschen"
+            :text="$t('form-view.deleteMedia')"
             icon-size="large"
             icon="waste-bin"
             button-style="single"
