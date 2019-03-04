@@ -7,7 +7,7 @@ function transformTextData(data) {
   if (data && data.length) {
     data.forEach((textItem) => {
       const textObj = { type: textItem.type };
-      const text = Object.keys(textItem).filter(props => props !== 'type' && props !== 'text')
+      const text = Object.keys(textItem).filter(props => !['type', 'text', 'data'].includes(props))
         .map(lang => Object.assign({}, {
           language: lang,
           text: textItem[lang],
@@ -22,7 +22,6 @@ function transformTextData(data) {
 
 const state = {
   sidebarData: [],
-  currentItem: {},
   currentItemId: null,
   parentItems: [],
   isNewForm: false,
@@ -61,16 +60,6 @@ const getters = {
   getEntryById(state) {
     return id => state.sidebarData.find(item => item.id === id);
   },
-  getLastId(state) {
-    return state.sidebarData.reduce((prev, curr) => {
-      const prevNum = parseInt(prev, 10);
-      const currNum = parseInt(curr.id, 10);
-      if (prevNum > currNum) {
-        return prevNum;
-      }
-      return currNum;
-    }, 0);
-  },
   getEntryTypes(state) {
     return state.sidebarData && state.sidebarData.length
       ? [...new Set(state.sidebarData.map(entry => entry.type))] : [];
@@ -106,7 +95,6 @@ const mutations = {
     state.isNewForm = val;
   },
   setCurrentItem(state, obj) {
-    state.currentItem = Object.assign({}, obj);
     state.currentItemId = obj.id;
   },
   setSidebarData(state, data) {
@@ -114,7 +102,6 @@ const mutations = {
   },
   deleteCurrentItem(state) {
     state.currentItemId = null;
-    state.currentItem = {};
     state.linkedEntries = [];
   },
   setOptions(state, val) {
@@ -218,7 +205,7 @@ const actions = {
     commit('setLinked', { list: entry.relations || [], replace: true });
     return !!entry;
   },
-  async fetchEntryData({ commit, state, dispatch }, id) {
+  async fetchEntryData({ commit, dispatch }, id) {
     // update: this causes a delay - better just use existing ones in sidebar
     // when sidebardata are present (not on first load)
     let entryData = this.getters['data/getEntryById'](id);
@@ -235,10 +222,14 @@ const actions = {
         return Object.assign({}, { type: entry.type }, textObj);
       }) : [];
 
-      commit('setCurrentItem', Object.assign({}, entryData, { type: entryData.type ? [entryData.type] : [], texts: textData }));
+      const adjustedEntry = Object.assign({}, entryData, {
+        type: entryData.type ? [entryData.type] : [],
+        texts: textData,
+      });
+      commit('setCurrentItem', adjustedEntry);
       commit('setLinked', { list: entryData.relations || [], replace: true });
       await dispatch('fetchMediaData', entryData.id);
-      return state.currentItem;
+      return adjustedEntry;
     }
     return {};
   },
@@ -276,7 +267,7 @@ const actions = {
         // Modify object back here before saving to database
         // 1. type not array but string
         // 2. text object
-        const type = obj.type && obj.type.length ? obj.type : '';
+        const type = obj.type && obj.type.length ? obj.type[0] : '';
         const data = Object.assign({}, obj, {
           type: typeof type === 'object' ? type[0] : type,
           // check if texts already has the correct form (necessary for duplicated items
@@ -418,7 +409,7 @@ const actions = {
     return { title: 'title' };
   },
   async actionLinked({ state, commit, dispatch }, { list, action }) {
-    const fromId = state.currentItem.id;
+    const fromId = state.currentItemId;
     await Promise.all(list.map(relationId => new Promise(async (resolve, reject) => {
       try {
         if (action === 'save') {

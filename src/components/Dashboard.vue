@@ -24,16 +24,10 @@
 
     <Sidebar
       ref="sidebar"
-      :new-form="$store.state.data.isNewForm"
       :class="['sidebar', { 'sidebar-full': !showForm }]"
       :list="sidebarData"
-      :entry-number="entriesTotal"
-      :entries-per-page="entriesPerPage"
-      @sort="$store.dispatch('data/filterEntries', $event)"
-      @filter="$store.dispatch('data/filterEntries', $event)"
       @new-form="createNewForm"
-      @show-entry="routeToEntry"
-      @fetch-data="fetchSidebarData"/>
+      @show-entry="routeToEntry"/>
     <div
       v-if="showForm"
       class="form-view">
@@ -56,22 +50,14 @@ export default {
   },
   data() {
     return {
+      sidebarData: [],
       showPreview: false,
       previewUrl: '',
     };
   },
   computed: {
-    sidebarData() {
-      return [].concat(this.$store.getters['data/getSidebarData']);
-    },
     showForm() {
       return this.$route.name !== 'Dashboard';
-    },
-    entriesTotal() {
-      return this.$store.getters['data/getResultTotal'];
-    },
-    entriesPerPage() {
-      return this.$store.getters['data/getEntriesPerRequest'];
     },
   },
   watch: {
@@ -96,20 +82,12 @@ export default {
       } else {
         vm.$store.commit('user/setAuthenticated', true);
       }
-      console.log('calculate');
-      vm.calculateSidebarHeight();
-      // fetch data after user authentication was checked and necessary cookies received
-      console.log('dispatch');
-      await vm.$store.dispatch('data/fetchSidebarData', {});
     });
   },
   async mounted() {
     this.$store.commit('data/setNewForm', this.$route.name === 'newEntry');
   },
   methods: {
-    fetchSidebarData({ pageNumber, sort, type }) {
-      this.$store.dispatch('data/fetchSidebarData', { pageNumber, sort, type });
-    },
     createNewForm() {
       const formView = this.$refs.view;
       if (formView) {
@@ -171,13 +149,6 @@ export default {
       // disable page scrolling
       evt.preventDefault();
       // TODO: image zoom?
-    },
-    calculateSidebarHeight() {
-      const sidebarHeight = this.$refs.sidebar.$refs.menuList.$el.clientHeight - 32 - 16;
-      // hardcoded because unfortunately no other possibility found
-      const entryHeight = 56;
-      const entriesPerPage = Math.floor(sidebarHeight / entryHeight);
-      this.$store.commit('data/setEntriesPerRequest', entriesPerPage);
     },
   },
 };

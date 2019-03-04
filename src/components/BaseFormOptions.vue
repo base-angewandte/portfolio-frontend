@@ -74,7 +74,7 @@ export default {
   },
   methods: {
     actionEntry(action) {
-      if (!this.$store.state.data.isNewForm && !this.unsavedChanges) {
+      if (!this.isNewForm && !this.unsavedChanges) {
         this.$store.dispatch('data/actionEntries', {
           action,
           entries: [this.$store.state.data.currentItemId],
@@ -83,7 +83,7 @@ export default {
         this.$notify({
           group: 'request-notifications',
           title: 'Unsaved Changes',
-          text: `Please save your ${this.$store.state.data.isNewForm ? 'new Form' : 'Changes'} first!`,
+          text: `Please save your ${this.isNewForm ? 'new Form' : 'Changes'} first!`,
           type: 'warn',
         });
       }

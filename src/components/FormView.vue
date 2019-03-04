@@ -120,7 +120,6 @@ export default {
   watch: {
     currentItemId(val) {
       if (val) {
-        this.resetForm();
         this.updateForm();
       } else {
         this.resetForm();
@@ -175,6 +174,7 @@ export default {
               // TODO: also do this for attached media??
             }
             // moved this outside of addSidebar data to prevent numerous requests on duplicate items
+            // TODO: replace with emit?
             this.$store.dispatch('data/fetchSidebarData', {});
             this.$router.push(`/entry/${this.$store.state.data.currentItemId}`);
           } else {

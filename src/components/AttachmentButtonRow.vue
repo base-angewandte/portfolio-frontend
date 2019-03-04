@@ -81,11 +81,9 @@
           :height="'62vh'"
           :hide-active="true"
           :entry-number="totalEntries"
+          :exclude-linked="true"
           class="menu"
-          @sort="setFilters"
-          @filter="setFilters"
-          @selected-changed="selectedEntries = [].concat($event)"
-          @fetch-data="filterSelectable"/>
+          @selected-changed="selectedEntries = [].concat($event)"/>
       </div>
     </BasePopUp>
   </div>
@@ -166,43 +164,7 @@ export default {
       }
     },
     openEntrySelect() {
-      this.filterSelectable({ pageNumber: 1 });
       this.showEntryPopUp = true;
-    },
-    setFilters({
-      type,
-      string,
-      sort,
-      entriesPerPage,
-    }) {
-      if (sort) {
-        this.sortBy = sort;
-      } else if (type) {
-        this.filterType = type === 'Alle Typen' ? '' : type;
-      } else if (string) {
-        this.filterString = string;
-      }
-      this.filterSelectable({ pageNumber: 1, entriesPerPage });
-    },
-    async filterSelectable({ pageNumber, entriesPerPage }) {
-      let offset = 0;
-      if (pageNumber) {
-        offset = entriesPerPage * (pageNumber - 1);
-      }
-      const data = await this.$store.dispatch('PortfolioAPI/get', {
-        kind: 'entity',
-        sort: this.sortBy,
-        type: this.filterType,
-        offset,
-        limit: entriesPerPage,
-      });
-      this.totalEntries = data.count;
-      // filter already linked and the current item from the list
-      // TODO: this leads to shorter lists than originally considered in request...
-      // would be nicer if i could filter for id's in request directly...
-      this.selectableEntries = data.results
-        .filter(entry => entry.id !== this.$store.state.data.currentItemId
-          && !this.linkedList.map(e => e.to.id).includes(entry.id));
     },
     async linkEntries(val) {
       const list = [];

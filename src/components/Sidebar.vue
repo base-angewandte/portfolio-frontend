@@ -8,7 +8,7 @@
       <div class="base-row">
         <BaseButton
           v-if="newEnabled"
-          :active="$store.state.data.isNewForm"
+          :active="isNewForm"
           :text="$t('new')"
           icon="sheet-plus"
           icon-size="large"
@@ -36,7 +36,7 @@
           @selected="sortEntries"/>
         <base-drop-down
           :selected="'Alle Typen'"
-          :selection-list="availableEntryTypes"
+          :selection-list="entryTypes"
           @selected="filterEntries($event, 'type')"/>
       </div>
       <transition
@@ -113,6 +113,7 @@
 </template>
 
 <script>
+import axios from 'axios';
 import {
   BaseMenuList,
   BaseButton,
@@ -175,56 +176,35 @@ export default {
         return [];
       },
     },
-    /**
-     * the number of entries that are in the db (and matching filter criteria)
-     * in total
-     */
-    entryNumber: {
-      type: Number,
-      default: null,
-    },
-    /**
-     * define the entries that should be displayed per page
-     */
-    entriesPerPage: {
-      type: Number,
-      default: 50,
+    excludeLinked: {
+      type: Boolean,
+      default: false,
     },
   },
   data() {
     return {
       selectedMenuEntries: [],
       listInt: [],
-      activeEntryInt: null,
-      // TODO: Re-evaluate if storing these values here is necessary / desirable
+      entriesPerPage: null,
       pageNumber: 1,
-      sortParam: null,
-      filterType: null,
-      filterString: null,
+      entryNumber: null,
+      entryTypes: [],
+      isLoading: false,
+      timeout: null,
     };
   },
   computed: {
     showCheckbox() {
       return this.$store.state.data.showOptions;
     },
-    isLoading() {
-      // TODO: have loader showing for at least xx to avoid flashing?
-      return this.$store.getters['PortfolioAPI/isLoading'];
+    activeEntry() {
+      if (!this.hideActive && this.activeEntryId) {
+        return this.listInt.map(entry => entry.id).indexOf(this.activeEntryId);
+      }
+      return null;
     },
-    activeEntry: {
-      get() {
-        const id = this.$store.state.data.currentItemId;
-        if (!this.hideActive && id && this.$store.getters['data/getSidebarData'].find(entry => entry.id === id)) {
-          return this.activeEntryInt || this.$store.getters['data/getCurrentItemIndex'];
-        }
-        return null;
-      },
-      set(val) {
-        this.activeEntryInt = val;
-      },
-    },
-    availableEntryTypes() {
-      return this.$store.getters['data/getEntryTypes'].filter(type => !!type);
+    activeEntryId() {
+      return this.$route.params.id || null;
     },
     calcStyle() {
       return this.height ? { height: this.height } : {};
@@ -232,10 +212,14 @@ export default {
     pageTotal() {
       return this.entriesPerPage ? Math.ceil(this.entryNumber / this.entriesPerPage) : 0;
     },
+    isNewForm() {
+      return this.$route.params.id === 'new';
+    },
   },
   watch: {
     list(val) {
       this.listInt = [].concat(val);
+      this.getEntryTypes();
     },
     showCheckbox(val) {
       // delete selected when options menu is closed
@@ -246,10 +230,13 @@ export default {
   },
   mounted() {
     this.listInt = this.list;
+    this.getEntryTypes();
+    this.calculateSidebarHeight();
+    this.fetchSidebarData();
   },
   methods: {
     showEntry(index) {
-      this.$emit('show-entry', this.list[index].id);
+      this.$emit('show-entry', this.listInt[index].id);
     },
     selectEntry(evt) {
       if (evt.selected) {
@@ -258,7 +245,21 @@ export default {
         this.selectedMenuEntries = this.selectedMenuEntries
           .filter(entry => entry !== this.list[evt.index].id);
       }
+      // TODO: check if selectedEntries should also be handled internally
       this.$emit('selected-changed', this.selectedMenuEntries);
+    },
+    // get all the types of the entries a user has (alternative to just displaying all
+    // > 150 types
+    async getEntryTypes() {
+      // TODO: replace with C. store module!
+      try {
+        const response = await axios.get(`${process.env.API}entity/types/`, {
+          withCredentials: true,
+        });
+        this.entryTypes = response.data;
+      } catch (e) {
+        // TODO: inform user?
+      }
     },
     getNewForm() {
       this.$store.commit('data/setCurrentItem', {});
@@ -279,33 +280,38 @@ export default {
       } else if (evt === 'Älteste') {
         this.sortParam = 'date_created';
       }
-      this.$emit('sort', { sort: this.sortParam, page: this.pageNumber });
+      this.fetchSidebarData();
     },
     filterEntries(val, type) {
       if (type === 'type') {
-        this.filterType = val;
+        // TODO: find more generic solution here!!
+        this.filterType = val === 'Alle Typen' ? '' : val;
         this.$emit('filter', { type: this.filterType });
+        this.fetchSidebarData();
         // there is no endpoint to filter entries for strings yet!!
       } else if (type === 'title') {
-        // TODO: add time delay! (maybe also > 3 chars)
-        this.filterString = val;
-        this.$emit('filter', { string: this.filterString });
-        // TODO: this is not working and always only gives overall number of entries!!
+        if (this.timeout) {
+          clearTimeout(this.timeout);
+          this.timeout = null;
+        }
+        this.timeout = setTimeout(() => {
+          if (val.length === 0 || val.length > 3) {
+            this.filterString = val;
+            this.fetchSidebarData();
+          } else {
+            this.filterString = '';
+          }
+        }, 600);
       }
       this.pageNumber = 1;
     },
     setPage(number) {
       this.pageNumber = number;
-      this.$emit('fetch-data', {
-        entriesPerPage: this.entriesPerPage,
-        pageNumber: this.pageNumber,
-        sortParam: this.sortParam,
-        filterString: this.filterString,
-        filterType: this.filterType,
-      });
+      this.fetchSidebarData();
     },
     async duplicateEntries() {
       // TODO: disable action buttons until action finished!
+      // TODO: do this in component not store!
       if (this.selectedMenuEntries.length) {
         // dispatch selected entries to be duplicated and sucessfully duplicated ids are returned
         const routingIds = await this.$store.dispatch('data/duplicateEntries', this.selectedMenuEntries);
@@ -324,6 +330,7 @@ export default {
       }
     },
     actionEntries(value) {
+      // TODO: do this in component not store!
       if (this.selectedMenuEntries.length) {
         this.$store.dispatch('data/actionEntries', { action: value, entries: this.selectedMenuEntries });
       } else {
@@ -338,6 +345,36 @@ export default {
     toggleSidebarOptions() {
       this.$refs.menuList.entryProps.forEach(entry => this.$set(entry, 'selected', false));
       this.$store.commit('data/setOptions', !this.showCheckbox);
+    },
+    async fetchSidebarData() {
+      this.isLoading = true;
+      try {
+        const response = await this.$store.dispatch('PortfolioAPI/get', {
+          kind: 'entity',
+          sort: this.sortParam,
+          offset: (this.pageNumber - 1) * this.entriesPerPage,
+          limit: this.entriesPerPage,
+          type: this.filterType,
+          q: this.filterString,
+          link_selection_for: this.excludeLinked ? this.activeEntryId : '',
+        });
+        this.listInt = response.results;
+        this.entryNumber = response.count;
+      } catch (e) {
+        this.$notify({
+          group: 'request-notifications',
+          title: 'Fetching of Entry Data Failed',
+          text: 'Unfortunately there was a problem and we could not fetch the data. Please try again!',
+          type: 'warn',
+        });
+      }
+      this.isLoading = false;
+    },
+    calculateSidebarHeight() {
+      const sidebarHeight = this.$refs.menuList.$el.clientHeight - 32 - 16;
+      // hardcoded because unfortunately no other possibility found
+      const entryHeight = 56;
+      this.entriesPerPage = Math.floor(sidebarHeight / entryHeight);
     },
   },
 };
