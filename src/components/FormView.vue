@@ -166,16 +166,28 @@ export default {
             // TODO: check somewhere if the entry should be linked to a parent and
             // a) link to parent entry b) save to database
             // --> do this.linkEntries(this.$store.data.currentItemId)
-            await this.$store.dispatch('data/addSidebarItem', Object.assign({}, this.valueList, { data }));
+            const newEntryId = await this.$store.dispatch('data/addSidebarItem', Object.assign({}, this.valueList, { data }));
             // also add linked entries if there are already any
             const list = this.$store.getters['data/getLinkedIds'];
             if (list.length) {
               await this.$store.dispatch('data/actionLinked', { list, action: 'save' });
               // TODO: also do this for attached media??
             }
-            // moved this outside of addSidebar data to prevent numerous requests on duplicate items
+            // link entry to parent if parent items are present
+            const parent = this.$store.getters['data/getLatestParentItem'];
+            if (parent) {
+              const relationData = {
+                from_entity: parent.id,
+                to_entity: newEntryId,
+              };
+              await this.$store.dispatch('PortfolioAPI/post', {
+                kind: 'relation',
+                data: relationData,
+              });
+              // TODO: inform user of successful entry (what if only linking fails?)
+            }
             // TODO: replace with emit?
-            this.$store.dispatch('data/fetchSidebarData', {});
+            this.$emit('data-changed');
             this.$router.push(`/entry/${this.$store.state.data.currentItemId}`);
           } else {
             await this.$store.dispatch('data/updateEntry', Object.assign({}, this.valueList, { data }));

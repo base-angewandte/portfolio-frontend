@@ -33,7 +33,8 @@
       class="form-view">
       <router-view
         ref="view"
-        @show-preview="loadPreview"/>
+        @show-preview="loadPreview"
+        @data-changed="updateSidebarData()"/>
     </div>
   </div>
 </template>
@@ -149,6 +150,9 @@ export default {
       // disable page scrolling
       evt.preventDefault();
       // TODO: image zoom?
+    },
+    updateSidebarData() {
+      this.$refs.sidebar.fetchSidebarData();
     },
   },
 };

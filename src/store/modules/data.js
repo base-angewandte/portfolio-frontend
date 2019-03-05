@@ -330,6 +330,7 @@ const actions = {
           text: `Entry ${entryTitle} was successfully duplicated`,
           type: 'warn',
         });
+        commit('deleteParentItems');
         resolve(createdEntryId);
       } catch (e) {
         Vue.notify({
@@ -362,21 +363,6 @@ const actions = {
     } catch (e) {
       // TODO: error handling! (user info)
     }
-  },
-  filterEntries({ commit, dispatch }, {
-    type, string, sort, page,
-  }) {
-    if (type) {
-      commit('setFilterType', type);
-    }
-    if (string) {
-      commit('setFilterExpression', string);
-    }
-    if (sort) {
-      commit('setSort', sort);
-    }
-    // TODO: filterExpression not considered yet!!
-    dispatch('fetchSidebarData', { type: state.filterType, sort: state.sortBy, pageNumber: page });
   },
   actionEntries({ commit }, { action, entries }) {
     let actionText = 'löschen';
