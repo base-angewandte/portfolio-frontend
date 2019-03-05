@@ -213,7 +213,7 @@ export default {
       return this.entriesPerPage ? Math.ceil(this.entryNumber / this.entriesPerPage) : 0;
     },
     isNewForm() {
-      return this.$route.params.id === 'new';
+      return this.$route.name === 'newEntry';
     },
   },
   watch: {
@@ -240,10 +240,10 @@ export default {
     },
     selectEntry(evt) {
       if (evt.selected) {
-        this.selectedMenuEntries.push(this.list[evt.index].id);
+        this.selectedMenuEntries.push(this.listInt[evt.index].id);
       } else {
         this.selectedMenuEntries = this.selectedMenuEntries
-          .filter(entry => entry !== this.list[evt.index].id);
+          .filter(entry => entry !== this.listInt[evt.index].id);
       }
       // TODO: check if selectedEntries should also be handled internally
       this.$emit('selected-changed', this.selectedMenuEntries);
@@ -284,8 +284,7 @@ export default {
     },
     filterEntries(val, type) {
       if (type === 'type') {
-        // TODO: find more generic solution here!!
-        this.filterType = val === 'Alle Typen' ? '' : val;
+        this.filterType = this.entryTypes.includes(val) ? val : '';
         this.$emit('filter', { type: this.filterType });
         this.fetchSidebarData();
         // there is no endpoint to filter entries for strings yet!!
