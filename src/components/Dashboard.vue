@@ -25,7 +25,6 @@
     <Sidebar
       ref="sidebar"
       :class="['sidebar', { 'sidebar-full': !showForm }]"
-      :list="sidebarData"
       @new-form="createNewForm"
       @show-entry="routeToEntry"/>
     <div
@@ -51,7 +50,6 @@ export default {
   },
   data() {
     return {
-      sidebarData: [],
       showPreview: false,
       previewUrl: '',
     };
@@ -111,21 +109,22 @@ export default {
       this.$store.commit('data/setSelected', []);
       this.$store.commit('data/hidePopUp');
     },
-    action() {
+    async action() {
       const { action } = this.$store.state.data.popUp;
       if (action === 'delete') {
         const deleteCurrentlyDisplayed = this.$store.state.data.selectedEntries
-          .includes(this.$route.params.id);
-        this.$store.dispatch('data/deleteEntries');
+          .find(entry => entry.id === this.$route.params.id);
+        await this.$store.dispatch('data/deleteEntries');
         if (deleteCurrentlyDisplayed) {
           this.$store.commit('data/deleteCurrentItem');
           this.$router.push('/');
         }
       } else if (action === 'publish') {
-        this.$store.dispatch('data/modifyEntries', { prop: 'published', value: true });
+        await this.$store.dispatch('data/modifyEntries', { prop: 'published', value: true });
       } else if (action === 'offline') {
-        this.$store.dispatch('data/modifyEntries', { prop: 'published', value: false });
+        await this.$store.dispatch('data/modifyEntries', { prop: 'published', value: false });
       }
+      this.updateSidebarData();
       this.$store.commit('data/setOptions', false);
       this.$refs.sidebar.selectedMenuEntries = [];
     },

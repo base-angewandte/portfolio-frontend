@@ -240,10 +240,10 @@ export default {
     },
     selectEntry(evt) {
       if (evt.selected) {
-        this.selectedMenuEntries.push(this.listInt[evt.index].id);
+        this.selectedMenuEntries.push(this.listInt[evt.index]);
       } else {
         this.selectedMenuEntries = this.selectedMenuEntries
-          .filter(entry => entry !== this.listInt[evt.index].id);
+          .filter(entry => entry.id !== this.listInt[evt.index].id);
       }
       // TODO: check if selectedEntries should also be handled internally
       this.$emit('selected-changed', this.selectedMenuEntries);
@@ -313,12 +313,13 @@ export default {
       // TODO: do this in component not store!
       if (this.selectedMenuEntries.length) {
         // dispatch selected entries to be duplicated and sucessfully duplicated ids are returned
-        const routingIds = await this.$store.dispatch('data/duplicateEntries', this.selectedMenuEntries);
+        const routingIds = await this.$store.dispatch('data/duplicateEntries', [].concat(this.selectedMenuEntries));
         this.selectedMenuEntries = [];
         // if any entries were sucessfully duplicated route to the new entry
         if (routingIds.length) {
           this.$router.push(`/entry/${routingIds.pop()}`);
         }
+        this.fetchSidebarData();
       } else {
         this.$notify({
           group: 'request-notifications',
@@ -331,7 +332,7 @@ export default {
     actionEntries(value) {
       // TODO: do this in component not store!
       if (this.selectedMenuEntries.length) {
-        this.$store.dispatch('data/actionEntries', { action: value, entries: this.selectedMenuEntries });
+        this.$store.dispatch('data/actionEntries', { action: value, entries: [].concat(this.selectedMenuEntries) });
       } else {
         this.$notify({
           group: 'request-notifications',
@@ -359,6 +360,7 @@ export default {
         });
         this.listInt = response.results;
         this.entryNumber = response.count;
+        this.$emit('sidebar-data-changed');
       } catch (e) {
         this.$notify({
           group: 'request-notifications',

@@ -20,7 +20,7 @@
           icon-size="large"
           icon="eye"
           button-style="single"
-          @clicked="actionEntry(isPublished ? 'offline' : 'publish')"/>
+          @clicked="$emit('action-entry', isPublished ? 'offline' : 'publish')"/>
         <BaseButton
           :disabled="true"
           :text="$tc('edit')"
@@ -33,7 +33,7 @@
           icon-size="large"
           icon="waste-bin"
           button-style="single"
-          @clicked="actionEntry('delete')"/>
+          @clicked="$emit('action-entry', 'delete')"/>
       </div>
     </transition>
   </div>
@@ -71,23 +71,6 @@ export default {
     return {
       showOptions: this.defaultExpanded,
     };
-  },
-  methods: {
-    actionEntry(action) {
-      if (!this.isNewForm && !this.unsavedChanges) {
-        this.$store.dispatch('data/actionEntries', {
-          action,
-          entries: [this.$store.state.data.currentItemId],
-        });
-      } else {
-        this.$notify({
-          group: 'request-notifications',
-          title: 'Unsaved Changes',
-          text: `Please save your ${this.isNewForm ? 'new Form' : 'Changes'} first!`,
-          type: 'warn',
-        });
-      }
-    },
   },
 };
 </script>

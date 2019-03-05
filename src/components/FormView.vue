@@ -28,7 +28,8 @@
       <!-- OPTIONS -->
       <BaseFormOptions
         :is-new-form="$store.state.data.isNewForm"
-        :is-published="valueList.published"/>
+        :is-published="valueList.published"
+        @action-entry="actionEntry"/>
     </div>
 
     <!-- FORM -->
@@ -146,7 +147,7 @@ export default {
       this.valueList = {};
     },
     async updateForm() {
-      const data = await this.$store.dispatch('data/fetchEntryData', this.currentItemId);
+      const data = await this.$store.dispatch('data/fetchEntryData', { id: this.currentItemId });
       this.valueList = Object.assign({}, data);
     },
     handleInput(data, type) {
@@ -186,12 +187,11 @@ export default {
               });
               // TODO: inform user of successful entry (what if only linking fails?)
             }
-            // TODO: replace with emit?
-            this.$emit('data-changed');
             this.$router.push(`/entry/${this.$store.state.data.currentItemId}`);
           } else {
             await this.$store.dispatch('data/updateEntry', Object.assign({}, this.valueList, { data }));
           }
+          this.$emit('data-changed');
           this.unsavedChanges = false;
         } catch (e) {
           this.$notify({
@@ -220,7 +220,7 @@ export default {
     openNewForm() {
       if (this.valueList.title) {
         this.showOverlay = true;
-        this.$store.commit('data/setParentItem', this.valueList.id);
+        this.$store.commit('data/setParentItem', this.valueList);
         this.$store.commit('data/setNewForm', true);
 
         window.scrollTo(0, 0);
@@ -242,6 +242,21 @@ export default {
     returnToParent(id) {
       this.$store.commit('data/deleteLastParentItem');
       this.$router.push(`/entry/${id}`);
+    },
+    async actionEntry(action) {
+      if (!this.isNewForm && !this.unsavedChanges) {
+        await this.$store.dispatch('data/actionEntries', {
+          action,
+          entries: [].concat(this.valueList),
+        });
+      } else {
+        this.$notify({
+          group: 'request-notifications',
+          title: 'Unsaved Changes',
+          text: `Please save your ${this.isNewForm ? 'new Form' : 'Changes'} first!`,
+          type: 'warn',
+        });
+      }
     },
   },
 };

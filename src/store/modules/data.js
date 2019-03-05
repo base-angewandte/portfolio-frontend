@@ -60,19 +60,13 @@ const getters = {
   getEntryById(state) {
     return id => state.sidebarData.find(item => item.id === id);
   },
-  getEntryTypes(state) {
-    return state.sidebarData && state.sidebarData.length
-      ? [...new Set(state.sidebarData.map(entry => entry.type))] : [];
-  },
   getLatestParentItem(state) {
-    const id = state.parentItems[state.parentItems.length - 1];
-    return state.sidebarData.find(item => item.id === id);
+    return state.parentItems[state.parentItems.length - 1];
   },
   getCurrentLinked(state) {
     return state.linkedEntries;
   },
   getLinkedIds(state) {
-    console.log(state.linkedEntries);
     return state.linkedEntries.length ? state.linkedEntries.map(entry => entry.to.id)
       : [];
   },
@@ -134,10 +128,14 @@ const mutations = {
     state.filterExpr = val;
   },
   setSelected(state, entryArr) {
-    state.selectedEntries = entryArr;
+    state.selectedEntries = [].concat(entryArr);
   },
-  setParentItem(state, id) {
-    state.parentItems.push(id);
+  setParentItem(state, entry) {
+    state.parentItems.push({
+      id: entry.id,
+      title: entry.title,
+      type: entry.type && entry.type.length ? entry.type[0] : '',
+    });
   },
   deleteLastParentItem(state) {
     state.parentItems.pop();
@@ -205,11 +203,11 @@ const actions = {
     commit('setLinked', { list: entry.relations || [], replace: true });
     return !!entry;
   },
-  async fetchEntryData({ commit, dispatch }, id) {
+  async fetchEntryData({ commit, dispatch }, { id, forceFetch = false }) {
     // update: this causes a delay - better just use existing ones in sidebar
     // when sidebardata are present (not on first load)
     let entryData = this.getters['data/getEntryById'](id);
-    if (!entryData) {
+    if (forceFetch || !entryData) {
       entryData = await this.dispatch('PortfolioAPI/get', { kind: 'entity', id });
     }
     if (entryData) {
@@ -286,14 +284,13 @@ const actions = {
       }
     });
   },
-  updateEntry({ commit, dispatch }, obj) {
+  updateEntry({ commit }, obj) {
     return new Promise(async (resolve, reject) => {
       try {
         const type = obj.type && obj.type.length ? obj.type[0].type || obj.type[0] : '';
         const modifiedProps = { type, texts: transformTextData(obj.texts) };
         const data = Object.assign({}, obj, modifiedProps);
         const updatedEntry = await this.dispatch('PortfolioAPI/post', { kind: 'entity', id: data.id, data });
-        await dispatch('fetchSidebarData', {});
         commit('setCurrentItem', updatedEntry);
         resolve();
       } catch (e) {
@@ -301,21 +298,32 @@ const actions = {
       }
     });
   },
-  async deleteEntries({ state, dispatch }) {
-    await Promise.all(state.selectedEntries.map(id => new Promise(async (resolve, reject) => {
-      try {
-        const { type } = this.getters['data/getEntryById'](id);
-        await this.dispatch('PortfolioAPI/delete', { kind: 'entity', type, id });
-        resolve();
-      } catch (e) {
-        reject(e);
-      }
-    })));
-    await dispatch('fetchSidebarData', {});
+  async deleteEntries({ state, commit }) {
+    const deletedEntries = await Promise.all(state.selectedEntries
+      .map(entry => new Promise(async (resolve, reject) => {
+        try {
+          await this.dispatch('PortfolioAPI/delete', { kind: 'entity', id: entry.id });
+          resolve(entry.id);
+        } catch (e) {
+          reject(e);
+        }
+      })));
+    // check if any deleted items are currently displayed in form as linked
+    const deletedLinked = state.linkedEntries
+      .filter(entry => deletedEntries.includes(entry.to.id));
+    if (deletedLinked) {
+      commit('deleteLinked', deletedLinked.id);
+    }
+    // TODO: check if deleted was a parent!
+    const deletedParents = state.parentItems
+      .filter(entry => deletedLinked.includes(entry.id));
+    if (deletedParents) {
+      commit('deleteParentItems');
+    }
   },
-  async duplicateEntries({ state, commit, dispatch }, entryArr) {
-    const addedArr = await Promise.all(entryArr.map(id => new Promise(async (resolve) => {
-      const newEntry = Object.assign({}, state.sidebarData.find(entry => entry.id === id));
+  async duplicateEntries({ commit, dispatch }, entryArr) {
+    const addedArr = await Promise.all(entryArr.map(entry => new Promise(async (resolve) => {
+      const newEntry = Object.assign({}, entry);
       const entryTitle = newEntry.title;
       Vue.set(newEntry, 'title', `${newEntry.title} (Copy)`);
       // new entries should not inherit the published state from the duplicate!
@@ -346,23 +354,16 @@ const actions = {
     await dispatch('fetchSidebarData', {});
     return addedArr.length ? addedArr.filter(id => !!id) : [];
   },
-  modifyEntries({ state, dispatch }) {
-    try {
-      state.selectedEntries.forEach((e) => {
-        const obj = state.sidebarData.find(o => o.id === e);
-        const index = state.sidebarData.indexOf(obj);
-        if (index >= 0) {
-          // TODO: this needs to go to database!
-          // commit('updateEntry', { obj: Object.assign({}, state.sidebarData[index],
-          // { [prop]: value }), index, type: obj.type });
-        }
-        if (obj.id === state.currentItemId) {
-          dispatch('setCurrentItemById', obj.id);
-        }
-      });
-    } catch (e) {
-      // TODO: error handling! (user info)
-    }
+  async modifyEntries({ state, dispatch }, { prop, value }) {
+    await Promise.all(state.selectedEntries.map(entry => new Promise(async (resolve, reject) => {
+      try {
+        const newEntry = await dispatch('updateEntry', Object.assign({}, entry, { [prop]: value }));
+        resolve(newEntry);
+      } catch (e) {
+        // TODO: error handling! (user info)
+        reject();
+      }
+    })));
   },
   actionEntries({ commit }, { action, entries }) {
     let actionText = 'löschen';
@@ -372,13 +373,7 @@ const actions = {
       actionText = 'entfernen';
     }
     commit('setSelected', entries);
-    const titles = [];
-    entries.forEach((entryId) => {
-      const entry = this.getters['data/getEntryById'](entryId);
-      if (entry && entry.title) {
-        titles.push(entry.title);
-      }
-    });
+    const titles = entries.map(entry => entry.title);
     commit('setPopUp', {
       show: true,
       header: `${titles.length > 1 ? 'Einträge' : 'Eintrag'} ${actionText}?`,
