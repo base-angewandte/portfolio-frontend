@@ -162,6 +162,13 @@ export default {
     async saveForm() {
       if (this.valueList.title) {
         const data = Object.assign({}, this.valueList.data);
+        // remove properties from contributor fields that can not be saved to the database
+        Object.keys(this.formFieldsExtension).forEach((key) => {
+          if (key === 'contributors' || this.formFieldsExtension[key]['x-attrs'].equivalent === 'contributors') {
+            /* eslint-disable-next-line */
+            data[key].forEach(entry => delete entry.additional);
+          }
+        });
         try {
           if (!this.$route.params.id) {
             // TODO: check somewhere if the entry should be linked to a parent and
