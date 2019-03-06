@@ -81,6 +81,7 @@
       :class="['base-form-field']"
       :draggable="true"
       :hoverbox-content="hoverBoxData"
+      :sortable="field.name === 'keywords' || (field['x-attrs'] && field['x-attrs'].sortable)"
       @selected="$emit('selected', { value: $event && $event.length
       ? $event[0][field.name] || $event[0] : null, field: field.name })"
       @fetch-dropdown-entries="$emit('fetch-autocomplete', {
