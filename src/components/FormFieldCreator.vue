@@ -86,14 +86,15 @@
       @fetch-dropdown-entries="$emit('fetch-autocomplete', {
         value: $event.value,
         name: field.name,
-        source: field['x-attrs'].source
+        source: field['x-attrs'].source,
+        equivalent: field['x-attrs'].equivalent,
       })"
       @hoverbox-active="$emit('fetch-info-data')">
       <template
         slot="drop-down-entry"
         slot-scope="props">
         <span>{{ props.item.label }}</span>
-        <span class="chips-dropdown-second">{{ props.item.born }}</span>
+        <span class="chips-dropdown-second">{{ props.item.additional }}</span>
         <span class="chips-dropdown-third">{{ props.item.source }}</span>
       </template>
     </BaseChipsInput>
@@ -115,7 +116,9 @@
       @fetch-dropdown-entries="$emit('fetch-autocomplete',{
         value: $event.value,
         name: field.name,
-        source: field['x-attrs'].source })"
+        source: field['x-attrs'].source,
+        equivalent: field['x-attrs'].equivalent,
+      })"
       @hoverbox-active="$emit('fetch-info-data')">
       <template
         slot="drop-down-entry"
@@ -309,6 +312,20 @@ export default {
         margin: -16px auto;
         width: calc(100% - 6px);
       }
+    }
+  }
+
+  .base-form-field {
+    .chips-dropdown-second {
+      margin-left: $spacing;
+      color: $font-color-second;
+      font-size: $font-size-small;
+    }
+
+    .chips-dropdown-third {
+      float: right;
+      color: $font-color-third;
+      font-size: $font-size-small;
     }
   }
 </style>

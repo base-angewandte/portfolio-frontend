@@ -355,6 +355,7 @@ export default {
         flex-wrap: wrap;
 
         .linked-base-box {
+          cursor: pointer;
 
           .file-published {
             height: $icon-max;

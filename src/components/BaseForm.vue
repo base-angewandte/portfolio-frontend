@@ -95,6 +95,7 @@ export default {
       formFieldListInt: [],
       fieldProperties: [],
       dropdownLists: {},
+      timeout: null,
     };
   },
   computed: {
@@ -105,17 +106,19 @@ export default {
   watch: {
     valueList(val) {
       if (JSON.stringify(val) !== JSON.stringify(this.valueListInt)) {
-        // this.initializeValueObject();
         this.initializeValueObject();
+        // this.initializeDropDownLists();
         // JSON parse is necessary to destroy any references between the objects
         this.valueListIntCopy = Object.assign({}, JSON.parse(JSON.stringify(this.valueListInt)));
       }
     },
     formFieldJson() {
       this.initializeValueObject();
+      this.initializeDropDownLists();
     },
   },
   mounted() {
+    this.initializeDropDownLists();
     this.initializeValueObject();
   },
   methods: {
@@ -167,6 +170,13 @@ export default {
       // if it is not a array or object simply return value from list or empty string
       return this.valueList[field.name] ? this.valueList[field.name] : '';
     },
+    initializeDropDownLists() {
+      this.formFieldListInt.forEach((field) => {
+        if (['autocomplete', 'chips', 'chips-below'].includes(field['x-attrs'].field_type)) {
+          this.addUserToDropDown([], '', field['x-attrs'].equivalent, field.name);
+        }
+      });
+    },
     allowMultiply(el) {
       return el.type === 'array' && el['x-attrs']
         && !['chips', 'chips-below'].includes(el['x-attrs'].field_type);
@@ -179,23 +189,30 @@ export default {
       }
       this.$emit('values-changed', this.valueListInt);
     },
-    async fetchAutocomplete({ value, name, source }) {
+    async fetchAutocomplete({
+      value, name, source, equivalent,
+    }) {
       if (source) {
-        // TODO: set timeout function to only fetch after user has finished typing
-        if (value && value.length > 3) {
-          try {
-            const result = await axios.get(`${source}/${value}`, {
-              withCredentials: true,
-            });
-            if (this.dropdownLists) {
-              this.$set(this.dropdownLists, [name], result.data);
-            }
-          } catch (e) {
-            console.error(e);
-          }
-        } else if (!value.length) {
-          this.$set(this.dropdownLists, [name], []);
+        if (this.timeout) {
+          clearTimeout(this.timeout);
+          this.timeout = null;
         }
+        this.timeout = setTimeout(async () => {
+          if (value.length === 0 || value.length > 3) {
+            try {
+              const result = await axios.get(`${source}/${value}/`, {
+                withCredentials: true,
+              });
+              this.addUserToDropDown(result.data, value, equivalent, name);
+              // TODO: add additional properties if necessary: e.g.
+              //  source name, separated name, dob, profession
+            } catch (e) {
+              console.error(e);
+            }
+          } else {
+            this.addUserToDropDown([], value, equivalent, name);
+          }
+        }, 600);
         // TODO: remove this again as soon as everything has a source attribute
       } else {
         console.error('no source specified');
@@ -217,6 +234,17 @@ export default {
     isHalfField(field) {
       const index = this.formFieldsHalf.indexOf(field);
       return index > 0 && !!(index % 2);
+    },
+    addUserToDropDown(data, value, equivalent, name) {
+      const dropDownList = [].concat(data);
+      const user = this.$store.getters['PortfolioAPI/user'];
+      if (((equivalent && equivalent === 'contributors') || name === 'contributors')
+        && (value.length <= 3 || user.name.toLowerCase().includes(value.toLowerCase()))) {
+        // TODO: replace this with the real values
+        dropDownList.unshift({ label: user.name, source: 'this will be the id', additional: 'This is myself!' });
+        // TODO: filter entry from list to prevent double display!
+      }
+      this.$set(this.dropdownLists, name, dropDownList);
     },
   },
 };
