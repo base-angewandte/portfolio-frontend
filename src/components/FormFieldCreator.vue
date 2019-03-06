@@ -69,14 +69,15 @@
       :key="fieldKey"
       :placeholder="placeholder"
       :label="label"
-      :object-prop="'commonname'"
+      :object-prop="'label'"
       :list="dropDownList"
       v-model="fieldValueInt"
       :allow-dynamic-drop-down-entries="!['type', 'keywords'].includes(field.name)"
       :allow-multiple-entries="field.name !== 'type'"
       :allow-unknown-entries="true"
       :always-linked="field.name === 'type'"
-      :identifier="field.sourceType === 'dynamic' ? 'uuid' : ''"
+      :identifier="field['x-attrs'] && field['x-attrs'].source ? 'source' : ''"
+      :chips-editable="true"
       :class="['base-form-field']"
       :draggable="true"
       :hoverbox-content="hoverBoxData"
@@ -91,7 +92,7 @@
       <template
         slot="drop-down-entry"
         slot-scope="props">
-        <span>{{ props.item.commonname }}</span>
+        <span>{{ props.item.label }}</span>
         <span class="chips-dropdown-second">{{ props.item.born }}</span>
         <span class="chips-dropdown-third">{{ props.item.source }}</span>
       </template>
@@ -103,12 +104,12 @@
       :key="fieldKey"
       :label="label"
       :placeholder="placeholder"
-      :list="fieldValueInt"
+      :list="dropDownList"
       :allow-unknown-entries="true"
       :allow-dynamic-drop-down-entries="true"
-      :identifier="'uuid'"
+      :identifier="'source'"
       :hoverbox-content="hoverBoxData"
-      :object-prop="'commonname'"
+      :object-prop="'label'"
       v-model="fieldValueInt"
       class="base-form-field base-form-field-full"
       @fetch-dropdown-entries="$emit('fetch-autocomplete',{
@@ -119,7 +120,7 @@
       <template
         slot="drop-down-entry"
         slot-scope="props">
-        <span>{{ props.item.commonname }}</span>
+        <span>{{ props.item.label }}</span>
         <span class="chips-dropdown-second">{{ props.item.born }}</span>
         <span class="chips-dropdown-third">{{ props.item.source }}</span>
       </template>
