@@ -200,7 +200,11 @@ const actions = {
     if (entry) {
       commit('setCurrentItem', entry);
     }
-    commit('setLinked', { list: entry.relations || [], replace: true });
+    commit('setLinked', {
+      list: entry && entry.relations && entry.relations.length
+        ? entry.relations : [],
+      replace: true,
+    });
     return !!entry;
   },
   async fetchEntryData({ commit, dispatch }, { id, forceFetch = false }) {

@@ -68,8 +68,8 @@
           :image-url="linked.image ? getImagePath(linked.image) : ''"
           show-title
           class="linked-base-box"
-          @select-triggered="entrySelected(linked.id, $event)"
-          @clicked="goToLinked(linked.id)"/>
+          @select-triggered="entrySelected(linked.to.id, $event)"
+          @clicked="goToLinked(linked.to.id)"/>
 
         <!-- ACTION BUTTON -->
         <BaseBoxButton
