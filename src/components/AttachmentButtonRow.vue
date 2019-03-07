@@ -186,11 +186,19 @@ export default {
         await this.$store.dispatch('data/actionLinked', { list, action: 'save' });
         // otherwise just save state in store for now and commit with general first save of entry
       } else {
-        const fullList = list.map((entryId, index) => ({
-          id: `tempId${this.$store.getters['data/getCurrentLinked'].length + index}`,
-          to: Object.assign({}, this.$store.getters['data/getEntryById'](entryId)),
-        }));
-        await this.$store.commit('data/setLinked', { list: fullList || [], replace: false });
+        const fullList = await Promise.all(list
+          .map((entryId, index) => new Promise(async (resolve, reject) => {
+            try {
+              const entry = await this.$store.dispatch('PortfolioAPI/get', { kind: 'entity', id: entryId });
+              resolve({
+                id: `tempId${this.$store.getters['data/getCurrentLinked'].length + index}`,
+                to: entry,
+              });
+            } catch (e) {
+              reject(e);
+            }
+          })));
+        this.$store.commit('data/setLinked', { list: fullList || [], replace: false });
       }
       this.showEntryPopUp = false;
     },
