@@ -165,8 +165,10 @@ export default {
         // remove properties from contributor fields that can not be saved to the database
         Object.keys(this.formFieldsExtension).forEach((key) => {
           if (key === 'contributors' || this.formFieldsExtension[key]['x-attrs'].equivalent === 'contributors') {
-            /* eslint-disable-next-line */
-            data[key].forEach(entry => delete entry.additional);
+            if (data[key] && data[key].length) {
+              /* eslint-disable-next-line */
+              data[key].forEach(entry => delete entry.additional);
+            }
           }
         });
         try {
