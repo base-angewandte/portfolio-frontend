@@ -81,5 +81,13 @@
     "linkingNotPossible": "Verknüpfung nicht möglich",
     "alreadyLinked": "Dieser Eintrag ist bereits verknüpft.",
     "selfLinked": "Einträge können nicht mit sich selbst verknüpft werden."
+  },
+  "dropdown": {
+    "type": "By Type",
+    "title": "A-Z",
+    "-title": "Z-A",
+    "date_created": "Oldest First",
+    "-date_created": "Newest First",
+    "allTypes": "All Types"
   }
 }

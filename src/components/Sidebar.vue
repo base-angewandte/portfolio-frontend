@@ -32,10 +32,10 @@
         </div>
         <base-drop-down
           :placeholder="'Sortieren nach'"
-          :selection-list="['Nach Typ', 'A-Z', 'Z-A', 'Neueste', 'Älteste']"
+          :selection-list="filterByTypeList"
           @selected="sortEntries"/>
         <base-drop-down
-          :selected="'Alle Typen'"
+          :selected="selectedType"
           :selection-list="entryTypes"
           @selected="filterEntries($event, 'type')"/>
       </div>
@@ -215,11 +215,38 @@ export default {
     isNewForm() {
       return this.$route.name === 'newEntry';
     },
+    filterByTypeList() {
+      return [
+        {
+          label: this.$t('dropdown.type'),
+          value: 'type',
+        },
+        {
+          label: this.$t('dropdown.title'),
+          value: 'title',
+        },
+        {
+          label: this.$t('dropdown.-title'),
+          value: '-title',
+        },
+        {
+          label: this.$t('dropdown.-date_created'),
+          value: '-date_created',
+        },
+        {
+          label: this.$t('dropdown.date_created'),
+          value: 'date_created',
+        },
+      ];
+    },
+    selectedType() {
+      return this.filterType ? this.entryTypes.find(type => type.value === this.filterType)
+        : { label: this.$t('dropdown.allTypes'), value: '' };
+    },
   },
   watch: {
     list(val) {
       this.listInt = [].concat(val);
-      this.getEntryTypes();
     },
     showCheckbox(val) {
       // delete selected when options menu is closed
@@ -228,9 +255,13 @@ export default {
       }
     },
   },
+  created() {
+    // TODO: eventually store entryTypes in Store since the same in every instance and
+    // needs to be updated when entries added or deleted or updated
+    this.getEntryTypes();
+  },
   mounted() {
     this.listInt = this.list;
-    this.getEntryTypes();
     this.calculateSidebarHeight();
     this.fetchSidebarData();
   },
@@ -256,7 +287,32 @@ export default {
         const response = await axios.get(`${process.env.API}entity/types/`, {
           withCredentials: true,
         });
-        this.entryTypes = response.data;
+        const types = response.data;
+        // TODO: check if this is even needed (of if types come with label aready...)
+        const typeArr = await Promise.all(types.map(type => new Promise(async (resolve, reject) => {
+          try {
+            // TODO: replace lang with app lang!
+            const labelData = await this.$store.dispatch('SkosmosAPI/getSearch', {
+              query: type,
+              lang: 'de',
+              vocab: 'portfolio',
+            });
+            if (labelData && labelData.data && labelData.data.results
+              && labelData.data.results.length) {
+              // TODO: use URI instead of prefLabel!!
+              const option = {
+                label: labelData.data.results[0].prefLabel,
+                value: labelData.data.results[0].prefLabel,
+              };
+              resolve(option);
+            } else {
+              resolve();
+            }
+          } catch (e) {
+            reject(e);
+          }
+        })));
+        this.entryTypes = typeArr.filter(type => !!type);
       } catch (e) {
         // TODO: inform user?
       }
@@ -269,25 +325,14 @@ export default {
       this.$emit('new-form');
     },
     sortEntries(evt) {
-      if (evt === 'Nach Typ') {
-        this.sortParam = 'type';
-      } else if (evt === 'A-Z') {
-        this.sortParam = 'title';
-      } else if (evt === 'Z-A') {
-        this.sortParam = '-title';
-      } else if (evt === 'Neueste') {
-        this.sortParam = '-date_created';
-      } else if (evt === 'Älteste') {
-        this.sortParam = 'date_created';
-      }
+      this.sortParam = evt.value;
       this.fetchSidebarData();
     },
     filterEntries(val, type) {
       if (type === 'type') {
-        this.filterType = this.entryTypes.includes(val) ? val : '';
+        this.filterType = val.value;
         this.$emit('filter', { type: this.filterType });
         this.fetchSidebarData();
-        // there is no endpoint to filter entries for strings yet!!
       } else if (type === 'title') {
         if (this.timeout) {
           clearTimeout(this.timeout);
