@@ -70,7 +70,7 @@
       title="Select Entries to Link"
       button-right-text="Link Selected"
       @button-left="showEntryPopUp = false"
-      @button-right="linkEntries(selectedEntries)"
+      @button-right="getSelectedIdsAndLink(selectedEntries)"
       @close="showEntryPopUp = false">
       <div class="menu-wrapper">
         <Sidebar
@@ -165,6 +165,10 @@ export default {
     },
     openEntrySelect() {
       this.showEntryPopUp = true;
+    },
+    getSelectedIdsAndLink(objList) {
+      const idList = objList.map(entry => entry.id);
+      this.linkEntries(idList);
     },
     async linkEntries(val) {
       const list = [];
