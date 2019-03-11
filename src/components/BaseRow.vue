@@ -31,6 +31,7 @@
       <BaseButton
         :active="unsavedChanges"
         :text="$t('save')"
+        :disabled="dbRequestOngoing"
         icon-size="small"
         icon="save-file"
         button-style="row"
@@ -75,6 +76,12 @@ export default {
     return {
       showOverlay: false,
     };
+  },
+  computed: {
+    dbRequestOngoing() {
+      // TODO: think about separate loading indicator for sidebar / form
+      return this.$store.getters['PortfolioAPI/isLoading'];
+    },
   },
 };
 </script>
