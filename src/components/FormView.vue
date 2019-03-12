@@ -83,7 +83,6 @@ import BaseRow from './BaseRow';
 import BaseFormOptions from './BaseFormOptions';
 import BaseForm from './BaseForm';
 
-import { FORM_MAPPINGS } from '../assets/data';
 import AttachmentArea from './AttachmentArea';
 
 export default {
@@ -97,7 +96,7 @@ export default {
   data() {
     return {
       unsavedChanges: false,
-      formFields: Object.assign({}, FORM_MAPPINGS.common.properties, { type: Object.assign({}, FORM_MAPPINGS.common.properties.type, { type: 'array' }) }),
+      formFields: {},
       formFieldsExtension: {},
       valueList: {},
       showOverlay: false,
@@ -136,8 +135,9 @@ export default {
       }
     },
   },
-  created() {
+  async created() {
     if (this.currentItemId) {
+      this.formFields = await this.$store.dispatch('data/fetchGeneralFields');
       this.updateForm();
     }
   },

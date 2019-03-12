@@ -182,6 +182,19 @@ const actions = {
     commit('setResultTotal', response.count);
     commit('setSidebarData', response.results);
   },
+  async fetchGeneralFields() {
+    let formData = {};
+    try {
+      const jsonSchema = await axios.get(`${process.env.API}swagger.json`,
+        {
+          withCredentials: true,
+        });
+      formData = jsonSchema.data.definitions.Entity.properties;
+    } catch (e) {
+      // TODO: inform user!
+    }
+    return formData;
+  },
   async fetchFormExtension(context, type) {
     let formData = {};
     try {
@@ -191,7 +204,7 @@ const actions = {
         });
       formData = extension.data.properties;
     } catch (e) {
-      console.error(e);
+      // TODO: inform user!
     }
     return formData || [];
   },

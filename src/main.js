@@ -33,7 +33,7 @@ PortfolioAPI(store, {
 }, 'PortfolioAPI');
 
 SkosmosAPI(store, {
-  baseURL: process.env.PORTFOLIO_API,
+  baseURL: process.env.SKOSMOS_API,
   lang: 'en',
 }, 'SkosmosAPI');
 

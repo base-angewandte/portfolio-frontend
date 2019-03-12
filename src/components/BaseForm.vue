@@ -13,10 +13,10 @@
           :field="element"
           :field-value="value"
           :field-type="element['x-attrs'] ? element['x-attrs'].field_type : 'text'"
-          :label="$te('form.' + element.name) ? $t('form.' + element.name) : element.name"
+          :label="element.title"
           :placeholder="element['x-attrs'] && element['x-attrs'].placeholder
             ? element['x-attrs'].placeholder : $t('form.select') + ' '
-          + ($te('form.' + element.name) ? $t('form.' + element.name) : element.name)"
+          + element.title"
           :tabs="['en', 'de']"
           :drop-down-list="dropdownLists[element.name]"
           :class="[
@@ -33,7 +33,7 @@
           :key="'multiplyButton' + index"
           class="multiply-button"
           @click="multiplyField(element)">
-          <span>{{ $t('form.addGroup', { fieldType: $t('form.' + element.name) }) }}</span>
+          <span>{{ $t('form.addGroup', { fieldType: element.title }) }}</span>
           <span>
             <img
               :src="require('../static/remove.svg')"
@@ -48,10 +48,10 @@
           :field="element"
           :field-value="valueListInt[element.name]"
           :field-type="element['x-attrs'] ? element['x-attrs'].field_type : 'text'"
-          :label="$te('form.' + element.name) ? $t('form.' + element.name) : element.name"
+          :label="element.title"
           :placeholder="element['x-attrs'] && element['x-attrs'].placeholder
             ? element['x-attrs'].placeholder : $t('form.select') + ' '
-          + ($te('form.' + element.name) ? $t('form.' + element.name) : element.name)"
+          + element.title"
           :drop-down-list="dropdownLists[element.name]"
           :class="[
             'base-form-field',
@@ -123,10 +123,10 @@ export default {
   },
   methods: {
     initializeValueObject() {
-      this.formFieldListInt = [];
-      Object.keys(this.formFieldJson)
-        .forEach(key => this.formFieldListInt
-          .push(Object.assign({}, { name: key }, this.formFieldJson[key])));
+      this.formFieldListInt = Object.keys(this.formFieldJson)
+        .filter(key => !this.formFieldJson[key].$ref
+          && !(this.formFieldJson[key]['x-attrs'] && this.formFieldJson[key]['x-attrs'].hidden))
+        .map(key => Object.assign({}, { name: key }, this.formFieldJson[key]));
       this.formFieldListInt.sort((a, b) => {
         if (a['x-attrs'] && b['x-attrs']) {
           if (a['x-attrs'].order > b['x-attrs'].order) {
@@ -198,9 +198,9 @@ export default {
           this.timeout = null;
         }
         this.timeout = setTimeout(async () => {
-          if (value.length === 0 || value.length > 3) {
+          if (value.length > 3) {
             try {
-              const result = await axios.get(`${source}/${value}/`, {
+              const result = await axios.get(`${source}${value}/`, {
                 withCredentials: true,
               });
               this.addUserToDropDown(result.data, value, equivalent, name);
