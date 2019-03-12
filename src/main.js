@@ -3,7 +3,6 @@
 import VueI18n from 'vue-i18n';
 import Notifications from 'vue-notification';
 import Vue from 'vue';
-import { PortfolioAPI, SkosmosAPI } from 'base-components';
 import App from './App';
 import router from './router';
 import store from './store';
@@ -26,16 +25,6 @@ const i18n = new VueI18n({
     de,
   },
 });
-
-PortfolioAPI(store, {
-  baseURL: process.env.PORTFOLIO_API,
-  lang: 'en',
-}, 'PortfolioAPI');
-
-SkosmosAPI(store, {
-  baseURL: process.env.PORTFOLIO_API,
-  lang: 'en',
-}, 'SkosmosAPI');
 
 /* eslint-disable no-new */
 new Vue({
