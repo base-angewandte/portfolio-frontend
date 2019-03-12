@@ -19,6 +19,7 @@
           + element.title"
           :tabs="['en', 'de']"
           :drop-down-list="dropdownLists[element.name]"
+          :secondary-dropdown="dropdownLists[element.name + '_secondary']"
           :class="[
             'base-form-field',
             element['x-attrs'] && element['x-attrs'].field_format === 'half'
@@ -53,6 +54,7 @@
             ? element['x-attrs'].placeholder : $t('form.select') + ' '
           + element.title"
           :drop-down-list="dropdownLists[element.name]"
+          :secondary-dropdown="dropdownLists[element.name + '_secondary']"
           :class="[
             'base-form-field',
             element['x-attrs'] && element['x-attrs'].field_format === 'half'
@@ -172,8 +174,31 @@ export default {
     },
     initializeDropDownLists() {
       this.formFieldListInt.forEach((field) => {
-        if (['autocomplete', 'chips', 'chips-below'].includes(field['x-attrs'].field_type)) {
-          this.addUserToDropDown([], '', field['x-attrs'].equivalent, field.name);
+        // check if a source is specified in the 'x-attrs'
+        const sources = Object.keys(field['x-attrs']).filter(key => !!key.includes('source'));
+        if (sources.length) {
+          sources.forEach(async (source) => {
+            // check if source is primary source
+            if (source === 'source') {
+              this.setDropDown([], '', field['x-attrs'].equivalent, field.name);
+              // if there is another source type specififed (currently e.g. type_source,
+              // but maybe should be renamed
+              // to "secondary" in backend as well?) add it as secondary source
+            } else {
+              try {
+                const response = await axios.get(`${field['x-attrs'][source]}`);
+                // map data needed on front end out of response data
+                const data = response.data.results.map(voc => ({
+                  label: voc.prefLabel,
+                  value: voc.uri,
+                }));
+                // set the drop down with the retrieved data
+                this.setDropDown(data, '', field['x-attrs'].equivalent, `${field.name}_secondary`);
+              } catch (e) {
+                console.error(e);
+              }
+            }
+          });
         }
       });
     },
@@ -203,14 +228,14 @@ export default {
               const result = await axios.get(`${source}${value}/`, {
                 withCredentials: true,
               });
-              this.addUserToDropDown(result.data, value, equivalent, name);
+              this.setDropDown(result.data, value, equivalent, name);
               // TODO: add additional properties if necessary: e.g.
               //  source name, separated name, dob, profession
             } catch (e) {
               console.error(e);
             }
           } else {
-            this.addUserToDropDown([], value, equivalent, name);
+            this.setDropDown([], value, equivalent, name);
           }
         }, 600);
         // TODO: remove this again as soon as everything has a source attribute
@@ -235,7 +260,7 @@ export default {
       const index = this.formFieldsHalf.indexOf(field);
       return index > 0 && !!(index % 2);
     },
-    addUserToDropDown(data, value, equivalent, name) {
+    setDropDown(data, value, equivalent, name) {
       const dropDownList = [].concat(data);
       const user = this.$store.getters['PortfolioAPI/user'];
       if (((equivalent && equivalent === 'contributors') || name === 'contributors')
