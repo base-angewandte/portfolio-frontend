@@ -146,7 +146,20 @@
           </div>
           <BaseDropDown
             v-if="action === 'licence'"
-            :selection-list="['CC-BY', 'CC0']"
+            :selection-list="[{
+                                label: 'CC-BY',
+                                value: 'cc-by',
+                              },
+                              {
+                                label: 'CC0',
+                                value: 'cc0',
+                              }
+                              ,
+                              {
+                                label: $t('nolicense'),
+                                value: '',
+                              }
+            ]"
             :show-label="false"
             label="Select License"
             placeholder="Select License"

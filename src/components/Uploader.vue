@@ -18,19 +18,31 @@
     </div>
     <div class="popup-text">
       <BaseDropDown
-        :label="'Lizenz auswählen'"
-        :selected="'CC-0'"
-        :selection-list="['CC-0', 'CC-BY', 'CC-BY-SA',
-                          'CC-BY-ND', 'CC-BY-NC', 'CC-BY-NC-SA', 'CC-BY-NY-DD']"
+        :label="$t('form-view.chooseLicense')"
+        :selected="{
+          label: $t('nolicense'),
+          value: '',
+        }"
+        :selection-list="[{
+                            label: 'CC-BY',
+                            value: 'cc-by',
+                          },
+                          {
+                            label: 'CC0',
+                            value: 'cc0',
+                          }
+        ]"
         :background-color="'rgb(240, 240, 240)'"
         :fixed-width="true"
         header-style="inline"/>
       <BaseDropDown
-        :selected="'Bilder nicht veröffentlichen'"
-        :selection-list="['Bilder anzeigen', 'Bilder nicht veröffentlichen']"
+        :selected="{ label: $t('no'), value: false }"
+        :selection-list="[
+          { label: $t('no'), value: false },
+          { label: $t('yes'), value: true }]"
         :background-color="'rgb(240, 240, 240)'"
         :fixed-width="true"
-        label="Bilder im Showroom anzeigen?"
+        :label="$t('form-view.showImages')"
         header-style="inline"/>
     </div>
   </BasePopUp>

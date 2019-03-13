@@ -15,6 +15,9 @@
   "offline": "Eintrag offline stellen | Eintrag offline stellen",
   "duplicate": "Einträge duplizieren",
   "edit": "Bearbeitung ermöglichen",
+  "nolicense": "Keine Lizenz",
+  "yes": "Ja",
+  "no":  "Nein",
   "form": {
     "select": "Wähle",
     "write": "Schreibe eine",
@@ -54,7 +57,6 @@
     "title_of_contribution": "Vortragstitel",
     "published_in": "Erschienen In",
     "addGroup": "Weiteres \"{fieldType}\" Feld hinzufügen"
-
   },
   "form-view": {
     "formExtended": "Weitere Angaben",
@@ -75,7 +77,9 @@
     "publishButton": "Veröffentlichen",
     "deleteButton": "Löschen",
     "deleteLinkedText": "Bitte Einträge auswählen:",
-    "deleteLinkedSubtext": "Die Verknüfung zu diesen Einträgen wird gelöscht."
+    "deleteLinkedSubtext": "Die Verknüfung zu diesen Einträgen wird gelöscht.",
+    "chooseLicense": "Lizenz auswählen",
+    "showImages": "Bilder Veröffentlichen?"
   },
   "notify": {
     "linkingNotPossible": "Verknüpfung nicht möglich",

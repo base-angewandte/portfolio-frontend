@@ -14,6 +14,9 @@
   "delete": "Eintrag löschen | Einträge löschen",
   "offline": "Eintrag offline stellen | Eintrag offline stellen",
   "duplicate": "Einträge duplizieren",
+  "nolicense": "No License",
+  "yes": "Ja",
+  "no":  "Nein",
   "form": {
     "select": "Select",
     "write": "Write (a)",
@@ -52,7 +55,9 @@
     "lecturer": "Lecturer",
     "title_of_contribution": "Title of Contribution",
     "published_in": "Published In",
-    "addGroup": "Add \"{fieldType}\""
+    "addGroup": "Add \"{fieldType}\"",
+    "chooseLicense": "Choose a License",
+    "showImages": "Publish Images?"
   },
   "form-view": {
     "formExtended": "Weitere Angaben",

@@ -243,6 +243,8 @@ export default {
         console.error('no source specified');
         if (name === 'type') {
           if (this.dropdownLists) {
+            // TODO: in theory: use PortfolioAPI state.schemas however will only return
+            // URIs in future anyway!!
             const types = await axios.get('http://localhost:8200/api/v1/jsonschema/',
               {
                 withCredentials: true,
