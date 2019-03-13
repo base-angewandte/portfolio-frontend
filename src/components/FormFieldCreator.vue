@@ -147,7 +147,6 @@
           @values-changed="$emit('subform-input', $event)"/>
       </div>
     </div>
-
   </div>
 </template>
 

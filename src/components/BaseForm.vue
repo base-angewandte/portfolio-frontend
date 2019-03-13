@@ -6,39 +6,53 @@
       <!-- ALLOW FOR MULTIPLE VALUES PER FIELD -->
       <template
         v-if="allowMultiply(element)">
-        <FormFieldCreator
+        <div
           v-for="(value, valueIndex) in valueListInt[element.name]"
           :key="index + '-' + valueIndex"
-          :field-key="index + '-' + valueIndex"
-          :field="element"
-          :field-value="value"
-          :field-type="element['x-attrs'] ? element['x-attrs'].field_type : 'text'"
-          :label="element.title"
-          :placeholder="element['x-attrs'] && element['x-attrs'].placeholder
-            ? element['x-attrs'].placeholder : $t('form.select') + ' '
-          + element.title"
-          :tabs="['en', 'de']"
-          :drop-down-list="dropdownLists[element.name]"
-          :secondary-dropdown="dropdownLists[element.name + '_secondary']"
           :class="[
             'base-form-field',
             element['x-attrs'] && element['x-attrs'].field_format === 'half'
               ? 'base-form-field-half' : 'base-form-field-full',
             { 'base-form-field-left-margin': isHalfField(element) }
-          ]"
-          @field-value-changed="setFieldValue($event, element.name, valueIndex)"
-          @fetch-autocomplete="fetchAutocomplete"
-          @subform-input="setFieldValue($event, element.name, valueIndex)"
-        />
+        ]">
+          <FormFieldCreator
+            :key="index + '-' + valueIndex"
+            :field-key="index + '-' + valueIndex"
+            :field="element"
+            :field-value="value"
+            :field-type="element['x-attrs'] ? element['x-attrs'].field_type : 'text'"
+            :label="getFieldName(element)"
+            :placeholder="element['x-attrs'] && element['x-attrs'].placeholder
+              ? element['x-attrs'].placeholder : $t('form.select') + ' '
+            + getFieldName(element)"
+            :tabs="['en', 'de']"
+            :drop-down-list="dropdownLists[element.name]"
+            :secondary-dropdown="dropdownLists[element.name + '_secondary']"
+            @field-value-changed="setFieldValue($event, element.name, valueIndex)"
+            @fetch-autocomplete="fetchAutocomplete"
+            @subform-input="setFieldValue($event, element.name, valueIndex)" />
+          <div
+            v-if="valueListInt[element.name].length > 1"
+            :key="index + '-button' + valueIndex"
+            class="field-group-button group-add"
+            @click="removeField(element, valueIndex)">
+            <span>{{ $t('form.removeField', { fieldType: getFieldName(element) }) }}</span>
+            <span>
+              <img
+                :src="require('../static/remove.svg')"
+                class="field-group-icon">
+            </span>
+          </div>
+        </div>
         <div
           :key="'multiplyButton' + index"
-          class="multiply-button"
+          class="field-group-button group-multiply"
           @click="multiplyField(element)">
-          <span>{{ $t('form.addGroup', { fieldType: element.title }) }}</span>
+          <span>{{ $t('form.addGroup', { fieldType: getFieldName(element) }) }}</span>
           <span>
             <img
               :src="require('../static/remove.svg')"
-              class="multiply-icon">
+              class="field-group-icon">
           </span>
         </div>
       </template>
@@ -49,10 +63,10 @@
           :field="element"
           :field-value="valueListInt[element.name]"
           :field-type="element['x-attrs'] ? element['x-attrs'].field_type : 'text'"
-          :label="element.title"
+          :label="getFieldName(element)"
           :placeholder="element['x-attrs'] && element['x-attrs'].placeholder
             ? element['x-attrs'].placeholder : $t('form.select') + ' '
-          + element.title"
+          + getFieldName(element)"
           :drop-down-list="dropdownLists[element.name]"
           :secondary-dropdown="dropdownLists[element.name + '_secondary']"
           :class="[
@@ -258,6 +272,9 @@ export default {
       this.valueListInt[field.name]
         .push(this.getInitialFieldValue(field.items));
     },
+    removeField(field, index) {
+      this.valueListInt[field.name].splice(index, index + 1);
+    },
     isHalfField(field) {
       const index = this.formFieldsHalf.indexOf(field);
       return index > 0 && !!(index % 2);
@@ -272,6 +289,9 @@ export default {
         // TODO: filter entry from list to prevent double display!
       }
       this.$set(this.dropdownLists, name, dropDownList);
+    },
+    getFieldName(val) {
+      return val.title || (this.$te(`form.${val.name}`) ? this.$t(`form.${val.name}`) : val.name);
     },
   },
 };
@@ -290,7 +310,7 @@ export default {
       margin-bottom: $spacing;
     }
 
-    .base-form-field-full, .multiply-button {
+    .base-form-field-full, .field-group-button {
       flex: 0 0 100%;
     }
 
@@ -302,16 +322,23 @@ export default {
       margin-left: $spacing;
     }
 
-    .multiply-button {
+    .field-group-button {
       color: $font-color-second;
-      margin-bottom: $spacing + $spacing-small;
       cursor: pointer;
+
+      &.group-multiply {
+        margin-bottom: $spacing + $spacing-small;
+      }
+
+      &.group-add {
+        margin-top: $spacing;
+      }
 
       &:hover {
         color: $app-color;
       }
 
-      .multiply-icon {
+      .field-group-icon {
         margin-left: $spacing;
         height: $icon-small;
         width: $icon-small;

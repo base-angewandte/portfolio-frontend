@@ -56,7 +56,8 @@
     "lecturer": "Vortragende",
     "title_of_contribution": "Vortragstitel",
     "published_in": "Erschienen In",
-    "addGroup": "Weiteres \"{fieldType}\" Feld hinzufügen"
+    "addGroup": "Weiteres \"{fieldType}\" Feld hinzufügen",
+    "removeField": "\"{fieldType}\" Feld entfernen"
   },
   "form-view": {
     "formExtended": "Weitere Angaben",

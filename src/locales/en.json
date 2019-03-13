@@ -56,8 +56,7 @@
     "title_of_contribution": "Title of Contribution",
     "published_in": "Published In",
     "addGroup": "Add \"{fieldType}\"",
-    "chooseLicense": "Choose a License",
-    "showImages": "Publish Images?"
+    "removeField": "\"{fieldType}\" Feld entfernen"
   },
   "form-view": {
     "formExtended": "Weitere Angaben",
@@ -80,7 +79,9 @@
     "publishButton": "Publish",
     "deleteButton": "Delete",
     "deleteLinkedText": "Bitte Einträge auswählen",
-    "deleteLinkedSubtext": "Die Verknüfung zu diesen Einträgen wird gelöscht"
+    "deleteLinkedSubtext": "Die Verknüfung zu diesen Einträgen wird gelöscht",
+    "chooseLicense": "Choose a License",
+    "showImages": "Publish Images?"
   },
   "notify": {
     "linkingNotPossible": "Verknüpfung nicht möglich",
