@@ -27,7 +27,7 @@ export const request = (method, url, body, queryParameters, form, config) => {
   }
 }
 /*==========================================================
- *                    The Skosmos REST API is a read-only interface to the data stored on the vocabulary server. The URL namespace is the base URL of the Skosmos instance followed by `/rest/v1/`. 
+ *                    The Skosmos REST API is a read-only interface to the data stored on the vocabulary server. The URL namespace is the base URL of the Skosmos instance followed by `/rest/v1/`.
 
 Most methods return the data as UTF-8 encoded JSON-LD, served using the `application/json` MIME type. The data consists of a single JSON object which includes JSON-LD context information (in the `@context` field) and one or more fields which contain the actual data. Some methods (`data`) return other formats (RDF/XML, Turtle, RDF/JSON) with the appropriate MIME type.
 
@@ -1302,6 +1302,7 @@ export const getByVocidGroupsURL = function(parameters = {}) {
  * raw_url: getByVocidGroupMembers_RAW_URL
  * @param vocid - a Skosmos vocabulary identifier e.g. "stw" or "yso"
  * @param lang - label language, e.g. "en" or "fi"
+ * @param uri - URI of the group whose member concepts to return
  */
 export const getByVocidGroupMembers = function(parameters = {}) {
   const domain = parameters.$domain ? parameters.$domain : getDomain()
@@ -1313,6 +1314,9 @@ export const getByVocidGroupMembers = function(parameters = {}) {
   path = path.replace('{vocid}', `${parameters['vocid']}`)
   if (parameters['vocid'] === undefined) {
     return Promise.reject(new Error('Missing required  parameter: vocid'))
+  }
+  if (parameters['uri'] === undefined) {
+    return Promise.reject(new Error('Missing required  parameter: uri'))
   }
   if (parameters['lang'] !== undefined) {
     queryParameters['lang'] = parameters['lang']

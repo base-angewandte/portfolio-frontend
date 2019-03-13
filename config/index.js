@@ -60,7 +60,8 @@ module.exports = {
     // Paths
     assetsRoot: path.resolve(__dirname, '../dist'),
     assetsSubDirectory: 'static',
-    assetsPublicPath: dotenv.parsed.APP_PREFIX + '/',
+//    assetsPublicPath: dotenv.parsed.APP_PREFIX + '/',
+    assetsPublicPath: '/',
 
     /**
      * Source Maps

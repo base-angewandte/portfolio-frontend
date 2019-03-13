@@ -94,4 +94,62 @@ export default {
       });
     });
   },
+  /**
+   * Narrower concepts of the requested concept
+   * @param vocid - a Skosmos vocabulary identifier e.g. "stw" or "yso"
+   * @param uri - URI of the concept whose narrower concepts to return
+   * @param lang - label language, e.g. "en" or "fi"
+   */
+  getChildren({ state, commit }, { vocid, uri, lang }) {
+    let p = {};
+    const params = {
+      lang: state.lang,
+      vocid,
+      $config,
+    };
+    if (lang) params.lang = lang;
+    return new Promise((resolve, reject) => {
+      if (vocid && uri) {
+        commit('setLoading', `Fetching children of ${uri} from Repository`);
+        p = state.apilib.getByVocidChildren(params);
+      } else reject(new Error('Invalid or Insufficient Parameters'));
+      p.then((res) => {
+        commit('setLoadingFinished');
+        resolve(res);
+      }).catch((error) => {
+        // TODO: we need to have some overall error handling to inject here
+        commit('setLoadingFinished');
+        reject(error);
+      });
+    });
+  },
+  /**
+   * Narrower concepts of the requested concept
+   * @param vocid - a Skosmos vocabulary identifier e.g. "stw" or "yso"
+   * @param uri - URI of the concept whose narrower concepts to return
+   * @param lang - label language, e.g. "en" or "fi"
+   */
+  getGroup({ state, commit }, { vocid, uri, lang }) {
+    let p = {};
+    const params = {
+      lang: state.lang,
+      vocid,
+      $config,
+    };
+    if (lang) params.lang = lang;
+    return new Promise((resolve, reject) => {
+      if (vocid && uri) {
+        commit('setLoading', `Fetching members of ${uri} from Repository`);
+        p = state.apilib.getByVocidGroupMembers(params);
+      } else reject(new Error('Invalid or Insufficient Parameters'));
+      p.then((res) => {
+        commit('setLoadingFinished');
+        resolve(res);
+      }).catch((error) => {
+        // TODO: we need to have some overall error handling to inject here
+        commit('setLoadingFinished');
+        reject(error);
+      });
+    });
+  },
 };

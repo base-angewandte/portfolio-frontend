@@ -52,6 +52,17 @@ export default {
       console.log(val);
     },
   },
+  beforeCreate() {
+    //initializing stores before app instance is created
+    this.$store.dispatch('PortfolioAPI/init', {
+      baseURL: 'https://basedev.uni-ak.ac.at/portfolio',
+      lang: 'en',
+    });
+    this.$store.dispatch('SkosmosAPI/init', {
+      baseURL: 'https://voc.uni-ak.ac.at/skosmos/rest/v1/',
+      lang: 'en',
+    });
+  }
 };
 </script>
 
