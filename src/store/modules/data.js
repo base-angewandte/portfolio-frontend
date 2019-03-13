@@ -457,17 +457,18 @@ const actions = {
   async actionFiles({ state, dispatch }, { list, action }) {
     const axiosAction = action === 'delete' ? action : 'patch';
 
-    const changed = await Promise.all(list.map(mediaId => new Promise(async (resolve, reject) => {
+    await Promise.all(list.map(mediaId => new Promise(async (resolve, reject) => {
       const formData = new FormData();
+      const id = mediaId.id || mediaId;
       if (action === 'publish' || action === 'offline') {
-        formData.append('published', action === 'publish');
+        formData.append('published', mediaId.selected);
       } else if (action === 'license') {
         // TODO: this does not exist in backend yet!
       }
       try {
         if (axiosAction === 'delete') {
           // TODO: replace with Portofolio_API
-          await axios[axiosAction](`${process.env.API}media/${mediaId}/`,
+          await axios[axiosAction](`${process.env.API}media/${id}/`,
             {
               withCredentials: true,
               xsrfCookieName: 'csrftoken_portfolio',
@@ -475,7 +476,7 @@ const actions = {
             });
         } else {
           // TODO: replace with Portofolio_API
-          await axios[axiosAction](`${process.env.API}media/${mediaId}/`,
+          await axios[axiosAction](`${process.env.API}media/${id}/`,
             formData,
             {
               withCredentials: true,
@@ -484,13 +485,12 @@ const actions = {
             });
         }
 
-        resolve(mediaId);
+        resolve(id);
       } catch (e) {
         reject(e);
       }
     })));
     await dispatch('fetchMediaData', state.currentItemId);
-    console.log(changed);
     // TODO: inform user of sucessfully changed items
   },
 };
