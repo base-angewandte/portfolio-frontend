@@ -33,7 +33,9 @@
     </div>
 
     <!-- FORM -->
-    <div class="form-container">
+    <div
+      v-if="Object.keys(formFields).length"
+      class="form-container">
       <BaseForm
         :form-field-json="formFields"
         :value-list="valueList"
