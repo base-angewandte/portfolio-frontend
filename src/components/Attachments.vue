@@ -146,7 +146,20 @@
           </div>
           <BaseDropDown
             v-if="action === 'licence'"
-            :selection-list="['CC-BY', 'CC0']"
+            :selection-list="[{
+                                label: 'CC-BY',
+                                value: 'cc-by',
+                              },
+                              {
+                                label: 'CC0',
+                                value: 'cc0',
+                              }
+                              ,
+                              {
+                                label: $t('nolicense'),
+                                value: '',
+                              }
+            ]"
             :show-label="false"
             label="Select License"
             placeholder="Select License"
@@ -160,6 +173,7 @@
           v-for="(attached, index) of attachedList"
           :show-title="true"
           :selectable="!!fileText"
+          :selected="action === 'publish' && attachedList[index].published"
           :title="getFileName(attached.original)"
           :subtext="attached.licence"
           :description="attached.metadata && attached.metadata.FileType
@@ -235,6 +249,7 @@ export default {
       showEntryAction: false,
       selectedEntries: [],
       selectedFiles: [],
+      publishFiles: [],
       action: '',
     };
   },
@@ -252,8 +267,14 @@ export default {
   },
   methods: {
     async saveFileMeta() {
-      await this.$store.dispatch('data/actionFiles', { list: this.selectedFiles, action: this.action });
+      if (this.action === 'publish') {
+        await this.$store.dispatch('data/actionFiles', { list: this.publishFiles, action: this.action });
+      } else {
+        await this.$store.dispatch('data/actionFiles', { list: this.selectedFiles, action: this.action });
+      }
       this.action = '';
+      this.selectedFiles = [];
+      this.publishFiles = [];
     },
     async deleteLinked() {
       // also check first if any entries were selected
@@ -269,10 +290,15 @@ export default {
       }
     },
     filesSelected(objId, sel) {
-      if (sel) {
-        this.selectedFiles.push(objId);
+      if (this.action !== 'publish') {
+        if (sel) {
+          this.selectedFiles.push(objId);
+        } else {
+          this.selectedFiles = this.selectedFiles.filter(entryId => entryId !== objId);
+        }
       } else {
-        this.selectedFiles = this.selectedFiles.filter(entryId => entryId !== objId);
+        this.publishFiles.filter(file => file.id === objId);
+        this.publishFiles.push({ id: objId, selected: sel });
       }
     },
     getFileName(file) {

@@ -37,12 +37,8 @@
         <!-- TODO: replace hardcoded types!  -->
         <BaseDropDown
           :selected="fieldValueInt && fieldValueInt.type
-          ? fieldValueInt.type : 'Wähle Textart'"
-          :selection-list="[
-            'Beschreibung',
-            'Ausstellungseinladung',
-            'Zeitungsartikel',
-            'Ausstellungsankündigung']"
+          ? fieldValueInt.type : { label: 'Wähle Textart', value: '' }"
+          :selection-list="secondaryDropdown"
           @selected="$set(fieldValueInt, 'type', $event)"/>
       </template>
     </BaseMultilineTextInput>
@@ -112,6 +108,7 @@
       :identifier="'source'"
       :hoverbox-content="hoverBoxData"
       :object-prop="'label'"
+      :role-options="secondaryDropdown"
       v-model="fieldValueInt"
       class="base-form-field base-form-field-full"
       @fetch-dropdown-entries="$emit('fetch-autocomplete',{
@@ -125,7 +122,7 @@
         slot="drop-down-entry"
         slot-scope="props">
         <span>{{ props.item.label }}</span>
-        <span class="chips-dropdown-second">{{ props.item.born }}</span>
+        <span class="chips-dropdown-second">{{ props.item.additional }}</span>
         <span class="chips-dropdown-third">{{ props.item.source }}</span>
       </template>
     </BaseChipsBelow>
@@ -150,7 +147,6 @@
           @values-changed="$emit('subform-input', $event)"/>
       </div>
     </div>
-
   </div>
 </template>
 
@@ -214,6 +210,12 @@ export default {
         return [];
       },
     },
+    secondaryDropdown: {
+      type: Array,
+      default() {
+        return [];
+      },
+    },
     hoverBoxData: {
       type: Object,
       default() {
@@ -250,6 +252,10 @@ export default {
     },
   },
   watch: {
+    secondaryDropdown(val) {
+      console.log(val);
+      console.log('changed');
+    },
     fieldValue(val) {
       if (JSON.stringify(this.fieldValueInt) !== JSON.stringify(val)) {
         this.setFieldValue(val);

@@ -30,11 +30,11 @@
             icon-position="left"
             @clicked="toggleSidebarOptions"/>
         </div>
-        <base-drop-down
+        <BaseDropDown
           :placeholder="'Sortieren nach'"
           :selection-list="filterByTypeList"
           @selected="sortEntries"/>
-        <base-drop-down
+        <BaseDropDown
           :selected="selectedType"
           :selection-list="entryTypes"
           @selected="filterEntries($event, 'type')"/>

@@ -73,9 +73,9 @@ export default {
       while (vm.$store.state.PortfolioAPI.loading) {
         console.log('waiting');
         /* eslint-disable-next-line */
-        await new Promise(resolve => setTimeout(resolve, 50));
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
-      if (!vm.$store.state.PortfolioAPI.user.email) {
+      if (!vm.$store.getters['PortfolioAPI/isAuthenticated']) {
         console.log('authenticating');
         window.location.href = 'http://localhost:8200/accounts/login';
       } else {

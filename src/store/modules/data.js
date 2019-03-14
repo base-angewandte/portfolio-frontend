@@ -6,7 +6,7 @@ function transformTextData(data) {
   const textData = [];
   if (data && data.length) {
     data.forEach((textItem) => {
-      const textObj = { type: textItem.type };
+      const textObj = { type: typeof textItem.type === 'object' ? textItem.type.value : textItem.type };
       const text = Object.keys(textItem).filter(props => !['type', 'text', 'data'].includes(props))
         .map(lang => Object.assign({}, {
           language: lang,
@@ -19,6 +19,15 @@ function transformTextData(data) {
   return textData;
 }
 
+function prepareData(valueObj) {
+  // make necessary modifications to the valueList object
+  // 1. type should be string not array
+  const type = valueObj.type && valueObj.type.length
+    ? valueObj.type[0].type || valueObj.type[0] : '';
+  // 2. texts need different object structure and text type needs to be string (uri)
+  const texts = transformTextData(valueObj.texts);
+  return Object.assign({}, valueObj, { type, texts });
+}
 
 const state = {
   sidebarData: [],
@@ -182,6 +191,19 @@ const actions = {
     commit('setResultTotal', response.count);
     commit('setSidebarData', response.results);
   },
+  async fetchGeneralFields() {
+    let formData = {};
+    try {
+      const jsonSchema = await axios.get(`${process.env.API}swagger.json`,
+        {
+          withCredentials: true,
+        });
+      formData = jsonSchema.data.definitions.Entity.properties;
+    } catch (e) {
+      // TODO: inform user!
+    }
+    return formData;
+  },
   async fetchFormExtension(context, type) {
     let formData = {};
     try {
@@ -191,7 +213,7 @@ const actions = {
         });
       formData = extension.data.properties;
     } catch (e) {
-      console.error(e);
+      // TODO: inform user!
     }
     return formData || [];
   },
@@ -217,12 +239,33 @@ const actions = {
     if (entryData) {
       // Modifications of data received from backend needed:
       // 1. type needs to be array in logic here!
-      // 2. Text needs to look different
-      const textData = entryData.texts && entryData.texts.length ? entryData.texts.map((entry) => {
-        const textObj = {};
-        entry.data.forEach(lang => Vue.set(textObj, lang.language.toLowerCase(), lang.text));
-        return Object.assign({}, { type: entry.type }, textObj);
-      }) : [];
+      // 2. Text needs to look different (and text type needs to be fetched)
+      const textData = entryData.texts && entryData.texts.length
+        ? await Promise.all(entryData.texts
+          .map(entry => new Promise(async (resolve, reject) => {
+            const textObj = {};
+            let type = null;
+            if (entry.type) {
+              try {
+                const typeResponse = await axios.get(`${process.env.SKOSMOS_API}portfolio/label`, {
+                  params: {
+                    uri: entry.type,
+                    lang: 'de',
+                    format: 'application/json',
+                  },
+                });
+                if (typeResponse.data) {
+                  type = { label: typeResponse.data.prefLabel, value: entry.type };
+                }
+              } catch (e) {
+                // TODO: inform user
+                console.error(e);
+                reject(e);
+              }
+            }
+            entry.data.forEach(lang => Vue.set(textObj, lang.language.toLowerCase(), lang.text));
+            resolve(Object.assign({}, { type }, textObj));
+          }))) : [];
 
       const adjustedEntry = Object.assign({}, entryData, {
         type: entryData.type ? [entryData.type] : [],
@@ -266,18 +309,7 @@ const actions = {
   addSidebarItem({ commit }, obj) {
     return new Promise(async (resolve, reject) => {
       try {
-        // Modify object back here before saving to database
-        // 1. type not array but string
-        // 2. text object
-        const type = obj.type && obj.type.length ? obj.type[0] : '';
-        const data = Object.assign({}, obj, {
-          type: typeof type === 'object' ? type[0] : type,
-          // check if texts already has the correct form (necessary for duplicated items
-          // (transform only needed for form data)
-          // TODO: should this be done somewhere else?
-          texts: obj.texts && obj.texts.length && obj.texts[0].data
-            ? obj.texts : transformTextData(obj.texts),
-        });
+        const data = prepareData(obj);
         const createdEntry = await this.dispatch('PortfolioAPI/post', { kind: 'entity', data });
         if (createdEntry) {
           commit('setCurrentItem', createdEntry);
@@ -291,9 +323,7 @@ const actions = {
   updateEntry({ commit }, obj) {
     return new Promise(async (resolve, reject) => {
       try {
-        const type = obj.type && obj.type.length ? obj.type[0].type || obj.type[0] : '';
-        const modifiedProps = { type, texts: transformTextData(obj.texts) };
-        const data = Object.assign({}, obj, modifiedProps);
+        const data = prepareData(obj);
         const updatedEntry = await this.dispatch('PortfolioAPI/post', { kind: 'entity', id: data.id, data });
         commit('setCurrentItem', updatedEntry);
         resolve();
@@ -427,17 +457,18 @@ const actions = {
   async actionFiles({ state, dispatch }, { list, action }) {
     const axiosAction = action === 'delete' ? action : 'patch';
 
-    const changed = await Promise.all(list.map(mediaId => new Promise(async (resolve, reject) => {
+    await Promise.all(list.map(mediaId => new Promise(async (resolve, reject) => {
       const formData = new FormData();
+      const id = mediaId.id || mediaId;
       if (action === 'publish' || action === 'offline') {
-        formData.append('published', action === 'publish');
+        formData.append('published', mediaId.selected);
       } else if (action === 'license') {
         // TODO: this does not exist in backend yet!
       }
       try {
         if (axiosAction === 'delete') {
           // TODO: replace with Portofolio_API
-          await axios[axiosAction](`${process.env.API}media/${mediaId}/`,
+          await axios[axiosAction](`${process.env.API}media/${id}/`,
             {
               withCredentials: true,
               xsrfCookieName: 'csrftoken_portfolio',
@@ -445,7 +476,7 @@ const actions = {
             });
         } else {
           // TODO: replace with Portofolio_API
-          await axios[axiosAction](`${process.env.API}media/${mediaId}/`,
+          await axios[axiosAction](`${process.env.API}media/${id}/`,
             formData,
             {
               withCredentials: true,
@@ -454,13 +485,12 @@ const actions = {
             });
         }
 
-        resolve(mediaId);
+        resolve(id);
       } catch (e) {
         reject(e);
       }
     })));
     await dispatch('fetchMediaData', state.currentItemId);
-    console.log(changed);
     // TODO: inform user of sucessfully changed items
   },
 };
