@@ -34,7 +34,6 @@
       @text-input="setMultilineValue($event)">
       <template
         v-if="field.items && field.items.properties && field.items.properties.type">
-        <!-- TODO: replace hardcoded types!  -->
         <BaseDropDown
           :selected="fieldValueInt && fieldValueInt.type
           ? fieldValueInt.type : { label: 'Wähle Textart', value: '' }"

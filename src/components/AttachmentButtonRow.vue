@@ -193,7 +193,7 @@ export default {
         const fullList = await Promise.all(list
           .map((entryId, index) => new Promise(async (resolve, reject) => {
             try {
-              const entry = await this.$store.dispatch('PortfolioAPI/get', { kind: 'entity', id: entryId });
+              const entry = await this.$store.dispatch('PortfolioAPI/get', { kind: 'entry', id: entryId });
               resolve({
                 id: `tempId${this.$store.getters['data/getCurrentLinked'].length + index}`,
                 to: entry,

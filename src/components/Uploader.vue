@@ -113,7 +113,7 @@ export default {
         this.fileList.forEach(async (file, index) => {
           const formData = new FormData();
           formData.append('file', file);
-          formData.append('entity', this.$route.params.id);
+          formData.append('entry', this.$route.params.id);
           formData.append('published', false);
 
           this.currentStatus = STATUS_SAVING;

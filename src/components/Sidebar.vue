@@ -284,7 +284,7 @@ export default {
     async getEntryTypes() {
       // TODO: replace with C. store module!
       try {
-        const response = await axios.get(`${process.env.API}entity/types/`, {
+        const response = await axios.get(`${process.env.API}entry/types/`, {
           withCredentials: true,
         });
         const types = response.data;
@@ -395,7 +395,7 @@ export default {
       this.isLoading = true;
       try {
         const response = await this.$store.dispatch('PortfolioAPI/get', {
-          kind: 'entity',
+          kind: 'entry',
           sort: this.sortParam,
           offset: (this.pageNumber - 1) * this.entriesPerPage,
           limit: this.entriesPerPage,
@@ -407,6 +407,7 @@ export default {
         this.entryNumber = response.count;
         this.$emit('sidebar-data-changed');
       } catch (e) {
+        console.error(e);
         this.$notify({
           group: 'request-notifications',
           title: 'Fetching of Entry Data Failed',

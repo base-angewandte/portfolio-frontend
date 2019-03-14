@@ -131,7 +131,11 @@ export default {
     },
     async type(val) {
       if (val) {
-        this.formFieldsExtension = await this.$store.dispatch('data/fetchFormExtension', val);
+        const response = await this.$store.dispatch('PortfolioAPI/get', {
+          kind: 'jsonschema',
+          id: val,
+        });
+        this.formFieldsExtension = response.properties || {};
       } else {
         this.formFieldsExtension = {};
       }
@@ -189,8 +193,8 @@ export default {
             const parent = this.$store.getters['data/getLatestParentItem'];
             if (parent) {
               const relationData = {
-                from_entity: parent.id,
-                to_entity: newEntryId,
+                from_entry: parent.id,
+                to_entry: newEntryId,
               };
               await this.$store.dispatch('PortfolioAPI/post', {
                 kind: 'relation',
