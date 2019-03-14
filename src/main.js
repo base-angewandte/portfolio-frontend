@@ -3,7 +3,6 @@
 import VueI18n from 'vue-i18n';
 import Notifications from 'vue-notification';
 import Vue from 'vue';
-import { PortfolioAPI, SkosmosAPI } from 'base-components';
 import App from './App';
 import router from './router';
 import store from './store';

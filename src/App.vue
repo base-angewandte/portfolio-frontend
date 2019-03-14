@@ -47,13 +47,8 @@ export default {
       return this.$store.state.PortfolioAPI ? this.$store.state.PortfolioAPI.user : {};
     },
   },
-  methods: {
-    async navigate(val) {
-      console.log(val);
-    },
-  },
   beforeCreate() {
-    //initializing stores before app instance is created
+    // initializing stores before app instance is created
     this.$store.dispatch('PortfolioAPI/init', {
       baseURL: 'https://basedev.uni-ak.ac.at/portfolio',
       lang: 'en',
@@ -62,7 +57,12 @@ export default {
       baseURL: 'https://voc.uni-ak.ac.at/skosmos/rest/v1/',
       lang: 'en',
     });
-  }
+  },
+  methods: {
+    async navigate(val) {
+      console.log(val);
+    },
+  },
 };
 </script>
 

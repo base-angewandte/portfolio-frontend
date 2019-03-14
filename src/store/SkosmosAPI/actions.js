@@ -62,7 +62,9 @@ export default {
    * @param fields - space-separated list of extra fields to include in the results. e.g. "related" or "prefLabel" or any other skos property.
    * @param unique - boolean flag to indicate that each concept should be returned only once, instead of returning all the different ways it could match (for example both via prefLabel and altLabel).
    */
-  getSearch({ state, commit }, { query, lang, vocab, type, parent, group, maxhits, offset, unique, fields }) {
+  getSearch({ state, commit }, {
+    query, lang, vocab, type, parent, group, maxhits, offset, unique, fields,
+  }) {
     let p = {};
     const params = {
       query: `${query}*`,
