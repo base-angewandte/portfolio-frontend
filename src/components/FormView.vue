@@ -142,8 +142,8 @@ export default {
     },
   },
   async created() {
+    this.formFields = await this.$store.dispatch('data/fetchGeneralFields');
     if (this.currentItemId) {
-      this.formFields = await this.$store.dispatch('data/fetchGeneralFields');
       this.updateForm();
     }
   },
