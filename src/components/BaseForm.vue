@@ -310,7 +310,7 @@ export default {
       margin-bottom: $spacing;
     }
 
-    .base-form-field-full, .field-group-button {
+    .base-form-field-full {
       flex: 0 0 100%;
     }
 
@@ -325,6 +325,7 @@ export default {
     .field-group-button {
       color: $font-color-second;
       cursor: pointer;
+      display: inline;
 
       &.group-multiply {
         margin-bottom: $spacing + $spacing-small;
