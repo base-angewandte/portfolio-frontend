@@ -69,9 +69,10 @@
       v-model="fieldValueInt"
       :allow-dynamic-drop-down-entries="!['type', 'keywords'].includes(field.name)"
       :allow-multiple-entries="field.name !== 'type'"
-      :allow-unknown-entries="true"
+      :allow-unknown-entries="field.name !== 'type'"
       :always-linked="field.name === 'type'"
-      :identifier="field['x-attrs'] && field['x-attrs'].source ? 'source' : ''"
+      :identifier="field.name !== 'type' && field['x-attrs']
+      && field['x-attrs'].source ? 'source' : ''"
       :chips-editable="true"
       :class="['base-form-field']"
       :draggable="true"

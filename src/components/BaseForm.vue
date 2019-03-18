@@ -134,8 +134,8 @@ export default {
     },
   },
   mounted() {
-    this.initializeDropDownLists();
     this.initializeValueObject();
+    this.initializeDropDownLists();
   },
   methods: {
     initializeValueObject() {
@@ -163,7 +163,7 @@ export default {
     },
     getInitialFieldValue(field) {
       // check if field is array
-      if (field.type === 'array') {
+      if (field.type === 'array' || field.name === 'type') {
         // check if values are already present and set those if yes
         if (this.valueList[field.name] && this.valueList[field.name].length) {
           return [].concat(this.valueList[field.name]);
@@ -189,18 +189,34 @@ export default {
     initializeDropDownLists() {
       this.formFieldListInt.forEach((field) => {
         // check if a source is specified in the 'x-attrs'
-        const sources = Object.keys(field['x-attrs']).filter(key => !!key.includes('source'));
+        const sources = field['x-attrs']
+          ? Object.keys(field['x-attrs']).filter(key => !!key.includes('source')) : [];
         if (sources.length) {
           sources.forEach(async (source) => {
-            // check if source is primary source
-            if (source === 'source') {
+            if (field.name === 'type') {
+              try {
+                const response = await axios.get(`${process.env.PORTFOLIO_API}${field['x-attrs'][source]}`,
+                  {
+                    withCredentials: true,
+                  });
+                // set the drop down with the retrieved data
+                this.setDropDown(response.data, '', field['x-attrs'].equivalent, field.name);
+              } catch (e) {
+                console.error(e);
+              }
+              // TODO: adjust to new Portfolio API!!
+            } else if (source === 'source') {
               this.setDropDown([], '', field['x-attrs'].equivalent, field.name);
               // if there is another source type specififed (currently e.g. type_source,
               // but maybe should be renamed
               // to "secondary" in backend as well?) add it as secondary source
             } else {
+              // TODO: adjust to new Portfolio API!!
               try {
-                const response = await axios.get(`${field['x-attrs'][source]}`);
+                const response = await axios.get(`${process.env.PORTFOLIO_API}${field['x-attrs'][source]}`,
+                  {
+                    withCredentials: true,
+                  });
                 // map data needed on front end out of response data
                 const data = response.data.results.map(voc => ({
                   label: voc.prefLabel,
@@ -231,15 +247,15 @@ export default {
     async fetchAutocomplete({
       value, name, source, equivalent,
     }) {
-      if (source) {
+      if (name !== 'type' && source) {
         if (this.timeout) {
           clearTimeout(this.timeout);
           this.timeout = null;
         }
         this.timeout = setTimeout(async () => {
-          if (value.length > 3) {
+          if (value && value.length > 3) {
             try {
-              const result = await axios.get(`${source}${value}/`, {
+              const result = await axios.get(`${process.env.PORTFOLIO_API}${source}${value ? `${value}/` : ''}`, {
                 withCredentials: true,
               });
               this.setDropDown(result.data, value, equivalent, name);
@@ -252,20 +268,8 @@ export default {
             this.setDropDown([], value, equivalent, name);
           }
         }, 600);
-        // TODO: remove this again as soon as everything has a source attribute
       } else {
         console.error('no source specified');
-        if (name === 'type') {
-          if (this.dropdownLists) {
-            // TODO: in theory: use PortfolioAPI state.schemas however will only return
-            // URIs in future anyway!!
-            const types = await axios.get('http://localhost:8200/api/v1/jsonschema/',
-              {
-                withCredentials: true,
-              });
-            this.$set(this.dropdownLists, [name], types.data);
-          }
-        }
       }
     },
     multiplyField(field) {
