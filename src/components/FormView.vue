@@ -166,22 +166,23 @@ export default {
       }
     },
     async saveForm() {
+      // check if there is a title (only requirement for saving)
       if (this.valueList.title) {
-        const data = Object.assign({}, this.valueList.data);
         // remove properties from contributor fields that can not be saved to the database
+        const data = Object.assign({}, this.valueList.data);
         Object.keys(this.formFieldsExtension).forEach((key) => {
           if (key === 'contributors' || this.formFieldsExtension[key]['x-attrs'].equivalent === 'contributors') {
             if (data[key] && data[key].length) {
               /* eslint-disable-next-line */
               data[key].forEach(entry => delete entry.additional);
+              /* eslint-disable-next-line */
+              data[key].forEach(entry => delete entry.source_name);
             }
           }
         });
         try {
-          if (!this.$route.params.id) {
-            // TODO: check somewhere if the entry should be linked to a parent and
-            // a) link to parent entry b) save to database
-            // --> do this.linkEntries(this.$store.data.currentItemId)
+          // check if the route indicates an already saved entry or a new entry
+          if (!this.currentItemId) {
             const newEntryId = await this.$store.dispatch('data/addSidebarItem', Object.assign({}, this.valueList, { data }));
             // also add linked entries if there are already any
             const list = this.$store.getters['data/getLinkedIds'];
@@ -203,6 +204,7 @@ export default {
               // TODO: inform user of successful entry (what if only linking fails?)
             }
             this.$router.push(`/entry/${this.$store.state.data.currentItemId}`);
+            // if id present just update the entry
           } else {
             await this.$store.dispatch('data/updateEntry', Object.assign({}, this.valueList, { data }));
           }

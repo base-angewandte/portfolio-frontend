@@ -92,7 +92,7 @@
         slot-scope="props">
         <span>{{ props.item.label }}</span>
         <span class="chips-dropdown-second">{{ props.item.additional }}</span>
-        <span class="chips-dropdown-third">{{ props.item.source }}</span>
+        <span class="chips-dropdown-third">{{ props.item.source_name }}</span>
       </template>
     </BaseChipsInput>
 
@@ -119,11 +119,11 @@
       })"
       @hoverbox-active="$emit('fetch-info-data')">
       <template
-        slot="drop-down-entry"
+        slot="below-drop-down-entry"
         slot-scope="props">
         <span>{{ props.item.label }}</span>
         <span class="chips-dropdown-second">{{ props.item.additional }}</span>
-        <span class="chips-dropdown-third">{{ props.item.source }}</span>
+        <span class="chips-dropdown-third">{{ props.item.source_name }}</span>
       </template>
     </BaseChipsBelow>
 

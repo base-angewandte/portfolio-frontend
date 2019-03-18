@@ -34,26 +34,34 @@
           <div
             v-if="valueListInt[element.name].length > 1"
             :key="index + '-button' + valueIndex"
-            class="field-group-button group-add"
-            @click="removeField(element, valueIndex)">
-            <span>{{ $t('form.removeField', { fieldType: getFieldName(element) }) }}</span>
+            class="group-add">
+            <div
+              class="field-group-button "
+              @click="removeField(element, valueIndex)">
+              <span>{{ $t('form.removeField', { fieldType: getFieldName(element) }) }}</span>
+              <span>
+                <img
+                  :src="require('../static/remove.svg')"
+                  class="field-group-icon">
+              </span>
+            </div>
+
+          </div>
+        </div>
+        <div
+          :key="'multiplyButton' + index"
+          class="group-multiply">
+          <div
+            class="field-group-button "
+            @click="multiplyField(element)">
+            <span>{{ $t('form.addGroup', { fieldType: getFieldName(element) }) }}</span>
             <span>
               <img
                 :src="require('../static/remove.svg')"
                 class="field-group-icon">
             </span>
           </div>
-        </div>
-        <div
-          :key="'multiplyButton' + index"
-          class="field-group-button group-multiply"
-          @click="multiplyField(element)">
-          <span>{{ $t('form.addGroup', { fieldType: getFieldName(element) }) }}</span>
-          <span>
-            <img
-              :src="require('../static/remove.svg')"
-              class="field-group-icon">
-          </span>
+
         </div>
       </template>
       <template v-else>
@@ -213,10 +221,7 @@ export default {
             } else {
               // TODO: adjust to new Portfolio API!!
               try {
-                const response = await axios.get(`${process.env.PORTFOLIO_API}${field['x-attrs'][source]}`,
-                  {
-                    withCredentials: true,
-                  });
+                const response = await axios.get(`${field['x-attrs'][source]}`);
                 // map data needed on front end out of response data
                 const data = response.data.results.map(voc => ({
                   label: voc.prefLabel,
@@ -314,7 +319,7 @@ export default {
       margin-bottom: $spacing;
     }
 
-    .base-form-field-full {
+    .base-form-field-full, .group-multiply {
       flex: 0 0 100%;
     }
 
@@ -326,18 +331,18 @@ export default {
       margin-left: $spacing;
     }
 
+    .group-multiply {
+      margin-bottom: $spacing + $spacing-small;
+    }
+
+    .group-add {
+      margin-top: $spacing;
+    }
+
     .field-group-button {
       color: $font-color-second;
       cursor: pointer;
       display: inline;
-
-      &.group-multiply {
-        margin-bottom: $spacing + $spacing-small;
-      }
-
-      &.group-add {
-        margin-top: $spacing;
-      }
 
       &:hover {
         color: $app-color;
