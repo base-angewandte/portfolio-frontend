@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import VueI18n from 'vue-i18n';
+import prodEnv from '../../config/prod.env';
 
 Vue.use(VueI18n);
 
@@ -11,7 +12,7 @@ const de = require('../locales/de.json');
 
 /* eslint-disable-next-line */
 export const i18n = new VueI18n({
-  locale: ['de', 'en'].includes(lang) ? lang : 'de',
-  fallbackLocale: 'de',
+  locale: prodEnv.LOCALES.includes(lang) ? lang : prodEnv.DEFAULT_LOCALE,
+  fallbackLocale: prodEnv.DEFAULT_LOCALE,
   messages: { de, en },
 });

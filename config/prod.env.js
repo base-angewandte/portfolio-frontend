@@ -7,4 +7,6 @@ module.exports= {
   APP_PREFIX: '"/portfolio"',
   PORTFOLIO_API: '"http://localhost:8200"',
   SKOSMOS_API: '"https://voc.uni-ak.ac.at/skosmos/rest/v1/"',
+  LOCALES: ['de', 'en'],
+  DEFAULT_LOCALE: 'de',
 }

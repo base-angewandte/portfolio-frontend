@@ -5,6 +5,7 @@ import FormView from '../components/FormView';
 import NotFoundComponent from '../components/NotFoundComponent';
 import store from '../store';
 import { i18n } from '../plugins/i18n';
+import prodEnv from '../../config/prod.env';
 
 Vue.use(Router);
 
@@ -40,7 +41,8 @@ export default new Router({
           beforeEnter(to, from, next) {
             const { lang } = to.params;
             const path = to.path.replace(/^\/[a-z]{2}/, '');
-            if (!['en', 'de'].includes(lang)) return next('en');
+            debugger;
+            if (!prodEnv.LOCALES.includes(lang)) return next(prodEnv.DEFAULT_LOCALE);
             if (lang) {
               import(`@/locales/${lang}.json`).then((msgs) => {
                 i18n.setLocaleMessage(lang, msgs.default || msgs);
