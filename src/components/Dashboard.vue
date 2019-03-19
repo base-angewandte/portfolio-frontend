@@ -67,22 +67,6 @@ export default {
       this.$store.commit('data/setNewForm', this.$route.name === 'newEntry');
     },
   },
-  // TODO: is this a feasible way to handle this?
-  beforeRouteEnter(to, from, next) {
-    next(async (vm) => {
-      while (vm.$store.state.PortfolioAPI.loading) {
-        console.log('waiting');
-        /* eslint-disable-next-line */
-        await new Promise(resolve => setTimeout(resolve, 100));
-      }
-      if (!vm.$store.getters['PortfolioAPI/isAuthenticated']) {
-        console.log('authenticating');
-        window.location.href = 'http://localhost:8200/accounts/login';
-      } else {
-        vm.$store.commit('user/setAuthenticated', true);
-      }
-    });
-  },
   async mounted() {
     this.$store.commit('data/setNewForm', this.$route.name === 'newEntry');
   },

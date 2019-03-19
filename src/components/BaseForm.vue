@@ -259,7 +259,7 @@ export default {
           if (this.dropdownLists) {
             // TODO: in theory: use PortfolioAPI state.schemas however will only return
             // URIs in future anyway!!
-            const types = await axios.get('http://localhost:8200/api/v1/jsonschema/',
+            const types = await axios.get(`${process.env.PORTFOLIO_API}api/v1/jsonschema/`,
               {
                 withCredentials: true,
               });
