@@ -3,11 +3,10 @@
 // see http://vuejs-templates.github.io/webpack for documentation.
 
 const path = require('path');
-var dotenv = require('dotenv').config({path: __dirname + '/.env'});
+const devEnv = require('./dev.env');
 
 module.exports = {
   dev: {
-
     // Paths
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
@@ -23,8 +22,9 @@ module.exports = {
     },
 
     // Various Dev Server settings
-    host: 'fe.basedev.uni-ak.ac.at', // can be overwritten by process.env.HOST
-    port: 8080, // can be overwritten by process.env.PORT, if port is in use, a free one will be determined
+    host: devEnv.HOST, // can be overwritten by process.env.HOST
+    port: devEnv.PORT, // can be overwritten by process.env.PORT, if port is in use, a free one will be determined
+    https: devEnv.HTTPS,
     autoOpenBrowser: false,
     errorOverlay: true,
     notifyOnErrors: true,
