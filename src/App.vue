@@ -1,30 +1,17 @@
 <template>
   <div class="wrapper">
     <base-header
-      :lang="'en'"
+      :lang="lang"
       :active="'portfolio'"
       :profile.prop="profile"
-      :emit-navigation="true"
-      :urls.prop="{
-        de:'/portfolio/de/',
-        en:'/portfolio/en/',
-        login:'portfolio/login/',
-        logout:'/portfolio/logout/'}"
-      @navigate="navigate($event.detail[0])" />
+      :urls.prop="urls" />
     <BaseNotification />
     <router-view />
     <base-footer
       ref="baseFooter"
-      :base-url="linkUrl"
       :lang="lang"
-      :logged-in="$store.state.isAuthenticated"
-      :emit-navigation="true"
-      :urls.prop="{
-        de:'/recherche/de/',
-        en:'/recherche/en/',
-        login:'/recherche/login/',
-        logout:'/recherche/logout/'}"
-      @navigate="navigate($event.detail[0])" />
+      :logged-in="isAuthenticated"
+      :urls.prop="urls" />
   </div>
 </template>
 
@@ -35,21 +22,22 @@ export default {
     BaseNotification: () => import('./components/BaseNotification'),
   },
   computed: {
-    linkUrl() {
-      // TODO
-      return 'replace this at some point';
-    },
     lang() {
-      // TODO
-      return 'get lang stored in store here';
+      return this.$store.state.SkosmosAPI.lang;
     },
     profile() {
       return this.$store.state.PortfolioAPI ? this.$store.state.PortfolioAPI.user : {};
     },
-  },
-  methods: {
-    async navigate(val) {
-      console.log(val);
+    urls() {
+      return {
+        de: `/portfolio/de${this.$route.path}`,
+        en: `/portfolio/en${this.$route.path}`,
+        login: '/portfolio/accounts/login/',
+        logout: '/cas/logout/',
+      };
+    },
+    isAuthenticated() {
+      return this.$store.getters['PortfolioAPI/isAuthenticated'];
     },
   },
 };
