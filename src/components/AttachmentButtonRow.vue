@@ -199,6 +199,7 @@ export default {
                 to: entry,
               });
             } catch (e) {
+              console.error(e);
               reject(e);
             }
           })));

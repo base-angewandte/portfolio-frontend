@@ -200,6 +200,7 @@ const actions = {
         });
       formData = jsonSchema.data.definitions.Entity.properties;
     } catch (e) {
+      console.error(e);
       // TODO: inform user!
     }
     return formData;
@@ -213,6 +214,7 @@ const actions = {
         });
       formData = extension.data.properties;
     } catch (e) {
+      console.error(e);
       // TODO: inform user!
     }
     return formData || [];
@@ -298,6 +300,7 @@ const actions = {
               });
             resolve(result.data);
           } catch (e) {
+            console.error(e);
             reject();
           }
         })));
@@ -316,6 +319,7 @@ const actions = {
         }
         resolve(createdEntry.id);
       } catch (e) {
+        console.error(e);
         reject(e);
       }
     });
@@ -328,6 +332,7 @@ const actions = {
         commit('setCurrentItem', updatedEntry);
         resolve();
       } catch (e) {
+        console.error(e);
         reject(e);
       }
     });
@@ -339,6 +344,7 @@ const actions = {
           await this.dispatch('PortfolioAPI/delete', { kind: 'entity', id: entry.id });
           resolve(entry.id);
         } catch (e) {
+          console.error(e);
           reject(e);
         }
       })));
@@ -375,6 +381,7 @@ const actions = {
         commit('deleteParentItems');
         resolve(createdEntryId);
       } catch (e) {
+        console.error(e);
         Vue.notify({
           group: 'request-notifications',
           title: 'Entry duplication failed',
@@ -394,6 +401,7 @@ const actions = {
         const newEntry = await dispatch('updateEntry', Object.assign({}, entry, { [prop]: value }));
         resolve(newEntry);
       } catch (e) {
+        console.error(e);
         // TODO: error handling! (user info)
         reject();
       }
@@ -436,6 +444,7 @@ const actions = {
         // TODO: notify user? (title would be nice...)
         resolve();
       } catch (e) {
+        console.error(e);
         Vue.notify({
           group: 'request-notifications',
           title: `${action}ing of Entry failed`,
@@ -487,6 +496,7 @@ const actions = {
 
         resolve(id);
       } catch (e) {
+        console.error(e);
         reject(e);
       }
     })));

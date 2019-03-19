@@ -205,6 +205,7 @@ export default {
           this.$emit('data-changed');
           this.unsavedChanges = false;
         } catch (e) {
+          console.error(e);
           this.$notify({
             group: 'request-notifications',
             title: 'Saving to database failed',

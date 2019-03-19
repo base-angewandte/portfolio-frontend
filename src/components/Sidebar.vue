@@ -309,11 +309,13 @@ export default {
               resolve();
             }
           } catch (e) {
+            console.error(e);
             reject(e);
           }
         })));
         this.entryTypes = typeArr.filter(type => !!type);
       } catch (e) {
+        console.error(e);
         // TODO: inform user?
       }
     },
@@ -407,6 +409,7 @@ export default {
         this.entryNumber = response.count;
         this.$emit('sidebar-data-changed');
       } catch (e) {
+        console.error(e);
         this.$notify({
           group: 'request-notifications',
           title: 'Fetching of Entry Data Failed',
