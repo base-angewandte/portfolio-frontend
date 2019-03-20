@@ -41,7 +41,6 @@ export default new Router({
           beforeEnter(to, from, next) {
             const { lang } = to.params;
             const path = to.path.replace(/^\/[a-z]{2}/, '');
-            debugger;
             if (!prodEnv.LOCALES.includes(lang)) return next(prodEnv.DEFAULT_LOCALE);
             if (lang) {
               import(`@/locales/${lang}.json`).then((msgs) => {
