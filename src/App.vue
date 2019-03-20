@@ -75,6 +75,7 @@ export default {
       .form-view {
         flex: 0 1 66%;
         margin-left: 16px;
+        // TODO: why so many width?
         max-width: 66%;
         width: 65%;
       }
@@ -103,23 +104,6 @@ export default {
 
     .options {
       flex-grow: 2;
-    }
-  }
-
-  .base-row {
-    height: $row-height-large;
-    box-shadow: $box-shadow-reg;
-    display: flex;
-    margin-bottom: $spacing-small;
-    width: 100%;
-
-    &:hover {
-      box-shadow: $box-shadow-hov;
-    }
-
-    .base-row-header {
-      overflow: hidden;
-      width: 100%;
     }
   }
 
@@ -177,6 +161,15 @@ export default {
   @media screen and (max-width: $mobile) {
     .wrapper {
       padding: $spacing-small;
+
+      #app-container {
+        .form-view {
+          margin-left: 0;
+          width: 100%;
+          max-width: 100%;
+          flex-basis: 100%;
+        }
+      }
     }
 
     .mobile-hidden {

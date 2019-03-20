@@ -40,7 +40,7 @@
 
 <script>
 import { BasePopUp, BaseMediaPreview } from 'base-components';
-import Sidebar from './Sidebar';
+import Sidebar from '../components/Sidebar';
 
 export default {
   components: {
@@ -83,7 +83,7 @@ export default {
       }
     });
   },
-  async mounted() {
+  mounted() {
     this.$store.commit('data/setNewForm', this.$route.name === 'newEntry');
   },
   methods: {
@@ -158,7 +158,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "../styles/variables.scss";
+  @import "../styles/variables";
 
   .sidebar-pop-up {
     text-align: center;

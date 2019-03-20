@@ -81,11 +81,11 @@
 
 <script>
 import { BaseMenuEntry } from 'base-components';
-import BaseRow from './BaseRow';
-import BaseFormOptions from './BaseFormOptions';
-import BaseForm from './BaseForm';
+import BaseRow from '../components/BaseRow';
+import BaseFormOptions from '../components/BaseFormOptions';
+import BaseForm from '../components/BaseForm';
 
-import AttachmentArea from './AttachmentArea';
+import AttachmentArea from '../components/AttachmentArea';
 
 export default {
   components: {
@@ -280,7 +280,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "../styles/variables.scss";
+  @import "../styles/variables";
 
   .form-component {
 
@@ -360,5 +360,13 @@ export default {
     transform: translateY(400px);
     opacity: 0;
     box-shadow: $pop-up-shadow;
+  }
+
+  @media screen and (max-width: $mobile) {
+    .form-component {
+      .form-head {
+        padding-top: $spacing-small;
+      }
+    }
   }
 </style>

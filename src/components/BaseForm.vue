@@ -313,7 +313,7 @@ export default {
     background-color: white;
     display: flex;
     flex-wrap: wrap;
-    padding: 16px 16px 0;
+    padding: $spacing $spacing 0;
 
     .base-form-field {
       margin-bottom: $spacing;
@@ -352,6 +352,28 @@ export default {
         margin-left: $spacing;
         height: $icon-small;
         width: $icon-small;
+      }
+    }
+  }
+
+  @media screen and (max-width: $mobile) {
+    .base-form {
+      padding: $spacing $spacing-small $spacing-small;
+
+      .base-form-field {
+        margin-bottom: $spacing-small;
+      }
+
+      .base-form-field-half {
+        flex: 0 0 100%;
+      }
+
+      .base-form-field-left-margin {
+        margin-left: 0;
+      }
+
+      .group-multiply {
+        margin-bottom: $spacing-small + ($spacing-small/2);
       }
     }
   }

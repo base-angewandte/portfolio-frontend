@@ -2,7 +2,7 @@
   <div>
     <div
       key="file-area"
-      class="file-boxes mobile-hidden">
+      class="file-boxes">
       <BaseDropBox
         key="addEntry"
         :show-plus="true"
@@ -45,18 +45,26 @@
         key="mobile-addFile"
         entry-id="addFile"
         icon="sheet-plus"
-        title="Vorhandenen Eintrag hinzufügen" />
+        title="Vorhandenen Eintrag hinzufügen"
+        @clicked="openEntrySelect" />
       <BaseMenuEntry
         key="mobile-addNew"
         entry-id="addNew"
         icon="sheet-plus"
         title="Neuen Eintrag anhängen"
-        @activated="$emit('open-new-form')"/>
-      <BaseMenuEntry
-        key="mobile-addExisting"
-        entry-id="addExisting"
-        icon="sheet-plus"
-        title="Datei anhängen"/>
+        @clicked="$emit('open-new-form')"/>
+      <label class="file-select">
+        <BaseMenuEntry
+          key="mobile-addExisting"
+          entry-id="addExisting"
+          icon="sheet-plus"
+          title="Datei anhängen"
+          class="mobile-file-list-attach"/>
+        <input
+          type="file"
+          multiple
+          @change="handleFileSelect">
+      </label>
     </div>
 
     <Uploader
@@ -234,10 +242,24 @@ export default {
 
   .file-list {
     margin-top: $spacing;
+
+    & input[type='file'] {
+      display: none;
+    }
+
+    .mobile-file-list-attach {
+      border-top: $separation-line;
+    }
   }
 
   .menu-wrapper {
     padding: 0 $spacing $spacing;
     background-color: rgb(240, 240, 240);
+  }
+
+  @media screen and (max-width: $mobile) {
+    .file-boxes {
+      display: none;
+    }
   }
 </style>

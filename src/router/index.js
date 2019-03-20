@@ -1,8 +1,8 @@
 import Vue from 'vue';
 import Router from 'vue-router';
-import Dashboard from '../components/Dashboard';
-import FormView from '../components/FormView';
-import NotFoundComponent from '../components/NotFoundComponent';
+import Dashboard from '../views/Dashboard';
+import FormView from '../views/FormView';
+import NotFoundComponent from '../views/NotFoundComponent';
 import store from '../store';
 import { i18n } from '../plugins/i18n';
 import prodEnv from '../../config/prod.env';

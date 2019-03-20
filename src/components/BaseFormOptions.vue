@@ -4,9 +4,9 @@
     <div class="options-button-row mobile-elements">
       <BaseButton
         :text="$t('options')"
-        :icon="'remove'"
+        :icon="'options-menu'"
         :hide-icon="!showOptions"
-        icon-position="right"
+        icon-position="left"
         class="options"
         @clicked="showOptions = !showOptions"/>
     </div>

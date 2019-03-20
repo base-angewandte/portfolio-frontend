@@ -2,7 +2,7 @@
   <div
     id="menu-sidebar"
     :style="calcStyle"
-    class="mobile-hidden">
+    :class="['menu-sidebar', { 'menu-sidebar-hidden': activeEntryId || isNewForm }]">
 
     <div class="sidebar-head">
       <div class="base-row">
@@ -12,11 +12,13 @@
           :text="$t('new')"
           icon="sheet-plus"
           icon-size="large"
+          class="base-row-button"
           button-style="row"
           @clicked="getNewForm"/>
         <BaseSearch
           :show-image="true"
           :placeholder="$t('search')"
+          class="search-bar"
           @input="filterEntries($event, 'title')"/>
       </div>
       <div class="options-row">
@@ -28,6 +30,7 @@
             :icon="'options-menu'"
             icon-size="small"
             icon-position="left"
+            class="options-button"
             @clicked="toggleSidebarOptions"/>
         </div>
         <BaseDropDown
@@ -430,12 +433,12 @@ export default {
 <style lang="scss" scoped>
   @import "../styles/variables.scss";
 
-  #menu-sidebar {
+  .menu-sidebar {
     display: flex;
     flex-direction: column;
     height: calc(100vh - #{$header-height} - #{$row-height-small} - 40px);
 
-    button + div {
+    .search-bar {
       border-left: $separation-line;
     }
 
@@ -541,6 +544,32 @@ export default {
   @media screen and (max-width: $mobile) {
     .base-menu-entry {
       display: block;
+    }
+
+    .base-row-button {
+      width: 100%;
+      border-bottom: $separation-line;
+    }
+
+    .menu-sidebar-hidden {
+      display: none;
+
+      .search-bar {
+        border-left: none;
+      }
+    }
+
+    .options-row {
+      flex-wrap: wrap;
+      justify-content: center;
+
+      .options {
+        flex-basis: 100%;
+
+        .options-button {
+          width: 100%;
+        }
+      }
     }
   }
 </style>
