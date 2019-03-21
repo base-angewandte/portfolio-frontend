@@ -1,23 +1,38 @@
 <template>
-  <div class="form-options">
-    <div class="options-button-row">
+  <div class="base-options">
+    <div class="base-options-row">
+      <div
+        v-if="alignOptions === 'right' || beforeSlotHasData"
+        class="base-options-before">
+        <slot name="beforeOptions" />
+      </div>
+
       <BaseButton
+        v-if="useOptionsButton"
         ref="options"
         :text="$t('options')"
         :icon="'options-menu'"
-        :class="['options', { 'options-not-mobile-hidden': optionsButtonMobileOnly }]"
+        class="base-options-button"
         icon-position="left"
-        @clicked="showOptionsToggle = !showOptionsToggle"/>
+        @clicked="showOptionsToggle = !showOptionsToggle" />
+      <div
+        v-else-if="!isMobile"
+        class="base-options-inline" >
+        <slot name="options" />
+      </div>
+      <div
+        v-if="afterSlotHasData"
+        class="base-options-after">
+        <slot name="afterOptions" />
+      </div>
     </div>
-    <!-- TODO: fix transition (close) -->
     <transition name="slide-fade-options">
       <div
-        v-if="showOptions"
-        :class="[
-          'options-row',
-          'flex-align-right']" >
-        <slot />
+        v-if="useOptionsButton && showOptionsToggle"
+        class="base-options-below" >
+        <slot name="options" />
       </div>
+      <slot name="animations" />
     </transition>
   </div>
 </template>
@@ -30,31 +45,46 @@ export default {
     BaseButton,
   },
   props: {
-    optionsButtonMobileOnly: {
+    alwaysShowOptionsButton: {
       type: Boolean,
-      default: true,
+      default: false,
+    },
+    alignOptions: {
+      type: String,
+      default: 'right',
+      validator(val) {
+        return ['left', 'right'].includes(val);
+      },
     },
   },
   data() {
     return {
-      showOptions: true,
       showOptionsToggle: false,
+      isMobile: window.innerWidth < 640,
     };
+  },
+  computed: {
+    useOptionsButton() {
+      return this.alwaysShowOptionsButton || this.isMobile;
+    },
+    beforeSlotHasData() {
+      return this.$slots.beforeOptions;
+    },
+    afterSlotHasData() {
+      return this.$slots.afterOptions;
+    },
   },
   watch: {
     showOptionsToggle(val) {
-      this.showOptions = ((window.innerWidth > 640 && this.optionsButtonMobileOnly)
-        || val);
+      this.$emit('options-toggle', val);
     },
   },
   created() {
-    this.showOptions = ((window.innerWidth > 640 && this.optionsButtonMobileOnly)
-      || this.showOptionsToggle);
     window.addEventListener('resize', this.calcOptionsToggle);
   },
   methods: {
     calcOptionsToggle() {
-      this.showOptionsToggle = window.innerWidth > 640 && this.optionsButtonMobileOnly;
+      this.isMobile = window.innerWidth < 640;
     },
   },
 };
@@ -62,35 +92,55 @@ export default {
 
 <style lang="scss" scoped>
   @import "../styles/variables.scss";
-  .options-button-row {
+  .base-options {
     width: 100%;
+    background-color: $background-color;
+    overflow: hidden;
 
-    .options {
-      margin: auto;
+    .base-options-row {
+      min-height: $row-height-small;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+
+      .base-options-before {
+        align-self: center;
+      }
+
+      .base-options-button {
+      }
+
+      .base-options-inline {
+        display: flex;
+      }
+
+      .base-options-after {
+        flex-grow: 1;
+        align-self: center;
+      }
+    }
+
+    .base-options-below {
+      background-color: $background-color;
+      display: flex;
+      flex-wrap: wrap;
+      height: auto;
+      justify-content: center;
     }
   }
-  .options-not-mobile-hidden {
-    display: none;
-  }
 
-  .slide-fade-options-enter-active, .slide-fade2-move {
+  .slide-fade-options-enter-active, .slide-fade-options-move {
     transition: all 0.5s ease;
   }
-  .slide-fade-options-enter, .slide-fade2-leave-to {
+  .slide-fade-options-enter, .slide-fade-options-leave-to {
     opacity: 0;
-    transform: translateY(-#{$spacing});
+    transform: translateY(-#{2*$spacing});
   }
 
   .slide-fade-options-leave-active {
     position: absolute;
+    width: 100%;
+    margin: auto;
     transition: all 0.3s ease;
   }
-
-  @media screen and (max-width: $mobile) {
-    &.options-not-mobile-hidden {
-      display: block;
-    }
-  }
-
-
 </style>

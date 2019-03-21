@@ -24,7 +24,7 @@
 
     <Sidebar
       ref="sidebar"
-      :class="['sidebar', { 'sidebar-full': !showForm }]"
+      :class="['sidebar', { 'sidebar-full': !showForm, 'sidebar-hidden-mobile': showForm }]"
       @new-form="createNewForm"
       @show-entry="routeToEntry"/>
     <div
@@ -180,6 +180,12 @@ export default {
         word-wrap: break-word;
         hyphens: auto;
       }
+    }
+  }
+
+  @media screen and (max-width: $mobile) {
+    .sidebar-hidden-mobile {
+      display: none;
     }
   }
 </style>

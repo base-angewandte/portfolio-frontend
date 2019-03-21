@@ -8,34 +8,40 @@
 
       <!-- HEADER ROW -->
       <div class="header-row">
-        <h3
-          v-if="showTitle"
-          class="attachment-area-subheader">{{ $t('form-view.attachedEntries') }}</h3>
-        <div class="linked-options">
-          <BaseButton
-            v-if="!showEntryAction"
-            :text="$t('form-view.deleteLinked')"
-            icon-size="large"
-            icon="waste-bin"
-            button-style="single"
-            @clicked="showEntryAction = true"/>
-          <div
-            v-else
-            class="linked-options">
+        <BaseOptions
+          @options-toggle="showEntryAction = false">
+          <template slot="beforeOptions">
+            <h3
+              v-if="showTitle"
+              class="attachment-area-subheader">{{ $t('form-view.attachedEntries') }}</h3>
+          </template>
+          <template slot="options">
             <BaseButton
-              :text="$t('cancel')"
+              v-if="!showEntryAction"
+              :text="$t('form-view.deleteLinked')"
               icon-size="large"
-              icon="remove"
+              icon="waste-bin"
               button-style="single"
-              @clicked="showEntryAction = false"/>
-            <BaseButton
-              :text="$t('form-view.deleteButton')"
-              icon-size="large"
-              icon="save-file"
-              button-style="single"
-              @clicked="deleteLinked"/>
-          </div>
-        </div>
+              class="attachment-options"
+              @clicked="showEntryAction = true"/>
+            <div
+              v-else
+              class="attachment-options">
+              <BaseButton
+                :text="$t('cancel')"
+                icon-size="large"
+                icon="remove"
+                button-style="single"
+                @clicked="showEntryAction = false"/>
+              <BaseButton
+                :text="$t('form-view.deleteButton')"
+                icon-size="large"
+                icon="save-file"
+                button-style="single"
+                @clicked="deleteLinked"/>
+            </div>
+          </template>
+        </BaseOptions>
       </div>
 
       <!-- ACTION AREA -->
@@ -90,47 +96,54 @@
 
       <!-- HEADER ROW -->
       <div class="header-row">
-        <h3
-          v-if="showTitle"
-          class="attachment-area-subheader">Angehängte Dateien</h3>
-        <div
-          v-if="!fileText"
-          class="linked-options">
-          <base-button
-            :text="$t('form-view.changeLicense')"
-            icon-size="large"
-            icon="licence"
-            button-style="single"
-            @clicked="action = 'licence'"/>
-          <base-button
-            :text="$t('form-view.publishMedia')"
-            icon-size="large"
-            icon="eye"
-            button-style="single"
-            @clicked="action = 'publish'"/>
-          <base-button
-            :text="$t('form-view.deleteMedia')"
-            icon-size="large"
-            icon="waste-bin"
-            button-style="single"
-            @clicked="action = 'delete'"/>
-        </div>
-        <div
-          v-else
-          class="linked-options">
-          <base-button
-            :text="$t('cancel')"
-            icon-size="large"
-            icon="remove"
-            button-style="single"
-            @clicked="action = ''"/>
-          <base-button
-            :text="buttonText"
-            icon-size="large"
-            icon="save-file"
-            button-style="single"
-            @clicked="saveFileMeta"/>
-        </div>
+        <BaseOptions
+          @options-toggle="fileText = action = ''">
+          <template slot="beforeOptions">
+            <h3
+              v-if="showTitle"
+              class="attachment-area-subheader">Angehängte Dateien</h3>
+          </template>
+          <template slot="options">
+            <div
+              v-if="!fileText"
+              class="attachment-options">
+              <BaseButton
+                :text="$t('form-view.changeLicense')"
+                icon-size="large"
+                icon="licence"
+                button-style="single"
+                @clicked="action = 'licence'"/>
+              <BaseButton
+                :text="$t('form-view.publishMedia')"
+                icon-size="large"
+                icon="eye"
+                button-style="single"
+                @clicked="action = 'publish'"/>
+              <BaseButton
+                :text="$t('form-view.deleteMedia')"
+                icon-size="large"
+                icon="waste-bin"
+                button-style="single"
+                @clicked="action = 'delete'"/>
+            </div>
+            <div
+              v-else
+              class="attachment-options">
+              <BaseButton
+                :text="$t('cancel')"
+                icon-size="large"
+                icon="remove"
+                button-style="single"
+                @clicked="action = ''"/>
+              <BaseButton
+                :text="buttonText"
+                icon-size="large"
+                icon="save-file"
+                button-style="single"
+                @clicked="saveFileMeta"/>
+            </div>
+          </template>
+        </BaseOptions>
       </div>
 
       <!-- ACTION AREA -->
@@ -213,8 +226,11 @@
 </template>
 
 <script>
-import { BaseImageBox, BaseButton, BaseDropDown } from 'base-components';
-import BaseBoxButton from 'base-components/src/components/BaseBoxButton/BaseBoxButton';
+import {
+  BaseBoxButton, BaseImageBox, BaseButton, BaseDropDown,
+} from 'base-components';
+import BaseOptions from './BaseOptions';
+
 
 export default {
   components: {
@@ -222,6 +238,7 @@ export default {
     BaseDropDown,
     BaseImageBox,
     BaseButton,
+    BaseOptions,
   },
   props: {
     linkedList: {
@@ -369,9 +386,10 @@ export default {
         justify-content: space-between;
         align-items: center;
 
-        .linked-options {
+        .attachment-options {
+          margin-bottom: $spacing-small;
           display: flex;
-          flex-direction: row;
+
         }
       }
 
@@ -444,6 +462,7 @@ export default {
 
     .slide-enter {
       opacity: 0;
+      transform: translateY(-#{$spacing});
     }
   }
 

@@ -2,7 +2,7 @@
   <div
     id="menu-sidebar"
     :style="calcStyle"
-    :class="['menu-sidebar', { 'menu-sidebar-hidden': activeEntryId || isNewForm }]">
+    class="menu-sidebar">
 
     <div class="sidebar-head">
       <div class="base-row">
@@ -21,33 +21,24 @@
           class="search-bar"
           @input="filterEntries($event, 'title')"/>
       </div>
-      <div class="options-row">
-        <div
-          v-if="optionsVisible"
-          class="options">
-          <BaseButton
-            :text="$t('options')"
-            :icon="'options-menu'"
-            icon-size="small"
-            icon-position="left"
-            class="options-button"
-            @clicked="toggleSidebarOptions"/>
-        </div>
-        <BaseDropDown
-          :placeholder="'Sortieren nach'"
-          :selection-list="filterByTypeList"
-          @selected="sortEntries"/>
-        <BaseDropDown
-          :selected="selectedType"
-          :selection-list="entryTypes"
-          @selected="filterEntries($event, 'type')"/>
-      </div>
-      <transition
-        name="slide-toggle"
-        class="options-extend">
-        <div
-          v-if="showCheckbox"
-          class="options-extend-box">
+      <BaseOptions
+        :always-show-options-button="true"
+        align-options="left"
+        @options-toggle="toggleSidebarOptions">
+        <template slot="afterOptions">
+          <div class="sidebar-drop-downs">
+            <BaseDropDown
+              :placeholder="'Sortieren nach'"
+              :selection-list="filterByTypeList"
+              @selected="sortEntries"/>
+            <BaseDropDown
+              :selected="selectedType"
+              :selection-list="entryTypes"
+              @selected="filterEntries($event, 'type')"/>
+          </div>
+        </template>
+        <template
+          slot="options">
           <BaseButton
             :text="$tc('publish', 2)"
             icon-size="large"
@@ -72,10 +63,10 @@
             icon="waste-bin"
             button-style="single"
             @clicked="actionEntries('delete')"/>
-        </div>
-      </transition>
-    </div>
 
+        </template>
+      </BaseOptions>
+    </div>
     <div
       ref="menu-container"
       class="base-menu-container">
@@ -125,6 +116,7 @@ import {
   BasePagination,
 } from 'base-components';
 import 'base-components/dist/lib/base-components.min.css';
+import BaseOptions from './BaseOptions';
 
 export default {
   components: {
@@ -133,6 +125,7 @@ export default {
     BaseDropDown,
     BaseSearch,
     BasePagination,
+    BaseOptions,
   },
   props: {
     /**
@@ -451,13 +444,8 @@ export default {
       background-color: $background-color;
       flex: 0 0 auto;
 
-      .options-extend-box {
-        width: 100%;
-        background-color: $background-color;
-        overflow: hidden;
-      }
-
-      .options-extend {
+      .sidebar-drop-downs {
+        display: flex;
       }
     }
   }
@@ -551,9 +539,7 @@ export default {
       border-bottom: $separation-line;
     }
 
-    .menu-sidebar-hidden {
-      display: none;
-
+    .menu-sidebar {
       .search-bar {
         border-left: none;
       }

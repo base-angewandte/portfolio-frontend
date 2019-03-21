@@ -90,31 +90,6 @@ export default {
     margin-left: 0;
   }
 
-  .options-row {
-    min-height: $row-height-small;
-    width: 100%;
-    display: flex;
-    background-color: $background-color;
-    overflow: hidden;
-
-    &.flex-align-right {
-      justify-content: flex-end;
-      margin-right: -32px;
-    }
-
-    .options {
-      flex-grow: 2;
-    }
-  }
-
-  .options-button-row {
-    width: 100%;
-
-    .options {
-      margin: auto;
-    }
-  }
-
   .base-row {
     height: $row-height-large;
     box-shadow: $box-shadow-reg;

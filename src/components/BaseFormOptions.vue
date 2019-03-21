@@ -1,25 +1,27 @@
 <template>
   <BaseOptions>
-    <BaseButton
-      :disabled="isNewForm"
-      :text="isPublished ? $tc('offline') : $tc('publish')"
-      icon-size="large"
-      icon="eye"
-      button-style="single"
-      @clicked="$emit('action-entry', isPublished ? 'offline' : 'publish')"/>
-    <BaseButton
-      :disabled="true"
-      :text="$tc('edit')"
-      icon-size="large"
-      icon="people"
-      button-style="single" />
-    <BaseButton
-      :disabled="isNewForm"
-      :text="$tc('delete')"
-      icon-size="large"
-      icon="waste-bin"
-      button-style="single"
-      @clicked="$emit('action-entry', 'delete')"/>
+    <template slot="options">
+      <BaseButton
+        :disabled="isNewForm"
+        :text="isPublished ? $tc('offline') : $tc('publish')"
+        icon-size="large"
+        icon="eye"
+        button-style="single"
+        @clicked="$emit('action-entry', isPublished ? 'offline' : 'publish')"/>
+      <BaseButton
+        :disabled="true"
+        :text="$tc('edit')"
+        icon-size="large"
+        icon="people"
+        button-style="single" />
+      <BaseButton
+        :disabled="isNewForm"
+        :text="$tc('delete')"
+        icon-size="large"
+        icon="waste-bin"
+        button-style="single"
+        @clicked="$emit('action-entry', 'delete')"/>
+    </template>
   </BaseOptions>
 </template>
 
