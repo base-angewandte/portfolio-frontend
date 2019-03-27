@@ -78,8 +78,6 @@ export default {
       if (!vm.$store.getters['PortfolioAPI/isAuthenticated']) {
         console.log('authenticating');
         window.location.href = 'http://localhost:8200/accounts/login';
-      } else {
-        vm.$store.commit('user/setAuthenticated', true);
       }
     });
   },
