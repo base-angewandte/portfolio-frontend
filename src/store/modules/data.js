@@ -25,8 +25,8 @@ function transformTextData(data) {
 function prepareData(valueObj) {
   // make necessary modifications to the valueList object
   // 1. type should be string not array
-  const type = valueObj.type && valueObj.type.length
-    ? valueObj.type[0].type || valueObj.type[0] : '';
+  const type = valueObj.type && typeof valueObj.type === 'object' && valueObj.type.length
+    ? valueObj.type[0].type || valueObj.type[0] : valueObj.type || '';
   // 2. texts need different object structure and text type needs to be string (uri)
   const texts = transformTextData(valueObj.texts);
   return Object.assign({}, valueObj, { type, texts });
