@@ -11,15 +11,29 @@
       :class="['base-form-field']"/>
 
     <!-- DATE FIELD -->
-    <BaseDateInput
+    <div
       v-else-if="fieldType === 'date'"
-      :key="fieldKey"
-      :label="label"
-      :placeholder="placeholder"
-      :id="fieldKey"
-      :type="dateType"
-      v-model="fieldValueInt"
-      :class="['base-form-field']"/>
+      class="date-field">
+      <BaseDateInput
+        :key="fieldKey + 'date'"
+        :label="label"
+        :placeholder="placeholder"
+        :id="fieldKey"
+        :format="field['x-attrs'].date_format"
+        :type="dateType.includes('timerange') ? dateType.includes('daterange')
+        ? 'daterange' : 'single' : dateType"
+        v-model="fieldValueInt"
+        :class="['base-form-field']"/>
+      <BaseDateInput
+        v-if="dateType.includes('timerange')"
+        :key="fieldKey + 'time'"
+        :label="$t('form.time')"
+        :placeholder="placeholder"
+        :id="fieldKey"
+        :type="'timerange'"
+        v-model="fieldValueInt"
+        :class="['base-form-field']"/>
+    </div>
 
     <!--MULTILINE TEXT FIELD -->
     <BaseMultilineTextInput
@@ -183,7 +197,7 @@ export default {
       required: true,
     },
     fieldValue: {
-      type: [Object, String, Array],
+      type: [Object, String, Array, Date],
       required: true,
     },
     fieldType: {
@@ -230,18 +244,25 @@ export default {
   },
   computed: {
     dateType() {
+      // check if date is an Object with properties or just string (= single date)
+      if (!this.field.properties) {
+        return 'single';
+      }
       const props = Object.keys(this.field.properties);
 
+      if (props.includes('date_to') && props.includes('time_to')) {
+        return 'daterangetimerange';
+      }
+      if (props.includes('date') && props.includes('time_to')) {
+        return 'datetimerange';
+      }
       if (props.includes('time')) {
         return 'datetime';
       }
-      if (props.includes('date')) {
-        return 'single';
-      }
       if (props.includes('date_to')) {
-        return 'range';
+        return 'daterange';
       }
-      return '';
+      return 'single';
     },
     groupFormFields() {
       // check if field group is a list (=multiplyable) or not
@@ -272,6 +293,9 @@ export default {
     },
   },
   mounted() {
+    if (this.label === 'Date') {
+      console.log(this.field);
+    }
     this.setFieldValue(this.fieldValue);
   },
   methods: {
@@ -322,6 +346,13 @@ export default {
     }
   }
 
+  .date-field {
+    display: flex;
+    .base-form-field + .base-form-field {
+      margin-left: $spacing;
+    }
+  }
+
   .base-form-field {
     .chips-dropdown-second {
       margin-left: $spacing;
@@ -333,6 +364,16 @@ export default {
       float: right;
       color: $font-color-third;
       font-size: $font-size-small;
+    }
+  }
+
+  @media screen and (max-width: 1260px) {
+    .date-field {
+      display: block;
+      .base-form-field + .base-form-field {
+        margin-top: $spacing;
+        margin-left: 0;
+      }
     }
   }
 </style>

@@ -57,7 +57,8 @@
     "title_of_contribution": "Vortragstitel",
     "published_in": "Erschienen In",
     "addGroup": "Weiteres \"{fieldType}\" Feld hinzufügen",
-    "removeField": "\"{fieldType}\" Feld entfernen"
+    "removeField": "\"{fieldType}\" Feld entfernen",
+    "time": "Time"
   },
   "form-view": {
     "formExtended": "Weitere Angaben",

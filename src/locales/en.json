@@ -59,7 +59,8 @@
     "title_of_contribution": "Title of Contribution",
     "published_in": "Published In",
     "addGroup": "Add \"{fieldType}\"",
-    "removeField": "\"{fieldType}\" Feld entfernen"
+    "removeField": "\"{fieldType}\" Feld entfernen",
+    "time": "Time"
   },
   "form-view": {
     "formExtended": "Weitere Angaben",
