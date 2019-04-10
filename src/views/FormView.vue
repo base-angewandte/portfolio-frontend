@@ -122,6 +122,7 @@ export default {
   watch: {
     currentItemId(val) {
       if (val) {
+        this.resetForm();
         this.updateForm();
       } else {
         this.resetForm();
@@ -158,10 +159,16 @@ export default {
     },
     handleInput(data, type) {
       this.unsavedChanges = true;
+      // check if type is set (=this event is coming from a subform)
       if (type) {
         this.$set(this.valueList, type, Object.assign({}, this.valueList[type],
           JSON.parse(JSON.stringify(data))));
       } else {
+        // check if type has changed - if yes - delete old properties in data
+        if (this.valueList.type[0] !== data.type[0]) {
+          // TODO: not only delete but map data between fields!!
+          this.valueList.data = {};
+        }
         this.valueList = Object.assign({}, this.valueList, JSON.parse(JSON.stringify(data)));
       }
     },
@@ -170,6 +177,8 @@ export default {
       if (this.valueList.title) {
         // remove properties from contributor fields that can not be saved to the database
         const data = Object.assign({}, this.valueList.data);
+        // TODO: use more general way of removing unknown properties by checking
+        // with formfields(extension)
         Object.keys(this.formFieldsExtension).forEach((key) => {
           if (key === 'contributors' || this.formFieldsExtension[key]['x-attrs'].equivalent === 'contributors') {
             if (data[key] && data[key].length) {

@@ -1,5 +1,5 @@
 <template>
-  <div class="base-form">
+  <form class="base-form">
     <template
       v-for="(element, index) in formFieldListInt">
 
@@ -88,7 +88,7 @@
         />
       </template>
     </template>
-  </div>
+  </form>
 </template>
 
 <script>
@@ -129,7 +129,9 @@ export default {
   },
   watch: {
     valueList(val) {
-      if (JSON.stringify(val) !== JSON.stringify(this.valueListInt)) {
+      const changedValues = Object.keys(this.valueListInt)
+        .some(key => JSON.stringify(this.valueListInt[key]) !== JSON.stringify(val[key]));
+      if (changedValues) {
         this.initializeValueObject();
         // this.initializeDropDownLists();
         // JSON parse is necessary to destroy any references between the objects
@@ -137,6 +139,9 @@ export default {
       }
     },
     formFieldJson() {
+      // if new field specifications were set - also reset the properties of the value object
+      this.valueListInt = {};
+      // initialize value object with new properties
       this.initializeValueObject();
       this.initializeDropDownLists();
     },
