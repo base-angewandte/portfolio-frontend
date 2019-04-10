@@ -133,11 +133,24 @@ export default {
     },
     async type(val) {
       if (val) {
-        const response = await this.$store.dispatch('PortfolioAPI/get', {
-          kind: 'jsonschema',
-          id: val,
-        });
-        this.formFieldsExtension = response.properties || {};
+        try {
+          const response = await this.$store.dispatch('PortfolioAPI/get', {
+            kind: 'jsonschema',
+            id: val,
+          });
+          this.formFieldsExtension = response.properties || {};
+        } catch (e) {
+          this.$notify({
+            group: 'request-notifications',
+            title: 'Entry type not found',
+            text: 'The selected type was not found, please choose a different one!',
+            type: 'warn',
+          });
+          // reset type
+          this.valueList.type = [];
+          // empty extension
+          this.formFieldsExtension = {};
+        }
       } else {
         this.formFieldsExtension = {};
       }

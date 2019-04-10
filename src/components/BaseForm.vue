@@ -115,7 +115,6 @@ export default {
   data() {
     return {
       valueListInt: {},
-      valueListIntCopy: {},
       formFieldListInt: [],
       fieldProperties: [],
       dropdownLists: {},
@@ -128,15 +127,16 @@ export default {
     },
   },
   watch: {
-    valueList(val) {
-      const changedValues = Object.keys(this.valueListInt)
-        .some(key => JSON.stringify(this.valueListInt[key]) !== JSON.stringify(val[key]));
-      if (changedValues) {
-        this.initializeValueObject();
-        // this.initializeDropDownLists();
-        // JSON parse is necessary to destroy any references between the objects
-        this.valueListIntCopy = Object.assign({}, JSON.parse(JSON.stringify(this.valueListInt)));
-      }
+    valueList: {
+      handler(val) {
+        const changedValues = Object.keys(this.valueListInt)
+          .some(key => JSON.stringify(this.valueListInt[key]) !== JSON.stringify(val[key]));
+        if (changedValues) {
+          this.initializeValueObject();
+          // this.initializeDropDownLists();
+        }
+      },
+      deep: true,
     },
     formFieldJson() {
       // if new field specifications were set - also reset the properties of the value object
@@ -171,8 +171,6 @@ export default {
           this.getInitialFieldValue(field),
         );
       });
-      // JSON parse is necessary to destroy any references between the objects
-      this.valueListIntCopy = Object.assign({}, JSON.parse(JSON.stringify(this.valueListInt)));
     },
     getInitialFieldValue(field) {
       // check if field is array
