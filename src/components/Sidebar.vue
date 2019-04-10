@@ -23,6 +23,7 @@
       </div>
       <BaseOptions
         :always-show-options-button="true"
+        :show-options="showCheckbox"
         align-options="left"
         @options-toggle="toggleSidebarOptions">
         <template slot="afterOptions">

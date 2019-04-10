@@ -56,10 +56,13 @@ export default {
         return ['left', 'right'].includes(val);
       },
     },
+    showOptions: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     return {
-      showOptionsToggle: false,
       isMobile: window.innerWidth < 640,
     };
   },
@@ -73,10 +76,13 @@ export default {
     afterSlotHasData() {
       return this.$slots.afterOptions;
     },
-  },
-  watch: {
-    showOptionsToggle(val) {
-      this.$emit('options-toggle', val);
+    showOptionsToggle: {
+      set(val) {
+        this.$emit('options-toggle', val);
+      },
+      get() {
+        return this.showOptions;
+      },
     },
   },
   created() {
