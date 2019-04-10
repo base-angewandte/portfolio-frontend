@@ -37,6 +37,7 @@
       v-if="Object.keys(formFields).length"
       class="form-container">
       <BaseForm
+        ref="baseForm"
         :form-field-json="formFields"
         :value-list="valueList"
         @values-changed="handleInput($event)"
@@ -152,6 +153,7 @@ export default {
     resetForm() {
       this.unsavedChanges = false;
       this.valueList = {};
+      this.$refs.baseForm.initializeValueObject();
     },
     async updateForm() {
       const data = await this.$store.dispatch('data/fetchEntryData', { id: this.currentItemId });
@@ -165,7 +167,7 @@ export default {
           JSON.parse(JSON.stringify(data))));
       } else {
         // check if type has changed - if yes - delete old properties in data
-        if (this.valueList.type[0] !== data.type[0]) {
+        if (!this.valueList.type || this.valueList.type[0] !== data.type[0]) {
           // TODO: not only delete but map data between fields!!
           this.valueList.data = {};
         }
