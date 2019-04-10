@@ -197,7 +197,7 @@ export default {
       if (!this.hideActive && this.activeEntryId) {
         return this.listInt.map(entry => entry.id).indexOf(this.activeEntryId);
       }
-      return null;
+      return -1;
     },
     activeEntryId() {
       return this.$route.params.id || null;
@@ -446,6 +446,7 @@ export default {
 
       .sidebar-drop-downs {
         display: flex;
+        justify-content: flex-end;
       }
     }
   }
@@ -526,6 +527,12 @@ export default {
     100%{
       stroke-dasharray: 89,200;
       stroke-dashoffset: -124;
+    }
+  }
+
+  @media screen and (max-width: $tablet) {
+    .menu-sidebar .sidebar-head .sidebar-drop-downs {
+      flex-wrap: wrap;
     }
   }
 

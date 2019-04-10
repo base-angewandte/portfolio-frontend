@@ -101,6 +101,7 @@ export default {
       min-height: $row-height-small;
       width: 100%;
       display: flex;
+      flex-wrap: wrap;
       justify-content: space-between;
 
       .base-options-before {

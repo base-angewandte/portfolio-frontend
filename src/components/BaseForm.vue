@@ -329,7 +329,8 @@ export default {
     }
 
     .base-form-field-half {
-      flex: 0 0 calc(50% - 8px);
+      flex: 0 0 calc(50% - #{$spacing-small});
+      width: calc(50% - #{$spacing-small});
     }
 
     .base-form-field-left-margin {
