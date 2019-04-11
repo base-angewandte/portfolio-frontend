@@ -34,9 +34,14 @@
 
     <!-- FORM -->
     <div
-      v-if="Object.keys(formFields).length"
       class="form-container">
+      <div
+        v-if="formIsLoading"
+        class="form-loading-area">
+        <BaseLoader />
+      </div>
       <BaseForm
+        v-if="Object.keys(formFields).length"
         ref="baseForm"
         :form-field-json="formFields"
         :value-list="valueList"
@@ -64,6 +69,7 @@
 
         <!-- ATTACHMENTS -->
         <AttachmentArea
+          v-if="Object.keys(formFields).length"
           key="attachments"
           @open-new-form="openNewForm"
           @show-preview="$emit('show-preview', $event)"/>
@@ -81,7 +87,7 @@
 </template>
 
 <script>
-import { BaseMenuEntry } from 'base-components';
+import { BaseMenuEntry, BaseLoader } from 'base-components';
 import BaseRow from '../components/BaseRow';
 import BaseFormOptions from '../components/BaseFormOptions';
 import BaseForm from '../components/BaseForm';
@@ -95,6 +101,7 @@ export default {
     BaseFormOptions,
     BaseRow,
     BaseForm,
+    BaseLoader,
   },
   data() {
     return {
@@ -103,6 +110,7 @@ export default {
       formFieldsExtension: {},
       valueList: {},
       showOverlay: false,
+      formIsLoading: false,
     };
   },
   computed: {
@@ -121,15 +129,17 @@ export default {
     },
   },
   watch: {
-    currentItemId(val) {
+    async currentItemId(val) {
+      this.formIsLoading = true;
       if (val) {
         this.resetForm();
-        this.updateForm();
+        await this.updateForm();
       } else {
         this.resetForm();
       }
       window.scrollTo(0, 0);
       this.showOverlay = false;
+      this.formIsLoading = false;
     },
     async type(val) {
       if (val) {
@@ -157,10 +167,12 @@ export default {
     },
   },
   async created() {
+    this.formIsLoading = true;
     this.formFields = await this.$store.dispatch('data/fetchGeneralFields');
     if (this.currentItemId) {
-      this.updateForm();
+      await this.updateForm();
     }
+    this.formIsLoading = false;
   },
   methods: {
     resetForm() {
@@ -307,6 +319,8 @@ export default {
   @import "../styles/variables";
 
   .form-component {
+    position: relative;
+    min-height: 100vh;
 
     .form-head {
       background-color: $background-color;
@@ -344,7 +358,17 @@ export default {
     }
 
     .form-container {
+      min-height: 100vh;
       position: relative;
+
+      .form-loading-area {
+        margin-top: $spacing;
+        position: absolute;
+        height: 100%;
+        width: 100%;
+        z-index: 6;
+        background-color: rgba(255,255,255, 0.50);
+      }
 
       .slide-in-form {
         top: 0;
