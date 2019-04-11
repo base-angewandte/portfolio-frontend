@@ -125,7 +125,7 @@ export default {
             this.$emit('upload-start');
 
             try {
-              await axios.post(`${process.env.API}medipa/`,
+              await axios.post(`${process.env.API}media/`,
                 formData,
                 {
                   withCredentials: true,
