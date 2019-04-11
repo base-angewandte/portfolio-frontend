@@ -1,12 +1,8 @@
 <template>
   <BasePopUp
     :show="!!fileList.length"
-    :button-right-text="isSuccess ? 'Fertig' : 'Hochladen'"
-    title="Dateien hochladen"
-    button-left-text="Abbrechen"
-    @button-right="startUpload"
-    @button-left="cancelUpload('cancel')"
-    @close="cancelUpload('done')">
+    :title="$t('upload.title')"
+    @close="cancelUpload()">
     <div
       class="popup-upload-area">
       <BaseUploadBar
@@ -19,7 +15,7 @@
     </div>
     <div class="popup-text">
       <BaseDropDown
-        :label="$t('form-view.chooseLicense')"
+        :label="$t('upload.choose_license')"
         :selection-list="[
           {
             label: 'CC0',
@@ -36,10 +32,39 @@
           { label: $t('yes'), value: 'true' }]"
         :background-color="'rgb(240, 240, 240)'"
         :fixed-width="true"
-        :label="$t('form-view.showImages')"
+        :label="$t('upload.publish_images')"
         v-model="publish"
         header-style="inline"/>
     </div>
+    <template
+      slot="button-row">
+      <BaseButton
+        v-if="isInitial"
+        :text="$t('cancel')"
+        :icon="'remove'"
+        :icon-position="'right'"
+        :icon-size="'small'"
+        class="base-upload-bar-button"
+        @clicked="cancelUpload"
+      />
+      <!-- @event buttonRight -->
+      <BaseButton
+        :text="isInitial || isSaving ? $t('upload.upload') : $t('upload.done')"
+        :icon="!isSaving ? 'check-mark' : ''"
+        :icon-position="'right'"
+        :icon-size="'small'"
+        :disabled="isSaving"
+        class="base-upload-bar-button"
+        @clicked="startUpload">
+        <template
+          v-if="isSaving"
+          slot="right-of-text">
+          <span class="base-upload-bar-loader">
+            <BaseLoader />
+          </span>
+        </template>
+      </BaseButton>
+    </template>
   </BasePopUp>
 </template>
 
@@ -49,6 +74,8 @@ import {
   BaseDropDown,
   BaseInput,
   BaseUploadBar,
+  BaseButton,
+  BaseLoader,
 } from 'base-components';
 import axios from 'axios';
 // import upload from '../assets/file-upload.fake.service';
@@ -60,10 +87,12 @@ const STATUS_FAILED = 3;
 
 export default {
   components: {
+    BaseButton,
     BasePopUp,
     BaseDropDown,
     BaseInput,
     BaseUploadBar,
+    BaseLoader,
   },
   props: {
     fileList: {
@@ -203,5 +232,20 @@ export default {
     .upload-bar {
       margin-bottom: $spacing;
     }
+  }
+
+  .base-upload-bar-button {
+    flex-basis: 100%;
+
+    .base-upload-bar-loader {
+      position: relative;
+      transform: scale(0.5);
+      margin-left: $spacing;
+      padding-left: $spacing;
+    }
+  }
+
+  .base-upload-bar-button + .base-upload-bar-button {
+    margin-left: $spacing;
   }
 </style>
