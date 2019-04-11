@@ -186,7 +186,8 @@
           v-for="(attached, index) of attachedList"
           :show-title="true"
           :selectable="!!fileText"
-          :selected="action === 'publish' && attachedList[index].published"
+          :selected="(action === 'publish' && attachedList[index].published)
+          || selectedFiles.includes(attached.id)"
           :title="getFileName(attached.original)"
           :subtext="attached.licence"
           :description="attached.metadata && attached.metadata.FileType
@@ -196,7 +197,7 @@
           :box-size="{ width: 'calc(25% - 12px)' }"
           :box-ratio="100"
           :box-text="generateBoxText(attached.metadata)"
-          :key="index"
+          :key="attached.id"
           :class="['linked-base-box', { 'image-box': !!attached.thumbnail }]"
           @select-triggered="filesSelected(attached.id, $event)"
           @clicked="$emit('show-preview', attached.original)">
@@ -279,6 +280,8 @@ export default {
         this.buttonText = this.$t(`form-view.${val}Button`);
       } else {
         this.fileText = '';
+        this.publishFiles = [];
+        this.selectedFiles = [];
       }
     },
   },
@@ -314,8 +317,14 @@ export default {
           this.selectedFiles = this.selectedFiles.filter(entryId => entryId !== objId);
         }
       } else {
-        this.publishFiles.filter(file => file.id === objId);
-        this.publishFiles.push({ id: objId, selected: sel });
+        // check if the file was already changed previously (which means now it is
+        // back in original state) --> filter out
+        /* eslint-disable-next-line */
+        if (this.publishFiles.some(file => file.id === objId)) {
+          this.publishFiles = this.publishFiles.filter(file => file.id === objId);
+        } else {
+          this.publishFiles.push({ id: objId, selected: sel });
+        }
       }
     },
     getFileName(file) {
