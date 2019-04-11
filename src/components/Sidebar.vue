@@ -74,18 +74,7 @@
       <div
         v-if="isLoading"
         class="loading-area">
-        <div class="loader">
-          <svg class="circular">
-            <circle
-              class="path"
-              cx="50"
-              cy="50"
-              r="20"
-              fill="none"
-              stroke-width="4"
-              stroke-miterlimit="10" />
-          </svg>
-        </div>
+        <BaseLoader />
       </div>
 
       <BaseMenuList
@@ -115,6 +104,7 @@ import {
   BaseDropDown,
   BaseSearch,
   BasePagination,
+  BaseLoader,
 } from 'base-components';
 import 'base-components/dist/lib/base-components.min.css';
 import BaseOptions from './BaseOptions';
@@ -127,6 +117,7 @@ export default {
     BaseSearch,
     BasePagination,
     BaseOptions,
+    BaseLoader,
   },
   props: {
     /**
@@ -467,31 +458,6 @@ export default {
       width: 100%;
       z-index: 2;
       background-color: rgba(255,255,255, 0.50);
-
-      .loader{
-        position: absolute;
-        width: 100px;
-        height: 100px;
-        top: 20%;
-        left: 50%;
-        transform: translate(-50%,-50%);
-
-        .circular{
-          animation: rotate 2s linear infinite;
-          height: 100px;
-          position: relative;
-          width: 100px;
-
-          .path {
-            stroke-dasharray: 1,200;
-            stroke-dashoffset: 0;
-            stroke:$app-color;
-            color: $app-color;
-            animation:
-              dash 1.5s ease-in-out infinite;
-          }
-        }
-      }
     }
   }
 
@@ -508,27 +474,6 @@ export default {
   }
   .slide-toggle-leave {
     height: calc(4 * #{$row-height-small});
-  }
-
-  @keyframes rotate{
-    100%{
-      transform: rotate(360deg);
-    }
-  }
-
-  @keyframes dash{
-    0%{
-      stroke-dasharray: 1,200;
-      stroke-dashoffset: 0;
-    }
-    50%{
-      stroke-dasharray: 89,200;
-      stroke-dashoffset: -35;
-    }
-    100%{
-      stroke-dasharray: 89,200;
-      stroke-dashoffset: -124;
-    }
   }
 
   @media screen and (max-width: $tablet) {
