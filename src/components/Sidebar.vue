@@ -2,7 +2,7 @@
   <div
     id="menu-sidebar"
     :style="calcStyle"
-    class="mobile-hidden">
+    class="menu-sidebar">
 
     <div class="sidebar-head">
       <div class="base-row">
@@ -12,39 +12,34 @@
           :text="$t('new')"
           icon="sheet-plus"
           icon-size="large"
+          class="base-row-button"
           button-style="row"
           @clicked="getNewForm"/>
         <BaseSearch
           :show-image="true"
           :placeholder="$t('search')"
+          class="search-bar"
           @input="filterEntries($event, 'title')"/>
       </div>
-      <div class="options-row">
-        <div
-          v-if="optionsVisible"
-          class="options">
-          <BaseButton
-            :text="$t('options')"
-            :icon="'options-menu'"
-            icon-size="small"
-            icon-position="left"
-            @clicked="toggleSidebarOptions"/>
-        </div>
-        <BaseDropDown
-          :placeholder="'Sortieren nach'"
-          :selection-list="filterByTypeList"
-          @selected="sortEntries"/>
-        <BaseDropDown
-          :selected="selectedType"
-          :selection-list="entryTypes"
-          @selected="filterEntries($event, 'type')"/>
-      </div>
-      <transition
-        name="slide-toggle"
-        class="options-extend">
-        <div
-          v-if="showCheckbox"
-          class="options-extend-box">
+      <BaseOptions
+        :always-show-options-button="true"
+        :show-options="showCheckbox"
+        align-options="left"
+        @options-toggle="toggleSidebarOptions">
+        <template slot="afterOptions">
+          <div class="sidebar-drop-downs">
+            <BaseDropDown
+              :placeholder="'Sortieren nach'"
+              :selection-list="filterByTypeList"
+              @selected="sortEntries"/>
+            <BaseDropDown
+              :selected="selectedType"
+              :selection-list="entryTypes"
+              @selected="filterEntries($event, 'type')"/>
+          </div>
+        </template>
+        <template
+          slot="options">
           <BaseButton
             :text="$tc('publish', 2)"
             icon-size="large"
@@ -69,28 +64,17 @@
             icon="waste-bin"
             button-style="single"
             @clicked="actionEntries('delete')"/>
-        </div>
-      </transition>
-    </div>
 
+        </template>
+      </BaseOptions>
+    </div>
     <div
       ref="menu-container"
       class="base-menu-container">
       <div
         v-if="isLoading"
         class="loading-area">
-        <div class="loader">
-          <svg class="circular">
-            <circle
-              class="path"
-              cx="50"
-              cy="50"
-              r="20"
-              fill="none"
-              stroke-width="4"
-              stroke-miterlimit="10" />
-          </svg>
-        </div>
+        <BaseLoader />
       </div>
 
       <BaseMenuList
@@ -120,8 +104,10 @@ import {
   BaseDropDown,
   BaseSearch,
   BasePagination,
+  BaseLoader,
 } from 'base-components';
 import 'base-components/dist/lib/base-components.min.css';
+import BaseOptions from './BaseOptions';
 
 export default {
   components: {
@@ -130,6 +116,8 @@ export default {
     BaseDropDown,
     BaseSearch,
     BasePagination,
+    BaseOptions,
+    BaseLoader,
   },
   props: {
     /**
@@ -201,7 +189,7 @@ export default {
       if (!this.hideActive && this.activeEntryId) {
         return this.listInt.map(entry => entry.id).indexOf(this.activeEntryId);
       }
-      return null;
+      return -1;
     },
     activeEntryId() {
       return this.$route.params.id || null;
@@ -284,7 +272,7 @@ export default {
     async getEntryTypes() {
       // TODO: replace with C. store module!
       try {
-        const response = await axios.get(`${process.env.API}entity/types/`, {
+        const response = await axios.get(`${process.env.API}entry/types/`, {
           withCredentials: true,
         });
         const types = response.data;
@@ -397,7 +385,7 @@ export default {
       this.isLoading = true;
       try {
         const response = await this.$store.dispatch('PortfolioAPI/get', {
-          kind: 'entity',
+          kind: 'entry',
           sort: this.sortParam,
           offset: (this.pageNumber - 1) * this.entriesPerPage,
           limit: this.entriesPerPage,
@@ -432,12 +420,12 @@ export default {
 <style lang="scss" scoped>
   @import "../styles/variables.scss";
 
-  #menu-sidebar {
+  .menu-sidebar {
     display: flex;
     flex-direction: column;
     height: calc(100vh - #{$header-height} - #{$row-height-small} - 40px);
 
-    button + div {
+    .search-bar {
       border-left: $separation-line;
     }
 
@@ -450,13 +438,9 @@ export default {
       background-color: $background-color;
       flex: 0 0 auto;
 
-      .options-extend-box {
-        width: 100%;
-        background-color: $background-color;
-        overflow: hidden;
-      }
-
-      .options-extend {
+      .sidebar-drop-downs {
+        display: flex;
+        justify-content: flex-end;
       }
     }
   }
@@ -476,31 +460,6 @@ export default {
       width: 100%;
       z-index: 2;
       background-color: rgba(255,255,255, 0.50);
-
-      .loader{
-        position: absolute;
-        width: 100px;
-        height: 100px;
-        top: 20%;
-        left: 50%;
-        transform: translate(-50%,-50%);
-
-        .circular{
-          animation: rotate 2s linear infinite;
-          height: 100px;
-          position: relative;
-          width: 100px;
-
-          .path {
-            stroke-dasharray: 1,200;
-            stroke-dashoffset: 0;
-            stroke:$app-color;
-            color: $app-color;
-            animation:
-              dash 1.5s ease-in-out infinite;
-          }
-        }
-      }
     }
   }
 
@@ -519,30 +478,39 @@ export default {
     height: calc(4 * #{$row-height-small});
   }
 
-  @keyframes rotate{
-    100%{
-      transform: rotate(360deg);
-    }
-  }
-
-  @keyframes dash{
-    0%{
-      stroke-dasharray: 1,200;
-      stroke-dashoffset: 0;
-    }
-    50%{
-      stroke-dasharray: 89,200;
-      stroke-dashoffset: -35;
-    }
-    100%{
-      stroke-dasharray: 89,200;
-      stroke-dashoffset: -124;
+  @media screen and (max-width: $tablet) {
+    .menu-sidebar .sidebar-head .sidebar-drop-downs {
+      flex-wrap: wrap;
     }
   }
 
   @media screen and (max-width: $mobile) {
     .base-menu-entry {
       display: block;
+    }
+
+    .base-row-button {
+      width: 100%;
+      border-bottom: $separation-line;
+    }
+
+    .menu-sidebar {
+      .search-bar {
+        border-left: none;
+      }
+    }
+
+    .options-row {
+      flex-wrap: wrap;
+      justify-content: center;
+
+      .options {
+        flex-basis: 100%;
+
+        .options-button {
+          width: 100%;
+        }
+      }
     }
   }
 </style>

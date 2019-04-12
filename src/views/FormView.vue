@@ -34,9 +34,15 @@
 
     <!-- FORM -->
     <div
-      v-if="Object.keys(formFields).length"
       class="form-container">
+      <div
+        v-if="formIsLoading"
+        class="form-loading-area">
+        <BaseLoader />
+      </div>
       <BaseForm
+        v-if="Object.keys(formFields).length"
+        ref="baseForm"
         :form-field-json="formFields"
         :value-list="valueList"
         @values-changed="handleInput($event)"
@@ -63,6 +69,7 @@
 
         <!-- ATTACHMENTS -->
         <AttachmentArea
+          v-if="Object.keys(formFields).length"
           key="attachments"
           @open-new-form="openNewForm"
           @show-preview="$emit('show-preview', $event)"/>
@@ -80,12 +87,12 @@
 </template>
 
 <script>
-import { BaseMenuEntry } from 'base-components';
-import BaseRow from './BaseRow';
-import BaseFormOptions from './BaseFormOptions';
-import BaseForm from './BaseForm';
+import { BaseMenuEntry, BaseLoader } from 'base-components';
+import BaseRow from '../components/BaseRow';
+import BaseFormOptions from '../components/BaseFormOptions';
+import BaseForm from '../components/BaseForm';
 
-import AttachmentArea from './AttachmentArea';
+import AttachmentArea from '../components/AttachmentArea';
 
 export default {
   components: {
@@ -94,6 +101,7 @@ export default {
     BaseFormOptions,
     BaseRow,
     BaseForm,
+    BaseLoader,
   },
   data() {
     return {
@@ -102,6 +110,7 @@ export default {
       formFieldsExtension: {},
       valueList: {},
       showOverlay: false,
+      formIsLoading: false,
     };
   },
   computed: {
@@ -120,33 +129,56 @@ export default {
     },
   },
   watch: {
-    currentItemId(val) {
+    async currentItemId(val) {
+      this.formIsLoading = true;
       if (val) {
-        this.updateForm();
+        this.resetForm();
+        await this.updateForm();
       } else {
         this.resetForm();
       }
       window.scrollTo(0, 0);
       this.showOverlay = false;
+      this.formIsLoading = false;
     },
     async type(val) {
       if (val) {
-        this.formFieldsExtension = await this.$store.dispatch('data/fetchFormExtension', val);
+        try {
+          const response = await this.$store.dispatch('PortfolioAPI/get', {
+            kind: 'jsonschema',
+            id: val,
+          });
+          this.formFieldsExtension = response.properties || {};
+        } catch (e) {
+          this.$notify({
+            group: 'request-notifications',
+            title: 'Entry type not found',
+            text: 'The selected type was not found, please choose a different one!',
+            type: 'warn',
+          });
+          // reset type
+          this.valueList.type = [];
+          // empty extension
+          this.formFieldsExtension = {};
+        }
       } else {
         this.formFieldsExtension = {};
       }
     },
   },
   async created() {
+    this.formIsLoading = true;
+    this.formFields = await this.$store.dispatch('data/fetchGeneralFields');
     if (this.currentItemId) {
-      this.formFields = await this.$store.dispatch('data/fetchGeneralFields');
-      this.updateForm();
+      await this.updateForm();
     }
+    this.formIsLoading = false;
   },
   methods: {
     resetForm() {
       this.unsavedChanges = false;
       this.valueList = {};
+      this.$refs.baseForm.initializeValueObject();
     },
     async updateForm() {
       const data = await this.$store.dispatch('data/fetchEntryData', { id: this.currentItemId });
@@ -154,30 +186,39 @@ export default {
     },
     handleInput(data, type) {
       this.unsavedChanges = true;
+      // check if type is set (=this event is coming from a subform)
       if (type) {
         this.$set(this.valueList, type, Object.assign({}, this.valueList[type],
           JSON.parse(JSON.stringify(data))));
       } else {
+        // check if type has changed - if yes - delete old properties in data
+        if (!this.valueList.type || this.valueList.type[0] !== data.type[0]) {
+          // TODO: not only delete but map data between fields!!
+          this.valueList.data = {};
+        }
         this.valueList = Object.assign({}, this.valueList, JSON.parse(JSON.stringify(data)));
       }
     },
     async saveForm() {
+      // check if there is a title (only requirement for saving)
       if (this.valueList.title) {
-        const data = Object.assign({}, this.valueList.data);
         // remove properties from contributor fields that can not be saved to the database
+        const data = Object.assign({}, this.valueList.data);
+        // TODO: use more general way of removing unknown properties by checking
+        // with formfields(extension)
         Object.keys(this.formFieldsExtension).forEach((key) => {
           if (key === 'contributors' || this.formFieldsExtension[key]['x-attrs'].equivalent === 'contributors') {
             if (data[key] && data[key].length) {
               /* eslint-disable-next-line */
               data[key].forEach(entry => delete entry.additional);
+              /* eslint-disable-next-line */
+              data[key].forEach(entry => delete entry.source_name);
             }
           }
         });
         try {
-          if (!this.$route.params.id) {
-            // TODO: check somewhere if the entry should be linked to a parent and
-            // a) link to parent entry b) save to database
-            // --> do this.linkEntries(this.$store.data.currentItemId)
+          // check if the route indicates an already saved entry or a new entry
+          if (!this.currentItemId) {
             const newEntryId = await this.$store.dispatch('data/addSidebarItem', Object.assign({}, this.valueList, { data }));
             // also add linked entries if there are already any
             const list = this.$store.getters['data/getLinkedIds'];
@@ -189,8 +230,8 @@ export default {
             const parent = this.$store.getters['data/getLatestParentItem'];
             if (parent) {
               const relationData = {
-                from_entity: parent.id,
-                to_entity: newEntryId,
+                from_entry: parent.id,
+                to_entry: newEntryId,
               };
               await this.$store.dispatch('PortfolioAPI/post', {
                 kind: 'relation',
@@ -199,6 +240,7 @@ export default {
               // TODO: inform user of successful entry (what if only linking fails?)
             }
             this.$router.push(`/entry/${this.$store.state.data.currentItemId}`);
+            // if id present just update the entry
           } else {
             await this.$store.dispatch('data/updateEntry', Object.assign({}, this.valueList, { data }));
           }
@@ -275,9 +317,11 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "../styles/variables.scss";
+  @import "../styles/variables";
 
   .form-component {
+    position: relative;
+    min-height: 100vh;
 
     .form-head {
       background-color: $background-color;
@@ -315,7 +359,17 @@ export default {
     }
 
     .form-container {
+      min-height: 100vh;
       position: relative;
+
+      .form-loading-area {
+        margin-top: $spacing;
+        position: absolute;
+        height: 100%;
+        width: 100%;
+        z-index: 6;
+        background-color: rgba(255,255,255, 0.50);
+      }
 
       .slide-in-form {
         top: 0;
@@ -355,5 +409,13 @@ export default {
     transform: translateY(400px);
     opacity: 0;
     box-shadow: $pop-up-shadow;
+  }
+
+  @media screen and (max-width: $mobile) {
+    .form-component {
+      .form-head {
+        padding-top: $spacing-small;
+      }
+    }
   }
 </style>

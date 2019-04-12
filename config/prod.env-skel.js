@@ -9,4 +9,6 @@ module.exports= {
   APP_PREFIX: '"/portfolio"',
   PORTFOLIO_API: '"https://basedev.uni-ak.ac.at/portfolio/"',
   SKOSMOS_API: '"https://voc.uni-ak.ac.at/skosmos/rest/v1/"',
+  LOCALES: ['de', 'en'],
+  DEFAULT_LOCALE: 'de',
 };

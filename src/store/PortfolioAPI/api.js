@@ -45,10 +45,10 @@ export const request = (method, url, body, queryParameters, form, config) => {
  * @param limit - Number of results to return per page.
  * @param offset - The initial index from which to return the results.
  */
-export const api_v1_entity_list = function(parameters = {}) {
+export const api_v1_entry_list = function(parameters = {}) {
   const domain = parameters.$domain ? parameters.$domain : getDomain()
   const config = parameters.$config
-  let path = '/api/v1/entity/'
+  let path = '/api/v1/entry/'
   let body
   let queryParameters = {}
   let form = {}
@@ -64,6 +64,12 @@ export const api_v1_entity_list = function(parameters = {}) {
   if (parameters['offset'] !== undefined) {
     queryParameters['offset'] = parameters['offset']
   }
+  if (parameters['q'] !== undefined) {
+    queryParameters['q'] = parameters['q']
+  }
+  if (parameters['link_selection_for'] !== undefined) {
+    queryParameters['link_selection_for'] = parameters['link_selection_for']
+  }
   if (parameters.$queryParameters) {
     Object.keys(parameters.$queryParameters).forEach(function(parameterName) {
       queryParameters[parameterName] = parameters.$queryParameters[parameterName]
@@ -71,16 +77,16 @@ export const api_v1_entity_list = function(parameters = {}) {
   }
   return request('get', domain + path, body, queryParameters, form, config)
 }
-export const api_v1_entity_list_RAW_URL = function() {
-  return '/api/v1/entity/'
+export const api_v1_entry_list_RAW_URL = function() {
+  return '/api/v1/entry/'
 }
-export const api_v1_entity_list_TYPE = function() {
+export const api_v1_entry_list_TYPE = function() {
   return 'get'
 }
-export const api_v1_entity_listURL = function(parameters = {}) {
+export const api_v1_entry_listURL = function(parameters = {}) {
   let queryParameters = {}
   const domain = parameters.$domain ? parameters.$domain : getDomain()
-  let path = '/api/v1/entity/'
+  let path = '/api/v1/entry/'
   if (parameters['type'] !== undefined) {
     queryParameters['type'] = parameters['type']
   }
@@ -109,10 +115,10 @@ export const api_v1_entity_listURL = function(parameters = {}) {
  * raw_url: api_v1_entity_create_RAW_URL
  * @param data -
  */
-export const api_v1_entity_create = function(parameters = {}) {
+export const api_v1_entry_create = function(parameters = {}) {
   const domain = parameters.$domain ? parameters.$domain : getDomain()
   const config = parameters.$config
-  let path = '/api/v1/entity/'
+  let path = '/api/v1/entry/'
   let body
   let queryParameters = {}
   let form = {}
@@ -129,16 +135,16 @@ export const api_v1_entity_create = function(parameters = {}) {
   }
   return request('post', domain + path, body, queryParameters, form, config)
 }
-export const api_v1_entity_create_RAW_URL = function() {
-  return '/api/v1/entity/'
+export const api_v1_entry_create_RAW_URL = function() {
+  return '/api/v1/entry/'
 }
-export const api_v1_entity_create_TYPE = function() {
+export const api_v1_entry_create_TYPE = function() {
   return 'post'
 }
-export const api_v1_entity_createURL = function(parameters = {}) {
+export const api_v1_entry_createURL = function(parameters = {}) {
   let queryParameters = {}
   const domain = parameters.$domain ? parameters.$domain : getDomain()
-  let path = '/api/v1/entity/'
+  let path = '/api/v1/entry/'
   if (parameters.$queryParameters) {
     Object.keys(parameters.$queryParameters).forEach(function(parameterName) {
       queryParameters[parameterName] = parameters.$queryParameters[parameterName]
@@ -154,10 +160,10 @@ export const api_v1_entity_createURL = function(parameters = {}) {
  * method: api_v1_entity_count_TYPE
  * raw_url: api_v1_entity_count_RAW_URL
  */
-export const api_v1_entity_count = function(parameters = {}) {
+export const api_v1_entry_count = function(parameters = {}) {
   const domain = parameters.$domain ? parameters.$domain : getDomain()
   const config = parameters.$config
-  let path = '/api/v1/entity/count/'
+  let path = '/api/v1/entry/count/'
   let body
   let queryParameters = {}
   let form = {}
@@ -168,16 +174,16 @@ export const api_v1_entity_count = function(parameters = {}) {
   }
   return request('get', domain + path, body, queryParameters, form, config)
 }
-export const api_v1_entity_count_RAW_URL = function() {
-  return '/api/v1/entity/count/'
+export const api_v1_entry_count_RAW_URL = function() {
+  return '/api/v1/entry/count/'
 }
-export const api_v1_entity_count_TYPE = function() {
+export const api_v1_entry_count_TYPE = function() {
   return 'get'
 }
-export const api_v1_entity_countURL = function(parameters = {}) {
+export const api_v1_entry_countURL = function(parameters = {}) {
   let queryParameters = {}
   const domain = parameters.$domain ? parameters.$domain : getDomain()
-  let path = '/api/v1/entity/count/'
+  let path = '/api/v1/entry/count/'
   if (parameters.$queryParameters) {
     Object.keys(parameters.$queryParameters).forEach(function(parameterName) {
       queryParameters[parameterName] = parameters.$queryParameters[parameterName]
@@ -194,10 +200,10 @@ export const api_v1_entity_countURL = function(parameters = {}) {
  * raw_url: api_v1_entity_read_RAW_URL
  * @param id -
  */
-export const api_v1_entity_read = function(parameters = {}) {
+export const api_v1_entry_read = function(parameters = {}) {
   const domain = parameters.$domain ? parameters.$domain : getDomain()
   const config = parameters.$config
-  let path = '/api/v1/entity/{id}/'
+  let path = '/api/v1/entry/{id}/'
   let body
   let queryParameters = {}
   let form = {}
@@ -212,16 +218,16 @@ export const api_v1_entity_read = function(parameters = {}) {
   }
   return request('get', domain + path, body, queryParameters, form, config)
 }
-export const api_v1_entity_read_RAW_URL = function() {
-  return '/api/v1/entity/{id}/'
+export const api_v1_entry_read_RAW_URL = function() {
+  return '/api/v1/entry/{id}/'
 }
-export const api_v1_entity_read_TYPE = function() {
+export const api_v1_entry_read_TYPE = function() {
   return 'get'
 }
-export const api_v1_entity_readURL = function(parameters = {}) {
+export const api_v1_entry_readURL = function(parameters = {}) {
   let queryParameters = {}
   const domain = parameters.$domain ? parameters.$domain : getDomain()
-  let path = '/api/v1/entity/{id}/'
+  let path = '/api/v1/entry/{id}/'
   path = path.replace('{id}', `${parameters['id']}`)
   if (parameters.$queryParameters) {
     Object.keys(parameters.$queryParameters).forEach(function(parameterName) {
@@ -240,10 +246,10 @@ export const api_v1_entity_readURL = function(parameters = {}) {
  * @param data -
  * @param id -
  */
-export const api_v1_entity_update = function(parameters = {}) {
+export const api_v1_entry_update = function(parameters = {}) {
   const domain = parameters.$domain ? parameters.$domain : getDomain()
   const config = parameters.$config
-  let path = '/api/v1/entity/{id}/'
+  let path = '/api/v1/entry/{id}/'
   let body
   let queryParameters = {}
   let form = {}
@@ -264,16 +270,16 @@ export const api_v1_entity_update = function(parameters = {}) {
   }
   return request('put', domain + path, body, queryParameters, form, config)
 }
-export const api_v1_entity_update_RAW_URL = function() {
-  return '/api/v1/entity/{id}/'
+export const api_v1_entry_update_RAW_URL = function() {
+  return '/api/v1/entry/{id}/'
 }
-export const api_v1_entity_update_TYPE = function() {
+export const api_v1_entry_update_TYPE = function() {
   return 'put'
 }
-export const api_v1_entity_updateURL = function(parameters = {}) {
+export const api_v1_entry_updateURL = function(parameters = {}) {
   let queryParameters = {}
   const domain = parameters.$domain ? parameters.$domain : getDomain()
-  let path = '/api/v1/entity/{id}/'
+  let path = '/api/v1/entry/{id}/'
   path = path.replace('{id}', `${parameters['id']}`)
   if (parameters.$queryParameters) {
     Object.keys(parameters.$queryParameters).forEach(function(parameterName) {
@@ -292,10 +298,10 @@ export const api_v1_entity_updateURL = function(parameters = {}) {
  * @param data -
  * @param id -
  */
-export const api_v1_entity_partial_update = function(parameters = {}) {
+export const api_v1_entry_partial_update = function(parameters = {}) {
   const domain = parameters.$domain ? parameters.$domain : getDomain()
   const config = parameters.$config
-  let path = '/api/v1/entity/{id}/'
+  let path = '/api/v1/entry/{id}/'
   let body
   let queryParameters = {}
   let form = {}
@@ -316,16 +322,16 @@ export const api_v1_entity_partial_update = function(parameters = {}) {
   }
   return request('patch', domain + path, body, queryParameters, form, config)
 }
-export const api_v1_entity_partial_update_RAW_URL = function() {
-  return '/api/v1/entity/{id}/'
+export const api_v1_entry_partial_update_RAW_URL = function() {
+  return '/api/v1/entry/{id}/'
 }
-export const api_v1_entity_partial_update_TYPE = function() {
+export const api_v1_entry_partial_update_TYPE = function() {
   return 'patch'
 }
-export const api_v1_entity_partial_updateURL = function(parameters = {}) {
+export const api_v1_entry_partial_updateURL = function(parameters = {}) {
   let queryParameters = {}
   const domain = parameters.$domain ? parameters.$domain : getDomain()
-  let path = '/api/v1/entity/{id}/'
+  let path = '/api/v1/entry/{id}/'
   path = path.replace('{id}', `${parameters['id']}`)
   if (parameters.$queryParameters) {
     Object.keys(parameters.$queryParameters).forEach(function(parameterName) {
@@ -343,10 +349,10 @@ export const api_v1_entity_partial_updateURL = function(parameters = {}) {
  * raw_url: api_v1_entity_delete_RAW_URL
  * @param id -
  */
-export const api_v1_entity_delete = function(parameters = {}) {
+export const api_v1_entry_delete = function(parameters = {}) {
   const domain = parameters.$domain ? parameters.$domain : getDomain()
   const config = parameters.$config
-  let path = '/api/v1/entity/{id}/'
+  let path = '/api/v1/entry/{id}/'
   let body
   let queryParameters = {}
   let form = {}
@@ -361,16 +367,16 @@ export const api_v1_entity_delete = function(parameters = {}) {
   }
   return request('delete', domain + path, body, queryParameters, form, config)
 }
-export const api_v1_entity_delete_RAW_URL = function() {
-  return '/api/v1/entity/{id}/'
+export const api_v1_entry_delete_RAW_URL = function() {
+  return '/api/v1/entry/{id}/'
 }
-export const api_v1_entity_delete_TYPE = function() {
+export const api_v1_entry_delete_TYPE = function() {
   return 'delete'
 }
-export const api_v1_entity_deleteURL = function(parameters = {}) {
+export const api_v1_entry_deleteURL = function(parameters = {}) {
   let queryParameters = {}
   const domain = parameters.$domain ? parameters.$domain : getDomain()
-  let path = '/api/v1/entity/{id}/'
+  let path = '/api/v1/entry/{id}/'
   path = path.replace('{id}', `${parameters['id']}`)
   if (parameters.$queryParameters) {
     Object.keys(parameters.$queryParameters).forEach(function(parameterName) {
@@ -388,10 +394,10 @@ export const api_v1_entity_deleteURL = function(parameters = {}) {
  * raw_url: api_v1_entity_media_RAW_URL
  * @param id -
  */
-export const api_v1_entity_media = function(parameters = {}) {
+export const api_v1_entry_media = function(parameters = {}) {
   const domain = parameters.$domain ? parameters.$domain : getDomain()
   const config = parameters.$config
-  let path = '/api/v1/entity/{id}/media/'
+  let path = '/api/v1/entry/{id}/media/'
   let body
   let queryParameters = {}
   let form = {}
@@ -406,16 +412,16 @@ export const api_v1_entity_media = function(parameters = {}) {
   }
   return request('get', domain + path, body, queryParameters, form, config)
 }
-export const api_v1_entity_media_RAW_URL = function() {
-  return '/api/v1/entity/{id}/media/'
+export const api_v1_entry_media_RAW_URL = function() {
+  return '/api/v1/entry/{id}/media/'
 }
-export const api_v1_entity_media_TYPE = function() {
+export const api_v1_entry_media_TYPE = function() {
   return 'get'
 }
-export const api_v1_entity_mediaURL = function(parameters = {}) {
+export const api_v1_entry_mediaURL = function(parameters = {}) {
   let queryParameters = {}
   const domain = parameters.$domain ? parameters.$domain : getDomain()
-  let path = '/api/v1/entity/{id}/media/'
+  let path = '/api/v1/entry/{id}/media/'
   path = path.replace('{id}', `${parameters['id']}`)
   if (parameters.$queryParameters) {
     Object.keys(parameters.$queryParameters).forEach(function(parameterName) {
@@ -531,11 +537,11 @@ export const api_v1_media_create = function(parameters = {}) {
   if (parameters['file'] === undefined) {
     return Promise.reject(new Error('Missing required  parameter: file'))
   }
-  if (parameters['entity'] !== undefined) {
-    form['entity'] = parameters['entity']
+  if (parameters['entry'] !== undefined) {
+    form['entry'] = parameters['entry']
   }
-  if (parameters['entity'] === undefined) {
-    return Promise.reject(new Error('Missing required  parameter: entity'))
+  if (parameters['entry'] === undefined) {
+    return Promise.reject(new Error('Missing required  parameter: entry'))
   }
   if (parameters.$queryParameters) {
     Object.keys(parameters.$queryParameters).forEach(function(parameterName) {

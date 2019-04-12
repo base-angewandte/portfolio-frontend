@@ -24,7 +24,7 @@
 
     <Sidebar
       ref="sidebar"
-      :class="['sidebar', { 'sidebar-full': !showForm }]"
+      :class="['sidebar', { 'sidebar-full': !showForm, 'sidebar-hidden-mobile': showForm }]"
       @new-form="createNewForm"
       @show-entry="routeToEntry"/>
     <div
@@ -40,7 +40,7 @@
 
 <script>
 import { BasePopUp, BaseMediaPreview } from 'base-components';
-import Sidebar from './Sidebar';
+import Sidebar from '../components/Sidebar';
 
 export default {
   components: {
@@ -142,7 +142,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "../styles/variables.scss";
+  @import "../styles/variables";
 
   .sidebar-pop-up {
     text-align: center;
@@ -164,6 +164,12 @@ export default {
         word-wrap: break-word;
         hyphens: auto;
       }
+    }
+  }
+
+  @media screen and (max-width: $mobile) {
+    .sidebar-hidden-mobile {
+      display: none;
     }
   }
 </style>

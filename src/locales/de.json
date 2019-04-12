@@ -57,7 +57,8 @@
     "title_of_contribution": "Vortragstitel",
     "published_in": "Erschienen In",
     "addGroup": "Weiteres \"{fieldType}\" Feld hinzufügen",
-    "removeField": "\"{fieldType}\" Feld entfernen"
+    "removeField": "\"{fieldType}\" Feld entfernen",
+    "time": "Time"
   },
   "form-view": {
     "formExtended": "Weitere Angaben",
@@ -78,9 +79,7 @@
     "publishButton": "Veröffentlichen",
     "deleteButton": "Löschen",
     "deleteLinkedText": "Bitte Einträge auswählen:",
-    "deleteLinkedSubtext": "Die Verknüfung zu diesen Einträgen wird gelöscht.",
-    "chooseLicense": "Lizenz auswählen",
-    "showImages": "Bilder Veröffentlichen?"
+    "deleteLinkedSubtext": "Die Verknüfung zu diesen Einträgen wird gelöscht."
   },
   "notify": {
     "linkingNotPossible": "Verknüpfung nicht möglich",
@@ -94,5 +93,12 @@
     "date_created": "Oldest First",
     "-date_created": "Newest First",
     "allTypes": "Alle Typen"
+  },
+  "upload": {
+    "title": "Dateien Hochladen",
+    "choose_license": "Wähle eine Lizenz",
+    "publish_images": "Dateien veröffentlichen?",
+    "upload": "Hochladen",
+    "done": "Fertig"
   }
 }

@@ -1,30 +1,17 @@
 <template>
   <div class="wrapper">
     <base-header
-      :lang="'en'"
+      :lang="lang"
       :active="'portfolio'"
       :profile.prop="profile"
-      :emit-navigation="true"
-      :urls.prop="{
-        de:'/portfolio/de/',
-        en:'/portfolio/en/',
-        login:'portfolio/login/',
-        logout:'/portfolio/logout/'}"
-      @navigate="navigate($event.detail[0])" />
+      :urls.prop="urls" />
     <BaseNotification />
     <router-view />
     <base-footer
       ref="baseFooter"
-      :base-url="linkUrl"
       :lang="lang"
-      :logged-in="$store.state.isAuthenticated"
-      :emit-navigation="true"
-      :urls.prop="{
-        de:'/recherche/de/',
-        en:'/recherche/en/',
-        login:'/recherche/login/',
-        logout:'/recherche/logout/'}"
-      @navigate="navigate($event.detail[0])" />
+      :logged-in="isAuthenticated"
+      :urls.prop="urls" />
   </div>
 </template>
 
@@ -35,20 +22,27 @@ export default {
     BaseNotification: () => import('./components/BaseNotification'),
   },
   computed: {
-    linkUrl() {
-      // TODO
-      return 'replace this at some point';
-    },
     lang() {
-      // TODO
-      return 'get lang stored in store here';
+      return this.$store.state.SkosmosAPI.lang;
     },
     profile() {
       return this.$store.state.PortfolioAPI ? this.$store.state.PortfolioAPI.user : {};
     },
+    urls() {
+      return {
+        de: `/portfolio/de${this.$route.path}`,
+        en: `/portfolio/en${this.$route.path}`,
+        login: '/portfolio/accounts/login/',
+        logout: '/cas/logout/',
+      };
+    },
+    isAuthenticated() {
+      return this.$store.getters['PortfolioAPI/isAuthenticated'];
+    },
   },
   // TODO: not sure if it is a good idea to make this async?
   async beforeCreate() {
+    debugger;
     // initializing stores before app instance is created
     await this.$store.dispatch('PortfolioAPI/init', {
       baseURL: process.env.PORTFOLIO_API,
@@ -71,11 +65,6 @@ export default {
     } else {
       console.log('authenticated');
     }
-  },
-  methods: {
-    async navigate(val) {
-      console.log(val);
-    },
   },
 };
 </script>
@@ -112,6 +101,7 @@ export default {
       .form-view {
         flex: 0 1 66%;
         margin-left: 16px;
+        // TODO: why so many width?
         max-width: 66%;
         width: 65%;
       }
@@ -124,48 +114,6 @@ export default {
 
   #menu-sidebar + #form-component {
     margin-left: 0;
-  }
-
-  .options-row {
-    min-height: $row-height-small;
-    width: 100%;
-    display: flex;
-    background-color: $background-color;
-    overflow: hidden;
-
-    &.flex-align-right {
-      justify-content: flex-end;
-      margin-right: -32px;
-    }
-
-    .options {
-      flex-grow: 2;
-    }
-  }
-
-  .base-row {
-    height: $row-height-large;
-    box-shadow: $box-shadow-reg;
-    display: flex;
-    margin-bottom: $spacing-small;
-    width: 100%;
-
-    &:hover {
-      box-shadow: $box-shadow-hov;
-    }
-
-    .base-row-header {
-      overflow: hidden;
-      width: 100%;
-    }
-  }
-
-  .options-button-row {
-    width: 100%;
-
-    .options {
-      margin: auto;
-    }
   }
 
   .base-row {
@@ -214,6 +162,15 @@ export default {
   @media screen and (max-width: $mobile) {
     .wrapper {
       padding: $spacing-small;
+
+      #app-container {
+        .form-view {
+          margin-left: 0;
+          width: 100%;
+          max-width: 100%;
+          flex-basis: 100%;
+        }
+      }
     }
 
     .mobile-hidden {

@@ -2,21 +2,24 @@
   "new": "New",
   "search": "Search Your Works and Events",
   "options": "Options",
-  "cancel": "Abbrechen",
-  "back": "Zurück",
+  "cancel": "Cancel",
+  "back": "Return",
   "entry": "Entry",
   "save": "Save",
   "english": "English",
   "german":  "German",
   "English": "English",
   "German": "German",
-  "publish": "Eintrag veröffentlichen | Einträge veröffentlichen",
-  "delete": "Eintrag löschen | Einträge löschen",
-  "offline": "Eintrag offline stellen | Eintrag offline stellen",
-  "duplicate": "Einträge duplizieren",
+  "en": "English",
+  "de": "German",
+  "publish": "Publish Entry | Publish Entries",
+  "delete": "Delete Entry | Delete Entries",
+  "offline": "Take Entry Offline | Take Entries Offline",
+  "duplicate": "Duplicate Entries",
+  "edit": "Invite to Edit",
   "nolicense": "No License",
-  "yes": "Ja",
-  "no":  "Nein",
+  "yes": "Yes",
+  "no":  "No",
   "form": {
     "select": "Select",
     "write": "Write (a)",
@@ -56,19 +59,23 @@
     "title_of_contribution": "Title of Contribution",
     "published_in": "Published In",
     "addGroup": "Add \"{fieldType}\"",
-    "removeField": "\"{fieldType}\" Feld entfernen"
+    "removeField": "\"{fieldType}\" Feld entfernen",
+    "time": "Time"
   },
   "form-view": {
-    "formExtended": "Weitere Angaben",
-    "attachedEntries": "Verlinkte Einträge",
-    "attachedFiles": "Angehängte Dateien",
-    "changeLicence": "Lizenz ändern",
+    "formExtended": "Further Information",
+    "attachedEntries": "Linked Entries",
+    "attachedFiles": "Attached Files",
+    "changeLicence": "Change License",
     "publish": "Publish",
     "offline": "Take Offline",
-    "delete": "löschen",
+    "delete": "Delete",
     "edit": "Bearbeitung ermöglichen",
-    "deleteFile": "Dateien löschen",
-    "deleteLinked": "Verknüpfung löschen",
+    "changeLicense": "Lizenz ändern",
+    "publishMedia": "Publish",
+    "deleteMedia":  "Delete",
+    "deleteFile": "Delete Files",
+    "deleteLinked": "Delete Linked Entries",
     "licenceText": "lizenzierenden",
     "publishText": "veröffentlichenden",
     "deleteText": "löschenden",
@@ -78,15 +85,13 @@
     "licenceButton": "Change Licence",
     "publishButton": "Publish",
     "deleteButton": "Delete",
-    "deleteLinkedText": "Bitte Einträge auswählen",
-    "deleteLinkedSubtext": "Die Verknüfung zu diesen Einträgen wird gelöscht",
-    "chooseLicense": "Choose a License",
-    "showImages": "Publish Images?"
+    "deleteLinkedText": "Please Select Entries",
+    "deleteLinkedSubtext": "The Link to these Entries will be deleted."
   },
   "notify": {
-    "linkingNotPossible": "Verknüpfung nicht möglich",
-    "alreadyLinked": "Dieser Eintrag ist bereits verknüpft.",
-    "selfLinked": "Einträge können nicht mit sich selbst verknüpft werden."
+    "linkingNotPossible": "Linking not possible",
+    "alreadyLinked": "This entry is already linked.",
+    "selfLinked": "Entries can not be linked with themselves."
   },
   "dropdown": {
     "type": "By Type",
@@ -95,5 +100,12 @@
     "date_created": "Oldest First",
     "-date_created": "Newest First",
     "allTypes": "All Types"
+  },
+  "upload": {
+    "title": "File Upload",
+    "choose_license": "Choose a License",
+    "publish_images": "Publish files?",
+    "upload": "Upload",
+    "done": "Done"
   }
 }

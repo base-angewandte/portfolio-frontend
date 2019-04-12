@@ -6,7 +6,10 @@ function transformTextData(data) {
   const textData = [];
   if (data && data.length) {
     data.forEach((textItem) => {
-      const textObj = { type: typeof textItem.type === 'object' ? textItem.type.value : textItem.type };
+      const textObj = {
+        type: textItem.type && typeof textItem.type === 'object'
+          ? textItem.type.value : textItem.type || '',
+      };
       const text = Object.keys(textItem).filter(props => !['type', 'text', 'data'].includes(props))
         .map(lang => Object.assign({}, {
           language: lang,
@@ -22,8 +25,10 @@ function transformTextData(data) {
 function prepareData(valueObj) {
   // make necessary modifications to the valueList object
   // 1. type should be string not array
-  const type = valueObj.type && valueObj.type.length
-    ? valueObj.type[0].type || valueObj.type[0] : '';
+  let { type } = valueObj;
+  if (typeof type === 'object') {
+    type = type.length ? type[0].type || type[0] : '';
+  }
   // 2. texts need different object structure and text type needs to be string (uri)
   const texts = transformTextData(valueObj.texts);
   return Object.assign({}, valueObj, { type, texts });
@@ -182,7 +187,7 @@ const actions = {
   }) {
     const offset = state.entriesPerRequest * (pageNumber - 1);
     const response = await this.dispatch('PortfolioAPI/get', {
-      kind: 'entity',
+      kind: 'entry',
       sort,
       offset,
       type,
@@ -198,26 +203,12 @@ const actions = {
         {
           withCredentials: true,
         });
-      formData = jsonSchema.data.definitions.Entity.properties;
+      formData = jsonSchema.data.definitions.Entry.properties;
     } catch (e) {
       console.error(e);
       // TODO: inform user!
     }
     return formData;
-  },
-  async fetchFormExtension(context, type) {
-    let formData = {};
-    try {
-      const extension = await axios.get(`${process.env.API}jsonschema/${type}/`,
-        {
-          withCredentials: true,
-        });
-      formData = extension.data.properties;
-    } catch (e) {
-      console.error(e);
-      // TODO: inform user!
-    }
-    return formData || [];
   },
   setCurrentItemById({ commit }, id) {
     const entry = this.getters['data/getEntryById'](id);
@@ -236,7 +227,7 @@ const actions = {
     // when sidebardata are present (not on first load)
     let entryData = this.getters['data/getEntryById'](id);
     if (forceFetch || !entryData) {
-      entryData = await this.dispatch('PortfolioAPI/get', { kind: 'entity', id });
+      entryData = await this.dispatch('PortfolioAPI/get', { kind: 'entry', id });
     }
     if (entryData) {
       // Modifications of data received from backend needed:
@@ -282,7 +273,7 @@ const actions = {
   },
   async fetchMediaData({ commit }, id) {
     // TODO: replace with Portofolio_API
-    const res = await axios.get(`${process.env.API}entity/${id}/media/`,
+    const res = await axios.get(`${process.env.API}entry/${id}/media/`,
       {
         withCredentials: true,
         xsrfCookieName: 'csrftoken_portfolio',
@@ -300,7 +291,6 @@ const actions = {
               });
             resolve(result.data);
           } catch (e) {
-            console.error(e);
             reject();
           }
         })));
@@ -313,13 +303,12 @@ const actions = {
     return new Promise(async (resolve, reject) => {
       try {
         const data = prepareData(obj);
-        const createdEntry = await this.dispatch('PortfolioAPI/post', { kind: 'entity', data });
+        const createdEntry = await this.dispatch('PortfolioAPI/post', { kind: 'entry', data });
         if (createdEntry) {
           commit('setCurrentItem', createdEntry);
         }
         resolve(createdEntry.id);
       } catch (e) {
-        console.error(e);
         reject(e);
       }
     });
@@ -328,7 +317,7 @@ const actions = {
     return new Promise(async (resolve, reject) => {
       try {
         const data = prepareData(obj);
-        const updatedEntry = await this.dispatch('PortfolioAPI/post', { kind: 'entity', id: data.id, data });
+        const updatedEntry = await this.dispatch('PortfolioAPI/post', { kind: 'entry', id: data.id, data });
         commit('setCurrentItem', updatedEntry);
         resolve();
       } catch (e) {
@@ -341,7 +330,7 @@ const actions = {
     const deletedEntries = await Promise.all(state.selectedEntries
       .map(entry => new Promise(async (resolve, reject) => {
         try {
-          await this.dispatch('PortfolioAPI/delete', { kind: 'entity', id: entry.id });
+          await this.dispatch('PortfolioAPI/delete', { kind: 'entry', id: entry.id });
           resolve(entry.id);
         } catch (e) {
           console.error(e);
@@ -436,7 +425,7 @@ const actions = {
     await Promise.all(list.map(relationId => new Promise(async (resolve, reject) => {
       try {
         if (action === 'save') {
-          const data = { from_entity: fromId, to_entity: relationId };
+          const data = { from_entry: fromId, to_entry: relationId };
           await this.dispatch('PortfolioAPI/post', { kind: 'relation', data });
         } else if (action === 'delete') {
           await this.dispatch('PortfolioAPI/delete', { kind: 'relation', id: relationId });
@@ -457,7 +446,7 @@ const actions = {
     // fetch sidebar data new and entry new to update relations
     try {
       await dispatch('fetchSidebarData', {});
-      const entry = await this.dispatch('PortfolioAPI/get', { kind: 'entity', id: fromId });
+      const entry = await this.dispatch('PortfolioAPI/get', { kind: 'entry', id: fromId });
       commit('setLinked', { list: entry.relations || [], replace: true });
     } catch (e) {
       console.error(e);

@@ -1,5 +1,5 @@
 <template>
-  <div class="base-form">
+  <form class="base-form">
     <template
       v-for="(element, index) in formFieldListInt">
 
@@ -34,26 +34,34 @@
           <div
             v-if="valueListInt[element.name].length > 1"
             :key="index + '-button' + valueIndex"
-            class="field-group-button group-add"
-            @click="removeField(element, valueIndex)">
-            <span>{{ $t('form.removeField', { fieldType: getFieldName(element) }) }}</span>
+            class="group-add">
+            <div
+              class="field-group-button "
+              @click="removeField(element, valueIndex)">
+              <span>{{ $t('form.removeField', { fieldType: getFieldName(element) }) }}</span>
+              <span>
+                <img
+                  :src="require('../static/remove.svg')"
+                  class="field-group-icon">
+              </span>
+            </div>
+
+          </div>
+        </div>
+        <div
+          :key="'multiplyButton' + index"
+          class="group-multiply">
+          <div
+            class="field-group-button "
+            @click="multiplyField(element)">
+            <span>{{ $t('form.addGroup', { fieldType: getFieldName(element) }) }}</span>
             <span>
               <img
                 :src="require('../static/remove.svg')"
                 class="field-group-icon">
             </span>
           </div>
-        </div>
-        <div
-          :key="'multiplyButton' + index"
-          class="field-group-button group-multiply"
-          @click="multiplyField(element)">
-          <span>{{ $t('form.addGroup', { fieldType: getFieldName(element) }) }}</span>
-          <span>
-            <img
-              :src="require('../static/remove.svg')"
-              class="field-group-icon">
-          </span>
+
         </div>
       </template>
       <template v-else>
@@ -80,7 +88,7 @@
         />
       </template>
     </template>
-  </div>
+  </form>
 </template>
 
 <script>
@@ -107,7 +115,6 @@ export default {
   data() {
     return {
       valueListInt: {},
-      valueListIntCopy: {},
       formFieldListInt: [],
       fieldProperties: [],
       dropdownLists: {},
@@ -120,22 +127,28 @@ export default {
     },
   },
   watch: {
-    valueList(val) {
-      if (JSON.stringify(val) !== JSON.stringify(this.valueListInt)) {
-        this.initializeValueObject();
-        // this.initializeDropDownLists();
-        // JSON parse is necessary to destroy any references between the objects
-        this.valueListIntCopy = Object.assign({}, JSON.parse(JSON.stringify(this.valueListInt)));
-      }
+    valueList: {
+      handler(val) {
+        const changedValues = Object.keys(this.valueListInt)
+          .some(key => JSON.stringify(this.valueListInt[key]) !== JSON.stringify(val[key]));
+        if (changedValues) {
+          this.initializeValueObject();
+          // this.initializeDropDownLists();
+        }
+      },
+      deep: true,
     },
     formFieldJson() {
+      // if new field specifications were set - also reset the properties of the value object
+      this.valueListInt = {};
+      // initialize value object with new properties
       this.initializeValueObject();
       this.initializeDropDownLists();
     },
   },
   mounted() {
-    this.initializeDropDownLists();
     this.initializeValueObject();
+    this.initializeDropDownLists();
   },
   methods: {
     initializeValueObject() {
@@ -158,12 +171,10 @@ export default {
           this.getInitialFieldValue(field),
         );
       });
-      // JSON parse is necessary to destroy any references between the objects
-      this.valueListIntCopy = Object.assign({}, JSON.parse(JSON.stringify(this.valueListInt)));
     },
     getInitialFieldValue(field) {
       // check if field is array
-      if (field.type === 'array') {
+      if (field.type === 'array' || field.name === 'type') {
         // check if values are already present and set those if yes
         if (this.valueList[field.name] && this.valueList[field.name].length) {
           return [].concat(this.valueList[field.name]);
@@ -189,16 +200,29 @@ export default {
     initializeDropDownLists() {
       this.formFieldListInt.forEach((field) => {
         // check if a source is specified in the 'x-attrs'
-        const sources = Object.keys(field['x-attrs']).filter(key => !!key.includes('source'));
+        const sources = field['x-attrs']
+          ? Object.keys(field['x-attrs']).filter(key => !!key.includes('source')) : [];
         if (sources.length) {
           sources.forEach(async (source) => {
-            // check if source is primary source
-            if (source === 'source') {
+            if (field.name === 'type') {
+              try {
+                const response = await axios.get(`${process.env.PORTFOLIO_API}${field['x-attrs'][source]}`,
+                  {
+                    withCredentials: true,
+                  });
+                // set the drop down with the retrieved data
+                this.setDropDown(response.data, '', field['x-attrs'].equivalent, field.name);
+              } catch (e) {
+                console.error(e);
+              }
+              // TODO: adjust to new Portfolio API!!
+            } else if (source === 'source') {
               this.setDropDown([], '', field['x-attrs'].equivalent, field.name);
               // if there is another source type specififed (currently e.g. type_source,
               // but maybe should be renamed
               // to "secondary" in backend as well?) add it as secondary source
             } else {
+              // TODO: adjust to new Portfolio API!!
               try {
                 const response = await axios.get(`${field['x-attrs'][source]}`);
                 // map data needed on front end out of response data
@@ -231,15 +255,15 @@ export default {
     async fetchAutocomplete({
       value, name, source, equivalent,
     }) {
-      if (source) {
+      if (name !== 'type' && source) {
         if (this.timeout) {
           clearTimeout(this.timeout);
           this.timeout = null;
         }
         this.timeout = setTimeout(async () => {
-          if (value.length > 3) {
+          if (value && value.length > 3) {
             try {
-              const result = await axios.get(`${source}${value}/`, {
+              const result = await axios.get(`${process.env.PORTFOLIO_API}${source}${value ? `${value}/` : ''}`, {
                 withCredentials: true,
               });
               this.setDropDown(result.data, value, equivalent, name);
@@ -252,20 +276,8 @@ export default {
             this.setDropDown([], value, equivalent, name);
           }
         }, 600);
-        // TODO: remove this again as soon as everything has a source attribute
       } else {
         console.error('no source specified');
-        if (name === 'type') {
-          if (this.dropdownLists) {
-            // TODO: in theory: use PortfolioAPI state.schemas however will only return
-            // URIs in future anyway!!
-            const types = await axios.get(`${process.env.PORTFOLIO_API}api/v1/jsonschema/`,
-              {
-                withCredentials: true,
-              });
-            this.$set(this.dropdownLists, [name], types.data);
-          }
-        }
       }
     },
     multiplyField(field) {
@@ -304,35 +316,37 @@ export default {
     background-color: white;
     display: flex;
     flex-wrap: wrap;
-    padding: 16px 16px 0;
+    padding: $spacing $spacing 0;
 
     .base-form-field {
       margin-bottom: $spacing;
     }
 
-    .base-form-field-full, .field-group-button {
+    .base-form-field-full, .group-multiply {
       flex: 0 0 100%;
     }
 
     .base-form-field-half {
-      flex: 0 0 calc(50% - 8px);
+      flex: 0 0 calc(50% - #{$spacing-small});
+      width: calc(50% - #{$spacing-small});
     }
 
     .base-form-field-left-margin {
       margin-left: $spacing;
     }
 
+    .group-multiply {
+      margin-bottom: $spacing + $spacing-small;
+    }
+
+    .group-add {
+      margin-top: $spacing;
+    }
+
     .field-group-button {
       color: $font-color-second;
       cursor: pointer;
-
-      &.group-multiply {
-        margin-bottom: $spacing + $spacing-small;
-      }
-
-      &.group-add {
-        margin-top: $spacing;
-      }
+      display: inline;
 
       &:hover {
         color: $app-color;
@@ -342,6 +356,28 @@ export default {
         margin-left: $spacing;
         height: $icon-small;
         width: $icon-small;
+      }
+    }
+  }
+
+  @media screen and (max-width: $mobile) {
+    .base-form {
+      padding: $spacing $spacing-small $spacing-small;
+
+      .base-form-field {
+        margin-bottom: $spacing-small;
+      }
+
+      .base-form-field-half {
+        flex: 0 0 100%;
+      }
+
+      .base-form-field-left-margin {
+        margin-left: 0;
+      }
+
+      .group-multiply {
+        margin-bottom: $spacing-small + ($spacing-small/2);
       }
     }
   }

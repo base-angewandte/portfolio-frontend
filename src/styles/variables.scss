@@ -1,35 +1,23 @@
 @import 'fonts';
 
-/* height and spacing */
-$spacing: 16px;
-$spacing-small: 8px;
-$spacing-large: 32px;
-/* new styleguide: font size + relative spacing! */
-$row-height-large: 1em +  2*1em;
-$row-height-small: 1em +  2*.5em;
-$header-height: 55px;
-
-/* shadows and borders */
-$box-shadow-reg: 0px 0px 3px 0px rgba(0,0,0,0.05);
-$box-shadow-hov: 0px 1px 5px 0px rgba(0,0,0,0.15);
-$drop-shadow: 0px 10px 10px 0px rgba(0,0,0,0.25);
-$pop-up-shadow: 0px 0px 36px 0px rgba(0,0,0,0.5);
-$pop-up-drop-shadow: 0px 46px 46px 0px rgba(0,0,0,0.25);
-$input-shadow: inset 0px 1px 4px 0px rgba(0,0,0,0.2);
-$box-transition: box-shadow 0.3s ease-in-out;
-$separation-line: 2px solid rgb(240, 240, 240);
-$list-border: 5px solid rgba(76, 175, 80, 1);
-$list-border-transparent-50: 5px solid rgba(76, 175, 80, 0.5);
-$list-border-transparent-100: 5px solid rgba(76, 175, 80, 0);
-$upload-border: 2px dashed rgb(111,111,111);
-
 /* fonts */
 $font: "Source Sans Pro", serif;
 $font-size-regular: 14pt;
 $font-size-mobile: 12pt;
 $font-size-small: 0.85em;
 $font-size-large: 1.25em;
-$line-height: 1.2em;
+$line-height: 1.25em;
+
+/* height and spacing */
+$spacing: .84em;
+$spacing-small: 0.42em;
+$spacing-large: 1.68em;
+/* new styleguide: font size + relative spacing! */
+$row-height-large: 1em +  2*1em;
+$row-height-small: 1em +  2*$spacing-small;
+$header-height: 55px;
+$chips-spacing: 0.05em;
+$chips-list-height: 1em + 2*$spacing;
 
 /* colors */
 $app-color: #FF9800 !default;
@@ -37,8 +25,31 @@ $font-color: rgb(0, 0, 0);
 $font-color-second: rgb(111, 111, 111);
 $font-color-third: rgb(160, 160, 160);
 $button-header-color: rgb(240, 240, 240);
+$input-field-color: rgb(200, 200, 200);
 $background-color: #f0f0f0;
 $box-color: white;
+/* self defined for now! */
+$uploadbar-color: #999999;
+
+/* shadows and borders */
+$border-width: 2px;
+$border-active-width: 4px;
+$box-shadow-reg: 0px 0px 3px 0px rgba(0,0,0,0.05);
+$box-shadow-hov: 0px 1px 5px 0px rgba(0,0,0,0.15);
+$drop-shadow: 0px 10px 10px 0px rgba(0,0,0,0.25);
+$pop-up-shadow: 0px 0px 36px 0px rgba(0,0,0,0.5);
+$pop-up-drop-shadow: 0px 10px 46px 0px rgba(0,0,0,0.25);
+$input-shadow: inset 0px 1px 4px 0px rgba(0,0,0,0.2);
+$preview-box-shadow: 0px 0px 16px 0px rgba(0,0,0,0.25);
+$box-transition: box-shadow 0.3s ease-in-out;
+$separation-line: $border-width solid $button-header-color;
+$list-border: 5px solid rgba(76, 175, 80, 1);
+$list-border-transparent-50: 5px solid rgba(76, 175, 80, 0.5);
+$list-border-transparent-100: 5px solid rgba(76, 175, 80, 0);
+$upload-border: $border-width dashed $font-color-second;
+$upload-border-hover: $border-width dashed $app-color;
+$active-border: $border-active-width solid $app-color;
+$input-field-border: 1px solid $input-field-color;
 
 /* sizing */
 $page-max-width: 1400px;

@@ -51,7 +51,7 @@ export default {
     position: sticky;
     top: $header-height;
     z-index: 10;
-    width: 450px;
+    max-width: 450px;
     margin-left: auto;
     margin-top: $header-height;
 

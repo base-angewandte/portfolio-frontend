@@ -8,34 +8,40 @@
 
       <!-- HEADER ROW -->
       <div class="header-row">
-        <h3
-          v-if="showTitle"
-          class="attachment-area-subheader">{{ $t('form-view.attachedEntries') }}</h3>
-        <div class="linked-options">
-          <BaseButton
-            v-if="!showEntryAction"
-            :text="$t('form-view.deleteLinked')"
-            icon-size="large"
-            icon="waste-bin"
-            button-style="single"
-            @clicked="showEntryAction = true"/>
-          <div
-            v-else
-            class="linked-options">
+        <BaseOptions
+          @options-toggle="showEntryAction = false">
+          <template slot="beforeOptions">
+            <h3
+              v-if="showTitle"
+              class="attachment-area-subheader">{{ $t('form-view.attachedEntries') }}</h3>
+          </template>
+          <template slot="options">
             <BaseButton
-              :text="$t('cancel')"
+              v-if="!showEntryAction"
+              :text="$t('form-view.deleteLinked')"
               icon-size="large"
-              icon="remove"
+              icon="waste-bin"
               button-style="single"
-              @clicked="showEntryAction = false"/>
-            <BaseButton
-              :text="$t('form-view.deleteButton')"
-              icon-size="large"
-              icon="save-file"
-              button-style="single"
-              @clicked="deleteLinked"/>
-          </div>
-        </div>
+              class="attachment-options"
+              @clicked="showEntryAction = true"/>
+            <div
+              v-else
+              class="attachment-options">
+              <BaseButton
+                :text="$t('cancel')"
+                icon-size="large"
+                icon="remove"
+                button-style="single"
+                @clicked="showEntryAction = false"/>
+              <BaseButton
+                :text="$t('form-view.deleteButton')"
+                icon-size="large"
+                icon="save-file"
+                button-style="single"
+                @clicked="deleteLinked"/>
+            </div>
+          </template>
+        </BaseOptions>
       </div>
 
       <!-- ACTION AREA -->
@@ -90,47 +96,54 @@
 
       <!-- HEADER ROW -->
       <div class="header-row">
-        <h3
-          v-if="showTitle"
-          class="attachment-area-subheader">Angehängte Dateien</h3>
-        <div
-          v-if="!fileText"
-          class="linked-options">
-          <base-button
-            :text="$t('form-view.changeLicense')"
-            icon-size="large"
-            icon="licence"
-            button-style="single"
-            @clicked="action = 'licence'"/>
-          <base-button
-            :text="$t('form-view.publishMedia')"
-            icon-size="large"
-            icon="eye"
-            button-style="single"
-            @clicked="action = 'publish'"/>
-          <base-button
-            :text="$t('form-view.deleteMedia')"
-            icon-size="large"
-            icon="waste-bin"
-            button-style="single"
-            @clicked="action = 'delete'"/>
-        </div>
-        <div
-          v-else
-          class="linked-options">
-          <base-button
-            :text="$t('cancel')"
-            icon-size="large"
-            icon="remove"
-            button-style="single"
-            @clicked="action = ''"/>
-          <base-button
-            :text="buttonText"
-            icon-size="large"
-            icon="save-file"
-            button-style="single"
-            @clicked="saveFileMeta"/>
-        </div>
+        <BaseOptions
+          @options-toggle="fileText = action = ''">
+          <template slot="beforeOptions">
+            <h3
+              v-if="showTitle"
+              class="attachment-area-subheader">Angehängte Dateien</h3>
+          </template>
+          <template slot="options">
+            <div
+              v-if="!fileText"
+              class="attachment-options">
+              <BaseButton
+                :text="$t('form-view.changeLicense')"
+                icon-size="large"
+                icon="licence"
+                button-style="single"
+                @clicked="action = 'licence'"/>
+              <BaseButton
+                :text="$t('form-view.publishMedia')"
+                icon-size="large"
+                icon="eye"
+                button-style="single"
+                @clicked="action = 'publish'"/>
+              <BaseButton
+                :text="$t('form-view.deleteMedia')"
+                icon-size="large"
+                icon="waste-bin"
+                button-style="single"
+                @clicked="action = 'delete'"/>
+            </div>
+            <div
+              v-else
+              class="attachment-options">
+              <BaseButton
+                :text="$t('cancel')"
+                icon-size="large"
+                icon="remove"
+                button-style="single"
+                @clicked="action = ''"/>
+              <BaseButton
+                :text="buttonText"
+                icon-size="large"
+                icon="save-file"
+                button-style="single"
+                @clicked="saveFileMeta"/>
+            </div>
+          </template>
+        </BaseOptions>
       </div>
 
       <!-- ACTION AREA -->
@@ -173,7 +186,8 @@
           v-for="(attached, index) of attachedList"
           :show-title="true"
           :selectable="!!fileText"
-          :selected="action === 'publish' && attachedList[index].published"
+          :selected="(action === 'publish' && attachedList[index].published)
+          || selectedFiles.includes(attached.id)"
           :title="getFileName(attached.original)"
           :subtext="attached.licence"
           :description="attached.metadata && attached.metadata.FileType
@@ -183,7 +197,7 @@
           :box-size="{ width: 'calc(25% - 12px)' }"
           :box-ratio="100"
           :box-text="generateBoxText(attached.metadata)"
-          :key="index"
+          :key="attached.id"
           :class="['linked-base-box', { 'image-box': !!attached.thumbnail }]"
           @select-triggered="filesSelected(attached.id, $event)"
           @clicked="$emit('show-preview', attached.original)">
@@ -213,8 +227,11 @@
 </template>
 
 <script>
-import { BaseImageBox, BaseButton, BaseDropDown } from 'base-components';
-import BaseBoxButton from 'base-components/src/components/BaseBoxButton/BaseBoxButton';
+import {
+  BaseBoxButton, BaseImageBox, BaseButton, BaseDropDown,
+} from 'base-components';
+import BaseOptions from './BaseOptions';
+
 
 export default {
   components: {
@@ -222,6 +239,7 @@ export default {
     BaseDropDown,
     BaseImageBox,
     BaseButton,
+    BaseOptions,
   },
   props: {
     linkedList: {
@@ -262,6 +280,8 @@ export default {
         this.buttonText = this.$t(`form-view.${val}Button`);
       } else {
         this.fileText = '';
+        this.publishFiles = [];
+        this.selectedFiles = [];
       }
     },
   },
@@ -297,8 +317,14 @@ export default {
           this.selectedFiles = this.selectedFiles.filter(entryId => entryId !== objId);
         }
       } else {
-        this.publishFiles.filter(file => file.id === objId);
-        this.publishFiles.push({ id: objId, selected: sel });
+        // check if the file was already changed previously (which means now it is
+        // back in original state) --> filter out
+        /* eslint-disable-next-line */
+        if (this.publishFiles.some(file => file.id === objId)) {
+          this.publishFiles = this.publishFiles.filter(file => file.id === objId);
+        } else {
+          this.publishFiles.push({ id: objId, selected: sel });
+        }
       }
     },
     getFileName(file) {
@@ -369,9 +395,10 @@ export default {
         justify-content: space-between;
         align-items: center;
 
-        .linked-options {
+        .attachment-options {
+          margin-bottom: $spacing-small;
           display: flex;
-          flex-direction: row;
+
         }
       }
 
@@ -444,6 +471,36 @@ export default {
 
     .slide-enter {
       opacity: 0;
+      transform: translateY(-#{$spacing});
+    }
+  }
+
+  @media screen and (max-width: $mobile) {
+    .attachment-area {
+      .attachment-area-subheader {
+      }
+
+      .linked-area {
+
+        .box-area {
+
+          .linked-base-box {
+            flex: 0 0 calc(50% - #{$spacing-small});
+          }
+
+          .linked-base-box:nth-of-type(n + 3) {
+            margin-top: $spacing;
+          }
+
+          .linked-base-box:not(:nth-child(4n)) {
+            margin-right: 0;
+          }
+
+          .linked-base-box:not(:nth-child(2n)) {
+            margin-right: $spacing;
+          }
+        }
+      }
     }
   }
 </style>
