@@ -40,31 +40,16 @@ export default {
       return this.$store.getters['PortfolioAPI/isAuthenticated'];
     },
   },
-  // TODO: not sure if it is a good idea to make this async?
-  async beforeCreate() {
-    debugger;
+  beforeCreate() {
     // initializing stores before app instance is created
-    await this.$store.dispatch('PortfolioAPI/init', {
+    this.$store.dispatch('PortfolioAPI/init', {
       baseURL: process.env.PORTFOLIO_API,
-      lang: 'en',
+      lang: this.$i18n.locale,
     });
-    await this.$store.dispatch('SkosmosAPI/init', {
+    this.$store.dispatch('SkosmosAPI/init', {
       baseURL: process.env.SKOSMOS_API,
-      lang: 'en',
+      lang: this.$i18n.locale,
     });
-    // TODO: define maximum time to wait else redirect to error page
-    while (this.$store.state.PortfolioAPI.loading) {
-      console.log('waiting');
-      /* eslint-disable-next-line */
-      await new Promise(resolve => setTimeout(resolve, 100));
-    }
-    console.log(this.$store.getters['PortfolioAPI/isAuthenticated']);
-    if (!this.$store.getters['PortfolioAPI/isAuthenticated']) {
-      console.log('authenticating');
-      window.location.href = `${process.env.PORTFOLIO_API}accounts/login/`;
-    } else {
-      console.log('authenticated');
-    }
   },
 };
 </script>

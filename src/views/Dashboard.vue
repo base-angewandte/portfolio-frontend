@@ -67,7 +67,7 @@ export default {
       this.$store.commit('data/setNewForm', this.$route.name === 'newEntry');
     },
   },
-  async mounted() {
+  mounted() {
     this.$store.commit('data/setNewForm', this.$route.name === 'newEntry');
   },
   methods: {

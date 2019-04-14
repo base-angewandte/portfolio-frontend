@@ -363,7 +363,6 @@ export default {
       position: relative;
 
       .form-loading-area {
-        margin-top: $spacing;
         position: absolute;
         height: 100%;
         width: 100%;

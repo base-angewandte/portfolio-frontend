@@ -247,11 +247,11 @@ export default {
     // TODO: eventually store entryTypes in Store since the same in every instance and
     // needs to be updated when entries added or deleted or updated
     this.getEntryTypes();
+    this.fetchSidebarData();
   },
   mounted() {
     this.listInt = this.list;
     this.calculateSidebarHeight();
-    this.fetchSidebarData();
   },
   methods: {
     showEntry(index) {
