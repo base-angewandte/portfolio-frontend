@@ -12,7 +12,7 @@ function transformTextData(data) {
       };
       const text = Object.keys(textItem).filter(props => !['type', 'text', 'data'].includes(props))
         .map(lang => Object.assign({}, {
-          language: lang,
+          language: `${process.env.LANG_URL}${lang}`,
           text: textItem[lang],
         }));
       Vue.set(textObj, 'data', text);
@@ -256,7 +256,11 @@ const actions = {
                 reject(e);
               }
             }
-            entry.data.forEach(lang => Vue.set(textObj, lang.language.toLowerCase(), lang.text));
+            // TODO: temporary hack - probably should fetch label for lang as well
+            entry.data.forEach((lang) => {
+              const langInternal = lang.language.split('/').pop();
+              Vue.set(textObj, langInternal.toLowerCase(), lang.text);
+            });
             resolve(Object.assign({}, { type }, textObj));
           }))) : [];
 

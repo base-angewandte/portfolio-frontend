@@ -1,5 +1,6 @@
 'use strict'
 module.exports= {
+  LANG_URL: '"http://base.uni-ak.ac.at/portfolio/languages/"',
   NODE_ENV: '"production"',
   HOST: 'fe.basedev.uni-ak.ac.at',
   PORT: 8080,
