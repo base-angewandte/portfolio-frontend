@@ -35,32 +35,30 @@
             v-if="valueListInt[element.name].length > 1"
             :key="index + '-button' + valueIndex"
             class="group-add">
-            <div
+            <button
               class="field-group-button "
-              @click="removeField(element, valueIndex)">
+              @click.prevent="removeField(element, valueIndex)">
               <span>{{ $t('form.removeField', { fieldType: getFieldName(element) }) }}</span>
               <span>
-                <img
-                  :src="require('../static/remove.svg')"
-                  class="field-group-icon">
+                <RemoveIcon
+                  class="field-group-icon" />
               </span>
-            </div>
+            </button>
 
           </div>
         </div>
         <div
           :key="'multiplyButton' + index"
           class="group-multiply">
-          <div
+          <button
             class="field-group-button "
-            @click="multiplyField(element)">
+            @click.prevent="multiplyField(element)">
             <span>{{ $t('form.addGroup', { fieldType: getFieldName(element) }) }}</span>
             <span>
-              <img
-                :src="require('../static/remove.svg')"
-                class="field-group-icon">
+              <PlusIcon
+                class="field-group-icon" />
             </span>
-          </div>
+          </button>
 
         </div>
       </template>
@@ -94,11 +92,15 @@
 <script>
 import axios from 'axios';
 import FormFieldCreator from './FormFieldCreator';
+import RemoveIcon from '../assets/icons/remove.svg';
+import PlusIcon from '../assets/icons/plus.svg';
 
 export default {
   name: 'BaseFormNew',
   components: {
     FormFieldCreator,
+    RemoveIcon,
+    PlusIcon,
   },
   props: {
     formFieldJson: {
@@ -347,15 +349,23 @@ export default {
       color: $font-color-second;
       cursor: pointer;
       display: inline;
+      padding: 0;
+      background-color: inherit;
+      border: none;
 
       &:hover {
         color: $app-color;
+        fill: $app-color;
       }
 
       .field-group-icon {
         margin-left: $spacing;
         height: $icon-small;
         width: $icon-small;
+      }
+
+      &:focus .field-group-icon {
+        fill: $app-color;
       }
     }
   }

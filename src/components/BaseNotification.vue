@@ -27,10 +27,11 @@
             <div
               class="notification-close"
               @click="props.close">
-              <img
-                :alt="'remove Message'"
-                src="../static/remove.svg"
-                class="icon notification-icon" >
+              <RemoveIcon
+                aria-labelledby="title"
+                class="icon notification-icon">
+                <title>Remove message</title>
+              </RemoveIcon>
             </div>
           </div>
         </template>
@@ -40,7 +41,12 @@
 </template>
 
 <script>
+import RemoveIcon from '../assets/icons/remove.svg';
+
 export default {
+  components: {
+    RemoveIcon,
+  },
 };
 </script>
 

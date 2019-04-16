@@ -205,9 +205,14 @@
             <div
               v-if="attached.published"
               class="file-published">
-              <img
-                src="../static/eye.svg"
+              <EyeIcon
+                aria-labelledby="title"
                 class="published-icon">
+                <title>Published</title>
+                <desc>
+                  {{ `file ${getFileName(attached.original)} was published` }}
+                </desc>
+              </EyeIcon>
             </div>
           </template>
         </BaseImageBox>
@@ -231,6 +236,7 @@ import {
   BaseBoxButton, BaseImageBox, BaseButton, BaseDropDown,
 } from 'base-components';
 import BaseOptions from './BaseOptions';
+import EyeIcon from '../assets/icons/eye.svg';
 
 
 export default {
@@ -240,6 +246,7 @@ export default {
     BaseImageBox,
     BaseButton,
     BaseOptions,
+    EyeIcon,
   },
   props: {
     linkedList: {
