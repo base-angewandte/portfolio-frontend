@@ -69,7 +69,7 @@
       </BaseOptions>
     </div>
     <div
-      ref="menu-container"
+      ref="menuContainer"
       class="base-menu-container">
       <div
         v-if="isLoading"
@@ -78,6 +78,7 @@
       </div>
 
       <BaseMenuList
+        v-if="listInt.length"
         id="menu-list"
         key="menu-list"
         ref="menuList"
@@ -86,6 +87,17 @@
         :active-entry="activeEntry"
         @clicked="showEntry"
         @selected="selectEntry"/>
+      <div
+        v-else-if="!isLoading"
+        class="no-entries">
+        <p class="no-entries-title">
+          {{ isNewForm ? $t('noEntriesTitle', { action: $t('actionSave') })
+          : $t('noEntriesTitle', { action: $t('actionCreate') }) }}
+        </p>
+        <p class="no-entries-subtext">
+          {{ isNewForm ? $t('noEntriesFormSubtext') : $t('noEntriesMainSubtext') }}
+        </p>
+      </div>
     </div>
 
     <BasePagination
@@ -358,8 +370,8 @@ export default {
       } else {
         this.$notify({
           group: 'request-notifications',
-          title: 'No Entries Selected',
-          text: 'Please select Entries from the Sidebar first!',
+          title: this.$t('notify.noEntriesSelected'),
+          text: this.$t('notify.selectEntries'),
           type: 'warn',
         });
       }
@@ -371,8 +383,8 @@ export default {
       } else {
         this.$notify({
           group: 'request-notifications',
-          title: 'No Entries Selected',
-          text: 'Please select Entries from the Sidebar first!',
+          title: this.$t('notify.noEntriesSelected'),
+          text: this.$t('notify.selectEntries'),
           type: 'warn',
         });
       }
@@ -400,15 +412,15 @@ export default {
         console.error(e);
         this.$notify({
           group: 'request-notifications',
-          title: 'Fetching of Entry Data Failed',
-          text: 'Unfortunately there was a problem and we could not fetch the data. Please try again!',
+          title: this.$t('notify.entryFetchFail'),
+          text: this.$t('notify.entryFetchFailSub'),
           type: 'warn',
         });
       }
       this.isLoading = false;
     },
     calculateSidebarHeight() {
-      const sidebarHeight = this.$refs.menuList.$el.clientHeight - 32 - 16;
+      const sidebarHeight = this.$refs.menuContainer.clientHeight - 32 - 16;
       // hardcoded because unfortunately no other possibility found
       const entryHeight = 56;
       this.entriesPerPage = Math.floor(sidebarHeight / entryHeight);
@@ -460,6 +472,22 @@ export default {
       width: 100%;
       z-index: 2;
       background-color: rgba(255,255,255, 0.50);
+    }
+  }
+
+  .no-entries {
+    height: 100%;
+    width: 100%;
+    padding-top: 50px;
+
+    .no-entries-title, .no-entries-subtext {
+      text-align: center;
+      color: $font-color-second;
+      margin-bottom: $spacing;
+    }
+
+    .no-entries-title {
+      font-size: $font-size-large;
     }
   }
 

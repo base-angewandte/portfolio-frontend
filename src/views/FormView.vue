@@ -152,8 +152,8 @@ export default {
         } catch (e) {
           this.$notify({
             group: 'request-notifications',
-            title: 'Entry type not found',
-            text: 'The selected type was not found, please choose a different one!',
+            title: this.$t('notify.somethingWrong'),
+            text: this.$t('notify.entryTypeNotFound', { type: val }),
             type: 'warn',
           });
           // reset type
@@ -247,10 +247,9 @@ export default {
           this.$emit('data-changed');
           this.unsavedChanges = false;
         } catch (e) {
-          console.error(e);
           this.$notify({
             group: 'request-notifications',
-            title: 'Saving to database failed',
+            title: this.$t('notify.saveFail'),
             text: e.message,
             type: 'warn',
           });
@@ -258,8 +257,8 @@ export default {
       } else {
         this.$notify({
           group: 'request-notifications',
-          title: 'Title missing',
-          text: 'In order to save please specify a title!',
+          title: this.$t('notify.titleMissing'),
+          text: this.$t('notify.addTitle'),
           type: 'warn',
         });
       }
@@ -280,6 +279,7 @@ export default {
         window.scrollTo(0, 0);
         setTimeout(() => {
           this.saveForm();
+          // TODO: if saving of entry fails below should not happen!
           this.resetForm();
           this.$store.commit('data/deleteCurrentItem');
           this.$router.push('/new');

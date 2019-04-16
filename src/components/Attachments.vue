@@ -110,9 +110,9 @@
               <BaseButton
                 :text="$t('form-view.changeLicense')"
                 icon-size="large"
-                icon="licence"
+                icon="license"
                 button-style="single"
-                @clicked="action = 'licence'"/>
+                @clicked="action = 'license'"/>
               <BaseButton
                 :text="$t('form-view.publishMedia')"
                 icon-size="large"
@@ -158,7 +158,7 @@
             {{ fileSubtext }}
           </div>
           <BaseDropDown
-            v-if="action === 'licence'"
+            v-if="action === 'license'"
             :selection-list="[{
                                 label: 'CC-BY',
                                 value: 'cc-by',
@@ -174,9 +174,9 @@
                               }
             ]"
             :show-label="false"
-            label="Select License"
-            placeholder="Select License"
-            class="licence-dropdown"/>
+            :label="$t('form-view.selectLicense')"
+            :placeholder="$t('form-view.selectLicense')"
+            class="license-dropdown"/>
         </div>
       </transition>
 
@@ -189,7 +189,7 @@
           :selected="(action === 'publish' && attachedList[index].published)
           || selectedFiles.includes(attached.id)"
           :title="getFileName(attached.original)"
-          :subtext="attached.licence"
+          :subtext="attached.license ? attached.license.toUpperCase() : ''"
           :description="attached.metadata && attached.metadata.FileType
             ? getFileType(attached.metadata.FileType.val)
           : getFileType(getFileName(attached.original))"
@@ -466,7 +466,7 @@ export default {
         font-size: $font-size-small;
       }
 
-      .licence-dropdown {
+      .license-dropdown {
         margin: $spacing auto 0 auto;
         text-align: left;
       }
