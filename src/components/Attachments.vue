@@ -157,6 +157,7 @@
           <div class="message-area-subtext">
             {{ fileSubtext }}
           </div>
+          <!-- TODO: replace this with skosmos project values! -->
           <BaseDropDown
             v-if="action === 'license'"
             :selection-list="[{
@@ -167,16 +168,12 @@
                                 label: 'CC0',
                                 value: 'cc0',
                               }
-                              ,
-                              {
-                                label: $t('nolicense'),
-                                value: '',
-                              }
             ]"
             :show-label="false"
             :label="$t('form-view.selectLicense')"
             :placeholder="$t('form-view.selectLicense')"
-            class="license-dropdown"/>
+            class="license-dropdown"
+            @selected="licenseSelected = $event"/>
         </div>
       </transition>
 
@@ -276,6 +273,7 @@ export default {
       selectedFiles: [],
       publishFiles: [],
       action: '',
+      licenseSelected: {},
     };
   },
   watch: {
@@ -294,11 +292,11 @@ export default {
   },
   methods: {
     async saveFileMeta() {
-      if (this.action === 'publish') {
-        await this.$store.dispatch('data/actionFiles', { list: this.publishFiles, action: this.action });
-      } else {
-        await this.$store.dispatch('data/actionFiles', { list: this.selectedFiles, action: this.action });
-      }
+      await this.$store.dispatch('data/actionFiles', {
+        list: this.action === 'publish' ? this.publishFiles : this.selectedFiles,
+        action: this.action,
+        value: this.licenseSelected.value,
+      });
       this.action = '';
       this.selectedFiles = [];
       this.publishFiles = [];

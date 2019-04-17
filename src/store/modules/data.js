@@ -456,7 +456,7 @@ const actions = {
       console.error(e);
     }
   },
-  async actionFiles({ state, dispatch }, { list, action }) {
+  async actionFiles({ state, dispatch }, { list, action, value }) {
     const axiosAction = action === 'delete' ? action : 'patch';
 
     await Promise.all(list.map(mediaId => new Promise(async (resolve, reject) => {
@@ -465,7 +465,7 @@ const actions = {
       if (action === 'publish' || action === 'offline') {
         formData.append('published', mediaId.selected);
       } else if (action === 'license') {
-        // TODO: this does not exist in backend yet!
+        formData.append('license', value);
       }
       try {
         if (axiosAction === 'delete') {
