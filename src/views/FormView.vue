@@ -154,7 +154,7 @@ export default {
             group: 'request-notifications',
             title: this.$t('notify.somethingWrong'),
             text: this.$t('notify.entryTypeNotFound', { type: val }),
-            type: 'warn',
+            type: 'error',
           });
           // reset type
           this.valueList.type = [];
@@ -184,7 +184,7 @@ export default {
           group: 'request-notifications',
           title: this.$t('notify.somethingWrong'),
           text: this.$t('notify.formDataNotFound'),
-          type: 'warn',
+          type: 'error',
         });
       }
       this.formIsLoading = false;
@@ -265,7 +265,7 @@ export default {
             group: 'request-notifications',
             title: this.$t('notify.saveFail'),
             text: e.message,
-            type: 'warn',
+            type: 'error',
           });
         }
       } else {
@@ -273,7 +273,7 @@ export default {
           group: 'request-notifications',
           title: this.$t('notify.titleMissing'),
           text: this.$t('notify.addTitle'),
-          type: 'warn',
+          type: 'error',
         });
       }
     },
@@ -303,7 +303,7 @@ export default {
           group: 'request-notifications',
           title: 'Linking not possible',
           text: 'Please specify a title for this entry first',
-          type: 'warn',
+          type: 'error',
         });
       }
     },
@@ -322,7 +322,7 @@ export default {
           group: 'request-notifications',
           title: 'Unsaved Changes',
           text: `Please save your ${this.isNewForm ? 'new Form' : 'Changes'} first!`,
-          type: 'warn',
+          type: 'error',
         });
       }
     },

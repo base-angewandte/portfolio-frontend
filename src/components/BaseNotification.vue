@@ -3,7 +3,7 @@
     class="notification-container">
     <div class="notification-box">
       <notifications
-        :duration="5000"
+        :duration="-1"
         :width="'100%'"
         group="request-notifications"
         position="top right"
@@ -14,6 +14,14 @@
           <div
             :class="[props.item.type, 'notification']"
             @click="props.close">
+            <FailIcon
+              v-if="props.item.type === 'error'"
+              class="icon notification-status-icon"
+            />
+            <SuccessIcon
+              v-else-if="props.item.type === 'success'"
+              class="icon notification-status-icon"
+            />
             <div class="notification-text">
               <div
                 class="notification-title"
@@ -42,10 +50,14 @@
 
 <script>
 import RemoveIcon from '../assets/icons/remove.svg';
+import SuccessIcon from '../assets/icons/success.svg';
+import FailIcon from '../assets/icons/attention.svg';
 
 export default {
   components: {
     RemoveIcon,
+    SuccessIcon,
+    FailIcon,
   },
 };
 </script>
@@ -105,6 +117,14 @@ export default {
         margin-left: $spacing;
       }
     }
+
+    .notification-status-icon {
+      width: $icon-large;
+      max-height: $icon-large;
+      margin-right: $spacing;
+      fill: $font-color-second;
+      stroke: $font-color-second;
+    }
   }
 
   .notification-wrapper {
@@ -116,7 +136,6 @@ export default {
   }
 
   @media screen and (max-width: $mobile) {
-
     .notification-container {
       max-width: 100%;
     }

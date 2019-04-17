@@ -377,7 +377,7 @@ export default {
           group: 'request-notifications',
           title: this.$t('notify.noEntriesSelected'),
           text: this.$t('notify.selectEntries'),
-          type: 'warn',
+          type: 'error',
         });
       }
     },
@@ -390,7 +390,7 @@ export default {
           group: 'request-notifications',
           title: this.$t('notify.noEntriesSelected'),
           text: this.$t('notify.selectEntries'),
-          type: 'warn',
+          type: 'error',
         });
       }
     },
@@ -419,7 +419,7 @@ export default {
           group: 'request-notifications',
           title: this.$t('notify.entryFetchFail'),
           text: this.$t('notify.entryFetchFailSub'),
-          type: 'warn',
+          type: 'error',
         });
       }
       this.isLoading = false;

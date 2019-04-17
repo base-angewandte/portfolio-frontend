@@ -156,7 +156,7 @@ export default {
             group: 'request-notifications',
             title: this.$t('notify.linkingNotPossible'),
             text: this.$t('notify.selfLinked'),
-            type: 'warn',
+            type: 'error',
           });
         }
       }
@@ -190,7 +190,7 @@ export default {
             group: 'request-notifications',
             title: this.$t('notify.linkingNotPossible'),
             text: this.$t('notify.alreadyLinked'),
-            type: 'warn',
+            type: 'error',
           });
         }
       });

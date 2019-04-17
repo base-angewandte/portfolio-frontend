@@ -301,7 +301,7 @@ const actions = {
           group: 'request-notifications',
           title: 'Entry duplication failed',
           text: `Entry ${entryTitle} could not be duplicated`,
-          type: 'warn',
+          type: 'error',
         });
         resolve();
       }
@@ -363,7 +363,7 @@ const actions = {
           group: 'request-notifications',
           title: `${action}ing of Entry failed`,
           text: `The Link could not be ${action}: ${e}`,
-          type: 'warn',
+          type: 'error',
         });
         reject(e);
       }
