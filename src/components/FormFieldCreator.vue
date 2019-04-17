@@ -22,6 +22,7 @@
         :format="field['x-attrs'].date_format"
         :type="dateType.includes('timerange') ? dateType.includes('daterange')
         ? 'daterange' : 'single' : dateType"
+        :date-format-labels="{date: $t('form.date'), year: $t('form.year') }"
         v-model="fieldValueInt"
         :class="['base-form-field']"/>
       <BaseDateInput

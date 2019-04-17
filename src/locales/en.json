@@ -65,7 +65,8 @@
     "published_in": "Published In",
     "addGroup": "Add \"{fieldType}\"",
     "removeField": "\"{fieldType}\" Feld entfernen",
-    "time": "Time"
+    "time": "Time",
+    "year": "Year"
   },
   "form-view": {
     "formExtended": "Further Information",
