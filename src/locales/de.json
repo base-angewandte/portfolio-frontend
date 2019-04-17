@@ -97,6 +97,7 @@
     "selectEntries": "Bitte wählen Sie zuerst Einträge aus.",
     "somethingWrong": "Etwas ist schief gelaufen!",
     "entryTypeNotFound": "Leider konnte das Formular für {type} nicht geladen werden.\nBitte wähle einen anderen Typ.",
+    "formDataNotFound": "Leider konnte das Formular nicht geladen werden! Bitte versuche die Seite neu zu laden.",
     "entryFetchFail": "Einträge nicht gefunden",
     "entryFetchFailSub": "Leider konnten die Einträge nicht geladen werden.\nBitte versuche die Seite neu zu laden.",
     "saveFail": "Speichern fehlgeschlagen",

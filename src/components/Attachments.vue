@@ -373,7 +373,6 @@ export default {
     },
     goToLinked(id) {
       this.$store.commit('data/deleteLastParentItem');
-      this.$store.dispatch('data/setCurrentItemById', id);
       this.$router.push(`/entry/${id}`);
     },
   },

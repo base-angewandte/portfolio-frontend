@@ -166,15 +166,29 @@ export default {
       }
     },
   },
-  async created() {
-    this.formIsLoading = true;
-    this.formFields = await this.$store.dispatch('data/fetchGeneralFields');
+  created() {
+    this.fetchGeneralFormFields();
     if (this.currentItemId) {
-      await this.updateForm();
+      this.updateForm();
     }
-    this.formIsLoading = false;
   },
   methods: {
+    async fetchGeneralFormFields() {
+      this.formIsLoading = true;
+      try {
+        this.formFields = await this.$store.dispatch('data/fetchGeneralFields');
+      } catch (e) {
+        // TODO: if form fields can not be fetched this should probably
+        //  abort all further entry data / extension loadings (redirect to dashboard?)
+        this.$notify({
+          group: 'request-notifications',
+          title: this.$t('notify.somethingWrong'),
+          text: this.$t('notify.formDataNotFound'),
+          type: 'warn',
+        });
+      }
+      this.formIsLoading = false;
+    },
     resetForm() {
       this.unsavedChanges = false;
       this.valueList = {};

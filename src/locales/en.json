@@ -101,6 +101,7 @@
     "noEntriesSelected": "No Entries Selected",
     "selectEntries": "Please select Entries first.",
     "somethingWrong": "Something went wrong!",
+    "formDataNotFound": "Unfortunately the form can not be displayed. Please try to refresh the page.",
     "entryTypeNotFound": "Unfortunately the form for {type} was not found.\nPlease select a different type.",
     "entryFetchFail": "Fetching of Entries failed",
     "entryFetchFailSub": "Unfortunately there was a problem and we could not fetch the data.\nPlease try to refresh the page.",
