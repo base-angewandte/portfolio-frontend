@@ -12,11 +12,12 @@
         ref="options"
         :text="$t('options')"
         :icon="'options-menu'"
-        class="base-options-button"
+        :disabled="optionsHidden"
+        :class="['base-options-button', { 'base-options-button-hidden': optionsHidden }]"
         icon-position="left"
         @clicked="showOptionsToggle = !showOptionsToggle" />
       <div
-        v-else-if="!isMobile"
+        v-else-if="!optionsHidden && !isMobile"
         class="base-options-inline" >
         <slot name="options" />
       </div>
@@ -57,6 +58,10 @@ export default {
       },
     },
     showOptions: {
+      type: Boolean,
+      default: false,
+    },
+    optionsHidden: {
       type: Boolean,
       default: false,
     },
@@ -115,6 +120,9 @@ export default {
       }
 
       .base-options-button {
+        &.base-options-button-hidden {
+          display: none;
+        }
       }
 
       .base-options-inline {

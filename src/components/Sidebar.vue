@@ -24,6 +24,7 @@
       <BaseOptions
         :always-show-options-button="true"
         :show-options="showCheckbox"
+        :options-hidden="optionsDisabled"
         align-options="left"
         @options-toggle="toggleSidebarOptions">
         <template slot="afterOptions">
@@ -177,6 +178,10 @@ export default {
       },
     },
     excludeLinked: {
+      type: Boolean,
+      default: false,
+    },
+    optionsDisabled: {
       type: Boolean,
       default: false,
     },

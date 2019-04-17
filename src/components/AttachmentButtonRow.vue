@@ -90,6 +90,7 @@
           :hide-active="true"
           :entry-number="totalEntries"
           :exclude-linked="true"
+          :options-disabled="true"
           class="menu"
           @selected-changed="selectedEntries = [].concat($event)"/>
       </div>
