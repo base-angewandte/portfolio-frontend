@@ -3,7 +3,7 @@
     class="notification-container">
     <div class="notification-box">
       <notifications
-        :duration="-1"
+        :duration="5000"
         :width="'100%'"
         group="request-notifications"
         position="top right"
