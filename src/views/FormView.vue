@@ -94,6 +94,7 @@ import BaseForm from '../components/BaseForm';
 
 import AttachmentArea from '../components/AttachmentArea';
 import { attachmentHandlingMixin } from '../mixins/attachmentHandling';
+import { entryHandlingMixin } from '../mixins/entryHandling';
 
 export default {
   components: {
@@ -104,7 +105,10 @@ export default {
     BaseForm,
     BaseLoader,
   },
-  mixins: [attachmentHandlingMixin],
+  mixins: [
+    attachmentHandlingMixin,
+    entryHandlingMixin,
+  ],
   data() {
     return {
       unsavedChanges: false,
@@ -237,6 +241,7 @@ export default {
           if (!this.currentItemId) {
             const newEntryId = await this.$store.dispatch('data/addOrUpdateEntry', Object.assign({}, this.valueList, { data }));
             // also add linked entries if there are already any
+            console.log(('saved'));
             const list = this.$store.getters['data/getLinkedIds'];
             if (list.length) {
               await this.actionLinked({ list, action: 'save' });
@@ -286,25 +291,44 @@ export default {
         this.$router.push('/');
       }
     },
-    openNewForm() {
+    async openNewForm() {
       if (this.valueList.title) {
-        this.showOverlay = true;
-        this.$store.commit('data/setParentItem', this.valueList);
-        this.$store.commit('data/setNewForm', true);
+        if (!this.currentItemId) {
+          this.$notify({
+            group: 'request-notifications',
+            title: this.$t('notify.linkingNotPossible'),
+            text: this.$t('notify.linkingNotPossible'),
+            type: 'error',
+          });
+        }
+        if (this.unsavedChanges) {
+          this.$store.commit('data/setPopUp', {
+            show: true,
+            header: this.$t('notify.unsavedChangesTitle'),
+            text: this.$t('notify.unsavedChangesText'),
+            icon: 'save-file',
+            buttonTextRight: this.$t('notify.saveChanges'),
+            buttonTextLeft: this.$t('notify.dismissChanges'),
+            actionRight: () => this.saveForm(),
+            actionLeft: () => { this.unsavedChanges = false; this.openNewForm(); },
+          });
+        } else {
+          this.showOverlay = true;
+          this.$store.commit('data/setParentItem', this.valueList);
+          this.$store.commit('data/setNewForm', true);
 
-        window.scrollTo(0, 0);
-        setTimeout(() => {
-          this.saveForm();
-          // TODO: if saving of entry fails below should not happen!
-          this.resetForm();
-          this.$store.commit('data/deleteCurrentItem');
-          this.$router.push('/new');
-        }, 700);
+          window.scrollTo(0, 0);
+          setTimeout(() => {
+            this.$store.commit('data/deleteCurrentItem');
+            this.resetForm();
+            this.$router.push('/new');
+          }, 700);
+        }
       } else {
         this.$notify({
           group: 'request-notifications',
-          title: 'Linking not possible',
-          text: 'Please specify a title for this entry first',
+          title: this.$t('notify.linkingErrorTitle'),
+          text: this.$t('notify.specifyTitleBeforeLinking'),
           type: 'error',
         });
       }
@@ -315,10 +339,7 @@ export default {
     },
     async actionEntry(action) {
       if (!this.isNewForm && !this.unsavedChanges) {
-        await this.$store.dispatch('data/actionEntries', {
-          action,
-          entries: [].concat(this.valueList),
-        });
+        this.confirmAction({ action, entries: [].concat(this.valueList) });
       } else {
         this.$notify({
           group: 'request-notifications',
@@ -327,6 +348,14 @@ export default {
           type: 'error',
         });
       }
+    },
+    async action(action) {
+      await this.$store.dispatch('data/actionEntries', action);
+      if (action === 'delete') {
+        this.$router.push('/');
+      }
+      // TODO: check if published can be updated here!
+      this.$emit('data-changed');
     },
   },
 };

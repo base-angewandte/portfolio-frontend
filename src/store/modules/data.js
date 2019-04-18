@@ -102,8 +102,10 @@ const mutations = {
       header: '',
       text: '',
       icon: '',
-      buttonText: '',
-      action: '',
+      buttonTextRight: '',
+      buttonTextLeft: '',
+      actionRight: undefined,
+      actionLeft: undefined,
     };
   },
   setSelected(state, entryArr) {
@@ -249,6 +251,7 @@ const actions = {
     });
   },
   async deleteEntries({ state, commit }) {
+    // TODO: user information!!
     const deletedEntries = await Promise.all(state.selectedEntries
       .map(entry => new Promise(async (resolve, reject) => {
         try {
@@ -262,8 +265,8 @@ const actions = {
     // check if any deleted items are currently displayed in form as linked
     const deletedLinked = state.linkedEntries
       .filter(entry => deletedEntries.includes(entry.to.id));
-    if (deletedLinked) {
-      commit('deleteLinked', deletedLinked.id);
+    if (deletedLinked.length) {
+      deletedLinked.forEach(deleted => commit('deleteLinked', deleted.id));
     }
     // TODO: check if deleted was a parent!
     const deletedParents = state.parentItems
@@ -279,8 +282,10 @@ const actions = {
       const newEntry = Object.assign({}, entry);
       const entryTitle = newEntry.title;
       Vue.set(newEntry, 'title', `${newEntry.title} (Copy)`);
+      Vue.set(newEntry, 'id', undefined);
       // new entries should not inherit the published state from the duplicate!
       // TODO: in future also not shared state!
+      // Vue.set(newEntry, 'shared', false);
       Vue.set(newEntry, 'published', false);
       Vue.set(newEntry, 'linked', []);
       try {
@@ -309,24 +314,16 @@ const actions = {
       }
     })));
   },
-  actionEntries({ commit }, { action, entries }) {
-    let actionText = 'löschen';
-    if (action === 'publish') {
-      actionText = 'veröffentlichen';
+  async actionEntries({ commit, dispatch }, action) {
+    if (action === 'delete') {
+      await dispatch('deleteEntries');
+    } else if (action === 'publish') {
+      await dispatch('modifyEntries', { prop: 'published', value: true });
     } else if (action === 'offline') {
-      actionText = 'entfernen';
+      await dispatch('modifyEntries', { prop: 'published', value: false });
     }
-    commit('setSelected', entries);
-    const titles = entries.map(entry => entry.title);
-    commit('setPopUp', {
-      show: true,
-      header: `${titles.length > 1 ? 'Einträge' : 'Eintrag'} ${actionText}?`,
-      text: `Wollen Sie ${titles.length > 1 ? 'diese Einträge' : 'diesen Eintrag'} wirklich
-          ${action === 'offline' ? 'aus Showroom' : ''} ${actionText}:<br>${titles.join(',<br>')}`,
-      icon: action === 'delete' ? 'waste-bin' : 'eye',
-      buttonText: `${titles.length > 1 ? 'Einträge' : 'Eintrag'} ${actionText}`,
-      action,
-    });
+    commit('setSelected', []);
+    commit('hidePopUp');
   },
   fetchInfoBoxData(context, entry) {
     console.log(entry);

@@ -93,8 +93,9 @@
     "linkingNotPossible": "Verknüpfung nicht möglich",
     "alreadyLinked": "Dieser Eintrag ist bereits verknüpft.",
     "selfLinked": "Einträge können nicht mit sich selbst verknüpft werden.",
+    "saveBeforeLink": "Bitte speichere den aktuellen Eintrag zuerst ab.",
     "noEntriesSelected": "Keine Einträge ausgewählt",
-    "selectEntries": "Bitte wählen Sie zuerst Einträge aus.",
+    "selectEntries": "Bitte wähle zuerst Einträge aus.",
     "somethingWrong": "Etwas ist schief gelaufen!",
     "entryTypeNotFound": "Leider konnte das Formular für {type} nicht geladen werden.\nBitte wähle einen anderen Typ.",
     "formDataNotFound": "Leider konnte das Formular nicht geladen werden! Bitte versuche die Seite neu zu laden.",
@@ -108,7 +109,17 @@
     "duplicationFailTitle": "Duplizierung fehlgeschlagen",
     "duplicationFailSubtext": "Leider konnten die folgenden Einträge nicht dupliziert werden:\n {list}",
     "linkingErrorTitle":"Verknüpfung fehlgeschlagen",
-    "linkingErrorSubtext": "Leider konnte der Eintrag nicht verknüpft werden | Leider konnten {count} Einträge nicht verknüpft werden"
+    "linkingErrorSubtext": "Leider konnte der Eintrag nicht verknüpft werden | Leider konnten {count} Einträge nicht verknüpft werden",
+    "specifyTitleBeforeLinking": "Bitte gib zuerst einen Titel für diesen Eintrag an.",
+    "delete": "löschen",
+    "publish": "veröffentlichen",
+    "offline": "offline nehmen",
+    "entryActionTitle": "Eintrag {action} | Einträge {action}",
+    "entryActionText": "Willst du diesen Eintrag wirklich {action}? | Willst du diese Einträge wirklich {action}?",
+    "unsavedChangesTitle": "Eintrag speichern?",
+    "unsavedChangesText": "Du hast ungespeicherte Änderungen. Soll der Eintrag gespeichert werden?",
+    "saveChanges": "Änderungen speichern",
+    "dismissChanges": "Änderungen verwerfen"
   },
   "dropdown": {
     "type": "By Type",
@@ -116,7 +127,8 @@
     "-title": "Z-A",
     "date_created": "Oldest First",
     "-date_created": "Newest First",
-    "allTypes": "Alle Typen"
+    "allTypes": "Alle Typen",
+    "sortBy": "Sortieren nach"
   },
   "upload": {
     "title": "Dateien Hochladen",

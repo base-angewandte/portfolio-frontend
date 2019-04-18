@@ -2,13 +2,14 @@
   <div id="app-container">
     <BasePopUp
       :show="$store.state.data.popUp.show"
-      :title="$store.state.data.popUp.header"
-      :button-left-text="'Abbrechen'"
-      :button-right-text="$store.state.data.popUp.buttonText"
+      :title="capitalizeFirstLetter($store.state.data.popUp.header)"
+      :button-left-text="capitalizeFirstLetter($store.state.data.popUp.buttonTextLeft)
+      || $t('cancel')"
+      :button-right-text="capitalizeFirstLetter($store.state.data.popUp.buttonTextRight)"
       :button-right-icon="$store.state.data.popUp.icon"
       @close="cancelAction"
-      @button-left="cancelAction"
-      @button-right="popUpAction">
+      @button-left="cancelAction($store.state.data.popUp.actionLeft)"
+      @button-right="$store.state.data.popUp.actionRight()">
       <div class="sidebar-pop-up">
         <div class="pop-up-text-container">
           <p
@@ -82,31 +83,10 @@ export default {
       this.$store.commit('data/deleteParentItems');
       this.$router.push(`/entry/${id}`);
     },
-    async popUpAction() {
-      await this.action();
-    },
-    cancelAction() {
-      this.$store.commit('data/hidePopUp');
-    },
-    async action() {
-      const { action } = this.$store.state.data.popUp;
-      if (action === 'delete') {
-        const deleteCurrentlyDisplayed = this.$store.state.data.selectedEntries
-          .find(entry => entry.id === this.$route.params.id);
-        await this.$store.dispatch('data/deleteEntries');
-        if (deleteCurrentlyDisplayed) {
-          this.$store.commit('data/deleteCurrentItem');
-          this.$router.push('/');
-        }
-      } else if (action === 'publish') {
-        await this.$store.dispatch('data/modifyEntries', { prop: 'published', value: true });
-      } else if (action === 'offline') {
-        await this.$store.dispatch('data/modifyEntries', { prop: 'published', value: false });
+    cancelAction(action) {
+      if (action) {
+        action();
       }
-      this.updateSidebarData();
-      this.$store.commit('data/setSelected', []);
-      this.$store.commit('data/setOptions', false);
-      this.$refs.sidebar.selectedMenuEntries = [];
       this.$store.commit('data/hidePopUp');
     },
     loadPreview(img) {
@@ -133,6 +113,12 @@ export default {
     },
     updateSidebarData() {
       this.$refs.sidebar.fetchSidebarData();
+    },
+    capitalizeFirstLetter(text) {
+      if (text) {
+        return text.slice(0, 1).toUpperCase() + text.slice(1);
+      }
+      return '';
     },
   },
 };

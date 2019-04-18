@@ -30,7 +30,7 @@
         <template slot="afterOptions">
           <div class="sidebar-drop-downs">
             <BaseDropDown
-              :placeholder="'Sortieren nach'"
+              :placeholder="$t('dropdown.sortBy')"
               :selection-list="filterByTypeList"
               @selected="sortEntries"/>
             <BaseDropDown
@@ -125,6 +125,7 @@ import {
 } from 'base-components';
 import 'base-components/dist/lib/base-components.min.css';
 import BaseOptions from './BaseOptions';
+import { entryHandlingMixin } from '../mixins/entryHandling';
 
 export default {
   components: {
@@ -136,6 +137,7 @@ export default {
     BaseOptions,
     BaseLoader,
   },
+  mixins: [entryHandlingMixin],
   props: {
     /**
      * make optional for link entries functionality
@@ -403,9 +405,8 @@ export default {
       }
     },
     actionEntries(value) {
-      // TODO: do this in component not store!
       if (this.selectedMenuEntries.length) {
-        this.$store.dispatch('data/actionEntries', { action: value, entries: [].concat(this.selectedMenuEntries) });
+        this.confirmAction({ action: value, entries: this.selectedMenuEntries });
       } else {
         this.$notify({
           group: 'request-notifications',
@@ -413,6 +414,20 @@ export default {
           text: this.$t('notify.selectEntries'),
           type: 'error',
         });
+      }
+    },
+    async action(action) {
+      const currentSelected = this.selectedMenuEntries
+        .some(entry => entry.id === this.activeEntryId);
+      await this.$store.dispatch('data/actionEntries', action);
+      this.selectedMenuEntries = [];
+      this.fetchSidebarData();
+
+      this.$store.commit('data/setOptions', false);
+      // if the form was open and the item was selected for deletion a redirect to dashboard
+      // will be done
+      if (action === 'delete' && currentSelected) {
+        this.$router.push('/');
       }
     },
     toggleSidebarOptions() {

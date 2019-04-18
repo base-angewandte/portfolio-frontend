@@ -98,6 +98,7 @@
     "linkingNotPossible": "Linking not possible",
     "alreadyLinked": "This entry is already linked.",
     "selfLinked": "Entries can not be linked with themselves.",
+    "saveBeforeLink": "Please save the current entry first.",
     "noEntriesSelected": "No Entries Selected",
     "selectEntries": "Please select Entries first.",
     "somethingWrong": "Something went wrong!",
@@ -113,7 +114,17 @@
     "duplicationFailTitle": "Entry duplication failed",
     "duplicationFailSubtext": "Unfortunately these entries could not be duplicated:\n {list}",
     "linkingErrorTitle":"Linking failed",
-    "linkingErrorSubtext": "Unfortunately the Entry could not be linked. | Unfortunately {count} entries could not be linked."
+    "linkingErrorSubtext": "Unfortunately the Entry could not be linked. | Unfortunately {count} entries could not be linked.",
+    "specifyTitleBeforeLinking": "Please specify a title for this entry first.",
+    "delete": "delete",
+    "publish": "publish",
+    "offline": "unpublish",
+    "entryActionTitle": "{action} entry | {action} entries",
+    "entryActionText": "Do you really want to {action} this entry? | Do you really want to {action} these entries?",
+    "unsavedChangesTitle": "Save Entry?",
+    "unsavedChangesText": "You have unsaved changes? Should these be saved?",
+    "saveChanges": "Save changes",
+    "dismissChanges": "Discard changes"
   },
   "dropdown": {
     "type": "By Type",
@@ -121,7 +132,8 @@
     "-title": "Z-A",
     "date_created": "Oldest First",
     "-date_created": "Newest First",
-    "allTypes": "All Types"
+    "allTypes": "All Types",
+    "sortBy": "Sort By"
   },
   "upload": {
     "title": "File Upload",
