@@ -124,6 +124,7 @@ export default {
       margin-right: $spacing;
       fill: $font-color-second;
       stroke: $font-color-second;
+      flex-shrink: 0;
     }
   }
 

@@ -43,24 +43,28 @@
           slot="options">
           <BaseButton
             :text="$tc('publish', 2)"
+            :disabled="isLoading"
             icon-size="large"
             icon="eye"
             button-style="single"
             @clicked="actionEntries('publish')"/>
           <BaseButton
             :text="$tc('offline', 2)"
+            :disabled="isLoading"
             icon-size="large"
             icon="forbidden"
             button-style="single"
             @clicked="actionEntries('offline')"/>
           <BaseButton
             :text="$tc('duplicate', 2)"
+            :disabled="isLoading"
             icon-size="large"
             icon="duplicate"
             button-style="single"
             @clicked="duplicateEntries"/>
           <BaseButton
             :text="$tc('delete', 2)"
+            :disabled="isLoading"
             icon-size="large"
             icon="waste-bin"
             button-style="single"
@@ -364,14 +368,31 @@ export default {
       // TODO: disable action buttons until action finished!
       // TODO: do this in component not store!
       if (this.selectedMenuEntries.length) {
+        this.isLoading = true;
         // dispatch selected entries to be duplicated and sucessfully duplicated ids are returned
-        const routingIds = await this.$store.dispatch('data/duplicateEntries', [].concat(this.selectedMenuEntries));
-        this.selectedMenuEntries = [];
+        const { routingIds, failedTitles } = await this.$store.dispatch('data/duplicateEntries', [].concat(this.selectedMenuEntries));
+        const duplicatedNumber = routingIds.length;
+        // if entries could not be duplicated inform user about it
+        if (failedTitles.length) {
+          this.$notify({
+            group: 'request-notifications',
+            title: this.$t('notify.duplicationFailTitle'),
+            text: this.$t('notify.duplicationFailSubtext', { list: failedTitles.join(', ') }),
+            type: 'error',
+          });
+        }
         // if any entries were sucessfully duplicated route to the new entry
-        if (routingIds.length) {
+        if (duplicatedNumber) {
+          this.$notify({
+            group: 'request-notifications',
+            title: this.$t('notify.duplicationSuccessTitle'),
+            text: this.$tc('notify.duplicationSuccessSubtext', duplicatedNumber, { count: duplicatedNumber }),
+            type: 'success',
+          });
+          this.selectedMenuEntries = [];
+          this.fetchSidebarData();
           this.$router.push(`/entry/${routingIds.pop()}`);
         }
-        this.fetchSidebarData();
       } else {
         this.$notify({
           group: 'request-notifications',

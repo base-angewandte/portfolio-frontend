@@ -251,9 +251,8 @@ const actions = {
         const data = prepareData(obj);
         const updatedEntry = await this.dispatch('PortfolioAPI/post', { kind: 'entry', id: data.id, data });
         commit('setCurrentItem', updatedEntry);
-        resolve();
+        resolve(updatedEntry.id);
       } catch (e) {
-        console.error(e);
         reject(e);
       }
     });
@@ -283,7 +282,9 @@ const actions = {
     }
   },
   async duplicateEntries({ commit, dispatch }, entryArr) {
-    const addedArr = await Promise.all(entryArr.map(entry => new Promise(async (resolve) => {
+    const errorArr = [];
+    const addedArr = [];
+    await Promise.all(entryArr.map(entry => new Promise(async (resolve) => {
       const newEntry = Object.assign({}, entry);
       const entryTitle = newEntry.title;
       Vue.set(newEntry, 'title', `${newEntry.title} (Copy)`);
@@ -293,21 +294,17 @@ const actions = {
       Vue.set(newEntry, 'linked', []);
       try {
         const createdEntryId = await dispatch('addSidebarItem', newEntry);
-        commit('deleteParentItems');
-        resolve(createdEntryId);
+        if (createdEntryId) {
+          commit('deleteParentItems');
+          addedArr.push(createdEntryId);
+        }
       } catch (e) {
-        console.error(e);
-        Vue.notify({
-          group: 'request-notifications',
-          title: 'Entry duplication failed',
-          text: `Entry ${entryTitle} could not be duplicated`,
-          type: 'error',
-        });
-        resolve();
+        errorArr.push(entryTitle);
       }
+      resolve();
     })));
     commit('setOptions', false);
-    return addedArr.length ? addedArr.filter(id => !!id) : [];
+    return { routingIds: addedArr, failedTitles: errorArr };
   },
   async modifyEntries({ state, dispatch }, { prop, value }) {
     await Promise.all(state.selectedEntries.map(entry => new Promise(async (resolve, reject) => {

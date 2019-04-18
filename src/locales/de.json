@@ -102,7 +102,11 @@
     "entryFetchFailSub": "Leider konnten die Einträge nicht geladen werden.\nBitte versuche die Seite neu zu laden.",
     "saveFail": "Speichern fehlgeschlagen",
     "titleMissing": "Titel fehlt",
-    "addTitle": "Bitte trage einen Titel ein um zu speichern!"
+    "addTitle": "Bitte trage einen Titel ein um zu speichern!",
+    "duplicationSuccessTitle": "Duplizierung erfolgreich",
+    "duplicationSuccessSubtext": "1 Eintrag wurde erfolgreich dupliziert. | {count} Einträge wurden erfolgreich dupliziert.",
+    "duplicationFailTitle": "Duplizierung fehlgeschlagen",
+    "duplicationFailSubtext": "Leider konnten die folgenden Einträge nicht dupliziert werden:\n {list}"
   },
   "dropdown": {
     "type": "By Type",

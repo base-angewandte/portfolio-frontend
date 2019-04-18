@@ -52,7 +52,7 @@
 
         <!-- FORM EXTENSION -->
         <div
-          v-if="type"
+          v-if="type && !formIsLoading"
           key="extended-section">
           <div
             key="extended-title"

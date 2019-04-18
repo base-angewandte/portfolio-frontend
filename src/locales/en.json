@@ -107,7 +107,11 @@
     "entryFetchFailSub": "Unfortunately there was a problem and we could not fetch the data.\nPlease try to refresh the page.",
     "saveFail": "Saving to database failed",
     "titleMissing": "Title missing",
-    "addTitle": "Please specify a title in order to save!"
+    "addTitle": "Please specify a title in order to save!",
+    "duplicationSuccessTitle": "Duplizierung erfolgreich",
+    "duplicationSuccessSubtext": "1 Eintrag wurde erfolgreich dupliziert. | {count} Einträge wurden erfolgreich dupliziert.",
+    "duplicationFailTitle": "Duplizierung fehlgeschlagen",
+    "duplicationFailSubtext": "Leider konnten die folgenden Einträge nicht dupliziert werden:\n {list}"
   },
   "dropdown": {
     "type": "By Type",

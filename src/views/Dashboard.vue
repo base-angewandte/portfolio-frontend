@@ -82,15 +82,10 @@ export default {
       this.$store.commit('data/deleteParentItems');
       this.$router.push(`/entry/${id}`);
     },
-    popUpAction() {
-      this.action();
-      this.clearSelected();
+    async popUpAction() {
+      await this.action();
     },
     cancelAction() {
-      this.clearSelected();
-    },
-    clearSelected() {
-      this.$store.commit('data/setSelected', []);
       this.$store.commit('data/hidePopUp');
     },
     async action() {
@@ -109,8 +104,10 @@ export default {
         await this.$store.dispatch('data/modifyEntries', { prop: 'published', value: false });
       }
       this.updateSidebarData();
+      this.$store.commit('data/setSelected', []);
       this.$store.commit('data/setOptions', false);
       this.$refs.sidebar.selectedMenuEntries = [];
+      this.$store.commit('data/hidePopUp');
     },
     loadPreview(img) {
       if (img) {
