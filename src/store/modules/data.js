@@ -55,6 +55,9 @@ const state = {
 };
 
 const getters = {
+  getCurrentItemId() {
+    return state.currentItemId;
+  },
   getLatestParentItem(state) {
     return state.parentItems[state.parentItems.length - 1];
   },
@@ -231,27 +234,15 @@ const actions = {
       commit('setMedia', { list: [], replace: true });
     }
   },
-  addSidebarItem({ commit }, obj) {
+  addOrUpdateEntry({ commit }, obj) {
     return new Promise(async (resolve, reject) => {
       try {
         const data = prepareData(obj);
-        const createdEntry = await this.dispatch('PortfolioAPI/post', { kind: 'entry', data });
+        const createdEntry = await this.dispatch('PortfolioAPI/post', { kind: 'entry', id: data.id, data });
         if (createdEntry) {
           commit('setCurrentItem', createdEntry);
         }
         resolve(createdEntry.id);
-      } catch (e) {
-        reject(e);
-      }
-    });
-  },
-  updateEntry({ commit }, obj) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const data = prepareData(obj);
-        const updatedEntry = await this.dispatch('PortfolioAPI/post', { kind: 'entry', id: data.id, data });
-        commit('setCurrentItem', updatedEntry);
-        resolve(updatedEntry.id);
       } catch (e) {
         reject(e);
       }
@@ -293,7 +284,7 @@ const actions = {
       Vue.set(newEntry, 'published', false);
       Vue.set(newEntry, 'linked', []);
       try {
-        const createdEntryId = await dispatch('addSidebarItem', newEntry);
+        const createdEntryId = await dispatch('addOrUpdateEntry', newEntry);
         if (createdEntryId) {
           commit('deleteParentItems');
           addedArr.push(createdEntryId);
@@ -309,7 +300,7 @@ const actions = {
   async modifyEntries({ state, dispatch }, { prop, value }) {
     await Promise.all(state.selectedEntries.map(entry => new Promise(async (resolve, reject) => {
       try {
-        const newEntry = await dispatch('updateEntry', Object.assign({}, entry, { [prop]: value }));
+        const newEntry = await dispatch('addOrUpdateEntry', Object.assign({}, entry, { [prop]: value }));
         resolve(newEntry);
       } catch (e) {
         console.error(e);
@@ -341,38 +332,6 @@ const actions = {
     console.log(entry);
     // TODO: fetch info data - from where???
     return { title: 'title' };
-  },
-  async actionLinked({ state, commit }, { list, action }) {
-    const fromId = state.currentItemId;
-    await Promise.all(list.map(relationId => new Promise(async (resolve, reject) => {
-      try {
-        if (action === 'save') {
-          const data = { from_entry: fromId, to_entry: relationId };
-          await this.dispatch('PortfolioAPI/post', { kind: 'relation', data });
-        } else if (action === 'delete') {
-          await this.dispatch('PortfolioAPI/delete', { kind: 'relation', id: relationId });
-        }
-        // TODO: notify user? (title would be nice...)
-        resolve();
-      } catch (e) {
-        console.error(e);
-        Vue.notify({
-          group: 'request-notifications',
-          title: `${action}ing of Entry failed`,
-          text: `The Link could not be ${action}: ${e}`,
-          type: 'error',
-        });
-        reject(e);
-      }
-    })));
-    // fetch sidebar data new and entry new to update relations
-    try {
-      // await dispatch('fetchSidebarData', {});
-      const entry = await this.dispatch('PortfolioAPI/get', { kind: 'entry', id: fromId });
-      commit('setLinked', { list: entry.relations || [], replace: true });
-    } catch (e) {
-      console.error(e);
-    }
   },
   async actionFiles({ state, dispatch }, { list, action, value }) {
     const axiosAction = action === 'delete' ? action : 'patch';

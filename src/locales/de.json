@@ -106,7 +106,9 @@
     "duplicationSuccessTitle": "Duplizierung erfolgreich",
     "duplicationSuccessSubtext": "1 Eintrag wurde erfolgreich dupliziert. | {count} Einträge wurden erfolgreich dupliziert.",
     "duplicationFailTitle": "Duplizierung fehlgeschlagen",
-    "duplicationFailSubtext": "Leider konnten die folgenden Einträge nicht dupliziert werden:\n {list}"
+    "duplicationFailSubtext": "Leider konnten die folgenden Einträge nicht dupliziert werden:\n {list}",
+    "linkingErrorTitle":"Verknüpfung fehlgeschlagen",
+    "linkingErrorSubtext": "Leider konnte der Eintrag nicht verknüpft werden | Leider konnten {count} Einträge nicht verknüpft werden"
   },
   "dropdown": {
     "type": "By Type",

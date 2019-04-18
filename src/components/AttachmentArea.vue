@@ -14,9 +14,11 @@
 <script>
 import AttachmentButtonRow from './AttachmentButtonRow';
 import Attachments from './Attachments';
+import { attachmentHandlingMixin } from '../mixins/attachmentHandling';
 
 export default {
   components: { AttachmentButtonRow, Attachments },
+  mixins: [attachmentHandlingMixin],
   computed: {
     linkedList() {
       return this.$store.getters['data/getCurrentLinked'];

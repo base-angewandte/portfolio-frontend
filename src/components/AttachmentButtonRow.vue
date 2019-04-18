@@ -196,7 +196,7 @@ export default {
       });
       // only save to db if entry exists in db already
       if (this.currentId) {
-        await this.$store.dispatch('data/actionLinked', { list, action: 'save' });
+        await this.$parent.actionLinked({ list, action: 'save' });
         // otherwise just save state in store for now and commit with general first save of entry
       } else {
         const fullList = await Promise.all(list

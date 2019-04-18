@@ -108,10 +108,12 @@
     "saveFail": "Saving to database failed",
     "titleMissing": "Title missing",
     "addTitle": "Please specify a title in order to save!",
-    "duplicationSuccessTitle": "Duplizierung erfolgreich",
-    "duplicationSuccessSubtext": "1 Eintrag wurde erfolgreich dupliziert. | {count} Einträge wurden erfolgreich dupliziert.",
-    "duplicationFailTitle": "Duplizierung fehlgeschlagen",
-    "duplicationFailSubtext": "Leider konnten die folgenden Einträge nicht dupliziert werden:\n {list}"
+    "duplicationSuccessTitle": "Entries successfully duplicated",
+    "duplicationSuccessSubtext": "1 entry was successfully duplicated. | {count} entries were successfully duplicated..",
+    "duplicationFailTitle": "Entry duplication failed",
+    "duplicationFailSubtext": "Unfortunately these entries could not be duplicated:\n {list}",
+    "linkingErrorTitle":"Linking failed",
+    "linkingErrorSubtext": "Unfortunately the Entry could not be linked. | Unfortunately {count} entries could not be linked."
   },
   "dropdown": {
     "type": "By Type",

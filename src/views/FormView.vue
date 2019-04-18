@@ -93,6 +93,7 @@ import BaseFormOptions from '../components/BaseFormOptions';
 import BaseForm from '../components/BaseForm';
 
 import AttachmentArea from '../components/AttachmentArea';
+import { attachmentHandlingMixin } from '../mixins/attachmentHandling';
 
 export default {
   components: {
@@ -103,6 +104,7 @@ export default {
     BaseForm,
     BaseLoader,
   },
+  mixins: [attachmentHandlingMixin],
   data() {
     return {
       unsavedChanges: false,
@@ -233,11 +235,11 @@ export default {
         try {
           // check if the route indicates an already saved entry or a new entry
           if (!this.currentItemId) {
-            const newEntryId = await this.$store.dispatch('data/addSidebarItem', Object.assign({}, this.valueList, { data }));
+            const newEntryId = await this.$store.dispatch('data/addOrUpdateEntry', Object.assign({}, this.valueList, { data }));
             // also add linked entries if there are already any
             const list = this.$store.getters['data/getLinkedIds'];
             if (list.length) {
-              await this.$store.dispatch('data/actionLinked', { list, action: 'save' });
+              await this.actionLinked({ list, action: 'save' });
               // TODO: also do this for attached media??
             }
             // link entry to parent if parent items are present
@@ -256,7 +258,7 @@ export default {
             this.$router.push(`/entry/${this.$store.state.data.currentItemId}`);
             // if id present just update the entry
           } else {
-            await this.$store.dispatch('data/updateEntry', Object.assign({}, this.valueList, { data }));
+            await this.$store.dispatch('data/addOrUpdateEntry', Object.assign({}, this.valueList, { data }));
           }
           this.$emit('data-changed');
           this.unsavedChanges = false;

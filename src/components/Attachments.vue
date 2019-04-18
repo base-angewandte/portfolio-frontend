@@ -235,7 +235,6 @@ import {
 import BaseOptions from './BaseOptions';
 import EyeIcon from '../assets/icons/eye.svg';
 
-
 export default {
   components: {
     BaseBoxButton,
@@ -302,8 +301,8 @@ export default {
       this.publishFiles = [];
     },
     async deleteLinked() {
-      // also check first if any entries were selected
-      await this.$store.dispatch('data/actionLinked', { list: this.selectedEntries, action: 'delete' });
+      // TODO: also check first if any entries were selected
+      await this.$parent.actionLinked({ list: this.selectedEntries, action: 'delete' });
       this.showEntryAction = false;
       this.selectedEntries = [];
     },
