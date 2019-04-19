@@ -106,7 +106,6 @@ export default {
   .base-options {
     width: 100%;
     background-color: $background-color;
-    overflow: hidden;
 
     .base-options-row {
       min-height: $row-height-small;
@@ -130,7 +129,7 @@ export default {
       }
 
       .base-options-after {
-        flex-grow: 1;
+        flex: 1 1 auto;
         align-self: center;
       }
     }

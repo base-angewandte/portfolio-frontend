@@ -25,7 +25,7 @@
             <div class="notification-text">
               <div
                 class="notification-title"
-                v-html="props.item.title" />
+                v-html="notificationTitle(props.item.title)" />
               <div class="notification-message">
                 {{ props.item.text }}
               </div>
@@ -58,6 +58,12 @@ export default {
     RemoveIcon,
     SuccessIcon,
     FailIcon,
+  },
+  methods: {
+    notificationTitle(val) {
+      console.log(val);
+      return val.slice(0, 1).toUpperCase() + val.slice(1);
+    },
   },
 };
 </script>

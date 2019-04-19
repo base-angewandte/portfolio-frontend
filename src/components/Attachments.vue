@@ -160,20 +160,20 @@
           <!-- TODO: replace this with skosmos project values! -->
           <BaseDropDown
             v-if="action === 'license'"
-            :selection-list="[{
-                                label: 'CC-BY',
-                                value: 'cc-by',
-                              },
-                              {
-                                label: 'CC0',
-                                value: 'cc0',
-                              }
+            :options="[{
+                         label: 'CC-BY',
+                         value: 'cc-by',
+                       },
+                       {
+                         label: 'CC0',
+                         value: 'cc0',
+                       }
             ]"
             :show-label="false"
             :label="$t('form-view.selectLicense')"
             :placeholder="$t('form-view.selectLicense')"
-            class="license-dropdown"
-            @selected="licenseSelected = $event"/>
+            v-model="licenseSelected"
+            class="license-dropdown"/>
         </div>
       </transition>
 
@@ -291,14 +291,37 @@ export default {
   },
   methods: {
     async saveFileMeta() {
-      await this.$store.dispatch('data/actionFiles', {
-        list: this.action === 'publish' ? this.publishFiles : this.selectedFiles,
-        action: this.action,
-        value: this.licenseSelected.value,
-      });
-      this.action = '';
-      this.selectedFiles = [];
-      this.publishFiles = [];
+      // check if files were selected
+      debugger;
+      if ((this.action === 'publish' && !this.publishFiles.length) || !this.selectedFiles.length) {
+        // if not notify user that he needs to select files
+        this.$notify({
+          group: 'request-notifications',
+          title: this.$t('notify.changesFailed', { action: this.$t(`notify.${this.action}`) }),
+          text: this.$t('notify.selectFiles', { action: this.$t(`notify.${this.action}File`) }),
+          type: 'error',
+        });
+        // check if a license was selected if action is license change
+        // if not inform user he should select a license
+      } else if (this.action === 'license' && !this.licenseSelected.value) {
+        this.$notify({
+          group: 'request-notifications',
+          title: this.$t('notify.changesFailed', { action: this.$t('notify.license') }),
+          text: this.$t('notify.selectLicense'),
+          type: 'error',
+        });
+      } else {
+        await this.$store.dispatch('data/actionFiles', {
+          list: this.action === 'publish' ? this.publishFiles : this.selectedFiles,
+          action: this.action,
+          value: this.licenseSelected.value,
+        });
+        // clear all variables after action
+        this.action = '';
+        this.selectedFiles = [];
+        this.publishFiles = [];
+        this.licenseSelected = {};
+      }
     },
     async deleteLinked() {
       // TODO: also check first if any entries were selected

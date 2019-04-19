@@ -16,25 +16,29 @@
     <div class="popup-text">
       <BaseDropDown
         :label="$t('upload.choose_license')"
-        :selection-list="[
+        :options="[
+          {
+            label: 'CC-BY',
+            value: 'cc-by',
+          },
           {
             label: 'CC0',
             value: 'cc0',
           }
         ]"
-        :background-color="'rgb(240, 240, 240)'"
-        :fixed-width="true"
+        :show-label="true"
+        :header-background-color="'rgb(240, 240, 240)'"
         v-model="license"
-        header-style="inline"/>
+        class="upload-dropdown"/>
       <BaseDropDown
-        :selection-list="[
+        :options="[
           { label: $t('no'), value: 'false' },
           { label: $t('yes'), value: 'true' }]"
-        :background-color="'rgb(240, 240, 240)'"
-        :fixed-width="true"
+        :header-background-color="'rgb(240, 240, 240)'"
         :label="$t('upload.publish_images')"
+        :show-label="true"
         v-model="publish"
-        header-style="inline"/>
+        class="upload-dropdown"/>
     </div>
     <template
       slot="button-row">
@@ -217,6 +221,10 @@ export default {
   .popup-text {
     display: flex;
     align-items: flex-end;
+
+    .upload-dropdown {
+      width: 100%;
+    }
   }
 
   .popup-text > div:first-of-type {

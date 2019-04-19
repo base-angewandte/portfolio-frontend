@@ -33,6 +33,8 @@
     "type": "Type",
     "description": "Description",
     "texts": "Text",
+    "texttype": "Type of Text",
+    "noTextType": "No Text Type",
     "keywords": "Keywords",
     "notes": "Notes (will not be exported)",
     "photographer": "Photographer",
@@ -124,7 +126,14 @@
     "unsavedChangesTitle": "Save Entry?",
     "unsavedChangesText": "You have unsaved changes? Should these be saved?",
     "saveChanges": "Save changes",
-    "dismissChanges": "Discard changes"
+    "dismissChanges": "Discard changes",
+    "changesFailed": "{action} failed",
+    "selectLicense": "Please choose a license!",
+    "selectFiles": "Please choose files in order to {action}.",
+    "license": "Change of license",
+    "publishFile": "publish them",
+    "deleteFile": "delete them",
+    "licenseFile": "change the license"
   },
   "dropdown": {
     "type": "By Type",
@@ -133,7 +142,8 @@
     "date_created": "Oldest First",
     "-date_created": "Newest First",
     "allTypes": "All Types",
-    "sortBy": "Sort By"
+    "sortBy": "Sort By",
+    "filterByType": "Filter By Type"
   },
   "upload": {
     "title": "File Upload",

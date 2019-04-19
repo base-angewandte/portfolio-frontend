@@ -50,10 +50,11 @@
       <template
         v-if="field.items && field.items.properties && field.items.properties.type">
         <BaseDropDown
-          :selected="fieldValueInt && fieldValueInt.type
-          ? fieldValueInt.type : { label: 'Wähle Textart', value: '' }"
-          :selection-list="secondaryDropdown"
-          @selected="$set(fieldValueInt, 'type', $event)"/>
+          :selected-option="fieldValueInt && fieldValueInt.type
+          ? fieldValueInt.type : textTypeDefault"
+          :options="textTypeOptions"
+          :label="$t('form.texttype')"
+          @value-selected="$set(fieldValueInt, 'type', $event)"/>
       </template>
     </BaseMultilineTextInput>
 
@@ -271,6 +272,12 @@ export default {
         return this.field.items.properties;
       }
       return this.field.properties;
+    },
+    textTypeDefault() {
+      return { label: this.$t('form.noTextType'), value: '' };
+    },
+    textTypeOptions() {
+      return [this.textTypeDefault].concat(this.secondaryDropdown);
     },
   },
   watch: {

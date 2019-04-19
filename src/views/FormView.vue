@@ -338,7 +338,7 @@ export default {
       this.$router.push(`/entry/${id}`);
     },
     async actionEntry(action) {
-      if (!this.isNewForm && !this.unsavedChanges) {
+      if (!this.isNewForm) {
         this.confirmAction({ action, entries: [].concat(this.valueList) });
       } else {
         this.$notify({

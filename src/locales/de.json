@@ -31,6 +31,8 @@
     "type": "Typ",
     "description": "Beschreibung",
     "texts": "Text",
+    "noTextType": "Kein Text Typ",
+    "texttype": "Text Typ",
     "keywords": "Schlagwörter",
     "notes": "Notizen (werden nicht exportiert)",
     "photographer": "FotographIn",
@@ -119,7 +121,14 @@
     "unsavedChangesTitle": "Eintrag speichern?",
     "unsavedChangesText": "Du hast ungespeicherte Änderungen. Soll der Eintrag gespeichert werden?",
     "saveChanges": "Änderungen speichern",
-    "dismissChanges": "Änderungen verwerfen"
+    "dismissChanges": "Änderungen verwerfen",
+    "changesFailed": "{action} fehlgeschlagen",
+    "selectLicense": "Bitte wähle eine Lizenz aus!",
+    "selectFiles": "Bitte wähle Dateien aus, um {action}.",
+    "license": "Lizenzänderung",
+    "publishFile": "zu veröffentlichen",
+    "deleteFile": "zu löschen",
+    "licenseFile": "die Lizenz zu ändern"
   },
   "dropdown": {
     "type": "By Type",
@@ -128,7 +137,8 @@
     "date_created": "Oldest First",
     "-date_created": "Newest First",
     "allTypes": "Alle Typen",
-    "sortBy": "Sortieren nach"
+    "sortBy": "Sortieren nach",
+    "filterByType": "Nach Typ Filtern"
   },
   "upload": {
     "title": "Dateien Hochladen",

@@ -31,12 +31,15 @@
           <div class="sidebar-drop-downs">
             <BaseDropDown
               :placeholder="$t('dropdown.sortBy')"
-              :selection-list="filterByTypeList"
-              @selected="sortEntries"/>
+              :label="$t('dropdown.sortBy')"
+              :options="sortOptions"
+              v-model="sortParam"
+              @value-selected="fetchSidebarData"/>
             <BaseDropDown
-              :selected="selectedType"
-              :selection-list="entryTypes"
-              @selected="filterEntries($event, 'type')"/>
+              :label="$t('dropdown.filterByType')"
+              :options="entryTypes"
+              v-model="filterType"
+              @value-selected="filterEntries($event, 'type')"/>
           </div>
         </template>
         <template
@@ -202,6 +205,11 @@ export default {
       entryTypes: [],
       isLoading: false,
       timeout: null,
+      filterType: {
+        label: this.$t('dropdown.allTypes'),
+        value: '',
+      },
+      sortParam: {},
     };
   },
   computed: {
@@ -226,7 +234,7 @@ export default {
     isNewForm() {
       return this.$route.name === 'newEntry';
     },
-    filterByTypeList() {
+    sortOptions() {
       return [
         {
           label: this.$t('dropdown.type'),
@@ -249,10 +257,6 @@ export default {
           value: 'date_created',
         },
       ];
-    },
-    selectedType() {
-      return this.filterType ? this.entryTypes.find(type => type.value === this.filterType)
-        : { label: this.$t('dropdown.allTypes'), value: '' };
     },
   },
   watch: {
@@ -324,7 +328,13 @@ export default {
             reject(e);
           }
         })));
+        // filter out empty type
         this.entryTypes = typeArr.filter(type => !!type);
+        // add 'all types' option
+        this.entryTypes.unshift({
+          label: this.$t('dropdown.allTypes'),
+          value: '',
+        });
       } catch (e) {
         console.error(e);
         // TODO: inform user?
@@ -337,14 +347,8 @@ export default {
       this.$store.commit('data/deleteParentItems');
       this.$emit('new-form');
     },
-    sortEntries(evt) {
-      this.sortParam = evt.value;
-      this.fetchSidebarData();
-    },
     filterEntries(val, type) {
       if (type === 'type') {
-        this.filterType = val.value;
-        this.$emit('filter', { type: this.filterType });
         this.fetchSidebarData();
       } else if (type === 'title') {
         if (this.timeout) {
@@ -439,10 +443,10 @@ export default {
       try {
         const response = await this.$store.dispatch('PortfolioAPI/get', {
           kind: 'entry',
-          sort: this.sortParam,
+          sort: this.sortParam.value,
           offset: (this.pageNumber - 1) * this.entriesPerPage,
           limit: this.entriesPerPage,
-          type: this.filterType,
+          type: this.filterType.value,
           q: this.filterString,
           link_selection_for: this.excludeLinked ? this.activeEntryId : '',
         });
