@@ -32,23 +32,32 @@
         :active="unsavedChanges"
         :text="$t('save')"
         :disabled="dbRequestOngoing"
+        :icon="isSaving ? '' : 'save-file'"
         icon-size="small"
-        icon="save-file"
         button-style="row"
         class="form-button-inner"
-        @clicked="$emit('save')"/>
+        @clicked="$emit('save')">
+        <template
+          v-if="isSaving"
+          slot="left-of-text">
+          <span class="save-loader">
+            <BaseLoader />
+          </span>
+        </template>
+      </BaseButton>
     </div>
 
   </div>
 </template>
 
 <script>
-import { BaseMenuEntry, BaseButton } from 'base-components';
+import { BaseMenuEntry, BaseButton, BaseLoader } from 'base-components';
 
 export default {
   components: {
     BaseMenuEntry,
     BaseButton,
+    BaseLoader,
   },
   props: {
     unsavedChanges: {
@@ -70,6 +79,10 @@ export default {
     showBackButton: {
       type: Boolean,
       default: true,
+    },
+    isSaving: {
+      type: Boolean,
+      default: false,
     },
   },
   data() {
@@ -96,6 +109,13 @@ export default {
   .form-button-child {
     display: block;
     border-left: $separation-line;
+  }
+
+  .save-loader {
+    position: relative;
+    transform: scale(0.5);
+    margin-right: $spacing;
+    padding-right: $spacing;
   }
 
   @media screen and (max-width: $mobile) {

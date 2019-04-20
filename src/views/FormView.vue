@@ -22,6 +22,7 @@
         :type="type"
         :show-back-button="!!parent"
         :unsaved-changes="unsavedChanges"
+        :is-saving="dataSaving"
         @save="saveForm"
         @return="returnFromForm"
       />
@@ -112,6 +113,7 @@ export default {
   data() {
     return {
       unsavedChanges: false,
+      dataSaving: false,
       formFields: {},
       formFieldsExtension: {},
       valueList: {},
@@ -222,6 +224,7 @@ export default {
     async saveForm() {
       // check if there is a title (only requirement for saving)
       if (this.valueList.title) {
+        this.dataSaving = true;
         // remove properties from contributor fields that can not be saved to the database
         const data = Object.assign({}, this.valueList.data);
         // TODO: use more general way of removing unknown properties by checking
@@ -275,6 +278,7 @@ export default {
             type: 'error',
           });
         }
+        this.dataSaving = false;
       } else {
         this.$notify({
           group: 'request-notifications',
@@ -309,7 +313,11 @@ export default {
             icon: 'save-file',
             buttonTextRight: this.$t('notify.saveChanges'),
             buttonTextLeft: this.$t('notify.dismissChanges'),
-            actionRight: () => this.saveForm(),
+            actionRight: async () => {
+              await this.saveForm();
+              this.$store.commit('data/hidePopUp');
+              this.openNewForm();
+            },
             actionLeft: () => { this.unsavedChanges = false; this.openNewForm(); },
           });
         } else {
