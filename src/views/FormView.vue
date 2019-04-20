@@ -38,7 +38,7 @@
       <div
         v-if="formIsLoading"
         class="form-loading-area">
-        <BaseLoader />
+        <BaseLoader class="loader" />
       </div>
       <BaseForm
         v-if="Object.keys(formFields).length"
@@ -413,6 +413,12 @@ export default {
         width: 100%;
         z-index: 6;
         background-color: rgba(255,255,255, 0.50);
+
+        .loader {
+          position: fixed;
+          top: 50%;
+          left: 66%;
+        }
       }
 
       .slide-in-form {
