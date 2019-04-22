@@ -1,5 +1,5 @@
 <template>
-  <form class="base-form">
+  <div class="base-form">
     <template
       v-for="(element, index) in formFieldListInt">
 
@@ -36,7 +36,8 @@
             :key="index + '-button' + valueIndex"
             class="group-add">
             <button
-              class="field-group-button "
+              class="field-group-button"
+              type="button"
               @click.prevent="removeField(element, valueIndex)">
               <span>{{ $t('form.removeField', { fieldType: getFieldName(element) }) }}</span>
               <span>
@@ -51,7 +52,8 @@
           :key="'multiplyButton' + index"
           class="group-multiply">
           <button
-            class="field-group-button "
+            class="field-group-button"
+            type="button"
             @click.prevent="multiplyField(element)">
             <span>{{ $t('form.addGroup', { fieldType: getFieldName(element) }) }}</span>
             <span>
@@ -86,7 +88,7 @@
         />
       </template>
     </template>
-  </form>
+  </div>
 </template>
 
 <script>
@@ -317,6 +319,7 @@ export default {
   .base-form {
     background-color: white;
     display: flex;
+    align-items:flex-end;
     flex-wrap: wrap;
     padding: $spacing $spacing 0;
 

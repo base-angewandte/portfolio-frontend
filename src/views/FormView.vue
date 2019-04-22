@@ -34,7 +34,7 @@
     </div>
 
     <!-- FORM -->
-    <div
+    <form
       class="form-container">
       <div
         v-if="formIsLoading"
@@ -83,7 +83,7 @@
           class="form slide-in-form"/>
       </transition>
 
-    </div>
+    </form>
   </div>
 </template>
 
@@ -138,6 +138,7 @@ export default {
   },
   watch: {
     async currentItemId(val) {
+      window.scrollTo(0, 0);
       this.formIsLoading = true;
       if (val) {
         this.resetForm();
