@@ -133,7 +133,8 @@
     "license": "Change of license",
     "publishFile": "publish them",
     "deleteFile": "delete them",
-    "licenseFile": "change the license"
+    "licenseFile": "change the license",
+    "fetchSingleEntry": "The selected entry could not be fetched from the database."
   },
   "dropdown": {
     "type": "By Type",

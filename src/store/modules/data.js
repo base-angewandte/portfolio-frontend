@@ -160,53 +160,63 @@ const actions = {
     });
   },
   async fetchEntryData({ commit, dispatch }, { id }) {
-    // TODO: check if entry data could be derived from sidebar data somehow
-    const entryData = await this.dispatch('PortfolioAPI/get', { kind: 'entry', id });
-    if (entryData) {
-      // Modifications of data received from backend needed:
-      // 1. type needs to be array in logic here!
-      // 2. Text needs to look different (and text type needs to be fetched)
-      const textData = entryData.texts && entryData.texts.length
-        ? await Promise.all(entryData.texts
-          .map(entry => new Promise(async (resolve, reject) => {
-            const textObj = {};
-            let type = null;
-            if (entry.type) {
-              try {
-                const typeResponse = await axios.get(`${process.env.SKOSMOS_API}portfolio/label`, {
-                  params: {
-                    uri: entry.type,
-                    lang: 'de',
-                    format: 'application/json',
-                  },
-                });
-                if (typeResponse.data) {
-                  type = { label: typeResponse.data.prefLabel, value: entry.type };
+    return new Promise(async (resolve, reject) => {
+      let entryData = {};
+      try {
+        // TODO: check if entry data could be derived from sidebar data somehow
+        entryData = await this.dispatch('PortfolioAPI/get', { kind: 'entry', id });
+      } catch (e) {
+        reject(e);
+      }
+      if (entryData) {
+        // Modifications of data received from backend needed:
+        // 1. type needs to be array in logic here!
+        // 2. Text needs to look different (and text type needs to be fetched)
+        const textData = entryData.texts && entryData.texts.length
+          ? await Promise.all(entryData.texts
+            .map(entry => new Promise(async (res) => {
+              const textObj = {};
+              let type = null;
+              if (entry.type) {
+                try {
+                  const typeResponse = await axios.get(`${process.env.SKOSMOS_API}portfolio/label`, {
+                    params: {
+                      uri: entry.type,
+                      lang: 'de',
+                      format: 'application/json',
+                    },
+                  });
+                  if (typeResponse.data) {
+                    type = { label: typeResponse.data.prefLabel, value: entry.type };
+                  }
+                } catch (e) {
+                  console.error(e);
+                  reject(e);
                 }
-              } catch (e) {
-                // TODO: inform user
-                console.error(e);
-                reject(e);
               }
-            }
-            // TODO: temporary hack - probably should fetch label for lang as well
-            entry.data.forEach((lang) => {
-              const langInternal = lang.language.split('/').pop();
-              Vue.set(textObj, langInternal.toLowerCase(), lang.text);
-            });
-            resolve(Object.assign({}, { type }, textObj));
-          }))) : [];
+              // TODO: temporary hack - probably should fetch label for lang as well
+              entry.data.forEach((lang) => {
+                const langInternal = lang.language.split('/').pop();
+                Vue.set(textObj, langInternal.toLowerCase(), lang.text);
+              });
+              res(Object.assign({}, { type }, textObj));
+            }))) : [];
 
-      const adjustedEntry = Object.assign({}, entryData, {
-        type: entryData.type ? [entryData.type] : [],
-        texts: textData,
-      });
-      commit('setCurrentItem', adjustedEntry);
-      commit('setLinked', { list: entryData.relations || [], replace: true });
-      await dispatch('fetchMediaData', entryData.id);
-      return adjustedEntry;
-    }
-    return {};
+        const adjustedEntry = Object.assign({}, entryData, {
+          type: entryData.type ? [entryData.type] : [],
+          texts: textData,
+        });
+        commit('setCurrentItem', adjustedEntry);
+        commit('setLinked', { list: entryData.relations || [], replace: true });
+        try {
+          await dispatch('fetchMediaData', entryData.id);
+          resolve(adjustedEntry);
+        } catch (e) {
+          reject(e);
+        }
+      }
+      reject();
+    });
   },
   async fetchMediaData({ commit }, id) {
     // TODO: replace with Portofolio_API

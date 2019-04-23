@@ -204,8 +204,19 @@ export default {
       this.$refs.baseForm.initializeValueObject();
     },
     async updateForm() {
-      const data = await this.$store.dispatch('data/fetchEntryData', { id: this.currentItemId });
-      this.valueList = Object.assign({}, data);
+      try {
+        const data = await this.$store.dispatch('data/fetchEntryData', { id: this.currentItemId });
+        this.valueList = Object.assign({}, data);
+      } catch (e) {
+        console.error(e);
+        this.$notify({
+          group: 'request-notifications',
+          title: this.$t('notify.somethingWrong'),
+          text: this.$t('notify.fetchSingleEntry'),
+          type: 'error',
+        });
+        this.$router.push('/');
+      }
     },
     handleInput(data, type) {
       this.unsavedChanges = true;
