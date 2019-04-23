@@ -3,7 +3,7 @@
     class="notification-container">
     <div class="notification-box">
       <notifications
-        :duration="5000"
+        :duration="8000"
         :width="'100%'"
         group="request-notifications"
         position="top right"
@@ -61,7 +61,6 @@ export default {
   },
   methods: {
     notificationTitle(val) {
-      console.log(val);
       return val.slice(0, 1).toUpperCase() + val.slice(1);
     },
   },

@@ -256,30 +256,46 @@ export default {
           if (!this.currentItemId) {
             const newEntryId = await this.$store.dispatch('data/addOrUpdateEntry', Object.assign({}, this.valueList, { data }));
             // also add linked entries if there are already any
-            console.log(('saved'));
             const list = this.$store.getters['data/getLinkedIds'];
             if (list.length) {
-              await this.actionLinked({ list, action: 'save' });
+              this.actionLinked({ list, action: 'save' });
               // TODO: also do this for attached media??
             }
             // link entry to parent if parent items are present
             const parent = this.$store.getters['data/getLatestParentItem'];
             if (parent) {
               const relationData = {
-                from_entry: parent.id,
+                from_entry: `${parent.id}`,
                 to_entry: newEntryId,
               };
-              await this.$store.dispatch('PortfolioAPI/post', {
-                kind: 'relation',
-                data: relationData,
-              });
-              // TODO: inform user of successful entry (what if only linking fails?)
+              try {
+                this.$store.dispatch('PortfolioAPI/post', {
+                  kind: 'relation',
+                  data: relationData,
+                });
+              } catch (e) {
+                console.error(e);
+                this.$notify({
+                  group: 'request-notifications',
+                  title: this.$t('notify.entryFailTitle', { action: this.$t('notify.link') }),
+                  text: this.$t('notify.linkToParentFail', { title: parent.title }),
+                  type: 'error',
+                });
+                // to also give user visual feedback that there is actually no link
+                this.$store.commit('data/deleteParentItems');
+              }
             }
             this.$router.push(`/entry/${this.$store.state.data.currentItemId}`);
             // if id present just update the entry
           } else {
             await this.$store.dispatch('data/addOrUpdateEntry', Object.assign({}, this.valueList, { data }));
           }
+          this.$notify({
+            group: 'request-notifications',
+            title: this.$t('notify.saveSuccess'),
+            text: this.$t('notify.saveSuccessSubtext', { title: this.valueList.title }),
+            type: 'success',
+          });
           this.$emit('data-changed');
           this.unsavedChanges = false;
         } catch (e) {

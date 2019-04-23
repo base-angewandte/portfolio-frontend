@@ -104,6 +104,8 @@
     "entryFetchFail": "Einträge nicht gefunden",
     "entryFetchFailSub": "Leider konnten die Einträge nicht geladen werden.\nBitte versuche die Seite neu zu laden.",
     "saveFail": "Speichern fehlgeschlagen",
+    "saveSuccess": "Eintrag gespeichert",
+    "saveSuccessSubtext": "Der Eintrag \"{title}\" konnte erfolgreich gespeichert werden.",
     "titleMissing": "Titel fehlt",
     "addTitle": "Bitte trage einen Titel ein um zu speichern!",
     "specifyTitleBeforeLinking": "Bitte gib zuerst einen Titel für diesen Eintrag an.",
@@ -136,7 +138,8 @@
     "entryFailTitle": "{action} fehlgeschlagen",
     "entryFailSubtext": "Leider konnten die folgenden Einträge nicht {action} werden: | Leider konnte der Eintrag nicht verknüpft werden. | Leider konnten {count} Einträge nicht {action} werden.",
     "noAction": "Aktion nicht durchgeführt",
-    "noActionList": "Die folgenden Einträge sind bereits {action}:"
+    "noActionList": "Die folgenden Einträge sind bereits {action}:",
+    "linkToParentFail": "Die Verknüpfung mit \"{title}\" ist leider fehlgeschlagen! Bitte versuche manuell zu verknüpfen."
   },
   "dropdown": {
     "type": "By Type",

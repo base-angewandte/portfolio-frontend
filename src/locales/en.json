@@ -109,6 +109,8 @@
     "entryFetchFail": "Fetching of Entries failed",
     "entryFetchFailSub": "Unfortunately there was a problem and we could not fetch the data.\nPlease try to refresh the page.",
     "saveFail": "Saving to database failed",
+    "saveSuccess": "Entry saved",
+    "saveSuccessSubtext": "The entry \"{title}\" was successfully saved to the database.",
     "titleMissing": "Title missing",
     "addTitle": "Please specify a title in order to save!",
     "specifyTitleBeforeLinking": "Please specify a title for this entry first.",
@@ -141,7 +143,8 @@
     "entryFailTitle": "{action} action failed",
     "entryFailSubtext": "Unfortunately these entries could not be {action}: | Unfortunately the Entry could not be {action} | Unfortunately {count} entries could not be {action}.",
     "noAction": "No action required",
-    "noActionList": "The following entries are already {action}:"
+    "noActionList": "The following entries are already {action}:",
+    "linkToParentFail": "Linking with entry \"{title}\" failed! Please try to link manually."
   },
   "dropdown": {
     "type": "By Type",
