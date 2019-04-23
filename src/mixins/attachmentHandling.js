@@ -23,8 +23,8 @@ export const attachmentHandlingMixin = {
         // TODO: currently only number of failed links no title - is this good enough?
         this.$notify({
           group: 'request-notifications',
-          title: this.$t('notify.linkingErrorTitle'),
-          text: this.$tc('notify.linkingErrorSubtext', numberOfFailedLinks, { count: numberOfFailedLinks }),
+          title: this.$t('notify.entryFailTitle', { action: this.$t('notify.link') }),
+          text: this.$tc('notify.entryFailSubtext', numberOfFailedLinks, { count: numberOfFailedLinks, action: this.$t('notify.linkd') }),
           type: 'error',
         });
       }

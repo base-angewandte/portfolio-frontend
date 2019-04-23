@@ -347,7 +347,7 @@ export default {
       } else {
         this.$notify({
           group: 'request-notifications',
-          title: this.$t('notify.linkingErrorTitle'),
+          title: this.$t('notify.entryFailTitle', { action: this.$t('notify.link') }),
           text: this.$t('notify.specifyTitleBeforeLinking'),
           type: 'error',
         });
@@ -370,7 +370,7 @@ export default {
       }
     },
     async action(action) {
-      await this.$store.dispatch('data/actionEntries', action);
+      await this.actionEntries(action);
       if (action === 'delete') {
         this.$router.push('/');
       }

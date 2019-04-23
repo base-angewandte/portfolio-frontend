@@ -261,29 +261,33 @@ const actions = {
     });
   },
   async deleteEntries({ state, commit }) {
-    // TODO: user information!!
-    const deletedEntries = await Promise.all(state.selectedEntries
-      .map(entry => new Promise(async (resolve, reject) => {
+    const successArr = [];
+    const failArr = [];
+    await Promise.all(state.selectedEntries
+      .map(entry => new Promise(async (resolve) => {
         try {
           await this.dispatch('PortfolioAPI/delete', { kind: 'entry', id: entry.id });
-          resolve(entry.id);
+          successArr.push(entry.id);
+          resolve();
         } catch (e) {
           console.error(e);
-          reject(e);
+          failArr.push(entry.title);
+          resolve();
         }
       })));
     // check if any deleted items are currently displayed in form as linked
     const deletedLinked = state.linkedEntries
-      .filter(entry => deletedEntries.includes(entry.to.id));
+      .filter(entry => successArr.includes(entry.to.id));
     if (deletedLinked.length) {
       deletedLinked.forEach(deleted => commit('deleteLinked', deleted.id));
     }
-    // TODO: check if deleted was a parent!
+    // check if deleted was a parent
     const deletedParents = state.parentItems
       .filter(entry => deletedLinked.includes(entry.id));
     if (deletedParents) {
       commit('deleteParentItems');
     }
+    return [successArr, failArr];
   },
   async duplicateEntries({ commit, dispatch }, entryArr) {
     const errorArr = [];
@@ -313,27 +317,26 @@ const actions = {
     return { routingIds: addedArr, failedTitles: errorArr };
   },
   async modifyEntries({ state, dispatch }, { prop, value }) {
-    await Promise.all(state.selectedEntries.map(entry => new Promise(async (resolve, reject) => {
-      try {
-        const newEntry = await dispatch('addOrUpdateEntry', Object.assign({}, entry, { [prop]: value }));
-        resolve(newEntry);
-      } catch (e) {
-        console.error(e);
-        // TODO: error handling! (user info)
-        reject();
+    const successArr = [];
+    const failArr = [];
+    const noActionArr = [];
+    await Promise.all(state.selectedEntries.map(entry => new Promise(async (resolve) => {
+      // check if entry needs to be modified or already has requested value
+      if (entry[prop] !== value) {
+        try {
+          await dispatch('addOrUpdateEntry', Object.assign({}, entry, { [prop]: value }));
+          successArr.push(entry.id);
+        } catch (e) {
+          console.error(e);
+          failArr.push(entry.title);
+        }
+      } else {
+        noActionArr.push(entry.title);
       }
+
+      resolve();
     })));
-  },
-  async actionEntries({ commit, dispatch }, action) {
-    if (action === 'delete') {
-      await dispatch('deleteEntries');
-    } else if (action === 'publish') {
-      await dispatch('modifyEntries', { prop: 'published', value: true });
-    } else if (action === 'offline') {
-      await dispatch('modifyEntries', { prop: 'published', value: false });
-    }
-    commit('setSelected', []);
-    commit('hidePopUp');
+    return [successArr, failArr, noActionArr];
   },
   fetchInfoBoxData(context, entry) {
     console.log(entry);

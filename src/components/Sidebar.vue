@@ -50,14 +50,14 @@
             icon-size="large"
             icon="eye"
             button-style="single"
-            @clicked="actionEntries('publish')"/>
+            @clicked="handleAction('publish')"/>
           <BaseButton
             :text="$tc('offline', 2)"
             :disabled="isLoading"
             icon-size="large"
             icon="forbidden"
             button-style="single"
-            @clicked="actionEntries('offline')"/>
+            @clicked="handleAction('offline')"/>
           <BaseButton
             :text="$tc('duplicate', 2)"
             :disabled="isLoading"
@@ -71,7 +71,7 @@
             icon-size="large"
             icon="waste-bin"
             button-style="single"
-            @clicked="actionEntries('delete')"/>
+            @clicked="handleAction('delete')"/>
 
         </template>
       </BaseOptions>
@@ -382,8 +382,8 @@ export default {
         if (failedTitles.length) {
           this.$notify({
             group: 'request-notifications',
-            title: this.$t('notify.duplicationFailTitle'),
-            text: this.$t('notify.duplicationFailSubtext', { list: failedTitles.join(', ') }),
+            title: this.$t('notify.entryFailTitle', { action: this.$t('notify.duplicate') }),
+            text: `${this.$tc('notify.entryFailSubtext', 0, { action: this.$t('notify.duplicated') })} ${failedTitles.join(', ')}`,
             type: 'error',
           });
         }
@@ -391,8 +391,12 @@ export default {
         if (duplicatedNumber) {
           this.$notify({
             group: 'request-notifications',
-            title: this.$t('notify.duplicationSuccessTitle'),
-            text: this.$tc('notify.duplicationSuccessSubtext', duplicatedNumber, { count: duplicatedNumber }),
+            title: this.$t('notify.entrySuccessTitle', { action: this.$t('notify.duplicate') }),
+            text: this.$tc('notify.entrySuccessSubtext', duplicatedNumber,
+              {
+                count: duplicatedNumber,
+                action: this.$t('notify.duplicated'),
+              }),
             type: 'success',
           });
           this.selectedMenuEntries = [];
@@ -408,7 +412,7 @@ export default {
         });
       }
     },
-    actionEntries(value) {
+    handleAction(value) {
       if (this.selectedMenuEntries.length) {
         this.confirmAction({ action: value, entries: this.selectedMenuEntries });
       } else {
@@ -423,7 +427,7 @@ export default {
     async action(action) {
       const currentSelected = this.selectedMenuEntries
         .some(entry => entry.id === this.activeEntryId);
-      await this.$store.dispatch('data/actionEntries', action);
+      await this.actionEntries(action);
       this.selectedMenuEntries = [];
       this.fetchSidebarData();
 
