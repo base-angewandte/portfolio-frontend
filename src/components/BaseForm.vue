@@ -97,6 +97,9 @@ import FormFieldCreator from './FormFieldCreator';
 import RemoveIcon from '../assets/icons/remove.svg';
 import PlusIcon from '../assets/icons/plus.svg';
 
+const { CancelToken } = axios;
+let cancel;
+
 export default {
   name: 'BaseFormNew',
   components: {
@@ -110,6 +113,12 @@ export default {
       required: true,
     },
     valueList: {
+      type: Object,
+      default() {
+        return {};
+      },
+    },
+    prefetchedDropDownLists: {
       type: Object,
       default() {
         return {};
@@ -208,42 +217,26 @@ export default {
           ? Object.keys(field['x-attrs']).filter(key => !!key.includes('source')) : [];
         if (sources.length) {
           sources.forEach(async (source) => {
-            if (field.name === 'type') {
-              try {
-                const response = await axios.get(`${process.env.PORTFOLIO_API}${field['x-attrs'][source]}`,
-                  {
-                    withCredentials: true,
-                  });
-                // set the drop down with the retrieved data
-                this.setDropDown(response.data, '', field['x-attrs'].equivalent, field.name);
-              } catch (e) {
-                console.error(e);
-              }
-              // TODO: adjust to new Portfolio API!!
+            // TODO: check if this can be refactored to allow for custom drop down values
+            // but for now leave like this
+            // check if values were provided in prop
+            const prefetched = source.includes('_') ? this.prefetchedDropDownLists[`${field.name}_secondary`]
+              : this.prefetchedDropDownLists[field.name];
+            if (prefetched && prefetched.length) {
+              this.setDropDown(prefetched, '', field['x-attrs'].equivalent, `${field.name}_secondary`);
+              // special case type
+              // TODO: replace with prefetched values
+            } else if (field.name === 'type') {
+              this.setDropDown(field.enum, '', field['x-attrs'].equivalent, field.name);
+              // for all others just set to an empty array in the beginning
             } else if (source === 'source') {
               this.setDropDown([], '', field['x-attrs'].equivalent, field.name);
-              // if there is another source type specififed (currently e.g. type_source,
-              // but maybe should be renamed
-              // to "secondary" in backend as well?) add it as secondary source
-            } else {
-              // TODO: adjust to new Portfolio API!!
-              try {
-                const response = await axios.get(`${field['x-attrs'][source]}`);
-                // map data needed on front end out of response data
-                const data = response.data.results.map(voc => ({
-                  label: voc.prefLabel,
-                  value: voc.uri,
-                }));
-                // set the drop down with the retrieved data
-                this.setDropDown(data, '', field['x-attrs'].equivalent, `${field.name}_secondary`);
-              } catch (e) {
-                console.error(e);
-              }
             }
           });
         }
       });
     },
+    // check if field can be multiplied
     allowMultiply(el) {
       return el.type === 'array' && el['x-attrs']
         && !['chips', 'chips-below'].includes(el['x-attrs'].field_type);
@@ -259,30 +252,40 @@ export default {
     async fetchAutocomplete({
       value, name, source, equivalent,
     }) {
-      if (name !== 'type' && source) {
-        if (this.timeout) {
-          clearTimeout(this.timeout);
-          this.timeout = null;
-        }
-        this.timeout = setTimeout(async () => {
-          if (value && value.length > 3) {
-            try {
-              const result = await axios.get(`${process.env.PORTFOLIO_API}${source}${value ? `${value}/` : ''}`, {
-                withCredentials: true,
-              });
-              this.setDropDown(result.data, value, equivalent, name);
-              // TODO: add additional properties if necessary: e.g.
-              //  source name, separated name, dob, profession
-            } catch (e) {
-              console.error(e);
-            }
-          } else {
-            this.setDropDown([], value, equivalent, name);
-          }
-        }, 600);
-      } else {
-        console.error('no source specified');
+      if (this.timeout) {
+        clearTimeout(this.timeout);
+        this.timeout = null;
       }
+      this.timeout = setTimeout(async () => {
+        if (value && value.length > 3) {
+          try {
+            // TODO: use C. module
+            // cancel previous request if there is any
+            if (cancel) {
+              cancel('new request started');
+            }
+            const result = await axios.get(`${process.env.PORTFOLIO_API}${source}${value ? `${value}/` : ''}`, {
+              withCredentials: true,
+              /* eslint-disable-next-line */
+              cancelToken: new CancelToken((c) => {
+                cancel = c;
+              }),
+            });
+            this.setDropDown(result.data, value, equivalent, name);
+            // TODO: add additional properties if necessary: e.g.
+            //  source name, separated name, dob, profession
+          } catch (e) {
+            console.error(e);
+            if (e instanceof DOMException) {
+              console.error('If you see above error it is likely because the source is missing for a field!');
+            } else {
+              // TODO: inform user?? notification or just info in drop down??
+            }
+          }
+        } else {
+          this.setDropDown([], value, equivalent, name);
+        }
+      }, 600);
     },
     multiplyField(field) {
       this.valueListInt[field.name]
@@ -301,7 +304,7 @@ export default {
       if (((equivalent && equivalent === 'contributors') || name === 'contributors')
         && (value.length <= 3 || user.name.toLowerCase().includes(value.toLowerCase()))) {
         // TODO: replace this with the real values
-        dropDownList.unshift({ label: user.name, source: 'this will be the id', additional: 'This is myself!' });
+        dropDownList.unshift({ label: user.name, source: 'this will be the id', additional: this.$t('form.myself') });
         // TODO: filter entry from list to prevent double display!
       }
       this.$set(this.dropdownLists, name, dropDownList);
