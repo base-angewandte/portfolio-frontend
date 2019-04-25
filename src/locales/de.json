@@ -68,8 +68,8 @@
     "time": "Zeit",
     "year": "Jahr",
     "myself": "Das bin ich!",
-    "textTabsLegend": "Wähle die im Text Feld angezeigte Sprache",
-    "dateTabsLegend": "Wähle das Datumsformat"
+    "textTabsLegend": "Sprache",
+    "dateTabsLegend": "Datumsformat"
   },
   "form-view": {
     "formExtended": "Weitere Angaben",

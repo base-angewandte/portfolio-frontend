@@ -28,7 +28,11 @@
             :tabs="['en', 'de']"
             :drop-down-list="dropdownLists[element.name]"
             :secondary-dropdown="dropdownLists[element.name + '_secondary']"
-            @field-value-changed="setFieldValue($event, element.name, valueIndex)"
+            @field-value-changed="setFieldValue(
+              $event,
+              element.name,
+              valueIndex,
+              (element['x-attrs'] ? element['x-attrs'].equivalent : ''))"
             @fetch-autocomplete="fetchAutocomplete"
             @subform-input="setFieldValue($event, element.name, valueIndex)" />
           <div
@@ -241,7 +245,16 @@ export default {
       return el.type === 'array' && el['x-attrs']
         && !['chips', 'chips-below'].includes(el['x-attrs'].field_type);
     },
-    setFieldValue(value, fieldName, index) {
+    setFieldValue(value, fieldName, index, equivalent) {
+      if (this.dropdownLists[fieldName]) {
+        // cancel a potentially still ongoing autocomplete search as soon as
+        // a value was selected
+        if (cancel) {
+          cancel('value already selected');
+        }
+        // and reset the dropdownlist
+        this.setDropDown([], '', equivalent, fieldName);
+      }
       if (index >= 0) {
         this.$set(this.valueListInt[fieldName], index, value);
       } else {

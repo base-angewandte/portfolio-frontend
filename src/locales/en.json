@@ -70,8 +70,8 @@
     "time": "Time",
     "year": "Year",
     "myself": "This is myself!",
-    "textTabsLegend": "Choose the language displayed in the text field",
-    "dateTabsLegend": "Choose the date format"
+    "textTabsLegend": "language",
+    "dateTabsLegend": "date format"
   },
   "form-view": {
     "formExtended": "Further Information",
