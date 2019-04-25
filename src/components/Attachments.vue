@@ -280,9 +280,8 @@ export default {
   watch: {
     action(val) {
       if (val) {
-        const textType = this.$t(`form-view.${val}Text`);
         this.fileSubtext = this.$t(`form-view.${val}Subtext`);
-        this.fileText = `Bitte die zu ${textType} Objekte auswählen:`;
+        this.fileText = this.$t('form-view.fileActionText', { action: this.$t(`form-view.${val}Text`) });
         this.buttonText = this.$t(`form-view.${val}Button`);
       } else {
         this.fileText = '';

@@ -67,8 +67,9 @@
     "removeField": "\"{fieldType}\" Feld entfernen",
     "time": "Zeit",
     "year": "Jahr",
-    "myself": "Das bin ich!"
-
+    "myself": "Das bin ich!",
+    "textTabsLegend": "Wähle die im Text Feld angezeigte Sprache",
+    "dateTabsLegend": "Wähle das Datumsformat"
   },
   "form-view": {
     "formExtended": "Weitere Angaben",
@@ -82,6 +83,7 @@
     "licenseText": "lizenzierenden",
     "publishText": "veröffentlichenden",
     "deleteText": "löschenden",
+    "fileActionText": "Bitte die zu {action} Dateien auswählen:",
     "licenseSubtext": "Die Lizenz der ausgewählten Dateien wird geändert.",
     "selectLicense": "Lizenz wählen",
     "deleteSubtext": "Diese Dateien werden gelöscht.",

@@ -23,6 +23,7 @@
         :type="dateType.includes('timerange') ? dateType.includes('daterange')
         ? 'daterange' : 'single' : dateType"
         :date-format-labels="{date: $t('form.date'), year: $t('form.year') }"
+        :format-tabs-legend="$t('form.dateTabsLegend')"
         v-model="fieldValueInt"
         :class="['base-form-field']"/>
       <BaseDateInput
@@ -54,6 +55,7 @@
           ? fieldValueInt.type : textTypeDefault"
           :options="textTypeOptions"
           :label="$t('form.texttype')"
+          :tabs-legend="$t('form.textTabsLegend')"
           @value-selected="$set(fieldValueInt, 'type', $event)"/>
       </template>
     </BaseMultilineTextInput>
