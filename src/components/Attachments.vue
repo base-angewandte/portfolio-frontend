@@ -293,7 +293,7 @@ export default {
   methods: {
     async saveFileMeta() {
       // check if files were selected
-      if ((this.action === 'publish' && !this.publishFiles.length) || !this.selectedFiles.length) {
+      if ((this.action === 'publish' && !this.publishFiles.length) && !this.selectedFiles.length) {
         // if not notify user that he needs to select files
         this.$notify({
           group: 'request-notifications',

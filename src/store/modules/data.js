@@ -382,12 +382,13 @@ const actions = {
   },
   /**
    * for deleting files or updating metainformation such as license or published state
+   * @param context: the store action context
    * @param list: a list of media id's to process
    * @param action: the action to carry out ('delete' | 'license' | 'publish')
    * @param value: value of license to be set (not needed for other actions)
    * @returns {Promise<Array>}
    */
-  async actionFiles({ list, action, value }) {
+  async actionFiles(context, { list, action, value }) {
     const axiosAction = action === 'delete' ? action : 'patch';
     const successArr = [];
     const errorArr = [];
