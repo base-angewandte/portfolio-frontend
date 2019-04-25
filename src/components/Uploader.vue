@@ -183,7 +183,19 @@ export default {
               reject();
             }
           })));
-        await this.$store.dispatch('data/fetchMediaData', this.$route.params.id);
+        // TODO: duplicated in Attachments --> see if this can be made more efficient
+        // maybe place in attachment area component?
+        try {
+          await this.$store.dispatch('data/fetchMediaData', this.$route.params.id);
+        } catch (e) {
+          console.error(e);
+          this.$notify({
+            group: 'request-notifications',
+            title: this.$t('notify.somethingWrong'),
+            text: this.$t('notify.fetchMediaFail'),
+            type: 'error',
+          });
+        }
       }
     },
     cancelUpload() {

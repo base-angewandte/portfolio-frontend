@@ -66,7 +66,8 @@
     "addGroup": "Weiteres \"{fieldType}\" Feld hinzufügen",
     "removeField": "\"{fieldType}\" Feld entfernen",
     "time": "Zeit",
-    "year": "Jahr"
+    "year": "Jahr",
+    "myself": "Das bin ich!"
 
   },
   "form-view": {
@@ -92,10 +93,14 @@
     "deleteLinkedSubtext": "Die Verknüfung zu diesen Einträgen wird gelöscht."
   },
   "notify": {
+    "entry": "Einträge | Eintrag | Einträge",
+    "media": "Dateien | Datei | Dateien",
     "linkingNotPossible": "Verknüpfung nicht möglich",
     "alreadyLinked": "Dieser Eintrag ist bereits verknüpft.",
     "selfLinked": "Einträge können nicht mit sich selbst verknüpft werden.",
     "saveBeforeLink": "Bitte speichere den aktuellen Eintrag zuerst ab.",
+    "uploadingNotPossible": "Hochladen nicht möglich",
+    "saveBeforeUpload": "Bitte speichere den Eintrag zuerst ab.",
     "noEntriesSelected": "Keine Einträge ausgewählt",
     "selectEntries": "Bitte wähle zuerst Einträge aus.",
     "somethingWrong": "Etwas ist schief gelaufen!",
@@ -120,7 +125,6 @@
     "unsavedChangesText": "Du hast ungespeicherte Änderungen. Soll der Eintrag gespeichert werden?",
     "saveChanges": "Änderungen speichern",
     "dismissChanges": "Änderungen verwerfen",
-    "changesFailed": "{action} fehlgeschlagen",
     "selectLicense": "Bitte wähle eine Lizenz aus!",
     "selectFiles": "Bitte wähle Dateien aus, um {action}.",
     "license": "Lizenzänderung",
@@ -133,13 +137,16 @@
     "offlined": "offline gestellt",
     "duplicated": "dupliziert",
     "linkd": "verknüpft",
-    "entrySuccessTitle": "{action} erfolgreich",
-    "entrySuccessSubtext": "1 Eintrag wurde erfolgreich {action}. | {count} Einträge wurden erfolgreich {action}.",
-    "entryFailTitle": "{action} fehlgeschlagen",
-    "entryFailSubtext": "Leider konnten die folgenden Einträge nicht {action} werden: | Leider konnte der Eintrag nicht verknüpft werden. | Leider konnten {count} Einträge nicht {action} werden.",
+    "licensed": "geändert",
+    "actionSuccessTitle": "{action} erfolgreich",
+    "actionSuccessSubtext": "1 {type} wurde erfolgreich {action}. | {count} {type} wurden erfolgreich {action}.",
+    "actionFailed": "{action} fehlgeschlagen",
+    "actionFailSubtext": "Leider konnten die folgenden {type} nicht {action} werden: | Leider konnte ein {type} nicht {action} werden. | Leider konnten {count} {type} nicht {action} werden.",
     "noAction": "Aktion nicht durchgeführt",
     "noActionList": "Die folgenden Einträge sind bereits {action}:",
-    "linkToParentFail": "Die Verknüpfung mit \"{title}\" ist leider fehlgeschlagen! Bitte versuche manuell zu verknüpfen."
+    "linkToParentFail": "Die Verknüpfung mit \"{title}\" ist leider fehlgeschlagen! Bitte versuche manuell zu verknüpfen.",
+    "fetchMediaFail": "Leider konnten die angehängten Dateien nicht geladen werden.",
+    "fetchLinkedFail": "Leider konnte die Liste der verlinkten Einträge nicht aktualisiert werden."
   },
   "dropdown": {
     "type": "By Type",

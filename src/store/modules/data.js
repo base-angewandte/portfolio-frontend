@@ -52,6 +52,9 @@ const state = {
   linkedEntries: [],
   linkedMedia: [],
   formFields: {},
+  formTextTypes: [],
+  formRoles: [],
+  formObjectTypes: [],
 };
 
 const getters = {
@@ -76,6 +79,15 @@ const getters = {
   },
   getFormFields(state) {
     return state.formFields;
+  },
+  getFormTextTypes(state) {
+    return state.formTextTypes;
+  },
+  getFormObjectTypes(state) {
+    return state.formObjectTypes;
+  },
+  getFormRoles(state) {
+    return state.formRoles;
   },
 };
 
@@ -140,6 +152,16 @@ const mutations = {
   },
   setFormFields(state, fields) {
     state.formFields = Object.assign({}, fields);
+  },
+  setFormTextTypes(state, types) {
+    state.formTextTypes = [].concat(types.map(type => ({ label: type.label, value: type.source })));
+  },
+  setFormObjectTypes(state, types) {
+    state.formObjectTypes = [].concat(types
+      .map(type => ({ label: type.label, value: type.source })));
+  },
+  setFormRoles(state, types) {
+    state.formRoles = [].concat(types);
   },
 };
 
@@ -218,6 +240,21 @@ const actions = {
       reject();
     });
   },
+  async getStaticDropDowns({ getters, commit }) {
+    if (!getters.getFormTextTypes.length) {
+      const { data } = await axios.get(`${process.env.PORTFOLIO_API}/autosuggest/v1/texttypes/`, {
+        withCredentials: true,
+      });
+      commit('setFormTextTypes', data);
+    }
+    if (!getters.getFormRoles.length) {
+      const { data } = await axios.get(`${process.env.PORTFOLIO_API}/autosuggest/v1/roles/`, {
+        withCredentials: true,
+      });
+      commit('setFormRoles', data);
+    }
+    // TODO: get object types (not available in skosmos yet)
+  },
   async fetchMediaData({ commit }, id) {
     // TODO: replace with Portofolio_API
     const res = await axios.get(`${process.env.API}entry/${id}/media/`,
@@ -268,10 +305,10 @@ const actions = {
         try {
           await this.dispatch('PortfolioAPI/delete', { kind: 'entry', id: entry.id });
           successArr.push(entry.id);
-          resolve();
         } catch (e) {
           console.error(e);
           failArr.push(entry.title);
+        } finally {
           resolve();
         }
       })));
@@ -310,8 +347,9 @@ const actions = {
         }
       } catch (e) {
         errorArr.push(entryTitle);
+      } finally {
+        resolve();
       }
-      resolve();
     })));
     commit('setOptions', false);
     return { routingIds: addedArr, failedTitles: errorArr };
@@ -333,7 +371,6 @@ const actions = {
       } else {
         noActionArr.push(entry.title);
       }
-
       resolve();
     })));
     return [successArr, failArr, noActionArr];
@@ -343,16 +380,27 @@ const actions = {
     // TODO: fetch info data - from where???
     return { title: 'title' };
   },
-  async actionFiles({ state, dispatch }, { list, action, value }) {
+  /**
+   * for deleting files or updating metainformation such as license or published state
+   * @param list: a list of media id's to process
+   * @param action: the action to carry out ('delete' | 'license' | 'publish')
+   * @param value: value of license to be set (not needed for other actions)
+   * @returns {Promise<Array>}
+   */
+  async actionFiles({ list, action, value }) {
     const axiosAction = action === 'delete' ? action : 'patch';
+    const successArr = [];
+    const errorArr = [];
 
-    await Promise.all(list.map(mediaId => new Promise(async (resolve, reject) => {
+    await Promise.all(list.map(mediaId => new Promise(async (resolve) => {
       const formData = new FormData();
       const id = mediaId.id || mediaId;
-      if (action === 'publish' || action === 'offline') {
+      if (action === 'publish') {
         formData.append('published', mediaId.selected);
       } else if (action === 'license') {
         formData.append('license', value);
+      } else {
+        console.error('file action unknown');
       }
       try {
         if (axiosAction === 'delete') {
@@ -373,15 +421,15 @@ const actions = {
               xsrfHeaderName: 'X-CSRFToken',
             });
         }
-
-        resolve(id);
+        successArr.push(id);
       } catch (e) {
         console.error(e);
-        reject(e);
+        errorArr.push(id);
+      } finally {
+        resolve();
       }
     })));
-    await dispatch('fetchMediaData', state.currentItemId);
-    // TODO: inform user of sucessfully changed items
+    return [successArr, errorArr];
   },
 };
 

@@ -129,6 +129,7 @@ import {
 import 'base-components/dist/lib/base-components.min.css';
 import BaseOptions from './BaseOptions';
 import { entryHandlingMixin } from '../mixins/entryHandling';
+import { userInfo } from '../mixins/userInfo';
 
 export default {
   components: {
@@ -140,7 +141,7 @@ export default {
     BaseOptions,
     BaseLoader,
   },
-  mixins: [entryHandlingMixin],
+  mixins: [entryHandlingMixin, userInfo],
   props: {
     /**
      * make optional for link entries functionality
@@ -379,26 +380,16 @@ export default {
         const { routingIds, failedTitles } = await this.$store.dispatch('data/duplicateEntries', [].concat(this.selectedMenuEntries));
         const duplicatedNumber = routingIds.length;
         // if entries could not be duplicated inform user about it
-        if (failedTitles.length) {
-          this.$notify({
-            group: 'request-notifications',
-            title: this.$t('notify.entryFailTitle', { action: this.$t('notify.duplicate') }),
-            text: `${this.$tc('notify.entryFailSubtext', 0, { action: this.$t('notify.duplicated') })} ${failedTitles.join(', ')}`,
-            type: 'error',
-          });
-        }
+        this.informUser({
+          successArr: failedTitles,
+          failedArr: duplicatedNumber,
+          action: 'duplicate',
+          type: 'entry',
+          entryCount: 0,
+          listEntries: true,
+        });
         // if any entries were sucessfully duplicated route to the new entry
         if (duplicatedNumber) {
-          this.$notify({
-            group: 'request-notifications',
-            title: this.$t('notify.entrySuccessTitle', { action: this.$t('notify.duplicate') }),
-            text: this.$tc('notify.entrySuccessSubtext', duplicatedNumber,
-              {
-                count: duplicatedNumber,
-                action: this.$t('notify.duplicated'),
-              }),
-            type: 'success',
-          });
           this.selectedMenuEntries = [];
           this.fetchSidebarData();
           this.$router.push(`/entry/${routingIds.pop()}`);

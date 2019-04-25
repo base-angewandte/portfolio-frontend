@@ -68,7 +68,8 @@
     "addGroup": "Add \"{fieldType}\"",
     "removeField": "\"{fieldType}\" Feld entfernen",
     "time": "Time",
-    "year": "Year"
+    "year": "Year",
+    "myself": "This is myself!"
   },
   "form-view": {
     "formExtended": "Further Information",
@@ -97,10 +98,14 @@
     "deleteLinkedSubtext": "The Link to these Entries will be deleted."
   },
   "notify": {
+    "entry": "entries | entry | entries",
+    "media": "files | file | files",
     "linkingNotPossible": "Linking not possible",
     "alreadyLinked": "This entry is already linked.",
     "selfLinked": "Entries can not be linked with themselves.",
     "saveBeforeLink": "Please save the current entry first.",
+    "uploadingNotPossible": "Upload not possible",
+    "saveBeforeUpload": "Please save the entry first.",
     "noEntriesSelected": "No Entries Selected",
     "selectEntries": "Please select Entries first.",
     "somethingWrong": "Something went wrong!",
@@ -125,7 +130,6 @@
     "unsavedChangesText": "You have unsaved changes.Should these be saved?",
     "saveChanges": "Save changes",
     "dismissChanges": "Discard changes",
-    "changesFailed": "{action} failed",
     "selectLicense": "Please choose a license!",
     "selectFiles": "Please choose files in order to {action}.",
     "license": "Change of license",
@@ -138,13 +142,16 @@
     "offlined": "taken offline",
     "duplicated": "duplicated",
     "linkd": "linked",
-    "entrySuccessTitle": "{action} action successful",
-    "entrySuccessSubtext": "1 entry was successfully {action}. | {count} entries were successfully {action}.",
-    "entryFailTitle": "{action} action failed",
-    "entryFailSubtext": "Unfortunately these entries could not be {action}: | Unfortunately the Entry could not be {action} | Unfortunately {count} entries could not be {action}.",
+    "licensed": "changed",
+    "actionSuccessTitle": "{action} action successful",
+    "actionSuccessSubtext": "1 {type} was successfully {action}. | {count} {type} were successfully {action}.",
+    "actionFailed": "{action} action failed",
+    "actionFailSubtext": "Unfortunately these {type} could not be {action}: | Unfortunately one {type} could not be {action} | Unfortunately {count} {type} could not be {action}.",
     "noAction": "No action required",
     "noActionList": "The following entries are already {action}:",
-    "linkToParentFail": "Linking with entry \"{title}\" failed! Please try to link manually."
+    "linkToParentFail": "Linking with entry \"{title}\" failed! Please try to link manually.",
+    "fetchMediaFail": "Unfortunately the files attached to this entry could not be loaded.",
+    "fetchLinkedFail": "Unfortunately the list of linked entries could not be updated."
   },
   "dropdown": {
     "type": "By Type",

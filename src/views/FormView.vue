@@ -46,6 +46,9 @@
         ref="baseForm"
         :form-field-json="formFields"
         :value-list="valueList"
+        :prefetched-drop-down-lists="{
+          texts_secondary: textTypes,
+        }"
         @values-changed="handleInput($event)"
       />
       <transition-group
@@ -64,6 +67,9 @@
             ref="formExtension"
             :form-field-json="formFieldsExtension"
             :value-list="valueList.data"
+            :prefetched-drop-down-lists="{
+              contributors_secondary: roles,
+            }"
             class="form"
             @values-changed="handleInput($event, 'data')"/>
         </div>
@@ -114,7 +120,6 @@ export default {
     return {
       unsavedChanges: false,
       dataSaving: false,
-      formFields: {},
       formFieldsExtension: {},
       valueList: {},
       showOverlay: false,
@@ -135,6 +140,18 @@ export default {
     parent() {
       return this.$store.getters['data/getLatestParentItem'];
     },
+    formFields() {
+      return this.$store.getters['data/getFormFields'];
+    },
+    textTypes() {
+      return this.$store.getters['data/getFormTextTypes'];
+    },
+    roles() {
+      return this.$store.getters['data/getFormRoles'];
+    },
+    objectTypes() {
+      return this.$store.getters['data/getFormObjectTypes'];
+    },
   },
   watch: {
     async currentItemId(val) {
@@ -146,7 +163,6 @@ export default {
       } else {
         this.resetForm();
       }
-      window.scrollTo(0, 0);
       this.showOverlay = false;
       this.formIsLoading = false;
     },
@@ -177,6 +193,7 @@ export default {
   },
   created() {
     this.fetchGeneralFormFields();
+    this.$store.dispatch('data/getStaticDropDowns');
     if (this.currentItemId) {
       this.updateForm();
     }
@@ -185,7 +202,7 @@ export default {
     async fetchGeneralFormFields() {
       this.formIsLoading = true;
       try {
-        this.formFields = await this.$store.dispatch('data/fetchGeneralFields');
+        await this.$store.dispatch('data/fetchGeneralFields');
       } catch (e) {
         // TODO: if form fields can not be fetched this should probably
         //  abort all further entry data / extension loadings (redirect to dashboard?)
@@ -220,7 +237,7 @@ export default {
     },
     handleInput(data, type) {
       this.unsavedChanges = true;
-      // check if type is set (=this event is coming from a subform)
+      // check if type is set (= this event is coming from a subform)
       if (type) {
         this.$set(this.valueList, type, Object.assign({}, this.valueList[type],
           JSON.parse(JSON.stringify(data))));
@@ -277,7 +294,7 @@ export default {
                 console.error(e);
                 this.$notify({
                   group: 'request-notifications',
-                  title: this.$t('notify.entryFailTitle', { action: this.$t('notify.link') }),
+                  title: this.$t('notify.actionFailed', { action: this.$t('notify.link') }),
                   text: this.$t('notify.linkToParentFail', { title: parent.title }),
                   type: 'error',
                 });
@@ -363,7 +380,7 @@ export default {
       } else {
         this.$notify({
           group: 'request-notifications',
-          title: this.$t('notify.entryFailTitle', { action: this.$t('notify.link') }),
+          title: this.$t('notify.actionFailed', { action: this.$t('notify.link') }),
           text: this.$t('notify.specifyTitleBeforeLinking'),
           type: 'error',
         });

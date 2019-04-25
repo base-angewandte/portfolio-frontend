@@ -107,6 +107,7 @@ import {
 } from 'base-components';
 import Sidebar from './Sidebar';
 import Uploader from './Uploader';
+import { userInfo } from '../mixins/userInfo';
 
 export default {
   components: {
@@ -117,6 +118,7 @@ export default {
     Sidebar,
     Uploader,
   },
+  mixins: [userInfo],
   props: {
     currentId: {
       type: String,
@@ -162,14 +164,22 @@ export default {
       }
     },
     handleFileSelect(e) {
-      // get files - depending if dragged or selected from file browse different event prop
-      const files = e.dataTransfer ? e.dataTransfer.files : e.target.files;
-      // TODO: check if item was saved already!
-      // check if it was actual files that were dragged in
-      if (files && files.length) {
-        for (let i = 0; i < files.length; i += 1) {
-          this.filesToUpload.push(files[i]);
+      if (this.$route.params.id) {
+        // get files - depending if dragged or selected from file browse different event prop
+        const files = e.dataTransfer ? e.dataTransfer.files : e.target.files;
+        // check if it was actual files that were dragged in
+        if (files && files.length) {
+          for (let i = 0; i < files.length; i += 1) {
+            this.filesToUpload.push(files[i]);
+          }
         }
+      } else {
+        this.$notify({
+          group: 'request-notifications',
+          title: this.$t('notify.uploadingNotPossible'),
+          text: this.$t('notify.saveBeforeUpload'),
+          type: 'error',
+        });
       }
     },
     openEntrySelect() {
@@ -199,9 +209,11 @@ export default {
         await this.$parent.actionLinked({ list, action: 'save' });
         // otherwise just save state in store for now and commit with general first save of entry
       } else {
+        const failArr = [];
         const fullList = await Promise.all(list
-          .map((entryId, index) => new Promise(async (resolve, reject) => {
+          .map((entryId, index) => new Promise(async (resolve) => {
             try {
+              // get the data of the linked entry
               const entry = await this.$store.dispatch('PortfolioAPI/get', { kind: 'entry', id: entryId });
               resolve({
                 id: `tempId${this.$store.getters['data/getCurrentLinked'].length + index}`,
@@ -209,10 +221,19 @@ export default {
               });
             } catch (e) {
               console.error(e);
-              reject(e);
+              failArr.push(entryId);
+              resolve();
             }
           })));
-        this.$store.commit('data/setLinked', { list: fullList || [], replace: false });
+        const linkedList = fullList.filter(Boolean);
+        if (linkedList.length) {
+          this.$store.commit('data/setLinked', { list: fullList.filter(Boolean), replace: false });
+        }
+        this.informUser({
+          failedArr: failArr,
+          action: 'link',
+          type: 'entry',
+        });
       }
       this.showEntryPopUp = false;
     },

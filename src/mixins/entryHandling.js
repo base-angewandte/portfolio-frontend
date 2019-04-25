@@ -1,5 +1,8 @@
+import { userInfo } from './userInfo';
+
 /* eslint-disable-next-line */
 export const entryHandlingMixin = {
+  mixins: [userInfo],
   methods: {
     confirmAction({ action, entries }) {
       const actionText = this.$t(`notify.${action}`);
@@ -25,31 +28,14 @@ export const entryHandlingMixin = {
       } else if (action === 'offline') {
         [success, failed, noAction] = await this.$store.dispatch('data/modifyEntries', { prop: 'published', value: false });
       }
-      const actionedNumber = success.length;
-      if (actionedNumber) {
-        this.$notify({
-          group: 'request-notifications',
-          title: this.$t('notify.entrySuccessTitle', { action: this.$t(`notify.${action}`) }),
-          text: this.$tc('notify.entrySuccessSubtext', actionedNumber, { count: actionedNumber, action: this.$t(`notify.${action}d`) }),
-          type: 'success',
-        });
-      }
-      if (failed.length) {
-        this.$notify({
-          group: 'request-notifications',
-          title: this.$t('notify.entryFailTitle', { action: this.$t(`notify.${action}`) }),
-          text: `${this.$tc('notify.entryFailSubtext', 0, { action: this.$t(`notify.${action}d`) })} ${failed.join(', ')}`,
-          type: 'error',
-        });
-      }
-      if (noAction.length) {
-        this.$notify({
-          group: 'request-notifications',
-          title: this.$t('notify.noAction'),
-          text: `${this.$t('notify.noActionList', { action: this.$t(`notify.${action}d`) })} ${noAction.join(', ')}`,
-          type: 'error',
-        });
-      }
+      this.informUser({
+        successArr: success,
+        failedArr: failed,
+        noActionArr: noAction,
+        action,
+        type: 'entry',
+        listEntries: true,
+      });
       this.$store.commit('data/setSelected', []);
       this.$store.commit('data/hidePopUp');
     },

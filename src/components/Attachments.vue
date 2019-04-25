@@ -234,6 +234,7 @@ import {
 } from 'base-components';
 import BaseOptions from './BaseOptions';
 import EyeIcon from '../assets/icons/eye.svg';
+import { userInfo } from '../mixins/userInfo';
 
 export default {
   components: {
@@ -244,6 +245,7 @@ export default {
     BaseOptions,
     EyeIcon,
   },
+  mixins: [userInfo],
   props: {
     linkedList: {
       type: Array,
@@ -296,7 +298,7 @@ export default {
         // if not notify user that he needs to select files
         this.$notify({
           group: 'request-notifications',
-          title: this.$t('notify.changesFailed', { action: this.$t(`notify.${this.action}`) }),
+          title: this.$t('notify.actionFailed', { action: this.$t(`notify.${this.action}`) }),
           text: this.$t('notify.selectFiles', { action: this.$t(`notify.${this.action}File`) }),
           type: 'error',
         });
@@ -305,16 +307,34 @@ export default {
       } else if (this.action === 'license' && !this.licenseSelected.value) {
         this.$notify({
           group: 'request-notifications',
-          title: this.$t('notify.changesFailed', { action: this.$t('notify.license') }),
+          title: this.$t('notify.actionFailed', { action: this.$t('notify.license') }),
           text: this.$t('notify.selectLicense'),
           type: 'error',
         });
       } else {
-        await this.$store.dispatch('data/actionFiles', {
+        const [successIds, failIds] = await this.$store.dispatch('data/actionFiles', {
           list: this.action === 'publish' ? this.publishFiles : this.selectedFiles,
           action: this.action,
           value: this.licenseSelected.value,
         });
+        this.informUser({
+          successArr: successIds, failedArr: failIds, action: this.action, type: 'media',
+        });
+        if (successIds.length) {
+          // update information in attachement area with new info
+          // TODO: do i need to do this or could i just change things locally??
+          try {
+            await this.$store.dispatch('data/fetchMediaData', this.$route.params.id);
+          } catch (e) {
+            console.error(e);
+            this.$notify({
+              group: 'request-notifications',
+              title: this.$t('notify.somethingWrong'),
+              text: this.$t('notify.fetchMediaFail'),
+              type: 'error',
+            });
+          }
+        }
         // clear all variables after action
         this.action = '';
         this.selectedFiles = [];

@@ -94,8 +94,6 @@
       :draggable="true"
       :hoverbox-content="hoverBoxData"
       :sortable="field.name === 'keywords' || (field['x-attrs'] && field['x-attrs'].sortable)"
-      @selected="$emit('selected', { value: $event && $event.length
-      ? $event[0][field.name] || $event[0] : null, field: field.name })"
       @fetch-dropdown-entries="$emit('fetch-autocomplete', {
         value: $event.value,
         name: field.name,
@@ -281,10 +279,6 @@ export default {
     },
   },
   watch: {
-    secondaryDropdown(val) {
-      console.log(val);
-      console.log('changed');
-    },
     fieldValue(val) {
       if (JSON.stringify(this.fieldValueInt) !== JSON.stringify(val)) {
         this.setFieldValue(val);
@@ -301,9 +295,6 @@ export default {
     },
   },
   mounted() {
-    if (this.label === 'Date') {
-      console.log(this.field);
-    }
     this.setFieldValue(this.fieldValue);
   },
   methods: {

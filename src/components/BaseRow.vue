@@ -33,6 +33,7 @@
         :text="$t('save')"
         :disabled="dbRequestOngoing"
         :icon="isSaving ? '' : 'save-file'"
+        button-type="submit"
         icon-size="small"
         button-style="row"
         class="form-button-inner"
