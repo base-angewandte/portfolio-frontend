@@ -3,7 +3,7 @@
     class="notification-container">
     <div class="notification-box">
       <notifications
-        :duration="8000"
+        :duration="-1"
         :width="'100%'"
         group="request-notifications"
         position="top right"
@@ -26,9 +26,7 @@
               <div
                 class="notification-title"
                 v-html="notificationTitle(props.item.title)" />
-              <div class="notification-message">
-                {{ props.item.text }}
-              </div>
+              <div class="notification-message">{{ props.item.text }}</div>
 
             </div>
 
@@ -108,6 +106,10 @@ export default {
 
       .notification-title {
         font-weight: 600;
+      }
+
+      .notification-message {
+        white-space: pre-line;
       }
     }
 

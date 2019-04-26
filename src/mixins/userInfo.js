@@ -31,7 +31,7 @@ export const userInfo = {
           text: this.$tc('notify.actionFailSubtext', failedNumber, {
             count: failedNumber,
             action: this.$t(`notify.${action}d`),
-            type: `${this.$tc(`notify.${type}`, failedNumber)} ${listEntries ? failedArr.join(', ') : ''}`,
+            type: `${this.$tc(`notify.${type}`, failedNumber)}\n${listEntries ? failedArr.join(',\n') : ''}`,
           }),
           type: 'error',
         });
@@ -42,7 +42,7 @@ export const userInfo = {
           title: this.$t('notify.noAction'),
           text: `${this.$t('notify.noActionList', {
             action: this.$t(`notify.${action}d`),
-          })} ${noActionArr.join(', ')}`,
+          })}\n${noActionArr.join(',\n')}`,
           type: 'error',
         });
       }

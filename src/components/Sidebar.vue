@@ -381,8 +381,8 @@ export default {
         const duplicatedNumber = routingIds.length;
         // if entries could not be duplicated inform user about it
         this.informUser({
-          successArr: failedTitles,
-          failedArr: duplicatedNumber,
+          successArr: routingIds,
+          failedArr: failedTitles,
           action: 'duplicate',
           type: 'entry',
           entryCount: 0,
