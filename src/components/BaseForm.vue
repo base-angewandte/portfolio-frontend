@@ -81,6 +81,7 @@
           + getFieldName(element)"
           :drop-down-list="dropdownLists[element.name]"
           :secondary-dropdown="dropdownLists[element.name + '_secondary']"
+          :autocomplete-loading="fieldIsLoading === element.name"
           :class="[
             'base-form-field',
             element['x-attrs'] && element['x-attrs'].field_format === 'half'
@@ -136,6 +137,7 @@ export default {
       fieldProperties: [],
       dropdownLists: {},
       timeout: null,
+      fieldIsLoading: '',
     };
   },
   computed: {
@@ -271,6 +273,7 @@ export default {
       }
       this.timeout = setTimeout(async () => {
         if (value && value.length > 3) {
+          this.fieldIsLoading = name;
           try {
             // TODO: use C. module
             // cancel previous request if there is any
@@ -284,6 +287,7 @@ export default {
                 cancel = c;
               }),
             });
+            this.fieldIsLoading = '';
             this.setDropDown(result.data, value, equivalent, name);
             // TODO: add additional properties if necessary: e.g.
             //  source name, separated name, dob, profession

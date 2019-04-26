@@ -68,6 +68,7 @@
       :placeholder="placeholder"
       :list="dropDownList"
       :object-prop="'label'"
+      :is-loading="autocompleteLoading"
       v-model="fieldValueInt"
       :class="['base-form-field']"
       @autocomplete="$emit('fetch-autocomplete', {
@@ -96,6 +97,7 @@
       :draggable="true"
       :hoverbox-content="hoverBoxData"
       :sortable="field.name === 'keywords' || (field['x-attrs'] && field['x-attrs'].sortable)"
+      :is-loading="autocompleteLoading"
       @fetch-dropdown-entries="$emit('fetch-autocomplete', {
         value: $event.value,
         name: field.name,
@@ -125,6 +127,7 @@
       :hoverbox-content="hoverBoxData"
       :object-prop="'label'"
       :role-options="secondaryDropdown"
+      :is-loading="autocompleteLoading"
       v-model="fieldValueInt"
       class="base-form-field base-form-field-full"
       @fetch-dropdown-entries="$emit('fetch-autocomplete',{
@@ -237,6 +240,10 @@ export default {
       default() {
         return {};
       },
+    },
+    autocompleteLoading: {
+      type: Boolean,
+      default: false,
     },
   },
   data() {
