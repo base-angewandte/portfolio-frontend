@@ -252,6 +252,7 @@ export default {
         // cancel a potentially still ongoing autocomplete search as soon as
         // a value was selected
         if (cancel) {
+          this.fieldIsLoading = '';
           cancel('value already selected');
         }
         // and reset the dropdownlist
