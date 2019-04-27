@@ -255,16 +255,23 @@ export default {
       if (this.valueList.title) {
         this.dataSaving = true;
         // remove properties from contributor fields that can not be saved to the database
-        const data = Object.assign({}, this.valueList.data);
+        const data = Object.assign({}, JSON.parse(JSON.stringify(this.valueList.data)));
         // TODO: use more general way of removing unknown properties by checking
         // with formfields(extension)
         Object.keys(this.formFieldsExtension).forEach((key) => {
           if (key === 'contributors' || this.formFieldsExtension[key]['x-attrs'].equivalent === 'contributors') {
             if (data[key] && data[key].length) {
               /* eslint-disable-next-line */
-              data[key].forEach(entry => delete entry.additional);
-              /* eslint-disable-next-line */
-              data[key].forEach(entry => delete entry.source_name);
+              data[key].forEach(entry => {
+                /* eslint-disable-next-line */
+                delete entry.additional;
+                /* eslint-disable-next-line */
+                delete entry.source_name;
+                if (entry.roles && entry.roles.length) {
+                  // TODO: in future probably id should be saved not labels
+                  this.$set(entry, 'roles', entry.roles.map(role => role.label));
+                }
+              });
             }
           }
         });

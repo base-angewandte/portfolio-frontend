@@ -289,7 +289,9 @@ export default {
               }),
             });
             this.fieldIsLoading = '';
-            this.setDropDown(result.data, value, equivalent, name);
+            this.setDropDown(
+              this.remapAutocompleteEntries(result.data, name, equivalent), value, equivalent, name,
+            );
             // TODO: add additional properties if necessary: e.g.
             //  source name, separated name, dob, profession
           } catch (e) {
@@ -322,13 +324,24 @@ export default {
       if (((equivalent && equivalent === 'contributors') || name === 'contributors')
         && (value.length <= 3 || user.name.toLowerCase().includes(value.toLowerCase()))) {
         // TODO: replace this with the real values
-        dropDownList.unshift({ label: user.name, source: 'this will be the id', additional: this.$t('form.myself') });
+        dropDownList.unshift({ name: user.name, source: 'this will be the id', additional: this.$t('form.myself') });
         // TODO: filter entry from list to prevent double display!
       }
       this.$set(this.dropdownLists, name, dropDownList);
     },
     getFieldName(val) {
       return val.title || (this.$te(`form.${val.name}`) ? this.$t(`form.${val.name}`) : val.name);
+    },
+    remapAutocompleteEntries(data, field, equivalent) {
+      let mappedArray = [];
+      if (field === 'contributors' || equivalent === 'contributors') {
+        mappedArray = data.map((entry) => {
+          const newEntry = Object.assign({}, entry, { name: entry.label });
+          delete newEntry.label;
+          return newEntry;
+        });
+      }
+      return mappedArray.length ? mappedArray : data;
     },
   },
 };

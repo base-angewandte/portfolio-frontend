@@ -192,8 +192,10 @@ const actions = {
       }
       if (entryData) {
         // Modifications of data received from backend needed:
-        // 1. type needs to be array in logic here!
+        // 1. type needs to be array in logic here! and labels need to be translated
+        // (for now only type, language still missing)
         // 2. Text needs to look different (and text type needs to be fetched)
+        // 3. TODO: fetch role labels (currently only strings tho)
         const textData = entryData.texts && entryData.texts.length
           ? await Promise.all(entryData.texts
             .map(entry => new Promise(async (res) => {

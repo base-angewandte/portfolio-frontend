@@ -83,7 +83,7 @@
       :key="fieldKey"
       :placeholder="placeholder"
       :label="label"
-      :object-prop="'label'"
+      :object-prop="'name'"
       :list="dropDownList"
       v-model="fieldValueInt"
       :allow-dynamic-drop-down-entries="!['type', 'keywords'].includes(field.name)"
@@ -108,7 +108,7 @@
       <template
         slot="drop-down-entry"
         slot-scope="props">
-        <span>{{ props.item.label }}</span>
+        <span>{{ props.item.name }}</span>
         <span class="chips-dropdown-second">{{ props.item.additional }}</span>
         <span class="chips-dropdown-third">{{ props.item.source_name }}</span>
       </template>
@@ -125,7 +125,7 @@
       :allow-dynamic-drop-down-entries="true"
       :identifier="'source'"
       :hoverbox-content="hoverBoxData"
-      :object-prop="'label'"
+      :object-prop="'name'"
       :role-options="secondaryDropdown"
       :is-loading="autocompleteLoading"
       v-model="fieldValueInt"
@@ -140,7 +140,7 @@
       <template
         slot="below-drop-down-entry"
         slot-scope="props">
-        <span>{{ props.item.label }}</span>
+        <span>{{ props.item.name }}</span>
         <span class="chips-dropdown-second">{{ props.item.additional }}</span>
         <span class="chips-dropdown-third">{{ props.item.source_name }}</span>
       </template>
