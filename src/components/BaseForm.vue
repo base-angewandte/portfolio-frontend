@@ -247,7 +247,7 @@ export default {
       return el.type === 'array' && el['x-attrs']
         && !['chips', 'chips-below'].includes(el['x-attrs'].field_type);
     },
-    setFieldValue(value, fieldName, index, equivalent) {
+    setFieldValue(value, fieldName, index) {
       if (this.dropdownLists[fieldName]) {
         // cancel a potentially still ongoing autocomplete search as soon as
         // a value was selected
@@ -256,7 +256,9 @@ export default {
           cancel('value already selected');
         }
         // and reset the dropdownlist
-        this.setDropDown([], '', equivalent, fieldName);
+        // commented out for now because this is not the right behaviour with
+        // fixed drop down lists
+        // this.setDropDown([], '', equivalent, fieldName);
       }
       if (index >= 0) {
         this.$set(this.valueListInt[fieldName], index, value);
@@ -289,9 +291,7 @@ export default {
               }),
             });
             this.fieldIsLoading = '';
-            this.setDropDown(
-              this.remapAutocompleteEntries(result.data, name, equivalent), value, equivalent, name,
-            );
+            this.setDropDown(result.data, value, equivalent, name);
             // TODO: add additional properties if necessary: e.g.
             //  source name, separated name, dob, profession
           } catch (e) {
@@ -331,17 +331,6 @@ export default {
     },
     getFieldName(val) {
       return val.title || (this.$te(`form.${val.name}`) ? this.$t(`form.${val.name}`) : val.name);
-    },
-    remapAutocompleteEntries(data, field, equivalent) {
-      let mappedArray = [];
-      if (field === 'contributors' || equivalent === 'contributors') {
-        mappedArray = data.map((entry) => {
-          const newEntry = Object.assign({}, entry, { name: entry.label });
-          delete newEntry.label;
-          return newEntry;
-        });
-      }
-      return mappedArray.length ? mappedArray : data;
     },
   },
 };
