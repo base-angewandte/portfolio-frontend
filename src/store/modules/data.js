@@ -166,6 +166,10 @@ const mutations = {
 };
 
 const actions = {
+  async init({ dispatch }) {
+    dispatch('fetchGeneralFields');
+    dispatch('fetchGeneralDropDowns');
+  },
   async fetchGeneralFields({ commit }) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -181,7 +185,22 @@ const actions = {
       }
     });
   },
-  async fetchEntryData({ commit, dispatch }, { id }) {
+  async getStaticDropDowns({ getters, commit }) {
+    if (!getters.getFormTextTypes.length) {
+      const { data } = await axios.get(`${process.env.PORTFOLIO_API}/autosuggest/v1/texttypes/`, {
+        withCredentials: true,
+      });
+      commit('setFormTextTypes', data);
+    }
+    if (!getters.getFormRoles.length) {
+      const { data } = await axios.get(`${process.env.PORTFOLIO_API}/autosuggest/v1/roles/`, {
+        withCredentials: true,
+      });
+      commit('setFormRoles', data);
+    }
+    // TODO: get object types (not available in skosmos yet)
+  },
+  async fetchEntryData({ commit, dispatch }, { id, lang }) {
     return new Promise(async (resolve, reject) => {
       let entryData = {};
       try {
@@ -196,6 +215,7 @@ const actions = {
         // (for now only type, language still missing)
         // 2. Text needs to look different (and text type needs to be fetched)
         // 3. TODO: fetch role labels (currently only strings tho)
+        // 4. TODO: fetch keyword labels (only for the ones with source!!)
         const textData = entryData.texts && entryData.texts.length
           ? await Promise.all(entryData.texts
             .map(entry => new Promise(async (res) => {
@@ -206,7 +226,7 @@ const actions = {
                   const typeResponse = await axios.get(`${process.env.SKOSMOS_API}portfolio/label`, {
                     params: {
                       uri: entry.type,
-                      lang: 'de',
+                      lang,
                       format: 'application/json',
                     },
                   });
@@ -219,9 +239,9 @@ const actions = {
                 }
               }
               // TODO: temporary hack - probably should fetch label for lang as well
-              entry.data.forEach((lang) => {
-                const langInternal = lang.language.split('/').pop();
-                Vue.set(textObj, langInternal.toLowerCase(), lang.text);
+              entry.data.forEach((language) => {
+                const langInternal = language.language.split('/').pop();
+                Vue.set(textObj, langInternal.toLowerCase(), language.text);
               });
               res(Object.assign({}, { type }, textObj));
             }))) : [];
@@ -241,21 +261,6 @@ const actions = {
       }
       reject();
     });
-  },
-  async getStaticDropDowns({ getters, commit }) {
-    if (!getters.getFormTextTypes.length) {
-      const { data } = await axios.get(`${process.env.PORTFOLIO_API}/autosuggest/v1/texttypes/`, {
-        withCredentials: true,
-      });
-      commit('setFormTextTypes', data);
-    }
-    if (!getters.getFormRoles.length) {
-      const { data } = await axios.get(`${process.env.PORTFOLIO_API}/autosuggest/v1/roles/`, {
-        withCredentials: true,
-      });
-      commit('setFormRoles', data);
-    }
-    // TODO: get object types (not available in skosmos yet)
   },
   async fetchMediaData({ commit }, id) {
     // TODO: replace with Portofolio_API

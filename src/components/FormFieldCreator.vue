@@ -46,6 +46,7 @@
       :label="label"
       :placeholder="placeholder"
       :input="fieldValueInt"
+      :tabs-legend="$t('form.textTabsLegend')"
       class="base-form-field base-form-field-full"
       @text-input="setMultilineValue($event)">
       <template
@@ -55,7 +56,7 @@
           ? fieldValueInt.type : textTypeDefault"
           :options="textTypeOptions"
           :label="$t('form.texttype')"
-          :tabs-legend="$t('form.textTabsLegend')"
+          class="multiline-dropdown"
           @value-selected="$set(fieldValueInt, 'type', $event)"/>
       </template>
     </BaseMultilineTextInput>
@@ -287,7 +288,7 @@ export default {
       return [this.textTypeDefault].concat(this.secondaryDropdown);
     },
     chipsPropertyName() {
-      if (this.field.name === 'contributors'
+      if (this.field.name === 'contributors' || this.field.name === 'location'
         || (this.field['x-attrs'] && this.field['x-attrs'].equivalent === 'contributors')) {
         return 'name';
       } if (this.field.name === 'keywords') {
@@ -368,6 +369,10 @@ export default {
     .base-form-field + .base-form-field {
       margin-left: $spacing;
     }
+  }
+
+  .multiline-dropdown {
+    text-transform: capitalize;
   }
 
   .base-form-field {

@@ -342,7 +342,7 @@ export default {
   .base-form {
     background-color: white;
     display: flex;
-    align-items:flex-end;
+    align-items: baseline;
     flex-wrap: wrap;
     padding: $spacing $spacing 0;
 

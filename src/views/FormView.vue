@@ -222,7 +222,7 @@ export default {
     },
     async updateForm() {
       try {
-        const data = await this.$store.dispatch('data/fetchEntryData', { id: this.currentItemId });
+        const data = await this.$store.dispatch('data/fetchEntryData', { id: this.currentItemId, lang: this.$i18n.locale });
         this.valueList = Object.assign({}, data);
       } catch (e) {
         console.error(e);
