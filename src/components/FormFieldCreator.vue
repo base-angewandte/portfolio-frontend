@@ -83,10 +83,10 @@
       :key="fieldKey"
       :placeholder="placeholder"
       :label="label"
-      :object-prop="'name'"
+      :object-prop="chipsPropertyName"
       :list="dropDownList"
       v-model="fieldValueInt"
-      :allow-dynamic-drop-down-entries="!['type', 'keywords'].includes(field.name)"
+      :allow-dynamic-drop-down-entries="!['type'].includes(field.name)"
       :allow-multiple-entries="field.name !== 'type'"
       :allow-unknown-entries="field.name !== 'type'"
       :always-linked="field.name === 'type'"
@@ -108,7 +108,7 @@
       <template
         slot="drop-down-entry"
         slot-scope="props">
-        <span>{{ props.item.name }}</span>
+        <span>{{ props.item[chipsPropertyName] }}</span>
         <span class="chips-dropdown-second">{{ props.item.additional }}</span>
         <span class="chips-dropdown-third">{{ props.item.source_name }}</span>
       </template>
@@ -285,6 +285,15 @@ export default {
     },
     textTypeOptions() {
       return [this.textTypeDefault].concat(this.secondaryDropdown);
+    },
+    chipsPropertyName() {
+      if (this.field.name === 'contributors'
+        || (this.field['x-attrs'] && this.field['x-attrs'].equivalent === 'contributors')) {
+        return 'name';
+      } if (this.field.name === 'keywords') {
+        return 'keyword';
+      }
+      return 'label';
     },
   },
   watch: {

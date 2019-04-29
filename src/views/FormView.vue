@@ -255,30 +255,28 @@ export default {
       if (this.valueList.title) {
         this.dataSaving = true;
         // remove properties from contributor fields that can not be saved to the database
-        const data = Object.assign({}, JSON.parse(JSON.stringify(this.valueList.data)));
-        // TODO: use more general way of removing unknown properties by checking
-        // with formfields(extension)
-        Object.keys(this.formFieldsExtension).forEach((key) => {
-          if (key === 'contributors' || this.formFieldsExtension[key]['x-attrs'].equivalent === 'contributors') {
-            if (data[key] && data[key].length) {
-              /* eslint-disable-next-line */
-              data[key].forEach(entry => {
-                /* eslint-disable-next-line */
-                delete entry.additional;
-                /* eslint-disable-next-line */
-                delete entry.source_name;
-                if (entry.roles && entry.roles.length) {
-                  // TODO: in future probably id should be saved not labels
-                  this.$set(entry, 'roles', entry.roles.map(role => role.label));
-                }
-              });
-            }
-          }
+        // TODO: check if this can be even further consolidated
+        const valueListToSave = {};
+        Object.keys(this.formFields).forEach((key) => {
+          this.$set(
+            valueListToSave,
+            key,
+            this.removeProperties(key, this.formFields[key], this.valueList[key]),
+          );
+        });
+        const data = {};
+        Object.keys(this.valueList.data).forEach((key) => {
+          this.$set(
+            data,
+            key,
+            this.removeProperties(key, this.formFieldsExtension[key], this.valueList.data[key]),
+          );
         });
         try {
           // check if the route indicates an already saved entry or a new entry
           if (!this.currentItemId) {
-            const newEntryId = await this.$store.dispatch('data/addOrUpdateEntry', Object.assign({}, this.valueList, { data }));
+            const newEntryId = await this.$store.dispatch('data/addOrUpdateEntry', Object
+              .assign({}, valueListToSave, { data }));
             // also add linked entries if there are already any
             const list = this.$store.getters['data/getLinkedIds'];
             if (list.length) {
@@ -312,7 +310,8 @@ export default {
             this.$router.push(`/entry/${this.$store.state.data.currentItemId}`);
             // if id present just update the entry
           } else {
-            await this.$store.dispatch('data/addOrUpdateEntry', Object.assign({}, this.valueList, { data }));
+            await this.$store.dispatch('data/addOrUpdateEntry', Object
+              .assign({}, valueListToSave, { data }));
           }
           this.$notify({
             group: 'request-notifications',
@@ -416,6 +415,56 @@ export default {
       }
       // TODO: check if published can be updated here!
       this.$emit('data-changed');
+    },
+    /**
+     * removing all properties that can not be saved to the database by comparing to the
+     * swagger provided information
+     *
+     * @param key: the key of the object property
+     * @param field: the field properties (title, type, x-attrs etc)
+     * @param values: the values from valueList for these property
+     * @returns {Array|Object|String|Boolean}
+     */
+    removeProperties(key, field, values) {
+      // special case texts - will be mapped to correct structure later
+      // special case type - will be made string later
+      // TODO: integrate mapping here
+      if ((field['x-attrs'] && field['x-attrs'].hidden) || key === 'texts' || key === 'type') {
+        return values;
+      }
+      // check if field is array
+      if (field.type === 'array') {
+        // check if values are already present and set those if yes
+        if (values && values.length) {
+          return values
+            .map(value => this.removeProperties('', field.items, value));
+        }
+        // else return empty array
+        return [];
+        // check if field is object
+      }
+      if (field.type === 'object') {
+        const validProperties = {};
+        Object.keys(values).forEach((valueKey) => {
+          if (field.properties[valueKey]) {
+            if (field.properties[valueKey].type === 'object' || field.properties[valueKey].type === 'array') {
+              const validatedObj = this.removeProperties(
+                valueKey,
+                field.properties[valueKey],
+                values[valueKey],
+              );
+              this.$set(validProperties, [valueKey], validatedObj);
+            } else {
+              this.$set(validProperties, [valueKey], values[valueKey]);
+            }
+          }
+        });
+        return validProperties;
+      }
+      if (field.type === 'string' && values && typeof values === 'object') {
+        return values.label;
+      }
+      return values;
     },
   },
 };
