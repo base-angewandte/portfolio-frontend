@@ -40,7 +40,7 @@
 </template>
 
 <script>
-import { BasePopUp, BaseMediaPreview } from 'base-components';
+import { BasePopUp, BaseMediaPreview } from 'base-ui-components';
 import Sidebar from '../components/Sidebar';
 
 export default {

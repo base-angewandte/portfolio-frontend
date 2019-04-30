@@ -231,7 +231,7 @@
 <script>
 import {
   BaseBoxButton, BaseImageBox, BaseButton, BaseDropDown,
-} from 'base-components';
+} from 'base-ui-components';
 import BaseOptions from './BaseOptions';
 import EyeIcon from '../assets/icons/eye.svg';
 import { userInfo } from '../mixins/userInfo';

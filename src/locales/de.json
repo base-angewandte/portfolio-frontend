@@ -40,6 +40,7 @@
     "location": "Ort",
     "date": "Datum",
     "date_location": "Datum und Ort",
+    "date_range_time_range_location": "Datum, Ort und Zeit",
     "opening": "Eröffnung",
     "editor": "HerausgeberInnen",
     "publisher": "Verlag",
@@ -69,7 +70,8 @@
     "year": "Jahr",
     "myself": "Das bin ich!",
     "textTabsLegend": "Sprache",
-    "dateTabsLegend": "Datumsformat"
+    "dateTabsLegend": "Datumsformat",
+    "sort": "Sortieren A – Z"
   },
   "form-view": {
     "formExtended": "Weitere Angaben",
@@ -152,8 +154,8 @@
   },
   "dropdown": {
     "type": "By Type",
-    "title": "A-Z",
-    "-title": "Z-A",
+    "title": "A – Z",
+    "-title": "Z – A",
     "date_created": "Oldest First",
     "-date_created": "Newest First",
     "allTypes": "Alle Typen",

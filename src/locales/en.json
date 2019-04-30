@@ -42,6 +42,7 @@
     "location": "Location",
     "date": "Date",
     "date_location": "Date and Location",
+    "date_range_time_range_location": "Date, Time and Location",
     "opening": "Opening",
     "editor": "Editors",
     "publisher": "Publisher",
@@ -65,13 +66,14 @@
     "lecturer": "Lecturer",
     "title_of_contribution": "Title of Contribution",
     "published_in": "Published In",
-    "addGroup": "Add \"{fieldType}\"",
-    "removeField": "\"{fieldType}\" Feld entfernen",
+    "addGroup": "Add \"{fieldType}\" field",
+    "removeField": "Remove \"{fieldType}\" field",
     "time": "Time",
     "year": "Year",
     "myself": "This is myself!",
     "textTabsLegend": "language",
-    "dateTabsLegend": "date format"
+    "dateTabsLegend": "date format",
+    "sort": "Sort A – Z"
   },
   "form-view": {
     "formExtended": "Further Information",
@@ -158,8 +160,8 @@
   },
   "dropdown": {
     "type": "By Type",
-    "title": "A-Z",
-    "-title": "Z-A",
+    "title": "A – Z",
+    "-title": "Z – A",
     "date_created": "Oldest First",
     "-date_created": "Newest First",
     "allTypes": "All Types",

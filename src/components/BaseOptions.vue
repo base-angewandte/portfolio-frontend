@@ -39,7 +39,7 @@
 </template>
 
 <script>
-import { BaseButton } from 'base-components';
+import { BaseButton } from 'base-ui-components';
 
 export default {
   components: {

@@ -26,7 +26,7 @@
 </template>
 
 <script>
-import { BaseButton } from 'base-components';
+import { BaseButton } from 'base-ui-components';
 import BaseOptions from './BaseOptions';
 
 export default {

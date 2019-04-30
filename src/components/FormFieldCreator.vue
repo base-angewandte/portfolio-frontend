@@ -99,6 +99,7 @@
       :hoverbox-content="hoverBoxData"
       :sortable="field.name === 'keywords' || (field['x-attrs'] && field['x-attrs'].sortable)"
       :is-loading="autocompleteLoading"
+      :sort-text="$t('form.sort')"
       @fetch-dropdown-entries="$emit('fetch-autocomplete', {
         value: $event.value,
         name: field.name,
@@ -129,6 +130,7 @@
       :object-prop="'name'"
       :role-options="secondaryDropdown"
       :is-loading="autocompleteLoading"
+      :sort-text="$t('form.sort')"
       v-model="fieldValueInt"
       class="base-form-field base-form-field-full"
       @fetch-dropdown-entries="$emit('fetch-autocomplete',{
@@ -179,7 +181,7 @@ import {
   BaseAutocompleteInput,
   BaseChipsInput,
   BaseChipsBelow,
-} from 'base-components';
+} from 'base-ui-components';
 
 export default {
   name: 'FormFieldCreator',

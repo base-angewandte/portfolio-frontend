@@ -94,7 +94,7 @@
 </template>
 
 <script>
-import { BaseMenuEntry, BaseLoader } from 'base-components';
+import { BaseMenuEntry, BaseLoader } from 'base-ui-components';
 import BaseRow from '../components/BaseRow';
 import BaseFormOptions from '../components/BaseFormOptions';
 import BaseForm from '../components/BaseForm';

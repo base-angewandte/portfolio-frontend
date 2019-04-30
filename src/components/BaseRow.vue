@@ -52,7 +52,7 @@
 </template>
 
 <script>
-import { BaseMenuEntry, BaseButton, BaseLoader } from 'base-components';
+import { BaseMenuEntry, BaseButton, BaseLoader } from 'base-ui-components';
 
 export default {
   components: {

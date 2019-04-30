@@ -80,7 +80,7 @@ import {
   BaseUploadBar,
   BaseButton,
   BaseLoader,
-} from 'base-components';
+} from 'base-ui-components';
 import axios from 'axios';
 // import upload from '../assets/file-upload.fake.service';
 

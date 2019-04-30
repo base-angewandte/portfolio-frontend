@@ -104,7 +104,7 @@ import {
   BaseMenuEntry,
   BaseBoxButton,
   BasePopUp,
-} from 'base-components';
+} from 'base-ui-components';
 import Sidebar from './Sidebar';
 import Uploader from './Uploader';
 import { userInfo } from '../mixins/userInfo';
