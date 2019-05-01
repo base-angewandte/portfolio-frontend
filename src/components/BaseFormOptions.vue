@@ -1,5 +1,7 @@
 <template>
-  <BaseOptions>
+  <BaseOptions
+    :show-options="showOptions"
+    @options-toggle="showOptions = $event">
     <template slot="options">
       <BaseButton
         :disabled="isNewForm"

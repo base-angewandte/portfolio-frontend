@@ -31,6 +31,7 @@
       <BaseFormOptions
         :is-new-form="$store.state.data.isNewForm"
         :is-published="valueList.published"
+        :default-expanded="false"
         @action-entry="actionEntry"/>
     </div>
 

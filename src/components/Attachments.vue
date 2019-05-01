@@ -9,7 +9,8 @@
       <!-- HEADER ROW -->
       <div class="header-row">
         <BaseOptions
-          @options-toggle="showEntryAction = false">
+          :show-options="showEntryAction"
+          @options-toggle="showEntryAction = $event">
           <template slot="beforeOptions">
             <h3
               v-if="showTitle"
@@ -97,7 +98,8 @@
       <!-- HEADER ROW -->
       <div class="header-row">
         <BaseOptions
-          @options-toggle="fileText = action = ''">
+          :show-options="showFileAction"
+          @options-toggle="fileText = action = ''; showFileAction = $event">
           <template slot="beforeOptions">
             <h3
               v-if="showTitle"
@@ -270,6 +272,7 @@ export default {
       fileSubtext: '',
       buttonText: '',
       showEntryAction: false,
+      showFileAction: false,
       selectedEntries: [],
       selectedFiles: [],
       publishFiles: [],
@@ -487,7 +490,7 @@ export default {
     }
 
     .message-area {
-      margin: $spacing 0 $spacing-large;
+      margin-bottom: $spacing-large;
       text-align: center;
       color: $font-color-second;
       backface-visibility: hidden;
