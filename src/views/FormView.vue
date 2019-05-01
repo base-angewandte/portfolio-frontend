@@ -12,6 +12,7 @@
           :title="parent.title"
           :title-bold="true"
           :subtext="parent.type"
+          :show-thumbnails="false"
           entry-id="parentheader"
           icon="sheet-empty"/>
       </div>

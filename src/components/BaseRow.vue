@@ -8,7 +8,8 @@
         :title="showOverlay ? '' : title"
         :title-bold="true"
         :is-activatable="false"
-        :subtext="type"/>
+        :subtext="type"
+        :show-thumbnails="false"/>
     </div>
     <div
       id="form-back-button"
