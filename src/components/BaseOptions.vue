@@ -113,6 +113,7 @@ export default {
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
+      align-items: center;
 
       .base-options-before {
         align-self: center;
@@ -126,6 +127,9 @@ export default {
 
       .base-options-inline {
         display: flex;
+        flex-grow: 1;
+        flex-shrink: 0;
+        justify-content: flex-end;
       }
 
       .base-options-after {

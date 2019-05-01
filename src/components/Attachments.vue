@@ -440,9 +440,7 @@ export default {
         align-items: center;
 
         .attachment-options {
-          margin-bottom: $spacing-small;
           display: flex;
-
         }
       }
 
