@@ -68,7 +68,7 @@
           v-for="linked of linkedList"
           :selectable="!!showEntryAction"
           :key="linked.id"
-          :box-size="{ width: 'calc(25% - 12px)' }"
+          :box-size="{ width: 'calc(25% - 0.43em - (0.43em/2))' }"
           :title="linked.to.title"
           :subtext="linked.to.subtitle"
           :description="linked.to.type"
@@ -193,7 +193,7 @@
             ? getFileType(attached.metadata.FileType.val)
           : getFileType(getFileName(attached.original))"
           :image-url="getImagePath(attached.thumbnail)"
-          :box-size="{ width: 'calc(25% - 12px)' }"
+          :box-size="{ width: 'calc(25% - 0.43em - (0.43em/2))' }"
           :box-ratio="100"
           :box-text="generateBoxText(attached.metadata)"
           :key="attached.id"
