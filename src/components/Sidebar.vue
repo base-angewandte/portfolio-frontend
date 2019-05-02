@@ -302,6 +302,9 @@ export default {
       try {
         const response = await axios.get(`${process.env.API}entry/types/`, {
           withCredentials: true,
+          headers: {
+            'Accept-Language': this.$i18n.locale,
+          },
         });
         const types = response.data;
         // TODO: check if this is even needed (of if types come with label aready...)

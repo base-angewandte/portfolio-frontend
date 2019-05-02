@@ -285,6 +285,9 @@ export default {
             }
             const result = await axios.get(`${process.env.PORTFOLIO_API}${source}${value ? `${value}/` : ''}`, {
               withCredentials: true,
+              headers: {
+                'Accept-Language': this.$i18n.locale,
+              },
               /* eslint-disable-next-line */
               cancelToken: new CancelToken((c) => {
                 cancel = c;

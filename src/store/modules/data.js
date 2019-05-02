@@ -1,6 +1,7 @@
 /* eslint no-shadow: ["error", { "allow": ["state", "getters"] }] */
 import Vue from 'vue';
 import axios from 'axios';
+import { i18n } from '../../plugins/i18n';
 
 function transformTextData(data) {
   const textData = [];
@@ -176,6 +177,9 @@ const actions = {
         const jsonSchema = await axios.get(`${process.env.API}swagger.json`,
           {
             withCredentials: true,
+            headers: {
+              'Accept-Language': i18n.locale,
+            },
           });
         const formFields = jsonSchema.data.definitions.Entry.properties;
         commit('setFormFields', formFields);
@@ -189,12 +193,18 @@ const actions = {
     if (!getters.getFormTextTypes.length) {
       const { data } = await axios.get(`${process.env.PORTFOLIO_API}/autosuggest/v1/texttypes/`, {
         withCredentials: true,
+        headers: {
+          'Accept-Language': i18n.locale,
+        },
       });
       commit('setFormTextTypes', data);
     }
     if (!getters.getFormRoles.length) {
       const { data } = await axios.get(`${process.env.PORTFOLIO_API}/autosuggest/v1/roles/`, {
         withCredentials: true,
+        headers: {
+          'Accept-Language': i18n.locale,
+        },
       });
       commit('setFormRoles', data);
     }
