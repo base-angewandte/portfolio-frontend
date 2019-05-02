@@ -7,9 +7,9 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm i npm@latest -g && npm i
 
-COPY src .
+COPY . .
 RUN npm run build
 
-EXPOSE 2200
+EXPOSE 8080
 
 CMD [ "npm", "start" ]
