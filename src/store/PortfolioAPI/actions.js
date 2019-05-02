@@ -1,4 +1,5 @@
 import * as Api from './api';
+import { i18n } from '../../plugins/i18n';
 
 const $config = {
   withCredentials: true,
@@ -56,6 +57,7 @@ export default {
   }) {
     let p = {};
     return new Promise((resolve, reject) => {
+      $config.headers = { 'Accept-Language': i18n.locale };
       if (kind && id) {
         commit('setLoading', `Getting ${kind} ${id} from Database`);
         p = state.apilib[`api_v1_${kind}_read`]({ id, $config });
