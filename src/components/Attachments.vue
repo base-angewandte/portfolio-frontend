@@ -170,6 +170,11 @@
                          label: 'CC0',
                          value: 'cc0',
                        }
+                       ,
+                       {
+                         label: $t('nolicense'),
+                         value: 'no license',
+                       }
             ]"
             :show-label="false"
             :label="$t('form-view.selectLicense')"
@@ -306,7 +311,7 @@ export default {
         });
         // check if a license was selected if action is license change
         // if not inform user he should select a license
-      } else if (this.action === 'license' && !this.licenseSelected.value) {
+      } else if (this.action === 'license' && this.licenseSelected.value === undefined) {
         this.$notify({
           group: 'request-notifications',
           title: this.$t('notify.actionFailed', { action: this.$t('notify.license') }),

@@ -24,6 +24,10 @@
           {
             label: 'CC0',
             value: 'cc0',
+          },
+          {
+            label: $t('nolicense'),
+            value: 'no license',
           }
         ]"
         :show-label="true"
@@ -115,8 +119,8 @@ export default {
       uploadPercentage: [],
       publish: { label: this.$t('no'), value: 'false' },
       license: {
-        label: 'CC-BY',
-        value: 'cc-by',
+        label: this.$t('nolicense'),
+        value: 'no license',
       },
     };
   },
@@ -208,8 +212,8 @@ export default {
       this.rejectedFiles = [];
       this.publish = { label: this.$t('no'), value: false };
       this.license = {
-        label: 'CC-BY',
-        value: 'cc-by',
+        label: this.$t('nolicense'),
+        value: 'no license',
       };
       this.uploadError = null;
       this.fileList.forEach((file, index) => this.$set(this.uploadPercentage, index, 0));
@@ -267,5 +271,12 @@ export default {
 
   .base-upload-bar-button + .base-upload-bar-button {
     margin-left: $spacing;
+  }
+
+  @media screen and (max-width: $mobile) {
+    .base-upload-bar-button + .base-upload-bar-button {
+      margin-left: 0;
+      margin-top: $spacing;
+    }
   }
 </style>
