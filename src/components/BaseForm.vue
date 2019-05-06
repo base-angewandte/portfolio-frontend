@@ -327,7 +327,7 @@ export default {
       if (((equivalent && equivalent === 'contributors') || name === 'contributors')
         && (value.length <= 3 || user.name.toLowerCase().includes(value.toLowerCase()))) {
         // TODO: replace this with the real values
-        dropDownList.unshift({ name: user.name, source: 'this will be the id', additional: this.$t('form.myself') });
+        dropDownList.unshift({ name: user.name, source: user.uuid, additional: this.$t('form.myself') });
         // TODO: filter entry from list to prevent double display!
       }
       this.$set(this.dropdownLists, name, dropDownList);
