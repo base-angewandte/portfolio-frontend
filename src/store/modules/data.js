@@ -27,17 +27,13 @@ function transformTextData(data) {
 
 function prepareData(valueObj) {
   // make necessary modifications to the valueList object
-  // 1. type should be string not array
-  // 2. and 'description' property added for sidebar display needs to be removed before save
-  let { type } = valueObj;
-  if (typeof type === 'object') {
-    type = type.length ? type[0].type || type[0].value : '';
-  }
+  // 1. and 'description' property added for sidebar display needs to be removed before save
+  // (needs to be done here since also relevant for duplicate)
   // eslint-disable-next-line
   delete valueObj.description;
-  // 3. texts need different object structure and text type needs to be string (uri)
+  // 2. texts need different object structure and text type needs to be string (uri)
   const texts = transformTextData(valueObj.texts);
-  return Object.assign({}, valueObj, { type, texts });
+  return Object.assign({}, valueObj, { texts });
 }
 
 const state = {
@@ -285,7 +281,7 @@ const actions = {
                 format: 'application/json',
               },
             });
-            objectType = [{ label: capitalizeString(data.prefLabel), source: data.uri }];
+            objectType = [{ label: capitalizeString(data.prefLabel), value: data.uri }];
           }
         }
         const textData = entryData.texts && entryData.texts.length

@@ -199,8 +199,20 @@ export default {
       });
     },
     getInitialFieldValue(field) {
+      if (field.type === 'integer') {
+        return this.valueList[field.name] ? this.valueList[field.name].toString() : '';
+      }
+      // check special case single-choice chips (is chips but is saved as string on backend)
+      if (field['x-attrs'] && field['x-attrs'].field_type
+        && field['x-attrs'].field_type.includes('chips')
+        && field.type === 'string') {
+        if (this.valueList[field.name] && this.valueList[field.name].length) {
+          return [].concat(this.valueList[field.name]);
+        }
+        return [];
+      }
       // check if field is array
-      if (field.type === 'array' || field.name === 'type') {
+      if (field.type === 'array') {
         // check if values are already present and set those if yes
         if (this.valueList[field.name] && this.valueList[field.name].length) {
           return [].concat(this.valueList[field.name]);

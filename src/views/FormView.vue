@@ -439,10 +439,20 @@ export default {
      */
     removeProperties(key, field, values) {
       // special case texts - will be mapped to correct structure later
-      // special case type - will be made string later
       // TODO: integrate mapping here
-      if ((field['x-attrs'] && field['x-attrs'].hidden) || key === 'texts' || key === 'type') {
+      if ((field['x-attrs'] && field['x-attrs'].hidden) || key === 'texts') {
         return values;
+      }
+      if (field.type === 'integer') {
+        const number = parseInt(values, 10);
+        return !Number.isNaN(number) ? number : 0;
+      }
+      // special case single choice chips (saved as string in backend)
+      if (field['x-attrs'] && field['x-attrs'].field_type && field['x-attrs'].field_type.includes('chips')
+        && field.type === 'string') {
+        // TODO: include objects with other than 'value' property (could be the
+        // case for software license e.g.)
+        return values && values.length ? values[0].value || values[0] : '';
       }
       // check if field is array
       if (field.type === 'array') {
@@ -473,6 +483,7 @@ export default {
         });
         return validProperties;
       }
+      // TODO: temporary workaround for roles - remove!
       if (field.type === 'string' && values && typeof values === 'object') {
         return values.label;
       }

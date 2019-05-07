@@ -205,7 +205,7 @@ export default {
       required: true,
     },
     fieldValue: {
-      type: [Object, String, Array, Date],
+      type: [Object, String, Array, Date, Number],
       required: true,
     },
     fieldType: {
