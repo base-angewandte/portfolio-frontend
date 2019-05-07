@@ -39,7 +39,7 @@
     <form
       class="form-container">
       <div
-        v-if="formIsLoading"
+        v-if="!formDataPresent || formIsLoading"
         class="form-loading-area">
         <BaseLoader class="loader" />
       </div>
@@ -59,7 +59,7 @@
 
         <!-- FORM EXTENSION -->
         <div
-          v-if="type && !formIsLoading"
+          v-if="type && Object.keys(formFieldsExtension).length"
           key="extended-section">
           <div
             key="extended-title"
@@ -154,6 +154,9 @@ export default {
     },
     objectTypes() {
       return this.$store.getters['data/getFormObjectTypes'];
+    },
+    formDataPresent() {
+      return Object.keys(this.formFields).length && Object.keys(this.formFieldsExtension).length;
     },
   },
   watch: {
