@@ -370,9 +370,13 @@ export default {
             buttonTextRight: this.$t('notify.saveChanges'),
             buttonTextLeft: this.$t('notify.dismissChanges'),
             actionRight: async () => {
-              await this.saveForm();
+              try {
+                await this.saveForm();
+                this.openNewForm();
+              } catch (e) {
+                console.error(e);
+              }
               this.$store.commit('data/hidePopUp');
-              this.openNewForm();
             },
             actionLeft: () => { this.unsavedChanges = false; this.openNewForm(); },
           });
