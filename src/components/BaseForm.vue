@@ -332,6 +332,7 @@ export default {
     },
     removeField(field, index) {
       this.valueListInt[field.name].splice(index, index + 1);
+      this.$emit('values-changed', this.valueListInt);
     },
     isHalfField(field) {
       const index = this.formFieldsHalf.indexOf(field);
@@ -342,7 +343,6 @@ export default {
       const user = this.$store.getters['PortfolioAPI/user'];
       if (((equivalent && equivalent === 'contributors') || name === 'contributors')
         && (value.length <= 3 || user.name.toLowerCase().includes(value.toLowerCase()))) {
-        // TODO: replace this with the real values
         dropDownList.unshift({ name: user.name, source: user.uuid, additional: this.$t('form.myself') });
         // TODO: filter entry from list to prevent double display!
       }
