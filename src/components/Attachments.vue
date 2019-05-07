@@ -72,7 +72,7 @@
           :title="linked.to.title"
           :subtext="linked.to.subtitle"
           :description="linked.description"
-          :image-url="linked.image ? getImagePath(linked.image) : ''"
+          :image-url="linked.to.image ? getImagePath(linked.to.image) : ''"
           show-title
           class="linked-base-box"
           @select-triggered="entrySelected(linked.id, $event)"
