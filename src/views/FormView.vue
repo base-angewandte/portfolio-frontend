@@ -156,7 +156,8 @@ export default {
       return this.$store.getters['data/getFormObjectTypes'];
     },
     formDataPresent() {
-      return Object.keys(this.formFields).length && Object.keys(this.formFieldsExtension).length;
+      return Object.keys(this.formFields).length
+        && (!this.type || Object.keys(this.formFieldsExtension).length);
     },
   },
   watch: {
