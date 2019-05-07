@@ -3,6 +3,8 @@ import Vue from 'vue';
 import axios from 'axios';
 import { i18n } from '../../plugins/i18n';
 
+import { capitalizeString } from '../../utils/commonUtils';
+
 function transformTextData(data) {
   const textData = [];
   if (data && data.length) {
@@ -26,11 +28,14 @@ function transformTextData(data) {
 function prepareData(valueObj) {
   // make necessary modifications to the valueList object
   // 1. type should be string not array
+  // 2. and 'description' property added for sidebar display needs to be removed before save
   let { type } = valueObj;
   if (typeof type === 'object') {
-    type = type.length ? type[0].type || type[0] : '';
+    type = type.length ? type[0].type || type[0].value : '';
   }
-  // 2. texts need different object structure and text type needs to be string (uri)
+  // eslint-disable-next-line
+  delete valueObj.description;
+  // 3. texts need different object structure and text type needs to be string (uri)
   const texts = transformTextData(valueObj.texts);
   return Object.assign({}, valueObj, { type, texts });
 }
@@ -52,10 +57,12 @@ const state = {
   // saved here are all the data from linked entries (not just id as in currentItem)
   linkedEntries: [],
   linkedMedia: [],
-  formFields: {},
   formTextTypes: [],
   formRoles: [],
+  validObjectTypes: [],
   formObjectTypes: [],
+  generalSchema: {},
+  extensionSchema: {},
 };
 
 const getters = {
@@ -78,17 +85,26 @@ const getters = {
   getMediaIds(state) {
     return state.linkedMedia.map(entry => entry.id);
   },
-  getFormFields(state) {
-    return state.formFields;
-  },
   getFormTextTypes(state) {
     return state.formTextTypes;
   },
   getFormObjectTypes(state) {
     return state.formObjectTypes;
   },
+  getValidObjectTypes(state) {
+    return state.formObjectTypes;
+  },
   getFormRoles(state) {
     return state.formRoles;
+  },
+  getGeneralSchema(state) {
+    return state.generalSchema;
+  },
+  getExtensionSchema(state) {
+    return state.extensionSchema;
+  },
+  getObjectTypeLabel(state) {
+    return id => state.formObjectTypes.find(type => type.value === id);
   },
 };
 
@@ -151,27 +167,37 @@ const mutations = {
   deleteMedia(state, list) {
     state.linkedMedia = state.linkedMedia.filter(entry => !list.includes(entry.id));
   },
-  setFormFields(state, fields) {
-    state.formFields = Object.assign({}, fields);
-  },
   setFormTextTypes(state, types) {
     state.formTextTypes = [].concat(types.map(type => ({ label: type.label, value: type.source })));
   },
   setFormObjectTypes(state, types) {
-    state.formObjectTypes = [].concat(types
-      .map(type => ({ label: type.label, value: type.source })));
+    state.formObjectTypes = [].concat(types.filter(type => !!type.prefLabel)
+      .map(type => ({
+        label: capitalizeString(type.prefLabel.value || type.prefLabel
+          .find(label => label.lang === i18n.locale).value),
+        value: type.uri,
+      })));
+  },
+  setValidObjectTypes(state, types) {
+    state.validObjectTypes = [].concat(types);
   },
   setFormRoles(state, types) {
     state.formRoles = [].concat(types);
+  },
+  setGeneralSchema(state, schema) {
+    state.generalSchema = Object.assign({}, schema);
+  },
+  setExtensionSchema(state, schema) {
+    state.extensionSchema = Object.assign({}, schema);
   },
 };
 
 const actions = {
   async init({ dispatch }) {
+    dispatch('getStaticDropDowns');
     dispatch('fetchGeneralFields');
-    dispatch('fetchGeneralDropDowns');
   },
-  async fetchGeneralFields({ commit }) {
+  async fetchGeneralFields({ state, getters, commit }) {
     return new Promise(async (resolve, reject) => {
       try {
         const jsonSchema = await axios.get(`${process.env.API}swagger.json`,
@@ -182,9 +208,24 @@ const actions = {
             },
           });
         const formFields = jsonSchema.data.definitions.Entry.properties;
-        commit('setFormFields', formFields);
+        commit('setGeneralSchema', formFields);
+        // if type is present as formfield fetch the available types here
+        if (formFields.type) {
+          // retrieve valid object types from swagger.json and set variable
+          commit('setValidObjectTypes', formFields.type.enum);
+          // if object types were not fetched previously do so
+          if (!getters.getFormObjectTypes.length) {
+            let { data } = await axios
+              .get(`${process.env.SKOSMOS_API}potax/data?lang=${i18n.locale}&uri=http://base.uni-ak.ac.at/portfolio/taxonomy/portfolio_taxonomy&format=application/json`);
+            // filter so only valid object types remain
+            data = data.graph.filter(type => !!type.prefLabel
+              && state.validObjectTypes.includes(type.uri));
+            commit('setFormObjectTypes', data);
+          }
+        }
         resolve(formFields);
       } catch (e) {
+        console.error(e);
         reject(e);
       }
     });
@@ -208,9 +249,8 @@ const actions = {
       });
       commit('setFormRoles', data);
     }
-    // TODO: get object types (not available in skosmos yet)
   },
-  async fetchEntryData({ commit, dispatch }, { id, lang }) {
+  async fetchEntryData({ getters, commit, dispatch }, { id, lang }) {
     return new Promise(async (resolve, reject) => {
       let entryData = {};
       try {
@@ -226,14 +266,32 @@ const actions = {
         // 2. Text needs to look different (and text type needs to be fetched)
         // 3. TODO: fetch role labels (currently only strings tho)
         // 4. TODO: fetch keyword labels (only for the ones with source!!)
+        let objectType = [];
+        // if there is a type fetch the label for the saved uri
+        if (entryData.type) {
+          // check if object types are present in store and if data can be fetched locally
+          if (getters.getFormObjectTypes.length) {
+            objectType = [getters.getObjectTypeLabel(entryData.type)];
+          } else {
+            const { data } = await axios.get(`${process.env.SKOSMOS_API}potax/label`, {
+              params: {
+                uri: entryData.type,
+                lang,
+                format: 'application/json',
+              },
+            });
+            objectType = [{ label: capitalizeString(data.prefLabel), source: data.uri }];
+          }
+        }
         const textData = entryData.texts && entryData.texts.length
           ? await Promise.all(entryData.texts
             .map(entry => new Promise(async (res) => {
               const textObj = {};
               let type = null;
               if (entry.type) {
+                // TODO: fetch locally if possible
                 try {
-                  const typeResponse = await axios.get(`${process.env.SKOSMOS_API}portfolio/label`, {
+                  const typeResponse = await axios.get(`${process.env.SKOSMOS_API}povoc/label`, {
                     params: {
                       uri: entry.type,
                       lang,
@@ -241,7 +299,10 @@ const actions = {
                     },
                   });
                   if (typeResponse.data) {
-                    type = { label: typeResponse.data.prefLabel, value: entry.type };
+                    type = {
+                      label: capitalizeString(typeResponse.data.prefLabel),
+                      value: entry.type,
+                    };
                   }
                 } catch (e) {
                   console.error(e);
@@ -257,11 +318,11 @@ const actions = {
             }))) : [];
 
         const adjustedEntry = Object.assign({}, entryData, {
-          type: entryData.type ? [entryData.type] : [],
+          type: objectType,
           texts: textData,
         });
         commit('setCurrentItem', adjustedEntry);
-        commit('setLinked', { list: entryData.relations || [], replace: true });
+        await dispatch('setLinkedEntries', { list: entryData.relations || [], replace: true });
         try {
           await dispatch('fetchMediaData', entryData.id);
           resolve(adjustedEntry);
@@ -271,6 +332,40 @@ const actions = {
       }
       reject();
     });
+  },
+  async fetchSidebarTypes({ getters }, list) {
+    const newList = [];
+    if (list.length) {
+      if (getters.getFormObjectTypes.length) {
+        list.forEach(entry => newList
+          .push(Object.assign({}, entry, {
+            description: getters.getObjectTypeLabel(entry.type || entry.to.type).label,
+          })));
+      } else {
+        try {
+          await Promise.all(list.map(entry => new Promise(async (resolve) => {
+            if (entry.type) {
+              const { data } = await axios.get(`${process.env.SKOSMOS_API}potax/label`, {
+                params: {
+                  uri: entry.type || entry.to.type,
+                  lang: i18n.locale,
+                  format: 'application/json',
+                },
+              });
+              newList.push(Object.assign({}, entry, {
+                description: capitalizeString(data.prefLabel),
+              }));
+            } else {
+              newList.push(Object.assign({}, entry));
+            }
+            resolve();
+          })));
+        } catch (e) {
+          return [].concat(list);
+        }
+      }
+    }
+    return newList;
   },
   async fetchMediaData({ commit }, id) {
     // TODO: replace with Portofolio_API
@@ -310,6 +405,7 @@ const actions = {
         }
         resolve(createdEntry.id);
       } catch (e) {
+        console.error(e);
         reject(e);
       }
     });
@@ -448,6 +544,10 @@ const actions = {
       }
     })));
     return [successArr, errorArr];
+  },
+  async setLinkedEntries({ commit, dispatch }, { list, replace }) {
+    const modifiedList = await dispatch('fetchSidebarTypes', list);
+    commit('setLinked', { list: modifiedList, replace });
   },
 };
 

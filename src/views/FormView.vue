@@ -50,6 +50,7 @@
         :value-list="valueList"
         :prefetched-drop-down-lists="{
           texts_secondary: textTypes,
+          type: objectTypes,
         }"
         @values-changed="handleInput($event)"
       />
@@ -137,13 +138,13 @@ export default {
     },
     type() {
       const { type } = this.valueList;
-      return type && type.length && !this.showOverlay ? type[0] : '';
+      return type && type.length && !this.showOverlay ? type[0].label : '';
     },
     parent() {
       return this.$store.getters['data/getLatestParentItem'];
     },
     formFields() {
-      return this.$store.getters['data/getFormFields'];
+      return this.$store.getters['data/getGeneralSchema'];
     },
     textTypes() {
       return this.$store.getters['data/getFormTextTypes'];
@@ -173,7 +174,7 @@ export default {
         try {
           const response = await this.$store.dispatch('PortfolioAPI/get', {
             kind: 'jsonschema',
-            id: val,
+            id: this.valueList.type[0].value,
           });
           this.formFieldsExtension = response.properties || {};
         } catch (e) {
@@ -194,6 +195,7 @@ export default {
     },
   },
   created() {
+    // TODO: do this in store init?
     this.fetchGeneralFormFields();
     this.$store.dispatch('data/getStaticDropDowns');
     if (this.currentItemId) {
@@ -201,6 +203,7 @@ export default {
     }
   },
   methods: {
+    // TODO: this can be done in store init
     async fetchGeneralFormFields() {
       this.formIsLoading = true;
       try {

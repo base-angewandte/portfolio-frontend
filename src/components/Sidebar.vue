@@ -448,7 +448,8 @@ export default {
           q: this.filterString,
           link_selection_for: this.excludeLinked ? this.activeEntryId : '',
         });
-        this.listInt = response.results;
+        // get the labels for the entries
+        this.listInt = await this.$store.dispatch('data/fetchSidebarTypes', response.results);
         this.entryNumber = response.count;
         this.$emit('sidebar-data-changed');
       } catch (e) {

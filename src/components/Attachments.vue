@@ -71,7 +71,7 @@
           :box-size="{ width: 'calc(25% - 0.43em - (0.43em/2))' }"
           :title="linked.to.title"
           :subtext="linked.to.subtitle"
-          :description="linked.to.type"
+          :description="linked.description"
           :image-url="linked.image ? getImagePath(linked.image) : ''"
           show-title
           class="linked-base-box"

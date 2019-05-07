@@ -42,6 +42,7 @@
 <script>
 import { BasePopUp, BaseMediaPreview } from 'base-ui-components';
 import Sidebar from '../components/Sidebar';
+import { capitalizeString } from '../utils/commonUtils';
 
 export default {
   components: {
@@ -116,7 +117,7 @@ export default {
     },
     capitalizeFirstLetter(text) {
       if (text) {
-        return text.slice(0, 1).toUpperCase() + text.slice(1);
+        return capitalizeString(text);
       }
       return '';
     },

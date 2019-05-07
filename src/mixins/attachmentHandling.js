@@ -30,7 +30,7 @@ export const attachmentHandlingMixin = {
       // fetch entry new to update relations
       try {
         const entry = await this.$store.dispatch('PortfolioAPI/get', { kind: 'entry', id: fromId });
-        this.$store.commit('data/setLinked', { list: entry.relations || [], replace: true });
+        await this.$store.dispatch('data/setLinkedEntries', { list: entry.relations || [], replace: true });
       } catch (e) {
         console.error(e);
         this.$notify({

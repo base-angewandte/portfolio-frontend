@@ -227,7 +227,7 @@ export default {
           })));
         const linkedList = fullList.filter(Boolean);
         if (linkedList.length) {
-          this.$store.commit('data/setLinked', { list: fullList.filter(Boolean), replace: false });
+          await this.$store.dispatch('data/setLinkedEntries', { list: fullList.filter(Boolean), replace: false });
         }
         this.informUser({
           failedArr: failArr,

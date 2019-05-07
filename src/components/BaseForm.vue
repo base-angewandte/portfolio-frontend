@@ -164,6 +164,13 @@ export default {
       this.initializeValueObject();
       this.initializeDropDownLists();
     },
+    prefetchedDropDownLists(val) {
+      Object.keys(val).forEach((dropDown) => {
+        if (!this.dropdownLists[dropDown] || !this.dropdownLists[dropDown].length) {
+          this.initializeDropDownLists();
+        }
+      });
+    },
   },
   mounted() {
     this.initializeValueObject();
@@ -217,6 +224,7 @@ export default {
       return this.valueList[field.name] ? this.valueList[field.name] : '';
     },
     initializeDropDownLists() {
+      // TODO: this is called way to often - check why...
       this.formFieldListInt.forEach((field) => {
         // check if a source is specified in the 'x-attrs'
         const sources = field['x-attrs']
@@ -226,17 +234,13 @@ export default {
             // TODO: check if this can be refactored to allow for custom drop down values
             // but for now leave like this
             // check if values were provided in prop
-            const prefetched = source.includes('_') ? this.prefetchedDropDownLists[`${field.name}_secondary`]
-              : this.prefetchedDropDownLists[field.name];
+            const name = source.includes('_') ? `${field.name}_secondary` : field.name;
+            const prefetched = this.prefetchedDropDownLists[name];
             if (prefetched && prefetched.length) {
-              this.setDropDown(prefetched, '', field['x-attrs'].equivalent, `${field.name}_secondary`);
-              // special case type
-              // TODO: replace with prefetched values
-            } else if (field.name === 'type') {
-              this.setDropDown(field.enum, '', field['x-attrs'].equivalent, field.name);
+              this.setDropDown(prefetched, '', field['x-attrs'].equivalent, name);
               // for all others just set to an empty array in the beginning
             } else if (source === 'source') {
-              this.setDropDown([], '', field['x-attrs'].equivalent, field.name);
+              this.setDropDown([], '', field['x-attrs'].equivalent, name);
             }
           });
         }
