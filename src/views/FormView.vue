@@ -127,6 +127,7 @@ export default {
       valueList: {},
       showOverlay: false,
       formIsLoading: false,
+      reloadSidebarData: false,
     };
   },
   computed: {
@@ -200,6 +201,7 @@ export default {
   },
   created() {
     // TODO: do this in store init?
+    // TODO: this is currently doubled now!!
     this.fetchGeneralFormFields();
     this.$store.dispatch('data/getStaticDropDowns');
     if (this.currentItemId) {
@@ -245,6 +247,10 @@ export default {
       }
     },
     handleInput(data, type) {
+      if ((!!data.type && JSON.stringify(this.valueList.type[0]) !== JSON.stringify(data.type[0]))
+        || (!!data.title && this.valueList.title !== data.title)) {
+        this.reloadSidebarData = true;
+      }
       this.unsavedChanges = true;
       // check if type is set (= this event is coming from a subform)
       if (type) {
@@ -328,7 +334,10 @@ export default {
             text: this.$t('notify.saveSuccessSubtext', { title: this.valueList.title }),
             type: 'success',
           });
-          this.$emit('data-changed');
+          if (this.reloadSidebarData) {
+            this.$emit('data-changed');
+            this.reloadSidebarData = false;
+          }
           this.unsavedChanges = false;
         } catch (e) {
           this.$notify({
