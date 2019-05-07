@@ -251,7 +251,7 @@ export default {
   },
   data() {
     return {
-      fieldValueInt: this.fieldValue,
+      fieldValueInt: JSON.parse(JSON.stringify(this.fieldValue)),
     };
   },
   computed: {
@@ -322,7 +322,7 @@ export default {
     setFieldValue(val) {
       if (typeof val === 'object') {
         if (val.length >= 0) {
-          this.fieldValueInt = [].concat(val);
+          this.fieldValueInt = [].concat(JSON.parse(JSON.stringify(val)));
         } else {
           this.fieldValueInt = Object.assign({}, JSON.parse(JSON.stringify(val)));
         }
@@ -334,7 +334,7 @@ export default {
       if (typeof val === 'string') {
         this.fieldValueInt = val;
       } else {
-        this.fieldValueInt = Object.assign({}, this.fieldValueInt, val);
+        this.fieldValueInt = Object.assign({}, this.fieldValueInt, JSON.parse(JSON.stringify(val)));
       }
     },
   },

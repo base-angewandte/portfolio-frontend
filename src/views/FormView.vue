@@ -352,15 +352,15 @@ export default {
       }
     },
     async openNewForm() {
-      if (this.valueList.title) {
-        if (!this.currentItemId) {
-          this.$notify({
-            group: 'request-notifications',
-            title: this.$t('notify.linkingNotPossible'),
-            text: this.$t('notify.linkingNotPossible'),
-            type: 'error',
-          });
-        }
+      // check if entry was already saved
+      if (!this.currentItemId) {
+        this.$notify({
+          group: 'request-notifications',
+          title: this.$t('notify.linkingNotPossible'),
+          text: this.$t('notify.saveBeforeLink'),
+          type: 'error',
+        });
+      } else if (this.valueList.title) {
         if (this.unsavedChanges) {
           this.$store.commit('data/setPopUp', {
             show: true,
@@ -421,8 +421,11 @@ export default {
       await this.actionEntries(action);
       if (action === 'delete') {
         this.$router.push('/');
+      } else if (action === 'publish') {
+        this.valueList.published = true;
+      } else if (action === 'offline') {
+        this.valueList.published = false;
       }
-      // TODO: check if published can be updated here!
       this.$emit('data-changed');
     },
     /**

@@ -265,9 +265,9 @@ export default {
         // this.setDropDown([], '', equivalent, fieldName);
       }
       if (index >= 0) {
-        this.$set(this.valueListInt[fieldName], index, value);
+        this.$set(this.valueListInt[fieldName], index, JSON.parse(JSON.stringify(value)));
       } else {
-        this.$set(this.valueListInt, fieldName, value);
+        this.$set(this.valueListInt, fieldName, JSON.parse(JSON.stringify(value)));
       }
       this.$emit('values-changed', this.valueListInt);
     },
