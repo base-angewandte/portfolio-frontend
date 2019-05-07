@@ -104,7 +104,12 @@ const getters = {
     return state.extensionSchema;
   },
   getObjectTypeLabel(state) {
-    return id => state.formObjectTypes.find(type => type.value === id);
+    return (id) => {
+      if (id) {
+        return state.formObjectTypes.find(type => type.value === id);
+      }
+      return '';
+    };
   },
 };
 
@@ -337,10 +342,12 @@ const actions = {
     const newList = [];
     if (list.length) {
       if (getters.getFormObjectTypes.length) {
-        list.forEach(entry => newList
-          .push(Object.assign({}, entry, {
-            description: getters.getObjectTypeLabel(entry.type || entry.to.type).label,
-          })));
+        list.forEach((entry) => {
+          const type = entry.type || entry.to ? entry.type || entry.to.type : '';
+          newList.push(Object.assign({}, entry, {
+            description: getters.getObjectTypeLabel(type).label || '',
+          }));
+        });
       } else {
         try {
           await Promise.all(list.map(entry => new Promise(async (resolve) => {

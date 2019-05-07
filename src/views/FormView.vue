@@ -11,7 +11,7 @@
         <BaseMenuEntry
           :title="parent.title"
           :title-bold="true"
-          :subtext="parent.type"
+          :subtext="parent.type.label"
           :show-thumbnails="false"
           entry-id="parentheader"
           icon="sheet-empty"/>
