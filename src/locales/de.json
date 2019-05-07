@@ -130,7 +130,7 @@
     "saveChanges": "Änderungen speichern",
     "dismissChanges": "Änderungen verwerfen",
     "selectLicense": "Bitte wählen Sie eine Lizenz aus.",
-    "selectFiles": "Bitte wählen Sie Dateien aus, um {action}.",
+    "selectForAction": "Bitte wählen Sie {type} aus, um {action}.",
     "license": "Lizenzänderung",
     "publishFile": "zu veröffentlichen",
     "deleteFile": "zu löschen",

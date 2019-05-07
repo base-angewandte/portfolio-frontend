@@ -301,12 +301,15 @@ export default {
   methods: {
     async saveFileMeta() {
       // check if files were selected
-      if ((this.action === 'publish' && !this.publishFiles.length) && !this.selectedFiles.length) {
+      if ((this.action === 'publish' && !this.publishFiles.length) || !this.selectedFiles.length) {
         // if not notify user that he needs to select files
         this.$notify({
           group: 'request-notifications',
           title: this.$t('notify.actionFailed', { action: this.$t(`notify.${this.action}`) }),
-          text: this.$t('notify.selectFiles', { action: this.$t(`notify.${this.action}File`) }),
+          text: this.$t('notify.selectForAction', {
+            action: this.$t(`notify.${this.action}File`),
+            type: this.$tc('notify.media', 0),
+          }),
           type: 'error',
         });
         // check if a license was selected if action is license change
@@ -351,9 +354,21 @@ export default {
     },
     async deleteLinked() {
       // TODO: also check first if any entries were selected
-      await this.$parent.actionLinked({ list: this.selectedEntries, action: 'delete' });
-      this.showEntryAction = false;
-      this.selectedEntries = [];
+      if (this.selectedEntries.length) {
+        await this.$parent.actionLinked({ list: this.selectedEntries, action: 'delete' });
+        this.showEntryAction = false;
+        this.selectedEntries = [];
+      } else {
+        this.$notify({
+          group: 'request-notifications',
+          title: this.$t('notify.actionFailed', { action: this.$t('notify.delete') }),
+          text: this.$t('notify.selectForAction', {
+            action: this.$t('notify.deleteFile'),
+            type: this.$tc('notify.entry', 0),
+          }),
+          type: 'error',
+        });
+      }
     },
     entrySelected(objId, sel) {
       if (sel) {

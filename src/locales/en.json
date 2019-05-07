@@ -136,7 +136,7 @@
     "saveChanges": "Save changes",
     "dismissChanges": "Discard changes",
     "selectLicense": "Please choose a license!",
-    "selectFiles": "Please choose files in order to {action}.",
+    "selectForAction": "Please choose {type} in order to {action}.",
     "license": "Change of license",
     "publishFile": "publish them",
     "deleteFile": "delete them",
