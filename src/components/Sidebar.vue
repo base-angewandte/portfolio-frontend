@@ -130,6 +130,7 @@ import 'base-ui-components/dist/lib/base-ui-components.min.css';
 import BaseOptions from './BaseOptions';
 import { entryHandlingMixin } from '../mixins/entryHandling';
 import { userInfo } from '../mixins/userInfo';
+import { capitalizeString } from '../utils/commonUtils';
 
 export default {
   components: {
@@ -307,21 +308,20 @@ export default {
           },
         });
         const types = response.data;
-        // TODO: check if this is even needed (of if types come with label aready...)
+        // get the labels for all fetched types
         const typeArr = await Promise.all(types.map(type => new Promise(async (resolve, reject) => {
           try {
-            // TODO: replace lang with app lang!
-            const labelData = await this.$store.dispatch('SkosmosAPI/getSearch', {
-              query: type,
-              lang: 'de',
-              vocab: 'portfolio',
+            const labelData = await axios.get(`${process.env.SKOSMOS_API}potax/label`, {
+              params: {
+                uri: type,
+                lang: this.$i18n.locale,
+                format: 'application/json',
+              },
             });
-            if (labelData && labelData.data && labelData.data.results
-              && labelData.data.results.length) {
-              // TODO: use URI instead of prefLabel!!
+            if (labelData && labelData.data) {
               const option = {
-                label: labelData.data.results[0].prefLabel,
-                value: labelData.data.results[0].prefLabel,
+                label: capitalizeString(labelData.data.prefLabel),
+                value: labelData.data.uri,
               };
               resolve(option);
             } else {
