@@ -249,7 +249,8 @@ export default {
       }
     },
     handleInput(data, type) {
-      if ((!!data.type && JSON.stringify(this.valueList.type[0]) !== JSON.stringify(data.type[0]))
+      if ((!!data.type && !!this.valueList.type
+        && JSON.stringify(this.valueList.type[0]) !== JSON.stringify(data.type[0]))
         || (!!data.title && this.valueList.title !== data.title)) {
         this.reloadSidebarData = true;
       }

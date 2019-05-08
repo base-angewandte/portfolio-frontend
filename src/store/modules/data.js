@@ -9,9 +9,10 @@ function transformTextData(data) {
   const textData = [];
   if (data && data.length) {
     data.forEach((textItem) => {
+      debugger;
       const textObj = {
         type: textItem.type && typeof textItem.type === 'object'
-          ? textItem.type.value : textItem.type || '',
+          ? textItem.type.source : textItem.type || '',
       };
       const text = Object.keys(textItem).filter(props => !['type', 'text', 'data'].includes(props))
         .map(lang => Object.assign({}, {
