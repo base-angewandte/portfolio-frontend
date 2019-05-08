@@ -322,7 +322,9 @@ export default {
             }
           }
         } else {
-          this.setDropDown([], value, equivalent, name);
+          // check if there is a preset list for dynamic chips input fields (e.g. keywords)
+          const prefetchedValues = this.prefetchedDropDownLists[name];
+          this.setDropDown(prefetchedValues || [], value, equivalent, name);
         }
       }, 600);
     },

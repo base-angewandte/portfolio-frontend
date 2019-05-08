@@ -25,7 +25,26 @@ function transformTextData(data) {
   return textData;
 }
 
-function prepareData(valueObj) {
+function transformKeywords(keywords) {
+  return Promise.all(keywords
+    .map(keywordEntry => new Promise(async (resolve) => {
+      const langObj = {};
+      const voc = keywordEntry.source.includes('disciplines') ? 'disciplines' : 'basekw';
+      await Promise.all(i18n.availableLocales.map(async (locale) => {
+        if (locale === i18n.locale) {
+          Vue.set(langObj, locale, keywordEntry.keyword);
+        } else {
+          const { data } = await axios.get(`https://voc.uni-ak.ac.at/skosmos/rest/v1/${voc}/label?lang=${locale}&uri=${keywordEntry.source}`);
+          Vue.set(langObj, locale, data.prefLabel);
+        }
+      }));
+      resolve(Object.assign({}, keywordEntry, {
+        keyword: langObj,
+      }));
+    })));
+}
+
+async function prepareData(valueObj) {
   // make necessary modifications to the valueList object
   // 1. and 'description' property added for sidebar display needs to be removed before save
   // (needs to be done here since also relevant for duplicate)
@@ -33,7 +52,8 @@ function prepareData(valueObj) {
   delete valueObj.description;
   // 2. texts need different object structure and text type needs to be string (uri)
   const texts = transformTextData(valueObj.texts);
-  return Object.assign({}, valueObj, { texts });
+  const keywords = await transformKeywords(valueObj.keywords);
+  return Object.assign({}, valueObj, { texts, keywords });
 }
 
 const state = {
@@ -53,8 +73,16 @@ const state = {
   // saved here are all the data from linked entries (not just id as in currentItem)
   linkedEntries: [],
   linkedMedia: [],
-  formTextTypes: [],
-  formRoles: [],
+  // the object properties are named after the respective endpoint!
+  prefetchedTypes: {
+    texttypes: [],
+    roles: [],
+    languages: [],
+    formats: [],
+    licenses: [],
+    keywords: [],
+    materials: [],
+  },
   validObjectTypes: [],
   formObjectTypes: [],
   generalSchema: {},
@@ -81,17 +109,12 @@ const getters = {
   getMediaIds(state) {
     return state.linkedMedia.map(entry => entry.id);
   },
-  getFormTextTypes(state) {
-    return state.formTextTypes;
-  },
+  getPrefetchedTypes: state => field => state.prefetchedTypes[field],
   getFormObjectTypes(state) {
     return state.formObjectTypes;
   },
   getValidObjectTypes(state) {
     return state.formObjectTypes;
-  },
-  getFormRoles(state) {
-    return state.formRoles;
   },
   getGeneralSchema(state) {
     return state.generalSchema;
@@ -168,8 +191,8 @@ const mutations = {
   deleteMedia(state, list) {
     state.linkedMedia = state.linkedMedia.filter(entry => !list.includes(entry.id));
   },
-  setFormTextTypes(state, types) {
-    state.formTextTypes = [].concat(types.map(type => ({ label: type.label, value: type.source })));
+  setPrefetchedTypes(state, { field, data }) {
+    Vue.set(state.prefetchedTypes, field, data);
   },
   setFormObjectTypes(state, types) {
     state.formObjectTypes = [].concat(types.filter(type => !!type.prefLabel)
@@ -181,9 +204,6 @@ const mutations = {
   },
   setValidObjectTypes(state, types) {
     state.validObjectTypes = [].concat(types);
-  },
-  setFormRoles(state, types) {
-    state.formRoles = [].concat(types);
   },
   setGeneralSchema(state, schema) {
     state.generalSchema = Object.assign({}, schema);
@@ -231,25 +251,18 @@ const actions = {
       }
     });
   },
-  async getStaticDropDowns({ getters, commit }) {
-    if (!getters.getFormTextTypes.length) {
-      const { data } = await axios.get(`${process.env.PORTFOLIO_API}/autosuggest/v1/texttypes/`, {
-        withCredentials: true,
-        headers: {
-          'Accept-Language': i18n.locale,
-        },
-      });
-      commit('setFormTextTypes', data);
-    }
-    if (!getters.getFormRoles.length) {
-      const { data } = await axios.get(`${process.env.PORTFOLIO_API}/autosuggest/v1/roles/`, {
-        withCredentials: true,
-        headers: {
-          'Accept-Language': i18n.locale,
-        },
-      });
-      commit('setFormRoles', data);
-    }
+  getStaticDropDowns({ state, getters, commit }) {
+    Object.keys(state.prefetchedTypes).forEach(async (field) => {
+      if (!getters.getPrefetchedTypes(field).length) {
+        const { data } = await axios.get(`${process.env.PORTFOLIO_API}/autosuggest/v1/${field}/`, {
+          withCredentials: true,
+          headers: {
+            'Accept-Language': i18n.locale,
+          },
+        });
+        commit('setPrefetchedTypes', { field, data });
+      }
+    });
   },
   async fetchEntryData({ getters, commit, dispatch }, { id, lang }) {
     return new Promise(async (resolve, reject) => {
@@ -266,7 +279,7 @@ const actions = {
         // (for now only type, language still missing)
         // 2. Text needs to look different (and text type needs to be fetched)
         // 3. TODO: fetch role labels (currently only strings tho)
-        // 4. TODO: fetch keyword labels (only for the ones with source!!)
+        // 4. keywords: choose right language to display
         let objectType = [];
         // if there is a type fetch the label for the saved uri
         if (entryData.type) {
@@ -318,9 +331,15 @@ const actions = {
               res(Object.assign({}, { type }, textObj));
             }))) : [];
 
+        const keywords = entryData.keywords
+          .map(keywordEntry => Object.assign({}, keywordEntry, {
+            keywordEntry: keywordEntry.keyword[i18n.locale],
+          }));
+
         const adjustedEntry = Object.assign({}, entryData, {
           type: objectType,
           texts: textData,
+          keywords,
         });
         commit('setCurrentItem', adjustedEntry);
         await dispatch('setLinkedEntries', { list: entryData.relations || [], replace: true });
@@ -401,7 +420,7 @@ const actions = {
   addOrUpdateEntry({ commit }, obj) {
     return new Promise(async (resolve, reject) => {
       try {
-        const data = prepareData(obj);
+        const data = await prepareData(obj);
         const createdEntry = await this.dispatch('PortfolioAPI/post', { kind: 'entry', id: data.id, data });
         if (createdEntry) {
           commit('setCurrentItem', createdEntry);

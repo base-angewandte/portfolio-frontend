@@ -87,9 +87,9 @@
       :object-prop="chipsPropertyName"
       :list="dropDownList"
       v-model="fieldValueInt"
-      :allow-dynamic-drop-down-entries="!['type'].includes(field.name)"
+      :allow-dynamic-drop-down-entries="field['x-attrs'] && field['x-attrs'].dynamic_autosuggest"
       :allow-multiple-entries="field.name !== 'type'"
-      :allow-unknown-entries="field.name !== 'type'"
+      :allow-unknown-entries="field['x-attrs'] && field['x-attrs'].allow_unkown_entries"
       :always-linked="field.name === 'type'"
       :identifier="field.name !== 'type' && field['x-attrs']
       && field['x-attrs'].source ? 'source' : ''"

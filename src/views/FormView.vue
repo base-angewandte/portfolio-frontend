@@ -49,8 +49,9 @@
         :form-field-json="formFields"
         :value-list="valueList"
         :prefetched-drop-down-lists="{
-          texts_secondary: textTypes,
+          texts_secondary: preFetchedData.texttypes,
           type: objectTypes,
+          keywords: preFetchedData.keywords,
         }"
         @values-changed="handleInput($event)"
       />
@@ -71,7 +72,11 @@
             :form-field-json="formFieldsExtension"
             :value-list="valueList.data"
             :prefetched-drop-down-lists="{
-              contributors_secondary: roles,
+              contributors_secondary: preFetchedData.roles,
+              material: preFetchedData.materials,
+              format: preFetchedData.formats,
+              language: preFetchedData.languages,
+              open_source_license: preFetchedData.licenses,
             }"
             class="form"
             @values-changed="handleInput($event, 'data')"/>
@@ -147,11 +152,8 @@ export default {
     formFields() {
       return this.$store.getters['data/getGeneralSchema'];
     },
-    textTypes() {
-      return this.$store.getters['data/getFormTextTypes'];
-    },
-    roles() {
-      return this.$store.getters['data/getFormRoles'];
+    preFetchedData() {
+      return this.$store.state.data.prefetchedTypes;
     },
     objectTypes() {
       return this.$store.getters['data/getFormObjectTypes'];
@@ -456,6 +458,7 @@ export default {
       if ((field['x-attrs'] && field['x-attrs'].hidden) || key === 'texts') {
         return values;
       }
+      // special case language specific labels
       if (field.type === 'integer') {
         const number = parseInt(values, 10);
         return !Number.isNaN(number) ? number : 0;
@@ -480,6 +483,12 @@ export default {
       }
       if (field.type === 'object') {
         const validProperties = {};
+        // special case languages which is object because of languages but is
+        // handled as string here (changed before save)
+        // TODO: maybe handle this here instead of store
+        if (this.$i18n.locale in field.properties) {
+          return values;
+        }
         Object.keys(values).forEach((valueKey) => {
           if (field.properties[valueKey]) {
             if (field.properties[valueKey].type === 'object' || field.properties[valueKey].type === 'array') {
