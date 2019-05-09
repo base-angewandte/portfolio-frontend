@@ -7,9 +7,9 @@
         key="addEntry"
         :show-plus="true"
         :box-size="{ width: 'calc(25% - 8px)' }"
+        :text="$t('form-view.addExistingEntry')"
+        :subtext="$t('form-view.clickordrag')"
         icon="camera"
-        text="Vorhandenen Eintrag hinzufügen"
-        subtext="(Click oder Drag'n Drop)"
         class="file-boxes-margin"
         @dropped="droppedEntries($event)"
         @clicked="openEntrySelect"/>
@@ -17,8 +17,8 @@
         key="addNew"
         :show-plus="true"
         :box-size="{ width: 'calc(25% - 8px)'}"
+        :text="$t('form-view.addNewEntry')"
         icon="sheet-empty"
-        text="Neuen Eintrag anhängen"
         class="file-boxes-margin"
         @clicked="$emit('open-new-form')"/>
       <label class="file-select">
@@ -27,9 +27,9 @@
           :show-plus="true"
           :box-size="{ width: 'calc(100%)' }"
           :box-ratio="'50'"
+          :text="$t('form-view.attachFile')"
+          :subtext="$t('form-view.clickordrag')"
           icon="camera"
-          text="Dateien anhängen"
-          subtext="(Click oder Drag'n Drop)"
           @dropped="handleFileSelect($event)"/>
         <input
           type="file"
