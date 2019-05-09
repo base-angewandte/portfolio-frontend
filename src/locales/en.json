@@ -43,6 +43,7 @@
     "date": "Date",
     "date_location": "Date and Location",
     "date_range_time_range_location": "Date, Time and Location",
+    "date_time_range_location": "Date, Time and Location",
     "opening": "Opening",
     "editor": "Editors",
     "publisher": "Publisher",

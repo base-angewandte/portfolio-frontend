@@ -333,7 +333,7 @@ const actions = {
 
         const keywords = entryData.keywords
           .map(keywordEntry => Object.assign({}, keywordEntry, {
-            keywordEntry: keywordEntry.keyword[i18n.locale],
+            keyword: capitalizeString(keywordEntry.keyword[i18n.locale] || keywordEntry.keyword),
           }));
 
         const adjustedEntry = Object.assign({}, entryData, {

@@ -60,7 +60,7 @@
 
         <!-- FORM EXTENSION -->
         <div
-          v-if="type && Object.keys(formFieldsExtension).length"
+          v-if="type && formDataPresent"
           key="extended-section">
           <div
             key="extended-title"
@@ -573,6 +573,7 @@ export default {
           position: fixed;
           top: 50%;
           left: 66%;
+          transform: translateX(-50%);
         }
       }
 
@@ -620,6 +621,15 @@ export default {
     .form-component {
       .form-head {
         padding-top: $spacing-small;
+      }
+
+      .form-container {
+        .form-loading-area {
+          .loader {
+            left: 50%;
+            transform: translateX(-50%);
+          }
+        }
       }
     }
   }
