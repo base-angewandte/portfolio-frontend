@@ -311,9 +311,10 @@ export default {
         // get the labels for all fetched types
         const typeArr = await Promise.all(types.map(type => new Promise(async (resolve, reject) => {
           try {
+            console.log(type);
             const labelData = await axios.get(`${process.env.SKOSMOS_API}potax/label`, {
               params: {
-                uri: type,
+                uri: 'ccccc',
                 lang: this.$i18n.locale,
                 format: 'application/json',
               },
