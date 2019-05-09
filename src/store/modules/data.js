@@ -25,22 +25,30 @@ function transformTextData(data) {
   return textData;
 }
 
+// TODO: this should go to form view component (before save) since this is not relevant
+// for duplication!!
 function transformKeywords(keywords) {
   return Promise.all(keywords
     .map(keywordEntry => new Promise(async (resolve) => {
-      const langObj = {};
-      const voc = keywordEntry.source.includes('disciplines') ? 'disciplines' : 'basekw';
-      await Promise.all(i18n.availableLocales.map(async (locale) => {
-        if (locale === i18n.locale) {
-          Vue.set(langObj, locale, keywordEntry.keyword);
-        } else {
-          const { data } = await axios.get(`https://voc.uni-ak.ac.at/skosmos/rest/v1/${voc}/label?lang=${locale}&uri=${keywordEntry.source}`);
-          Vue.set(langObj, locale, data.prefLabel);
-        }
-      }));
-      resolve(Object.assign({}, keywordEntry, {
-        keyword: langObj,
-      }));
+      // check if it is a controlled voc keyword and if it is not object
+      // already (for duplicates only!!)
+      if (keywordEntry.source && typeof keywordEntry.keyword === 'string') {
+        const langObj = {};
+        const voc = keywordEntry.source.includes('disciplines') ? 'disciplines' : 'basekw';
+        await Promise.all(i18n.availableLocales.map(async (locale) => {
+          if (locale === i18n.locale) {
+            Vue.set(langObj, locale, keywordEntry.keyword);
+          } else {
+            const { data } = await axios.get(`https://voc.uni-ak.ac.at/skosmos/rest/v1/${voc}/label?lang=${locale}&uri=${keywordEntry.source}`);
+            Vue.set(langObj, locale, data.prefLabel);
+          }
+        }));
+        resolve(Object.assign({}, keywordEntry, {
+          keyword: langObj,
+        }));
+      } else {
+        resolve(Object.assign({}, keywordEntry));
+      }
     })));
 }
 
