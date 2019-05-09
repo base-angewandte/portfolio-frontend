@@ -112,7 +112,7 @@
               <BaseButton
                 :text="$t('form-view.changeLicense')"
                 icon-size="large"
-                icon="license"
+                icon="licence"
                 button-style="single"
                 @clicked="action = 'license'"/>
               <BaseButton
