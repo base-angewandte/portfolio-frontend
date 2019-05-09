@@ -179,10 +179,9 @@ export default {
     async type(val) {
       if (val) {
         try {
-          console.log('get type');
           const response = await this.$store.dispatch('PortfolioAPI/get', {
             kind: 'jsonschema',
-            id: this.valueList.type[0].value,
+            id: encodeURIComponent(this.valueList.type[0].value),
           });
           this.formFieldsExtension = response.properties || {};
         } catch (e) {
