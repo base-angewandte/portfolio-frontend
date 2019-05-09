@@ -1,8 +1,6 @@
 import * as Api from './skosmos_api';
 
-const $config = {
-  withCredentials: true,
-};
+const $config = {};
 
 export default {
   fetchVocabs({ state, commit }, { lang }) {
