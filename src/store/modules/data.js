@@ -85,6 +85,8 @@ const state = {
   },
   validObjectTypes: [],
   formObjectTypes: [],
+  // entry types displayed in sidebar
+  entryTypes: [],
   generalSchema: {},
   extensionSchema: {},
 };
@@ -115,6 +117,9 @@ const getters = {
   },
   getValidObjectTypes(state) {
     return state.formObjectTypes;
+  },
+  getEntryTypes(state) {
+    return state.entryTypes;
   },
   getGeneralSchema(state) {
     return state.generalSchema;
@@ -211,12 +216,16 @@ const mutations = {
   setExtensionSchema(state, schema) {
     state.extensionSchema = Object.assign({}, schema);
   },
+  setEntryTypes(state, data) {
+    state.entryTypes = [].concat(data);
+  },
 };
 
 const actions = {
   async init({ dispatch }) {
     dispatch('getStaticDropDowns');
     dispatch('fetchGeneralFields');
+    dispatch('fetchEntryTypes');
   },
   async fetchGeneralFields({ state, getters, commit }) {
     return new Promise(async (resolve, reject) => {
@@ -263,6 +272,53 @@ const actions = {
         commit('setPrefetchedTypes', { field, data });
       }
     });
+  },
+  async fetchEntryTypes({ commit }) {
+    // TODO: replace with C. store module!
+    try {
+      const response = await axios.get(`${process.env.API}entry/types/`, {
+        withCredentials: true,
+        headers: {
+          'Accept-Language': i18n.locale,
+        },
+      });
+      const types = response.data;
+      // get the labels for all fetched types
+      const typeArr = await Promise.all(types.map(type => new Promise(async (resolve, reject) => {
+        try {
+          const labelData = await axios.get(`${process.env.SKOSMOS_API}potax/label`, {
+            params: {
+              uri: type,
+              lang: i18n.locale,
+              format: 'application/json',
+            },
+          });
+          if (labelData && labelData.data) {
+            const option = {
+              label: capitalizeString(labelData.data.prefLabel),
+              value: labelData.data.uri,
+            };
+            resolve(option);
+          } else {
+            resolve();
+          }
+        } catch (e) {
+          console.error(e);
+          reject(e);
+        }
+      })));
+      // filter out empty type
+      const entryTypes = typeArr.filter(type => !!type);
+      // add 'all types' option
+      entryTypes.unshift({
+        label: i18n.t('dropdown.allTypes'),
+        value: '',
+      });
+      commit('setEntryTypes', entryTypes);
+    } catch (e) {
+      console.error(e);
+      // TODO: inform user?
+    }
   },
   async fetchEntryData({ getters, commit, dispatch }, { id, lang }) {
     return new Promise(async (resolve, reject) => {

@@ -117,7 +117,6 @@
 </template>
 
 <script>
-import axios from 'axios';
 import {
   BaseMenuList,
   BaseButton,
@@ -130,7 +129,6 @@ import 'base-ui-components/dist/lib/base-ui-components.min.css';
 import BaseOptions from './BaseOptions';
 import { entryHandlingMixin } from '../mixins/entryHandling';
 import { userInfo } from '../mixins/userInfo';
-import { capitalizeString } from '../utils/commonUtils';
 
 export default {
   components: {
@@ -204,7 +202,6 @@ export default {
       entriesPerPage: null,
       pageNumber: 1,
       entryNumber: null,
-      entryTypes: [],
       isLoading: false,
       timeout: null,
       filterType: {
@@ -260,6 +257,9 @@ export default {
         },
       ];
     },
+    entryTypes() {
+      return this.$store.getters['data/getEntryTypes'];
+    },
   },
   watch: {
     list(val) {
@@ -273,9 +273,6 @@ export default {
     },
   },
   created() {
-    // TODO: eventually store entryTypes in Store since the same in every instance and
-    // needs to be updated when entries added or deleted or updated
-    this.getEntryTypes();
     this.fetchSidebarData();
   },
   mounted() {
@@ -295,54 +292,6 @@ export default {
       }
       // TODO: check if selectedEntries should also be handled internally
       this.$emit('selected-changed', this.selectedMenuEntries);
-    },
-    // get all the types of the entries a user has (alternative to just displaying all
-    // > 150 types
-    async getEntryTypes() {
-      // TODO: replace with C. store module!
-      try {
-        const response = await axios.get(`${process.env.API}entry/types/`, {
-          withCredentials: true,
-          headers: {
-            'Accept-Language': this.$i18n.locale,
-          },
-        });
-        const types = response.data;
-        // get the labels for all fetched types
-        const typeArr = await Promise.all(types.map(type => new Promise(async (resolve, reject) => {
-          try {
-            const labelData = await axios.get(`${process.env.SKOSMOS_API}potax/label`, {
-              params: {
-                uri: type,
-                lang: this.$i18n.locale,
-                format: 'application/json',
-              },
-            });
-            if (labelData && labelData.data) {
-              const option = {
-                label: capitalizeString(labelData.data.prefLabel),
-                value: labelData.data.uri,
-              };
-              resolve(option);
-            } else {
-              resolve();
-            }
-          } catch (e) {
-            console.error(e);
-            reject(e);
-          }
-        })));
-        // filter out empty type
-        this.entryTypes = typeArr.filter(type => !!type);
-        // add 'all types' option
-        this.entryTypes.unshift({
-          label: this.$t('dropdown.allTypes'),
-          value: '',
-        });
-      } catch (e) {
-        console.error(e);
-        // TODO: inform user?
-      }
     },
     getNewForm() {
       this.$store.commit('data/setCurrentItem', {});
@@ -461,6 +410,7 @@ export default {
           type: 'error',
         });
       }
+      await this.$store.dispatch('data/fetchEntryTypes');
       this.isLoading = false;
     },
     calculateSidebarHeight() {
