@@ -103,7 +103,7 @@
           <template slot="beforeOptions">
             <h3
               v-if="showTitle"
-              class="attachment-area-subheader">Angehängte Dateien</h3>
+              class="attachment-area-subheader">{{ $t('form-view.attachedFiles') }}</h3>
           </template>
           <template slot="options">
             <div
@@ -112,7 +112,7 @@
               <BaseButton
                 :text="$t('form-view.changeLicense')"
                 icon-size="large"
-                icon="license"
+                icon="licence"
                 button-style="single"
                 @clicked="action = 'license'"/>
               <BaseButton
