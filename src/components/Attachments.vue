@@ -431,8 +431,11 @@ export default {
     },
     generateBoxText(metadata) {
       const wantedAttributes = ['FileSize', 'ImageSize'];
-      return Object.keys(metadata).filter(key => wantedAttributes.includes(key))
-        .map(data => `${data}: ${metadata[data].val}`);
+      if (metadata) {
+        return Object.keys(metadata).filter(key => wantedAttributes.includes(key))
+          .map(data => `${data}: ${metadata[data].val}`);
+      }
+      return [];
     },
     goToLinked(id) {
       this.$store.commit('data/deleteLastParentItem');
