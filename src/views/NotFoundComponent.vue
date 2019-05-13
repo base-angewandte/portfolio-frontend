@@ -11,7 +11,6 @@
 export default {
   computed: {
     entryId() {
-      console.log(this.$route.query.id);
       return this.$route.query.id;
     },
   },
