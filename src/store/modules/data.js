@@ -407,10 +407,37 @@ const actions = {
               });
             });
 
+          let { contributors } = entryData.data;
+          if (contributors) {
+            contributors = await Promise.all(contributors
+              .map(contributor => new Promise(async (contres) => {
+                const tempRoles = await Promise.all(contributor.roles
+                  .map(role => new Promise(async (res) => {
+                    const labelResponse = await axios.get(`${process.env.SKOSMOS_API}povoc/label`, {
+                      params: {
+                        uri: role.source,
+                        lang,
+                        format: 'application/json',
+                      },
+                    });
+
+                    if (labelResponse.data) {
+                      res(Object.assign({}, role, {
+                        label: capitalizeString(labelResponse.data.prefLabel),
+                      }));
+                    }
+                    res(role);
+                  })));
+
+                contres(Object.assign({}, contributor, { roles: tempRoles }));
+              })));
+          }
+
           const adjustedEntry = Object.assign({}, entryData, {
             type: objectType,
             texts: textData,
             keywords,
+            data: Object.assign({}, entryData.data, { contributors }),
           });
           commit('setCurrentItem', adjustedEntry);
           await dispatch('setLinkedEntries', { list: entryData.relations || [], replace: true });
