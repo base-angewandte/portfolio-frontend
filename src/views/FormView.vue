@@ -239,13 +239,19 @@ export default {
         this.valueList = Object.assign({}, data);
       } catch (e) {
         console.error(e);
-        this.$notify({
-          group: 'request-notifications',
-          title: this.$t('notify.somethingWrong'),
-          text: this.$t('notify.fetchSingleEntry'),
-          type: 'error',
-        });
-        this.$router.push('/');
+        console.log(e.message);
+        console.log(e.message.includes('404'));
+        if (e.message.includes('404')) {
+          this.$router.push(`/notFound?id=${this.currentItemId}`);
+        } else {
+          this.$notify({
+            group: 'request-notifications',
+            title: this.$t('notify.somethingWrong'),
+            text: this.$t('notify.fetchSingleEntry'),
+            type: 'error',
+          });
+          this.$router.push('/');
+        }
       }
     },
     handleInput(data, type) {

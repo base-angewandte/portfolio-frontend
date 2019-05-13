@@ -75,7 +75,7 @@ export default {
   methods: {
     createNewForm() {
       const formView = this.$refs.view;
-      if (formView) {
+      if (formView && formView.resetForm) {
         formView.resetForm();
       }
       this.$router.push('/new');

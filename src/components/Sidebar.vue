@@ -274,6 +274,7 @@ export default {
   },
   created() {
     this.fetchSidebarData();
+    this.$store.dispatch('data/fetchEntryTypes');
   },
   mounted() {
     this.listInt = this.list;

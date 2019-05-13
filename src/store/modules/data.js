@@ -47,7 +47,9 @@ function transformKeywords(keywords) {
           keyword: langObj,
         }));
       } else {
-        resolve(Object.assign({}, keywordEntry));
+        resolve(Object.assign({}, keywordEntry, {
+          keyword: { [i18n.locale]: keywordEntry.keyword },
+        }));
       }
     })));
 }
@@ -230,11 +232,6 @@ const mutations = {
 };
 
 const actions = {
-  async init({ dispatch }) {
-    dispatch('getStaticDropDowns');
-    dispatch('fetchGeneralFields');
-    dispatch('fetchEntryTypes');
-  },
   async fetchGeneralFields({ state, getters, commit }) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -335,85 +332,124 @@ const actions = {
       try {
         // TODO: check if entry data could be derived from sidebar data somehow
         entryData = await this.dispatch('PortfolioAPI/get', { kind: 'entry', id });
-      } catch (e) {
-        reject(e);
-      }
-      if (entryData) {
-        // Modifications of data received from backend needed:
-        // 1. type needs to be array in logic here! and labels need to be translated
-        // (for now only type, language still missing)
-        // 2. Text needs to look different (and text type needs to be fetched)
-        // 3. TODO: fetch role labels (currently only strings tho)
-        // 4. keywords: choose right language to display
-        let objectType = [];
-        // if there is a type fetch the label for the saved uri
-        if (entryData.type) {
-          // check if object types are present in store and if data can be fetched locally
-          if (getters.getFormObjectTypes.length) {
-            objectType = [getters.getObjectTypeLabel(entryData.type)];
-          } else {
-            const { data } = await axios.get(`${process.env.SKOSMOS_API}potax/label`, {
-              params: {
-                uri: entryData.type,
-                lang,
-                format: 'application/json',
-              },
+        if (entryData) {
+          // Modifications of data received from backend needed:
+          // 1. type needs to be array in logic here! and labels need to be translated
+          // (for now only type, language still missing)
+          // 2. Text needs to look different (and text type needs to be fetched)
+          // 3. TODO: fetch role labels (currently only strings tho)
+          // 4. keywords: choose right language to display
+          let objectType = [];
+          // if there is a type fetch the label for the saved uri
+          if (entryData.type) {
+            // check if object types are present in store and if data can be fetched locally
+            if (getters.getFormObjectTypes.length) {
+              objectType = [getters.getObjectTypeLabel(entryData.type)];
+            } else {
+              const { data } = await axios.get(`${process.env.SKOSMOS_API}potax/label`, {
+                params: {
+                  uri: entryData.type,
+                  lang,
+                  format: 'application/json',
+                },
+              });
+              objectType = [{ label: capitalizeString(data.prefLabel), value: data.uri }];
+            }
+          }
+          const textData = entryData.texts && entryData.texts.length
+            ? await Promise.all(entryData.texts
+              .map(entry => new Promise(async (res) => {
+                const textObj = {};
+                let type = null;
+                if (entry.type) {
+                  // TODO: fetch locally if possible
+                  try {
+                    const typeResponse = await axios.get(`${process.env.SKOSMOS_API}povoc/label`, {
+                      params: {
+                        uri: entry.type,
+                        lang,
+                        format: 'application/json',
+                      },
+                    });
+                    if (typeResponse.data) {
+                      type = {
+                        label: capitalizeString(typeResponse.data.prefLabel),
+                        value: entry.type,
+                      };
+                    }
+                  } catch (e) {
+                    console.error(e);
+                    reject(e);
+                  }
+                }
+                // TODO: temporary hack - probably should fetch label for lang as well
+                entry.data.forEach((language) => {
+                  const langInternal = language.language.split('/').pop();
+                  Vue.set(textObj, langInternal.toLowerCase(), language.text);
+                });
+                res(Object.assign({}, { type }, textObj));
+              }))) : [];
+
+          const keywords = entryData.keywords
+            .map((keywordEntry) => {
+              const keyword = Object.assign({}, keywordEntry.keyword);
+              // use current locale to get right label
+              let keywordLocaleString = keyword[i18n.locale]
+                || keyword[i18n.fallbackLocale];
+              // if the label has not entry (e.g. non-cv keywords) try to find other languages
+              if (!keywordLocaleString) {
+                const locale = i18n.availableLocales
+                  .find(availableLocale => !!keyword[availableLocale]);
+                keywordLocaleString = keyword[locale];
+              }
+              return Object.assign({}, keywordEntry, {
+                keyword: capitalizeString(keywordLocaleString || keywordEntry.keyword),
+              });
             });
-            objectType = [{ label: capitalizeString(data.prefLabel), value: data.uri }];
+
+          let { contributors } = entryData.data;
+          if (contributors) {
+            contributors = await Promise.all(contributors
+              .map(contributor => new Promise(async (contres) => {
+                const tempRoles = await Promise.all(contributor.roles
+                  .map(role => new Promise(async (res) => {
+                    const labelResponse = await axios.get(`${process.env.SKOSMOS_API}povoc/label`, {
+                      params: {
+                        uri: role.source,
+                        lang,
+                        format: 'application/json',
+                      },
+                    });
+
+                    if (labelResponse.data) {
+                      res(Object.assign({}, role, {
+                        label: capitalizeString(labelResponse.data.prefLabel),
+                      }));
+                    }
+                    res(role);
+                  })));
+
+                contres(Object.assign({}, contributor, { roles: tempRoles }));
+              })));
+          }
+
+          const adjustedEntry = Object.assign({}, entryData, {
+            type: objectType,
+            texts: textData,
+            keywords,
+            data: Object.assign({}, entryData.data, { contributors }),
+          });
+          commit('setCurrentItem', adjustedEntry);
+          await dispatch('setLinkedEntries', { list: entryData.relations || [], replace: true });
+          try {
+            await dispatch('fetchMediaData', entryData.id);
+            resolve(adjustedEntry);
+          } catch (e) {
+            reject(e);
           }
         }
-        const textData = entryData.texts && entryData.texts.length
-          ? await Promise.all(entryData.texts
-            .map(entry => new Promise(async (res) => {
-              const textObj = {};
-              let type = null;
-              if (entry.type) {
-                // TODO: fetch locally if possible
-                try {
-                  const typeResponse = await axios.get(`${process.env.SKOSMOS_API}povoc/label`, {
-                    params: {
-                      uri: entry.type,
-                      lang,
-                      format: 'application/json',
-                    },
-                  });
-                  if (typeResponse.data) {
-                    type = {
-                      label: capitalizeString(typeResponse.data.prefLabel),
-                      value: entry.type,
-                    };
-                  }
-                } catch (e) {
-                  console.error(e);
-                  reject(e);
-                }
-              }
-              // TODO: temporary hack - probably should fetch label for lang as well
-              entry.data.forEach((language) => {
-                const langInternal = language.language.split('/').pop();
-                Vue.set(textObj, langInternal.toLowerCase(), language.text);
-              });
-              res(Object.assign({}, { type }, textObj));
-            }))) : [];
-
-        const keywords = entryData.keywords
-          .map(keywordEntry => Object.assign({}, keywordEntry, {
-            keyword: capitalizeString(keywordEntry.keyword[i18n.locale] || keywordEntry.keyword),
-          }));
-
-        const adjustedEntry = Object.assign({}, entryData, {
-          type: objectType,
-          texts: textData,
-          keywords,
-        });
-        commit('setCurrentItem', adjustedEntry);
-        await dispatch('setLinkedEntries', { list: entryData.relations || [], replace: true });
-        try {
-          await dispatch('fetchMediaData', entryData.id);
-          resolve(adjustedEntry);
-        } catch (e) {
-          reject(e);
-        }
+      } catch (e) {
+        reject(e);
       }
       reject();
     });

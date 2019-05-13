@@ -75,6 +75,8 @@
     "sort": "Sortieren A – Z"
   },
   "form-view": {
+    "notFound": "Eintrag nicht gefunden.",
+    "notFoundSubtext": "Der Eintrag mit ID \"{id}\" existiert leider nicht.",
     "formExtended": "Weitere Angaben",
     "attachedEntries": "Verlinkte Einträge",
     "attachedFiles": "Angehängte Dateien",

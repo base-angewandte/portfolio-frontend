@@ -24,6 +24,11 @@ export default new Router({
       meta: { requiresAuth: true },
       children: [
         {
+          path: 'notFound',
+          name: 'EntryNotFound',
+          component: NotFoundComponent,
+        },
+        {
           path: 'entry/:id',
           name: 'Entry',
           component: FormView,
@@ -54,6 +59,11 @@ export default new Router({
             return next(path);
           },
           children: [
+            {
+              path: 'notFound',
+              name: 'EntryNotFoundLang',
+              component: NotFoundComponent,
+            },
             {
               path: 'entry/:id',
               name: 'EntryLang',
