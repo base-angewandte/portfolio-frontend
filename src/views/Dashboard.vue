@@ -100,7 +100,7 @@ export default {
           /* eslint-disable-next-line */
           this.previewUrl = match[1] ? require(`@/assets/images/${match[1]}`) : '';
         } else {
-          this.previewUrl = `${process.env.PORTFOLIO_API}${img}`;
+          this.previewUrl = `${process.env.PORTFOLIO_HOST}${img}`;
         }
         this.showPreview = !!this.previewUrl;
       } else {

@@ -299,7 +299,7 @@ export default {
             if (cancel) {
               cancel('new request started');
             }
-            const result = await axios.get(`${process.env.PORTFOLIO_API}${source}${value ? `${value}/` : ''}`, {
+            const result = await axios.get(`${process.env.PORTFOLIO_HOST}${source}${value ? `${value}/` : ''}`, {
               withCredentials: true,
               headers: {
                 'Accept-Language': this.$i18n.locale,
