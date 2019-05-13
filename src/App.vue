@@ -50,7 +50,6 @@ export default {
       baseURL: process.env.SKOSMOS_API,
       lang: this.$i18n.locale,
     });
-    this.$store.dispatch('data/init');
   },
 };
 </script>

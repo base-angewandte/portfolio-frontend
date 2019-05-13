@@ -232,11 +232,6 @@ const mutations = {
 };
 
 const actions = {
-  async init({ dispatch }) {
-    dispatch('getStaticDropDowns');
-    dispatch('fetchGeneralFields');
-    dispatch('fetchEntryTypes');
-  },
   async fetchGeneralFields({ state, getters, commit }) {
     return new Promise(async (resolve, reject) => {
       try {
