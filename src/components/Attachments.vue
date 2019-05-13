@@ -425,8 +425,6 @@ export default {
         } if (iconName.includes('http')) {
           return iconName;
         }
-        console.log(process.env.PORTFOLIO_HOST);
-        console.log(`${process.env.PORTFOLIO_HOST}${iconName}`);
         return `${process.env.PORTFOLIO_HOST}${iconName}`;
       }
       return '';
