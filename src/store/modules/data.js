@@ -271,12 +271,13 @@ const actions = {
   getStaticDropDowns({ state, getters, commit }) {
     Object.keys(state.prefetchedTypes).forEach(async (field) => {
       if (!getters.getPrefetchedTypes(field).length) {
-        const { data } = await axios.get(`${process.env.PORTFOLIO_HOST}/autosuggest/v1/${field}/`, {
-          withCredentials: true,
-          headers: {
-            'Accept-Language': i18n.locale,
-          },
-        });
+        const { data } = await axios
+          .get(`${process.env.PORTFOLIO_HOST}${process.env.APP_PREFIX}/autosuggest/v1/${field}/`, {
+            withCredentials: true,
+            headers: {
+              'Accept-Language': i18n.locale,
+            },
+          });
         commit('setPrefetchedTypes', { field, data });
       }
     });

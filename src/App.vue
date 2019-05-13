@@ -43,7 +43,7 @@ export default {
   beforeCreate() {
     // initializing stores before app instance is created
     this.$store.dispatch('PortfolioAPI/init', {
-      baseURL: process.env.PORTFOLIO_HOST,
+      baseURL: `${process.env.PORTFOLIO_HOST}${process.env.APP_PREFIX}`,
       lang: this.$i18n.locale,
     });
     this.$store.dispatch('SkosmosAPI/init', {
