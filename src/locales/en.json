@@ -77,6 +77,8 @@
     "sort": "Sort A – Z"
   },
   "form-view": {
+    "notFound": "Entry Not Found",
+    "notFoundSubtext": "The requested Entry with ID \"{id}\" does not exist.",
     "formExtended": "Further Information",
     "attachedEntries": "Linked Entries",
     "attachedFiles": "Attached Files",
