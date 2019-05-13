@@ -47,7 +47,9 @@ function transformKeywords(keywords) {
           keyword: langObj,
         }));
       } else {
-        resolve(Object.assign({}, keywordEntry));
+        resolve(Object.assign({}, keywordEntry, {
+          keyword: { [i18n.locale]: keywordEntry.keyword },
+        }));
       }
     })));
 }
@@ -394,9 +396,21 @@ const actions = {
               }))) : [];
 
           const keywords = entryData.keywords
-            .map(keywordEntry => Object.assign({}, keywordEntry, {
-              keyword: capitalizeString(keywordEntry.keyword[i18n.locale] || keywordEntry.keyword),
-            }));
+            .map((keywordEntry) => {
+              const keyword = Object.assign({}, keywordEntry.keyword);
+              // use current locale to get right label
+              let keywordLocaleString = keyword[i18n.locale]
+                || keyword[i18n.fallbackLocale];
+              // if the label has not entry (e.g. non-cv keywords) try to find other languages
+              if (!keywordLocaleString) {
+                const locale = i18n.availableLocales
+                  .find(availableLocale => !!keyword[availableLocale]);
+                keywordLocaleString = keyword[locale];
+              }
+              return Object.assign({}, keywordEntry, {
+                keyword: capitalizeString(keywordLocaleString || keywordEntry.keyword),
+              });
+            });
 
           const adjustedEntry = Object.assign({}, entryData, {
             type: objectType,
