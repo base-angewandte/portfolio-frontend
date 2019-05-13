@@ -1,8 +1,0 @@
-version: "3"
-services:
-  portfolio-frontend:
-    build: .
-    container_name: portfolio-frontend
-    volumes:
-    - ./src:/usr/src/app
-    restart: always

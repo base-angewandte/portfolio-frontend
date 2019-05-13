@@ -1,11 +1,5 @@
 start:
-	docker-compose up -d --build
-
-stop:
-	docker-compose down
-
-restart:
-	docker-compose restart
+	npm run build
 
 git-update:
 	if [ "$(shell whoami)" != "base" ]; then sudo -u base git pull; else git pull; fi
