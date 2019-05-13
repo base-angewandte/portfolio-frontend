@@ -28,7 +28,7 @@ router.beforeEach(async (to, from, next) => {
     } catch (e) {
       // only redirect if authentication is missing
       if (e.message.includes('403')) {
-        window.location.href = `${process.env.PORTFOLIO_API}/accounts/login/`;
+        window.location.href = `${process.env.PORTFOLIO_API}${process.env.APP_PREFIX}/accounts/login/`;
       } else {
         next();
       }
