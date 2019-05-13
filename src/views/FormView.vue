@@ -239,8 +239,6 @@ export default {
         this.valueList = Object.assign({}, data);
       } catch (e) {
         console.error(e);
-        console.log(e.message);
-        console.log(e.message.includes('404'));
         if (e.message.includes('404')) {
           this.$router.push(`/notFound?id=${this.currentItemId}`);
         } else {
@@ -267,7 +265,8 @@ export default {
           JSON.parse(JSON.stringify(data))));
       } else {
         // check if type has changed - if yes - delete old properties in data
-        if (!this.valueList.type || this.valueList.type[0] !== data.type[0]) {
+        if (!this.valueList.type
+          || JSON.stringify(this.valueList.type) !== JSON.stringify(data.type)) {
           // TODO: not only delete but map data between fields!!
           this.valueList.data = {};
         }
