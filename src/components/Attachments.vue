@@ -425,7 +425,7 @@ export default {
         } if (iconName.includes('http')) {
           return iconName;
         }
-        return `${process.env.PORTFOLIO_API}${iconName}`;
+        return `${process.env.PORTFOLIO_HOST}${iconName}`;
       }
       return '';
     },
