@@ -353,7 +353,6 @@ export default {
       }
     },
     async deleteLinked() {
-      // TODO: also check first if any entries were selected
       if (this.selectedEntries.length) {
         await this.$parent.actionLinked({ list: this.selectedEntries, action: 'delete' });
         this.showEntryAction = false;

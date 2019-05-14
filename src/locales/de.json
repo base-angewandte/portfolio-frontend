@@ -130,6 +130,7 @@
     "offline": "offline nehmen",
     "duplicate": "Duplizierung",
     "link": "Verknüfung",
+    "upload": "Dateiupload",
     "entryActionTitle": "Eintrag {action} | Einträge {action}",
     "entryActionText": "Wollen Sie diesen Eintrag wirklich {action}? | Wollen Sie diese Einträge wirklich {action}?",
     "unsavedChangesTitle": "Eintrag speichern?",
@@ -157,7 +158,8 @@
     "noActionList": "Die folgenden Einträge sind bereits {action}:",
     "linkToParentFail": "Die Verknüpfung mit \"{title}\" ist leider fehlgeschlagen! Bitte versuchen Sie, manuell zu verknüpfen.",
     "fetchMediaFail": "Leider konnten die angehängten Dateien nicht geladen werden.",
-    "fetchLinkedFail": "Leider konnte die Liste der verlinkten Einträge nicht aktualisiert werden."
+    "fetchLinkedFail": "Leider konnte die Liste der verlinkten Einträge nicht aktualisiert werden.",
+    "quotaExceeded": "Leider konnten Dateien nicht hochgeladen werden da Ihr Portfolio Speicherplatz voll ist. Bitte löschen Sie Dateien um Speicherplatz frei zu geben."
   },
   "dropdown": {
     "type": "Nach Typ",
@@ -174,6 +176,7 @@
     "choose_license": "Wählen Sie bitte eine Lizenz.",
     "publish_images": "Dateien veröffentlichen?",
     "upload": "Hochladen",
-    "done": "Fertig"
+    "done": "Fertig",
+    "retry": "Erneut versuchen"
   }
 }

@@ -32,8 +32,10 @@
           icon="camera"
           @dropped="handleFileSelect($event)"/>
         <input
+          ref="fileInput"
           type="file"
           multiple
+          @click="resetInput"
           @change="handleFileSelect">
       </label>
 
@@ -63,6 +65,7 @@
         <input
           type="file"
           multiple
+          @click="resetInput"
           @change="handleFileSelect">
       </label>
     </div>
@@ -143,6 +146,9 @@ export default {
     },
   },
   methods: {
+    resetInput() {
+      this.$refs.fileInput.value = '';
+    },
     droppedEntries(e) {
       // check if it was not a file that was dragged in and if anything is attached to event at all
       if (!e.dataTransfer.files.length && e.dataTransfer.items) {
