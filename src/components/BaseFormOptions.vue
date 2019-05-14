@@ -11,12 +11,6 @@
         button-style="single"
         @clicked="$emit('action-entry', isPublished ? 'offline' : 'publish')"/>
       <BaseButton
-        :disabled="true"
-        :text="$tc('edit')"
-        icon-size="large"
-        icon="people"
-        button-style="single" />
-      <BaseButton
         :disabled="isNewForm"
         :text="$tc('delete')"
         icon-size="large"
