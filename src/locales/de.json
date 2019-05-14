@@ -101,7 +101,8 @@
     "publishButton": "Veröffentlichen",
     "deleteButton": "Löschen",
     "deleteLinkedText": "Bitte Einträge auswählen:",
-    "deleteLinkedSubtext": "Die Verknüfung zu diesen Einträgen wird gelöscht."
+    "deleteLinkedSubtext": "Die Verknüfung zu diesen Einträgen wird gelöscht.",
+    "fileConverting": "Datei wird konvertiert..."
   },
   "notify": {
     "entry": "Einträge | Eintrag | Einträge",

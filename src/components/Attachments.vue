@@ -192,7 +192,7 @@
           :selectable="!!fileText"
           :selected="(action === 'publish' && attachedList[index].published)
           || selectedFiles.includes(attached.id)"
-          :title="getFileName(attached.original)"
+          :title="attached.original ? getFileName(attached.original) : attached.id"
           :subtext="attached.license ? attached.license.toUpperCase() : ''"
           :description="attached.metadata && attached.metadata.FileType
             ? getFileType(attached.metadata.FileType.val)
@@ -411,7 +411,7 @@ export default {
         }
         return 'Document';
       }
-      return '';
+      return this.$t('form-view.fileConverting');
     },
     getImagePath(iconName) {
       if (iconName) {

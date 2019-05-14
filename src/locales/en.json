@@ -107,7 +107,8 @@
     "publishButton": "Publish",
     "deleteButton": "Delete",
     "deleteLinkedText": "Please Select Entries",
-    "deleteLinkedSubtext": "The Link to these Entries will be deleted."
+    "deleteLinkedSubtext": "The Link to these Entries will be deleted.",
+    "fileConverting": "File converting..."
   },
   "notify": {
     "entry": "entries | entry | entries",
