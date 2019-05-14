@@ -192,7 +192,7 @@
           :selectable="!!fileText"
           :selected="(action === 'publish' && attachedList[index].published)
           || selectedFiles.includes(attached.id)"
-          :title="getFileName(attached.original)"
+          :title="attached.original ? getFileName(attached.original) : attached.id"
           :subtext="attached.license ? attached.license.toUpperCase() : ''"
           :description="attached.metadata && attached.metadata.FileType
             ? getFileType(attached.metadata.FileType.val)
@@ -353,7 +353,6 @@ export default {
       }
     },
     async deleteLinked() {
-      // TODO: also check first if any entries were selected
       if (this.selectedEntries.length) {
         await this.$parent.actionLinked({ list: this.selectedEntries, action: 'delete' });
         this.showEntryAction = false;
@@ -412,7 +411,7 @@ export default {
         }
         return 'Document';
       }
-      return '';
+      return this.$t('form-view.fileConverting');
     },
     getImagePath(iconName) {
       if (iconName) {

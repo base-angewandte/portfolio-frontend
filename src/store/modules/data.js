@@ -46,10 +46,12 @@ function transformKeywords(keywords) {
         resolve(Object.assign({}, keywordEntry, {
           keyword: langObj,
         }));
-      } else {
+      } else if (!keywordEntry.source) {
         resolve(Object.assign({}, keywordEntry, {
           keyword: { [i18n.locale]: keywordEntry.keyword },
         }));
+      } else {
+        resolve(Object.assign({}, keywordEntry));
       }
     })));
 }
@@ -632,13 +634,6 @@ const actions = {
     await Promise.all(list.map(mediaId => new Promise(async (resolve) => {
       const formData = new FormData();
       const id = mediaId.id || mediaId;
-      if (action === 'publish') {
-        formData.append('published', mediaId.selected);
-      } else if (action === 'license') {
-        formData.append('license', value);
-      } else {
-        console.error('file action unknown');
-      }
       try {
         if (axiosAction === 'delete') {
           // TODO: replace with Portofolio_API
@@ -649,6 +644,13 @@ const actions = {
               xsrfHeaderName: 'X-CSRFToken',
             });
         } else {
+          if (action === 'publish') {
+            formData.append('published', mediaId.selected);
+          } else if (action === 'license') {
+            formData.append('license', value);
+          } else {
+            console.error('file action unknown');
+          }
           // TODO: replace with Portofolio_API
           await axios[axiosAction](`${process.env.API}media/${id}/`,
             formData,

@@ -107,7 +107,8 @@
     "publishButton": "Publish",
     "deleteButton": "Delete",
     "deleteLinkedText": "Please Select Entries",
-    "deleteLinkedSubtext": "The Link to these Entries will be deleted."
+    "deleteLinkedSubtext": "The Link to these Entries will be deleted.",
+    "fileConverting": "File converting..."
   },
   "notify": {
     "entry": "entries | entry | entries",
@@ -136,6 +137,7 @@
     "offline": "unpublish",
     "duplicate": "Entry duplication",
     "link": "Linking",
+    "upload": "File upload",
     "entryActionTitle": "{action} entry | {action} entries",
     "entryActionText": "Do you really want to {action} this entry? | Do you really want to {action} these entries?",
     "unsavedChangesTitle": "Save Entry?",
@@ -163,7 +165,8 @@
     "noActionList": "The following entries are already {action}:",
     "linkToParentFail": "Linking with entry \"{title}\" failed! Please try to link manually.",
     "fetchMediaFail": "Unfortunately the files attached to this entry could not be loaded.",
-    "fetchLinkedFail": "Unfortunately the list of linked entries could not be updated."
+    "fetchLinkedFail": "Unfortunately the list of linked entries could not be updated.",
+    "quotaExceeded": "Unfortunately files could not be uploaded, because you exceeded your user quota. Please free some space in order to upload."
   },
   "dropdown": {
     "type": "By Type",
@@ -180,6 +183,7 @@
     "choose_license": "Choose a License",
     "publish_images": "Publish files?",
     "upload": "Upload",
-    "done": "Done"
+    "done": "Done",
+    "retry": "Try Again"
   }
 }

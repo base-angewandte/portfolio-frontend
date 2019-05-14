@@ -47,7 +47,7 @@
     <template
       slot="button-row">
       <BaseButton
-        v-if="isInitial"
+        v-if="isInitial || isFailed"
         :text="$t('cancel')"
         :icon="'remove'"
         :icon-position="'right'"
@@ -57,8 +57,8 @@
       />
       <!-- @event buttonRight -->
       <BaseButton
-        :text="isInitial || isSaving ? $t('upload.upload') : $t('upload.done')"
-        :icon="!isSaving ? 'check-mark' : ''"
+        :text="buttonText"
+        :icon="!isSaving && !isFailed ? 'check-mark' : ''"
         :icon-position="'right'"
         :icon-size="'small'"
         :disabled="isSaving"
@@ -137,68 +137,99 @@ export default {
     isFailed() {
       return this.currentStatus === STATUS_FAILED;
     },
+    buttonText() {
+      if (this.isInitial || this.isSaving) {
+        return this.$t('upload.upload');
+      }
+      if (this.rejectedFiles.length) {
+        return this.$t('upload.retry');
+      }
+      return this.$t('upload.done');
+    },
   },
   mounted() {
     this.reset();
   },
   methods: {
     async startUpload() {
-      if (this.uploadedFiles.length) {
+      // check if all files were sucessfully uploaded already
+      if (this.uploadedFiles.length && !this.rejectedFiles.length) {
         this.$emit('success');
       } else {
         if (!this.fileList.length) return;
-        await Promise.all(this.fileList
-          .map((file, index) => new Promise(async (resolve, reject) => {
-            const formData = new FormData();
-
-            formData.append('file', file);
-            formData.append('entry', this.$route.params.id);
-            // These values can not be empty (also no empty string) or it will give
-            // an error
-            formData.append('published', this.publish.value);
-            formData.append('license', this.license.value);
-
-            this.currentStatus = STATUS_SAVING;
-            this.$emit('upload-start');
-
-            try {
-              await axios.post(`${process.env.API}media/`,
-                formData,
-                {
-                  withCredentials: true,
-                  xsrfCookieName: 'csrftoken_portfolio',
-                  xsrfHeaderName: 'X-CSRFToken',
-                  headers: {
-                    'Content-Type': 'multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW',
-                  },
-                  onUploadProgress: (progressEvent) => {
-                    this.uploadPercentage[index] = Math
-                      .round(progressEvent.loaded / progressEvent.total);
-                  },
-                });
-              this.uploadedFiles.push(file.name);
-              this.currentStatus = STATUS_SUCCESS;
-              resolve();
-            } catch (err) {
-              this.uploadPercentage[index] = 0;
-              this.uploadError = err.response;
-              this.currentStatus = STATUS_FAILED;
-              this.rejectedFiles.push(file.name);
-              reject();
-            }
-          })));
-        // TODO: duplicated in Attachments --> see if this can be made more efficient
-        // maybe place in attachment area component?
         try {
-          await this.$store.dispatch('data/fetchMediaData', this.$route.params.id);
+          // reset rejected files list
+          this.rejectedFiles = [];
+          await Promise.all(this.fileList
+            .map((file, index) => new Promise(async (resolve, reject) => {
+              // accounting for retrys by only acting on files that have no upload
+              // percentage yet
+              if (this.uploadPercentage[index] === 0) {
+                const formData = new FormData();
+
+                formData.append('file', file);
+                formData.append('entry', this.$route.params.id);
+                // These values can not be empty (also no empty string) or it will give
+                // an error
+                formData.append('published', this.publish.value);
+                formData.append('license', this.license.value);
+
+                this.currentStatus = STATUS_SAVING;
+                this.$emit('upload-start');
+
+                try {
+                  await axios.post(`${process.env.API}media/`,
+                    formData,
+                    {
+                      withCredentials: true,
+                      xsrfCookieName: 'csrftoken_portfolio',
+                      xsrfHeaderName: 'X-CSRFToken',
+                      headers: {
+                        'Content-Type': 'multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW',
+                      },
+                      onUploadProgress: (progressEvent) => {
+                        this.uploadPercentage[index] = Math
+                          .round(progressEvent.loaded / progressEvent.total);
+                      },
+                    });
+                  this.uploadedFiles.push(file.name);
+                  this.currentStatus = STATUS_SUCCESS;
+                  resolve();
+                } catch (err) {
+                  this.uploadPercentage[index] = 0;
+                  this.uploadError = err.response;
+                  this.currentStatus = STATUS_FAILED;
+                  this.rejectedFiles.push(file.name);
+                  reject(err);
+                }
+              }
+              resolve();
+            })));
         } catch (e) {
-          console.error(e);
-          this.$notify({
-            group: 'request-notifications',
-            title: this.$t('notify.somethingWrong'),
-            text: this.$t('notify.fetchMediaFail'),
-            type: 'error',
-          });
+          if (e.message.includes('422')) {
+            console.error(e);
+            this.$notify({
+              group: 'request-notifications',
+              title: this.$t('notify.actionFailed', { action: this.$t('notify.upload') }),
+              text: this.$t('notify.quotaExceeded'),
+              type: 'error',
+            });
+          }
+        }
+        if (this.uploadedFiles.length) {
+          // TODO: duplicated in Attachments --> see if this can be made more efficient
+          // maybe place in attachment area component?
+          try {
+            await this.$store.dispatch('data/fetchMediaData', this.$route.params.id);
+          } catch (e) {
+            console.error(e);
+            this.$notify({
+              group: 'request-notifications',
+              title: this.$t('notify.somethingWrong'),
+              text: this.$t('notify.fetchMediaFail'),
+              type: 'error',
+            });
+          }
         }
       }
     },

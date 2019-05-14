@@ -100,6 +100,7 @@
       :sortable="field.name === 'keywords' || (field['x-attrs'] && field['x-attrs'].sortable)"
       :is-loading="autocompleteLoading"
       :sort-text="$t('form.sort')"
+      :sort-name="isContributorOrEquivalent"
       @fetch-dropdown-entries="$emit('fetch-autocomplete', {
         value: $event.value,
         name: field.name,
@@ -131,6 +132,8 @@
       :role-options="secondaryDropdown"
       :is-loading="autocompleteLoading"
       :sort-text="$t('form.sort')"
+      :sort-name="true"
+      :chips-editable="true"
       v-model="fieldValueInt"
       class="base-form-field base-form-field-full"
       @fetch-dropdown-entries="$emit('fetch-autocomplete',{
@@ -289,9 +292,12 @@ export default {
     textTypeOptions() {
       return [this.textTypeDefault].concat(this.secondaryDropdown);
     },
+    isContributorOrEquivalent() {
+      return this.field.name === 'contributors'
+        || (this.field['x-attrs'] && this.field['x-attrs'].equivalent === 'contributors');
+    },
     chipsPropertyName() {
-      if (this.field.name === 'contributors' || this.field.name === 'location'
-        || (this.field['x-attrs'] && this.field['x-attrs'].equivalent === 'contributors')) {
+      if (this.isContributorOrEquivalent || this.field.name === 'location') {
         return 'name';
       } if (this.field.name === 'keywords') {
         return 'keyword';

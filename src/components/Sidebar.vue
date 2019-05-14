@@ -10,6 +10,7 @@
           v-if="newEnabled"
           :active="isNewForm"
           :text="$t('new')"
+          :disabled="isLoading"
           icon="sheet-plus"
           icon-size="large"
           class="base-row-button"
@@ -273,12 +274,12 @@ export default {
     },
   },
   created() {
-    this.fetchSidebarData();
     this.$store.dispatch('data/fetchEntryTypes');
   },
   mounted() {
     this.listInt = this.list;
     this.calculateSidebarHeight();
+    this.fetchSidebarData();
   },
   methods: {
     showEntry(index) {
@@ -325,8 +326,6 @@ export default {
       this.fetchSidebarData();
     },
     async duplicateEntries() {
-      // TODO: disable action buttons until action finished!
-      // TODO: do this in component not store!
       if (this.selectedMenuEntries.length) {
         this.isLoading = true;
         // dispatch selected entries to be duplicated and sucessfully duplicated ids are returned
@@ -347,6 +346,7 @@ export default {
           this.fetchSidebarData();
           this.$router.push(`/entry/${routingIds.pop()}`);
         }
+        this.isLoading = false;
       } else {
         this.$notify({
           group: 'request-notifications',
