@@ -133,6 +133,7 @@
       :is-loading="autocompleteLoading"
       :sort-text="$t('form.sort')"
       :sort-name="true"
+      :chips-editable="true"
       v-model="fieldValueInt"
       class="base-form-field base-form-field-full"
       @fetch-dropdown-entries="$emit('fetch-autocomplete',{
