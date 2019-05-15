@@ -3,7 +3,7 @@ import Vue from 'vue';
 import axios from 'axios';
 import { i18n } from '../../plugins/i18n';
 
-import { capitalizeString } from '../../utils/commonUtils';
+import { capitalizeString, sorting } from '../../utils/commonUtils';
 
 function transformTextData(data) {
   const textData = [];
@@ -322,7 +322,7 @@ const actions = {
         label: i18n.t('dropdown.allTypes'),
         value: '',
       });
-      commit('setEntryTypes', entryTypes);
+      commit('setEntryTypes', sorting(entryTypes, 'label'));
     } catch (e) {
       console.error(e);
       // TODO: inform user?
