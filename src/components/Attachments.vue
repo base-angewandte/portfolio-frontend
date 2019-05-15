@@ -187,10 +187,10 @@
       <!-- BOX AREA -->
       <div class="box-area">
         <BaseImageBox
-          v-for="(attached, index) of attachedList"
+          v-for="attached of attachedList"
           :show-title="true"
           :selectable="!!fileText"
-          :selected="(action === 'publish' && attachedList[index].published)
+          :selected="(action === 'publish' && attached.published)
           || selectedFiles.includes(attached.id)"
           :title="attached.original ? getFileName(attached.original) : attached.id"
           :subtext="attached.license ? attached.license.toUpperCase() : ''"
@@ -203,7 +203,7 @@
           :box-text="generateBoxText(attached.metadata)"
           :key="attached.id"
           :class="['linked-base-box', { 'image-box': !!attached.thumbnail }]"
-          @select-triggered="filesSelected(attached.id, $event)"
+          @select-triggered="filesSelected(attached.id, $event, attached.published)"
           @clicked="$emit('show-preview', attached.original)">
           <template slot="top">
             <div
@@ -301,7 +301,7 @@ export default {
   methods: {
     async saveFileMeta() {
       // check if files were selected
-      if ((this.action === 'publish' && !this.publishFiles.length) || !this.selectedFiles.length) {
+      if ((this.action === 'publish' && !this.publishFiles.length) && !this.selectedFiles.length) {
         // if not notify user that he needs to select files
         this.$notify({
           group: 'request-notifications',
@@ -353,11 +353,13 @@ export default {
       }
     },
     async deleteLinked() {
+      // check if user has selected entries
       if (this.selectedEntries.length) {
         await this.$parent.actionLinked({ list: this.selectedEntries, action: 'delete' });
         this.showEntryAction = false;
         this.selectedEntries = [];
       } else {
+        // notify user to select entries
         this.$notify({
           group: 'request-notifications',
           title: this.$t('notify.actionFailed', { action: this.$t('notify.delete') }),
@@ -376,7 +378,7 @@ export default {
         this.selectedEntries = this.selectedEntries.filter(entryId => entryId !== objId);
       }
     },
-    filesSelected(objId, sel) {
+    filesSelected(objId, sel, published) {
       if (this.action !== 'publish') {
         if (sel) {
           this.selectedFiles.push(objId);
@@ -384,12 +386,12 @@ export default {
           this.selectedFiles = this.selectedFiles.filter(entryId => entryId !== objId);
         }
       } else {
-        // check if the file was already changed previously (which means now it is
-        // back in original state) --> filter out
+        // filter item from array in case it was already added previously
+        // easier than replacing the selected value for relevant item
+        this.publishFiles = this.publishFiles.filter(file => file.id !== objId);
+        // check if the new state equals the state saved to db --> only add if not
         /* eslint-disable-next-line */
-        if (this.publishFiles.some(file => file.id === objId)) {
-          this.publishFiles = this.publishFiles.filter(file => file.id === objId);
-        } else {
+        if (sel !== published) {
           this.publishFiles.push({ id: objId, selected: sel });
         }
       }

@@ -126,7 +126,6 @@ import {
   BasePagination,
   BaseLoader,
 } from 'base-ui-components';
-import 'base-ui-components/dist/lib/base-ui-components.min.css';
 import BaseOptions from './BaseOptions';
 import { entryHandlingMixin } from '../mixins/entryHandling';
 import { userInfo } from '../mixins/userInfo';
