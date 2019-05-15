@@ -46,7 +46,7 @@ function transformKeywords(keywords) {
         resolve(Object.assign({}, keywordEntry, {
           keyword: langObj,
         }));
-      } else if (!keywordEntry.source) {
+      } else if (typeof keywordEntry.keyword === 'string') {
         resolve(Object.assign({}, keywordEntry, {
           keyword: { [i18n.locale]: keywordEntry.keyword },
         }));
