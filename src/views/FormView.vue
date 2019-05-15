@@ -288,13 +288,15 @@ export default {
           );
         });
         const data = {};
-        Object.keys(this.valueList.data).forEach((key) => {
-          this.$set(
-            data,
-            key,
-            this.removeProperties(key, this.formFieldsExtension[key], this.valueList.data[key]),
-          );
-        });
+        if (this.type) {
+          Object.keys(this.valueList.data).forEach((key) => {
+            this.$set(
+              data,
+              key,
+              this.removeProperties(key, this.formFieldsExtension[key], this.valueList.data[key]),
+            );
+          });
+        }
         try {
           // check if the route indicates an already saved entry or a new entry
           if (!this.currentItemId) {
