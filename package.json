@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "axios": "^0.18.0",
-    "base-ui-components": "^0.0.7",
+    "base-ui-components": "^0.0.8",
     "dotenv": "^6.1.0",
     "normalize.css": "^8.0.1",
     "vue": "^2.6.10",
