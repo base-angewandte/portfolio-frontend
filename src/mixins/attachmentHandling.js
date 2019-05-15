@@ -25,7 +25,7 @@ export const attachmentHandlingMixin = {
       this.informUser({
         failedArr: failArr,
         type: 'entry',
-        action: 'link',
+        action,
       });
       // fetch entry new to update relations
       try {
