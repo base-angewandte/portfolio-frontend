@@ -188,8 +188,8 @@ export default {
                         'Content-Type': 'multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW',
                       },
                       onUploadProgress: (progressEvent) => {
-                        this.uploadPercentage[index] = Math
-                          .round(progressEvent.loaded / progressEvent.total);
+                        this.$set(this.uploadPercentage, index,
+                          progressEvent.loaded / progressEvent.total);
                       },
                     });
                   this.uploadedFiles.push(file.name);
