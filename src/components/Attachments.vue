@@ -187,24 +187,24 @@
       <!-- BOX AREA -->
       <div class="box-area">
         <BaseImageBox
-          v-for="attached of attachedList"
+          v-for="(attached, index) of attachedList"
           :show-title="true"
           :selectable="!!fileText"
           :selected="(action === 'publish' && attached.published)
           || selectedFiles.includes(attached.id)"
           :title="attached.original ? getFileName(attached.original) : attached.id"
           :subtext="attached.license ? attached.license.toUpperCase() : ''"
-          :description="attached.metadata && attached.metadata.FileType
-            ? getFileType(attached.metadata.FileType.val)
-          : getFileType(getFileName(attached.original))"
-          :image-url="getImagePath(attached.thumbnail)"
+          :description="getFileType(attached.id)"
+          :image-url="getImagePath(attached.thumbnail || attached.cover, imageHover[index])"
           :box-size="{ width: 'calc(25% - 0.43em - (0.43em/2))' }"
           :box-ratio="100"
           :box-text="generateBoxText(attached.metadata)"
           :key="attached.id"
           :class="['linked-base-box', { 'image-box': !!attached.thumbnail }]"
+          @mouseenter.native="changeVideoHoverState($event, index, true)"
+          @mouseleave.native="changeVideoHoverState($event, index, false)"
           @select-triggered="filesSelected(attached.id, $event, attached.published)"
-          @clicked="$emit('show-preview', attached.original)">
+          @clicked="$emit('show-preview', attached.playlist || attached.original)">
           <template slot="top">
             <div
               v-if="attached.published"
@@ -283,6 +283,7 @@ export default {
       publishFiles: [],
       action: '',
       licenseSelected: {},
+      imageHover: [],
     };
   },
   watch: {
@@ -299,6 +300,9 @@ export default {
     },
   },
   methods: {
+    changeVideoHoverState(event, index, value) {
+      this.$set(this.imageHover, index, value);
+    },
     async saveFileMeta() {
       // check if files were selected
       if ((this.action === 'publish' && !this.publishFiles.length) && !this.selectedFiles.length) {
@@ -402,20 +406,24 @@ export default {
       }
       return '';
     },
-    getFileType(fileType) {
-      if (fileType) {
-        if (['jpg', 'gif', 'jpeg', 'png'].includes(fileType.toLowerCase())) {
-          return 'Picture';
-        } if (['mp4', 'mvw'].includes(fileType.toLowerCase())) {
-          return 'Video';
-        } if (['mp3'].includes(fileType.toLowerCase())) {
-          return 'Audio';
+    getFileType(fileId) {
+      const { type } = fileId.match(/(?<type>^[a-z]):/).groups;
+      if (type) {
+        if (type === 'i') {
+          return this.$t('form-view.image');
+        } if (type === 'v') {
+          return this.$t('form-view.video');
+        } if (type === 'a') {
+          return this.$t('form-view.audio');
         }
-        return 'Document';
+        return this.$t('form-view.document');
       }
       return this.$t('form-view.fileConverting');
     },
-    getImagePath(iconName) {
+    getImagePath(iconName, hover) {
+      if (iconName && iconName.gif) {
+        return `${process.env.PORTFOLIO_HOST}${hover ? iconName.gif : iconName.jpg}`;
+      }
       if (iconName) {
         // for local images
         // TODO: remove for production!

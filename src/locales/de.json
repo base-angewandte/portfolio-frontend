@@ -102,7 +102,11 @@
     "deleteButton": "Löschen",
     "deleteLinkedText": "Bitte Einträge auswählen:",
     "deleteLinkedSubtext": "Die Verknüfung zu diesen Einträgen wird gelöscht.",
-    "fileConverting": "Datei wird konvertiert..."
+    "fileConverting": "Datei wird konvertiert...",
+    "audio": "Audio",
+    "video": "Video",
+    "image": "Bild",
+    "document": "Dokument"
   },
   "notify": {
     "entry": "Einträge | Eintrag | Einträge",
@@ -160,7 +164,9 @@
     "linkToParentFail": "Die Verknüpfung mit \"{title}\" ist leider fehlgeschlagen! Bitte versuchen Sie, manuell zu verknüpfen.",
     "fetchMediaFail": "Leider konnten die angehängten Dateien nicht geladen werden.",
     "fetchLinkedFail": "Leider konnte die Liste der verlinkten Einträge nicht aktualisiert werden.",
-    "quotaExceeded": "Leider konnten Dateien nicht hochgeladen werden da Ihr Portfolio Speicherplatz voll ist. Bitte löschen Sie Dateien um Speicherplatz frei zu geben."
+    "quotaExceeded": "Leider konnten Dateien nicht hochgeladen werden da Ihr Portfolio Speicherplatz voll ist. Bitte löschen Sie Dateien um Speicherplatz frei zu geben.",
+    "displayImage": "Vollanzeige nicht möglich",
+    "notSupported": "Die Anzeige dieses Dateityps wird im Moment leider nicht unterstützt"
   },
   "dropdown": {
     "type": "Nach Typ",

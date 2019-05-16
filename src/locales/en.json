@@ -108,7 +108,11 @@
     "deleteButton": "Delete",
     "deleteLinkedText": "Please Select Entries",
     "deleteLinkedSubtext": "The Link to these Entries will be deleted.",
-    "fileConverting": "File converting..."
+    "fileConverting": "File converting...",
+    "audio": "Audio",
+    "video": "Video",
+    "image": "Image",
+    "document": "Document"
   },
   "notify": {
     "entry": "entries | entry | entries",
@@ -166,7 +170,9 @@
     "linkToParentFail": "Linking with entry \"{title}\" failed! Please try to link manually.",
     "fetchMediaFail": "Unfortunately the files attached to this entry could not be loaded.",
     "fetchLinkedFail": "Unfortunately the list of linked entries could not be updated.",
-    "quotaExceeded": "Unfortunately files could not be uploaded, because you exceeded your user quota. Please free some space in order to upload."
+    "quotaExceeded": "Unfortunately files could not be uploaded, because you exceeded your user quota. Please free some space in order to upload.",
+    "displayImage": "Full display not possible",
+    "notSupported": "Unfortunately display of this file type is currently not supported."
   },
   "dropdown": {
     "type": "By Type",
