@@ -92,7 +92,7 @@ export default {
     },
     loadPreview(filePath) {
       // TODO: remove again as soon as video and pdf and audio are available
-      if (filePath && filePath.search(/(jpg|jpeg|gif|png)$/g) >= 0) {
+      if (filePath && filePath.search(/(jpg|jpeg|gif|png|mp4|m3u8|ogg)$/g) >= 0) {
         /* eslint-disable-next-line */
         if (filePath.includes('http')) {
           this.previewUrl = filePath;

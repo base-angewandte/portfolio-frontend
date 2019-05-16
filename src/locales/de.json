@@ -102,7 +102,11 @@
     "deleteButton": "Löschen",
     "deleteLinkedText": "Bitte Einträge auswählen:",
     "deleteLinkedSubtext": "Die Verknüfung zu diesen Einträgen wird gelöscht.",
-    "fileConverting": "Datei wird konvertiert..."
+    "fileConverting": "Datei wird konvertiert...",
+    "audio": "Audio",
+    "video": "Video",
+    "image": "Bild",
+    "document": "Dokument"
   },
   "notify": {
     "entry": "Einträge | Eintrag | Einträge",

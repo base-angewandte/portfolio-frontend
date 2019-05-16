@@ -108,7 +108,11 @@
     "deleteButton": "Delete",
     "deleteLinkedText": "Please Select Entries",
     "deleteLinkedSubtext": "The Link to these Entries will be deleted.",
-    "fileConverting": "File converting..."
+    "fileConverting": "File converting...",
+    "audio": "Audio",
+    "video": "Video",
+    "image": "Image",
+    "document": "Document"
   },
   "notify": {
     "entry": "entries | entry | entries",
