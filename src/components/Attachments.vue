@@ -407,7 +407,8 @@ export default {
       return '';
     },
     getFileType(fileId) {
-      const { type } = fileId.match(/(?<type>^[a-z]):/).groups;
+      const matches = fileId.match(/^([a-z]):/);
+      const type = matches && matches.length ? matches[1] : '';
       if (type) {
         if (type === 'i') {
           return this.$t('form-view.image');
