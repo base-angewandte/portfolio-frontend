@@ -90,20 +90,27 @@ export default {
       }
       this.$store.commit('data/hidePopUp');
     },
-    loadPreview(img) {
-      if (img) {
+    loadPreview(filePath) {
+      // TODO: remove again as soon as video and pdf and audio are available
+      if (filePath && filePath.search(/(jpg|jpeg|gif|png)$/g) >= 0) {
         /* eslint-disable-next-line */
-        if (img.includes('http')) {
-          this.previewUrl = img;
-        } else if (img.includes('/images')) {
-          const match = /\/assets\/images\/(\w+\.\w+)$/.exec(img);
+        if (filePath.includes('http')) {
+          this.previewUrl = filePath;
+        } else if (filePath.includes('/images')) {
+          const match = /\/assets\/images\/(\w+\.\w+)$/.exec(filePath);
           /* eslint-disable-next-line */
           this.previewUrl = match[1] ? require(`@/assets/images/${match[1]}`) : '';
         } else {
-          this.previewUrl = `${process.env.PORTFOLIO_HOST}${img}`;
+          this.previewUrl = `${process.env.PORTFOLIO_HOST}${filePath}`;
         }
         this.showPreview = !!this.previewUrl;
       } else {
+        this.$notify({
+          group: 'request-notifications',
+          title: this.$t('notify.displayImage'),
+          text: this.$t('notify.notSupported'),
+          type: 'error',
+        });
         this.previewUrl = '';
       }
     },
