@@ -166,7 +166,8 @@
     "fetchLinkedFail": "Leider konnte die Liste der verlinkten Einträge nicht aktualisiert werden.",
     "quotaExceeded": "Leider konnten Dateien nicht hochgeladen werden da Ihr Portfolio Speicherplatz voll ist. Bitte löschen Sie Dateien um Speicherplatz frei zu geben.",
     "displayImage": "Vollanzeige nicht möglich",
-    "notSupported": "Die Anzeige dieses Dateityps wird im Moment leider nicht unterstützt"
+    "notSupported": "Die Anzeige dieses Dateityps wird im Moment leider nicht unterstützt",
+    "notConverted": "Bitte haben Sie noch etwas Geduld bis die Datei vollständig konvertiert ist."
   },
   "dropdown": {
     "type": "Nach Typ",
