@@ -204,7 +204,7 @@
           @mouseenter.native="changeVideoHoverState($event, index, true)"
           @mouseleave.native="changeVideoHoverState($event, index, false)"
           @select-triggered="filesSelected(attached.id, $event, attached.published)"
-          @clicked="$emit('show-preview', attached.playlist || attached.original)">
+          @clicked="$emit('show-preview', attached)">
           <template slot="top">
             <div
               v-if="attached.published"
@@ -286,6 +286,12 @@ export default {
       imageHover: [],
     };
   },
+  computed: {
+    isConverting() {
+      console.log(this.attachedList.some(file => !file.metadata));
+      return this.attachedList.some(file => !file.metadata);
+    },
+  },
   watch: {
     action(val) {
       if (val) {
@@ -296,6 +302,15 @@ export default {
         this.fileText = '';
         this.publishFiles = [];
         this.selectedFiles = [];
+      }
+    },
+    attachedList() {
+      // request media data again every minute if media are still converting
+      while (this.isConverting) {
+        /* eslint-disable-next-line */
+        setTimeout(() => {
+          this.fetchMedia();
+        }, 1000);
       }
     },
   },
@@ -335,19 +350,7 @@ export default {
           successArr: successIds, failedArr: failIds, action: this.action, type: 'media',
         });
         if (successIds.length) {
-          // update information in attachement area with new info
-          // TODO: do i need to do this or could i just change things locally??
-          try {
-            await this.$store.dispatch('data/fetchMediaData', this.$route.params.id);
-          } catch (e) {
-            console.error(e);
-            this.$notify({
-              group: 'request-notifications',
-              title: this.$t('notify.somethingWrong'),
-              text: this.$t('notify.fetchMediaFail'),
-              type: 'error',
-            });
-          }
+          await this.fetchMedia();
         }
         // clear all variables after action
         this.action = '';
@@ -450,6 +453,21 @@ export default {
     goToLinked(id) {
       this.$store.commit('data/deleteLastParentItem');
       this.$router.push(`/entry/${id}`);
+    },
+    async fetchMedia() {
+      // update information in attachement area with new info
+      // TODO: do i need to do this or could i just change things locally??
+      try {
+        await this.$store.dispatch('data/fetchMediaData', this.$route.params.id);
+      } catch (e) {
+        console.error(e);
+        this.$notify({
+          group: 'request-notifications',
+          title: this.$t('notify.somethingWrong'),
+          text: this.$t('notify.fetchMediaFail'),
+          type: 'error',
+        });
+      }
     },
   },
 };
