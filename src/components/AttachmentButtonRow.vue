@@ -89,7 +89,7 @@
           :select-active="true"
           :options-visible="false"
           :new-enabled="false"
-          :height="'62vh'"
+          :height="'60vh'"
           :hide-active="true"
           :entry-number="totalEntries"
           :exclude-linked="true"
