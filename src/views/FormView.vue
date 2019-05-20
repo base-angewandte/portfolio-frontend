@@ -39,7 +39,7 @@
     <form
       class="form-container">
       <div
-        v-if="!formDataPresent || formIsLoading"
+        v-if="formIsLoading"
         class="form-loading-area">
         <BaseLoader class="loader" />
       </div>
@@ -84,7 +84,7 @@
 
         <!-- ATTACHMENTS -->
         <AttachmentArea
-          v-if="Object.keys(formFields).length"
+          v-if="formDataPresent"
           key="attachments"
           @open-new-form="openNewForm"
           @show-preview="$emit('show-preview', $event)"/>
@@ -159,8 +159,9 @@ export default {
       return this.$store.getters['data/getFormObjectTypes'];
     },
     formDataPresent() {
-      return Object.keys(this.formFields).length
-        && (!this.type || Object.keys(this.formFieldsExtension).length);
+      return !this.currentItemId || (!!Object.keys(this.formFields).length
+        && !!Object.keys(this.valueList).length
+        && !(this.type && !Object.keys(this.formFieldsExtension).length));
     },
   },
   watch: {
@@ -566,19 +567,18 @@ export default {
     }
 
     .form-container {
-      min-height: 100vh;
       position: relative;
 
       .form-loading-area {
         position: absolute;
-        height: 100%;
         width: 100%;
-        z-index: 6;
+        height: 100%;
+        z-index: 2;
         background-color: rgba(255,255,255, 0.50);
 
         .loader {
           position: fixed;
-          top: 50%;
+          top:33%;
           left: 66%;
           transform: translateX(-50%);
         }
