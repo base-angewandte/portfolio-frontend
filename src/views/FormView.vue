@@ -84,7 +84,7 @@
 
         <!-- ATTACHMENTS -->
         <AttachmentArea
-          v-if="formDataPresent"
+          v-if="!formIsLoading && formDataPresent"
           key="attachments"
           @open-new-form="openNewForm"
           @show-preview="$emit('show-preview', $event)"/>
@@ -159,6 +159,9 @@ export default {
       return this.$store.getters['data/getFormObjectTypes'];
     },
     formDataPresent() {
+      console.log(!this.currentItemId || (!!Object.keys(this.formFields).length
+        && !!Object.keys(this.valueList).length
+        && !(this.type && !Object.keys(this.formFieldsExtension).length)));
       return !this.currentItemId || (!!Object.keys(this.formFields).length
         && !!Object.keys(this.valueList).length
         && !(this.type && !Object.keys(this.formFieldsExtension).length));
@@ -597,7 +600,7 @@ export default {
   }
 
   .slide-fade-form-enter-active, .slide-fade-form-move {
-    transition: all 0.5s ease;
+    transition: opacity 0.5s ease;
   }
   .slide-fade-form-enter, .slide-fade-form-leave-to {
     opacity: 0;
@@ -606,7 +609,7 @@ export default {
 
   .slide-fade-form-leave-active {
     position: absolute;
-    transition: all 0.3s ease;
+    transition: opacity 0.3s ease;
   }
 
   .slide-child-form-enter-active {
