@@ -288,7 +288,6 @@ export default {
   },
   computed: {
     isConverting() {
-      console.log(this.attachedList.some(file => !file.metadata));
       return this.attachedList.some(file => !file.metadata);
     },
   },
@@ -305,13 +304,11 @@ export default {
       }
     },
     attachedList() {
-      console.log('list changed!');
       // request media data again every minute if media are still converting
       if (this.isConverting) {
-        /* eslint-disable-next-line */
         setTimeout(() => {
           this.fetchMedia();
-        }, 1000);
+        }, 60 * 1000);
       }
     },
   },
