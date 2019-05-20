@@ -194,7 +194,7 @@
           || selectedFiles.includes(attached.id)"
           :title="attached.original ? getFileName(attached.original) : attached.id"
           :subtext="attached.license ? attached.license.toUpperCase() : ''"
-          :description="getFileType(attached.id)"
+          :description="getFileType(attached)"
           :image-url="getImagePath(attached.thumbnail || attached.cover, imageHover[index])"
           :box-size="{ width: 'calc(25% - 0.43em - (0.43em/2))' }"
           :box-ratio="100"
@@ -406,10 +406,10 @@ export default {
       }
       return '';
     },
-    getFileType(fileId) {
-      const matches = fileId.match(/^([a-z]):/);
+    getFileType(file) {
+      const matches = file.id.match(/^([a-z]):/);
       const type = matches && matches.length ? matches[1] : '';
-      if (type) {
+      if (file.metadata && type) {
         if (type === 'i') {
           return this.$t('form-view.image');
         } if (type === 'v') {
