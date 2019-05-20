@@ -305,8 +305,9 @@ export default {
       }
     },
     attachedList() {
+      console.log('list changed!');
       // request media data again every minute if media are still converting
-      while (this.isConverting) {
+      if (this.isConverting) {
         /* eslint-disable-next-line */
         setTimeout(() => {
           this.fetchMedia();
