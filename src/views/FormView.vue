@@ -84,7 +84,7 @@
 
         <!-- ATTACHMENTS -->
         <AttachmentArea
-          v-if="formDataPresent"
+          v-if="!formIsLoading && formDataPresent"
           key="attachments"
           @open-new-form="openNewForm"
           @show-preview="$emit('show-preview', $event)"/>
@@ -628,6 +628,8 @@ export default {
     .form-component {
       .form-head {
         padding-top: $spacing-small;
+        position: relative;
+        top: 0;
       }
 
       .form-container {

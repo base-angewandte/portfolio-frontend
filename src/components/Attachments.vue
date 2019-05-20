@@ -288,7 +288,6 @@ export default {
   },
   computed: {
     isConverting() {
-      console.log(this.attachedList.some(file => !file.metadata));
       return this.attachedList.some(file => !file.metadata);
     },
   },
