@@ -628,6 +628,8 @@ export default {
     .form-component {
       .form-head {
         padding-top: $spacing-small;
+        position: relative;
+        top: 0;
       }
 
       .form-container {

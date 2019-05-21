@@ -32,8 +32,8 @@ export default {
       return {
         de: `/portfolio/de${this.$route.path}`,
         en: `/portfolio/en${this.$route.path}`,
-        login: '/portfolio/accounts/login/',
-        logout: '/cas/logout/',
+        login: `${process.env.PORTFOLIO_HOST}/accounts/login/`,
+        logout: `${process.env.PORTFOLIO_HOST}/accounts/logout/`,
       };
     },
     isAuthenticated() {
