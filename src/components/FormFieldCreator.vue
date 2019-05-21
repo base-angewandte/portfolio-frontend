@@ -388,12 +388,16 @@ export default {
       margin-left: $spacing;
       color: $font-color-second;
       font-size: $font-size-small;
+      margin-top: auto;
+      white-space: nowrap;
+      flex-grow: 2;
     }
 
     .chips-dropdown-third {
-      float: right;
       color: $font-color-third;
       font-size: $font-size-small;
+      margin-top: auto;
+      white-space: nowrap;
     }
   }
 
