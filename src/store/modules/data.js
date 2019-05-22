@@ -5,6 +5,19 @@ import { i18n } from '../../plugins/i18n';
 
 import { capitalizeString, sorting } from '../../utils/commonUtils';
 
+function transformRoles(data) {
+  return data.map((contributor) => {
+    const roles = contributor.roles && contributor.roles.length ? contributor.roles
+      .map((role) => {
+        if (role.source) {
+          return { source: role.source };
+        }
+        return { source: role };
+      }) : [];
+    return Object.assign({}, contributor, { roles });
+  });
+}
+
 function transformTextData(data) {
   const textData = [];
   if (data && data.length) {
@@ -71,7 +84,14 @@ async function prepareData(valueObj) {
   // needed for publish single entry from form
   // TODO: improve this! (is handled in formview for traditionally saved entries --> duplicate)
   const type = typeof valueObj.type === 'string' ? valueObj.type : valueObj.type[0].value;
-  return Object.assign({}, valueObj, { texts, keywords, type });
+  // TODO: temporary fix for roles with labels!!! remove again!!!
+  const data = Object.assign({}, valueObj.data);
+  if (valueObj.data && valueObj.data.contributors) {
+    Vue.set(data, 'contributors', transformRoles(valueObj.data.contributors));
+  }
+  return Object.assign({}, valueObj, {
+    texts, keywords, type, data,
+  });
 }
 
 const state = {
