@@ -431,6 +431,8 @@ export default {
     },
     async actionEntry(action) {
       if (!this.isNewForm) {
+        // TODO: remove unnecessary properties here before action???
+        // need to improve removeProperties function first though...
         this.confirmAction({ action, entries: [].concat(this.valueList) });
       } else {
         this.$notify({
