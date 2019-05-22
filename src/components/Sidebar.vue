@@ -295,9 +295,7 @@ export default {
       this.$emit('selected-changed', this.selectedMenuEntries);
     },
     getNewForm() {
-      this.$store.commit('data/setCurrentItem', {});
-      this.$store.commit('data/setLinked', { list: [], replace: true });
-      this.$store.commit('data/setMedia', { list: [], replace: true });
+      this.$store.commit('data/deleteCurrentItem');
       this.$store.commit('data/deleteParentItems');
       this.$emit('new-form');
     },

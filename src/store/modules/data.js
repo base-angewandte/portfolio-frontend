@@ -165,6 +165,7 @@ const mutations = {
   deleteCurrentItem(state) {
     state.currentItemId = null;
     state.linkedEntries = [];
+    state.linkedMedia = [];
   },
   setOptions(state, val) {
     state.showOptions = val;
