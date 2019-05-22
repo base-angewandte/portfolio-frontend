@@ -63,9 +63,15 @@ async function prepareData(valueObj) {
   // eslint-disable-next-line
   delete valueObj.description;
   // 2. texts need different object structure and text type needs to be string (uri)
-  const texts = transformTextData(valueObj.texts);
+  // but only needed for formData not duplicate
+  // TODO: --> move to form view!!
+  const texts = valueObj.texts && valueObj.texts.length && !valueObj.texts[0].data
+    ? transformTextData(valueObj.texts) : [].concat(valueObj.texts);
   const keywords = await transformKeywords(valueObj.keywords);
-  return Object.assign({}, valueObj, { texts, keywords });
+  // needed for publish single entry from form
+  // TODO: improve this! (is handled in formview for traditionally saved entries --> duplicate)
+  const type = typeof valueObj.type === 'string' ? valueObj.type : valueObj.type[0].value;
+  return Object.assign({}, valueObj, { texts, keywords, type });
 }
 
 const state = {
@@ -376,7 +382,7 @@ const actions = {
                     if (typeResponse.data) {
                       type = {
                         label: capitalizeString(typeResponse.data.prefLabel),
-                        value: entry.type,
+                        source: entry.type,
                       };
                     }
                   } catch (e) {
@@ -568,16 +574,18 @@ const actions = {
     const errorArr = [];
     const addedArr = [];
     await Promise.all(entryArr.map(entry => new Promise(async (resolve) => {
-      const newEntry = Object.assign({}, entry);
-      const entryTitle = newEntry.title;
-      Vue.set(newEntry, 'title', `${newEntry.title} (Copy)`);
-      Vue.set(newEntry, 'id', undefined);
-      // new entries should not inherit the published state from the duplicate!
-      // TODO: in future also not shared state!
-      // Vue.set(newEntry, 'shared', false);
-      Vue.set(newEntry, 'published', false);
-      Vue.set(newEntry, 'linked', []);
+      const entryTitle = entry.title;
       try {
+        // fetch entry fresh from db in case props were not updated before
+        // (currently only reloading after save when title or type or publish state change)
+        const newEntry = await this.dispatch('PortfolioAPI/get', { kind: 'entry', id: entry.id });
+        Vue.set(newEntry, 'title', `${newEntry.title} (Copy)`);
+        Vue.set(newEntry, 'id', undefined);
+        // new entries should not inherit the published state from the duplicate!
+        // TODO: in future also not shared state!
+        // Vue.set(newEntry, 'shared', false);
+        Vue.set(newEntry, 'published', false);
+        Vue.set(newEntry, 'linked', []);
         const createdEntryId = await dispatch('addOrUpdateEntry', newEntry);
         if (createdEntryId) {
           commit('deleteParentItems');
