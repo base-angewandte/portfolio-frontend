@@ -61,6 +61,7 @@
     "doi": "DOI",
     "project_lead": "Projektleitung",
     "funding_institution": "Fördergeber",
+    "funding_category": "Förderkategorie",
     "orgainiser": "OrganisatorInnen",
     "lecturer": "Vortragende",
     "title_of_contribution": "Vortragstitel",

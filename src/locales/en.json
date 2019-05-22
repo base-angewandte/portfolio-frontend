@@ -63,6 +63,7 @@
     "doi": "DOI",
     "project_lead": "Project Lead",
     "funding_institution": "Funding Institution",
+    "funding_category": "Funding Category",
     "orgainiser": "Organiser",
     "lecturer": "Lecturer",
     "title_of_contribution": "Title of Contribution",
