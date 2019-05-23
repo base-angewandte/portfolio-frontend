@@ -23,6 +23,8 @@
   "actionCreate": "Erstelle",
   "noEntriesMainSubtext": "Klicken Sie bitte auf „Neu“, um den ersten Eintrag anzulegen.",
   "noEntriesFormSubtext": "Füllen Sie bitte den Titel aus. Mit Klick auf „Speichern“ wird der erste Eintrag angelegt.",
+  "noMatchingEntriesTitle": "Keine passenden Einträge gefunden",
+  "noMatchingEntriesSubtext": "Bitte passen Sie Ihre Suchkritierien an.",
   "form": {
     "select": "Wähle",
     "write": "Schreibe eine",
@@ -73,7 +75,11 @@
     "myself": "Das bin ich!",
     "textTabsLegend": "Sprache",
     "dateTabsLegend": "Datumsformat",
-    "sort": "Sortieren A – Z"
+    "sort": "Sortieren A – Z",
+    "selectRoles": "Wähle Rollen",
+    "startTyping": "Begriff eingeben (min. 4 Buchstaben)",
+    "noResult": "Keine Ergebnisse gefunden",
+    "fetchingResults": "Vorschläge werden gesucht..."
   },
   "form-view": {
     "notFound": "Eintrag nicht gefunden.",

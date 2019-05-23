@@ -97,7 +97,7 @@
         @clicked="showEntry"
         @selected="selectEntry"/>
       <div
-        v-else-if="!isLoading"
+        v-else-if="!entriesExist && !isLoading"
         class="no-entries">
         <p class="no-entries-title">
           {{ isNewForm ? $t('noEntriesTitle', { action: $t('actionSave') })
@@ -105,6 +105,16 @@
         </p>
         <p class="no-entries-subtext">
           {{ isNewForm ? $t('noEntriesFormSubtext') : $t('noEntriesMainSubtext') }}
+        </p>
+      </div>
+      <div
+        v-else-if="entriesExist && !isLoading"
+        class="no-entries">
+        <p class="no-entries-title">
+          {{ $t('noMatchingEntriesTitle') }}
+        </p>
+        <p class="no-entries-subtext">
+          {{ $t('noMatchingEntriesSubtext') }}
         </p>
       </div>
     </div>
@@ -209,6 +219,7 @@ export default {
         value: '',
       },
       sortParam: {},
+      entriesExist: false,
     };
   },
   computed: {
@@ -398,6 +409,11 @@ export default {
         // get the labels for the entries
         this.listInt = await this.$store.dispatch('data/fetchSidebarTypes', response.results);
         this.entryNumber = response.count;
+        // check if this was a general data request (no filters etc)
+        // to determine if entries exist at all
+        if (!(this.filterType.value || this.filterString || this.excludeLinked)) {
+          this.entriesExist = !!this.entryNumber;
+        }
         this.$emit('sidebar-data-changed');
       } catch (e) {
         console.error(e);

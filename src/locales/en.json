@@ -25,6 +25,8 @@
   "actionCreate": "Create",
   "noEntriesMainSubtext": "Click 'New' to create your first Entry.",
   "noEntriesFormSubtext": "Fill in a title and click 'Save' to create your first Entry.",
+  "noMatchingEntriesTitle": "No matching entries found",
+  "noMatchingEntriesSubtext": "Please adjust your search criteria.",
   "form": {
     "select": "Select",
     "write": "Write (a)",
@@ -75,7 +77,11 @@
     "myself": "This is myself!",
     "textTabsLegend": "language",
     "dateTabsLegend": "date format",
-    "sort": "Sort A – Z"
+    "sort": "Sort A – Z",
+    "selectRoles": "Select Roles",
+    "startTyping": "Start typing (min. 4 characters)",
+    "noResult": "No results found",
+    "fetchingResults": "Suggestions are being fetched..."
   },
   "form-view": {
     "notFound": "Entry Not Found",
