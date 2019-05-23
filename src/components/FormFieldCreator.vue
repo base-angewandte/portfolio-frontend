@@ -101,12 +101,7 @@
       :is-loading="autocompleteLoading"
       :sort-text="$t('form.sort')"
       :sort-name="isContributorOrEquivalent"
-      @fetch-dropdown-entries="$emit('fetch-autocomplete', {
-        value: $event.value,
-        name: field.name,
-        source: field['x-attrs'].source,
-        equivalent: field['x-attrs'].equivalent,
-      })"
+      @fetch-dropdown-entries="fetchAutocomplete"
       @hoverbox-active="$emit('fetch-info-data')">
       <template
         slot="drop-down-entry"
@@ -114,6 +109,17 @@
         <span>{{ props.item[chipsPropertyName] }}</span>
         <span class="chips-dropdown-second">{{ props.item.additional }}</span>
         <span class="chips-dropdown-third">{{ props.item.source_name }}</span>
+      </template>
+      <template slot="no-options">
+        <span v-if="!fieldInput">
+          {{ $t('form.startTyping') }}
+        </span>
+        <span v-else-if="fieldInput && !fetchingData && !autocompleteLoading">
+          {{ $t('form.noResult') }}
+        </span>
+        <span v-else>
+          {{ $t('form.fetchingResults') }}
+        </span>
       </template>
     </BaseChipsInput>
 
@@ -134,14 +140,10 @@
       :sort-text="$t('form.sort')"
       :sort-name="true"
       :chips-editable="true"
+      :roles-placeholder="$t('form.selectRoles')"
       v-model="fieldValueInt"
       class="base-form-field base-form-field-full"
-      @fetch-dropdown-entries="$emit('fetch-autocomplete',{
-        value: $event.value,
-        name: field.name,
-        source: field['x-attrs'].source,
-        equivalent: field['x-attrs'].equivalent,
-      })"
+      @fetch-dropdown-entries="fetchAutocomplete"
       @hoverbox-active="$emit('fetch-info-data')">
       <template
         slot="below-drop-down-entry"
@@ -149,6 +151,17 @@
         <span>{{ props.item.name }}</span>
         <span class="chips-dropdown-second">{{ props.item.additional }}</span>
         <span class="chips-dropdown-third">{{ props.item.source_name }}</span>
+      </template>
+      <template slot="no-options">
+        <span v-if="!fieldInput">
+          {{ $t('form.startTyping') }}
+        </span>
+        <span v-else-if="fieldInput && !fetchingData && !autocompleteLoading">
+          {{ $t('form.noResult') }}
+        </span>
+        <span v-else>
+          {{ $t('form.fetchingResults') }}
+        </span>
       </template>
     </BaseChipsBelow>
 
@@ -255,6 +268,8 @@ export default {
   data() {
     return {
       fieldValueInt: JSON.parse(JSON.stringify(this.fieldValue)),
+      textInput: '',
+      fetchingData: false,
     };
   },
   computed: {
@@ -304,6 +319,10 @@ export default {
       }
       return 'label';
     },
+    // to determine text display for chips input
+    fieldInput() {
+      return this.textInput.length > 3;
+    },
   },
   watch: {
     fieldValue(val) {
@@ -319,6 +338,9 @@ export default {
         }
       },
       deep: true,
+    },
+    dropDownList() {
+      this.fetchingData = false;
     },
   },
   mounted() {
@@ -342,6 +364,16 @@ export default {
       } else {
         this.fieldValueInt = Object.assign({}, this.fieldValueInt, JSON.parse(JSON.stringify(val)));
       }
+    },
+    fetchAutocomplete(event) {
+      this.fetchingData = true;
+      this.textInput = event.value;
+      this.$emit('fetch-autocomplete', {
+        value: event.value,
+        name: this.field.name,
+        source: this.field['x-attrs'].source,
+        equivalent: this.field['x-attrs'].equivalent,
+      });
     },
   },
 };
