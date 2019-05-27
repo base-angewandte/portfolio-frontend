@@ -56,6 +56,8 @@
           ? fieldValueInt.type : textTypeDefault"
           :options="textTypeOptions"
           :label="$t('form.texttype')"
+          :language="$i18n.locale"
+          value-prop="source"
           class="multiline-dropdown"
           @value-selected="$set(fieldValueInt, 'type', $event)"/>
       </template>
@@ -302,7 +304,12 @@ export default {
       return this.field.properties;
     },
     textTypeDefault() {
-      return { label: this.$t('form.noTextType'), value: '' };
+      return {
+        // map the language specific labels for no value selected to the default
+        label: this.$i18n.availableLocales
+          .reduce((prev, curr) => Object.assign({}, prev, { [curr]: this.$t('form.noTextType', curr) }), {}),
+        source: '',
+      };
     },
     textTypeOptions() {
       return [this.textTypeDefault].concat(this.secondaryDropdown);

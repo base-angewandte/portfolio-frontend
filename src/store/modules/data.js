@@ -23,12 +23,13 @@ function transformTextData(data) {
   if (data && data.length) {
     data.forEach((textItem) => {
       const textObj = {
-        type: textItem.type && typeof textItem.type === 'object'
-          ? textItem.type.source : textItem.type || '',
+        type: textItem.type,
       };
       const text = Object.keys(textItem).filter(props => !['type', 'text', 'data'].includes(props))
         .map(lang => Object.assign({}, {
-          language: `${process.env.LANG_URL}${lang}`,
+          language: {
+            source: `${process.env.LANG_URL}${lang}`,
+          },
           text: textItem[lang],
         }));
       Vue.set(textObj, 'data', text);
@@ -389,31 +390,10 @@ const actions = {
             ? await Promise.all(entryData.texts
               .map(entry => new Promise(async (res) => {
                 const textObj = {};
-                let type = null;
-                if (entry.type) {
-                  // TODO: fetch locally if possible
-                  try {
-                    const typeResponse = await axios.get(`${process.env.SKOSMOS_API}povoc/label`, {
-                      params: {
-                        uri: entry.type,
-                        lang,
-                        format: 'application/json',
-                      },
-                    });
-                    if (typeResponse.data) {
-                      type = {
-                        label: capitalizeString(typeResponse.data.prefLabel),
-                        source: entry.type,
-                      };
-                    }
-                  } catch (e) {
-                    console.error(e);
-                    reject(e);
-                  }
-                }
+                const { type } = entry;
                 // TODO: temporary hack - probably should fetch label for lang as well
                 entry.data.forEach((language) => {
-                  const langInternal = language.language.split('/').pop();
+                  const langInternal = language.language.source.split('/').pop();
                   Vue.set(textObj, langInternal.toLowerCase(), language.text);
                 });
                 res(Object.assign({}, { type }, textObj));
