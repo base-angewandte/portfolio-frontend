@@ -345,7 +345,7 @@ export default {
       const user = this.$store.getters['PortfolioAPI/user'];
       if (((equivalent && equivalent === 'contributors') || name === 'contributors')
         && (value.length <= 3 || user.name.toLowerCase().includes(value.toLowerCase()))) {
-        dropDownList.unshift({ name: user.name, source: user.uuid, additional: this.$t('form.myself') });
+        dropDownList.unshift({ label: user.name, source: user.uuid, additional: this.$t('form.myself') });
         // TODO: filter entry from list to prevent double display!
       }
       this.$set(this.dropdownLists, name, dropDownList);

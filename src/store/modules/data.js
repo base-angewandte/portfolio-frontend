@@ -5,19 +5,6 @@ import { i18n } from '../../plugins/i18n';
 
 import { capitalizeString, sorting } from '../../utils/commonUtils';
 
-function transformRoles(data) {
-  return data.map((contributor) => {
-    const roles = contributor.roles && contributor.roles.length ? contributor.roles
-      .map((role) => {
-        if (role.source) {
-          return { source: role.source };
-        }
-        return { source: role };
-      }) : [];
-    return Object.assign({}, contributor, { roles });
-  });
-}
-
 function transformTextData(data) {
   const textData = [];
   if (data && data.length) {
@@ -39,37 +26,6 @@ function transformTextData(data) {
   return textData;
 }
 
-// TODO: this should go to form view component (before save) since this is not relevant
-// for duplication!!
-function transformKeywords(keywords) {
-  return Promise.all(keywords
-    .map(keywordEntry => new Promise(async (resolve) => {
-      // check if it is a controlled voc keyword and if it is not object
-      // already (for duplicates only!!)
-      if (keywordEntry.source && typeof keywordEntry.keyword === 'string') {
-        const langObj = {};
-        const voc = keywordEntry.source.includes('disciplines') ? 'disciplines' : 'basekw';
-        await Promise.all(i18n.availableLocales.map(async (locale) => {
-          if (locale === i18n.locale) {
-            Vue.set(langObj, locale, keywordEntry.keyword);
-          } else {
-            const { data } = await axios.get(`https://voc.uni-ak.ac.at/skosmos/rest/v1/${voc}/label?lang=${locale}&uri=${keywordEntry.source}`);
-            Vue.set(langObj, locale, data.prefLabel);
-          }
-        }));
-        resolve(Object.assign({}, keywordEntry, {
-          keyword: langObj,
-        }));
-      } else if (typeof keywordEntry.keyword === 'string') {
-        resolve(Object.assign({}, keywordEntry, {
-          keyword: { [i18n.locale]: keywordEntry.keyword },
-        }));
-      } else {
-        resolve(Object.assign({}, keywordEntry));
-      }
-    })));
-}
-
 async function prepareData(valueObj) {
   // make necessary modifications to the valueList object
   // 1. and 'description' property added for sidebar display needs to be removed before save
@@ -79,19 +35,15 @@ async function prepareData(valueObj) {
   // 2. texts need different object structure and text type needs to be string (uri)
   // but only needed for formData not duplicate
   // TODO: --> move to form view!!
-  const texts = valueObj.texts && valueObj.texts.length && !valueObj.texts[0].data
+  const texts = valueObj.texts && valueObj.texts.length
+  && (!valueObj.texts[0].data || !valueObj.texts[0].data.length)
     ? transformTextData(valueObj.texts) : [].concat(valueObj.texts);
-  const keywords = await transformKeywords(valueObj.keywords);
   // needed for publish single entry from form
   // TODO: improve this! (is handled in formview for traditionally saved entries --> duplicate)
   const type = typeof valueObj.type === 'string' ? valueObj.type : valueObj.type[0].value;
-  // TODO: temporary fix for roles with labels!!! remove again!!!
-  const data = Object.assign({}, valueObj.data);
-  if (valueObj.data && valueObj.data.contributors) {
-    Vue.set(data, 'contributors', transformRoles(valueObj.data.contributors));
-  }
+
   return Object.assign({}, valueObj, {
-    texts, keywords, type, data,
+    texts, type,
   });
 }
 
@@ -367,8 +319,6 @@ const actions = {
           // 1. type needs to be array in logic here! and labels need to be translated
           // (for now only type, language still missing)
           // 2. Text needs to look different (and text type needs to be fetched)
-          // 3. TODO: fetch role labels (currently only strings tho)
-          // 4. keywords: choose right language to display
           let objectType = [];
           // if there is a type fetch the label for the saved uri
           if (entryData.type) {
@@ -399,54 +349,9 @@ const actions = {
                 res(Object.assign({}, { type }, textObj));
               }))) : [];
 
-          const keywords = entryData.keywords
-            .map((keywordEntry) => {
-              const keyword = Object.assign({}, keywordEntry.keyword);
-              // use current locale to get right label
-              let keywordLocaleString = keyword[i18n.locale]
-                || keyword[i18n.fallbackLocale];
-              // if the label has not entry (e.g. non-cv keywords) try to find other languages
-              if (!keywordLocaleString) {
-                const locale = i18n.availableLocales
-                  .find(availableLocale => !!keyword[availableLocale]);
-                keywordLocaleString = keyword[locale];
-              }
-              return Object.assign({}, keywordEntry, {
-                keyword: capitalizeString(keywordLocaleString || keywordEntry.keyword),
-              });
-            });
-
-          let { contributors } = entryData.data;
-          if (contributors) {
-            contributors = await Promise.all(contributors
-              .map(contributor => new Promise(async (contres) => {
-                const tempRoles = await Promise.all(contributor.roles
-                  .map(role => new Promise(async (res) => {
-                    const labelResponse = await axios.get(`${process.env.SKOSMOS_API}povoc/label`, {
-                      params: {
-                        uri: role.source,
-                        lang,
-                        format: 'application/json',
-                      },
-                    });
-
-                    if (labelResponse.data) {
-                      res(Object.assign({}, role, {
-                        label: capitalizeString(labelResponse.data.prefLabel),
-                      }));
-                    }
-                    res(role);
-                  })));
-
-                contres(Object.assign({}, contributor, { roles: tempRoles }));
-              })));
-          }
-
           const adjustedEntry = Object.assign({}, entryData, {
             type: objectType,
             texts: textData,
-            keywords,
-            data: Object.assign({}, entryData.data, { contributors }),
           });
           commit('setCurrentItem', adjustedEntry);
           await dispatch('setLinkedEntries', { list: entryData.relations || [], replace: true });

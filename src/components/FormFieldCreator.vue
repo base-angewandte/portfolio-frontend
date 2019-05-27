@@ -52,7 +52,7 @@
       <template
         v-if="field.items && field.items.properties && field.items.properties.type">
         <BaseDropDown
-          :selected-option="fieldValueInt && fieldValueInt.type
+          :selected-option="fieldValueInt && fieldValueInt.type.source
           ? fieldValueInt.type : textTypeDefault"
           :options="textTypeOptions"
           :label="$t('form.texttype')"
@@ -86,7 +86,6 @@
       :key="fieldKey"
       :placeholder="placeholder"
       :label="label"
-      :object-prop="chipsPropertyName"
       :list="dropDownList"
       v-model="fieldValueInt"
       :allow-dynamic-drop-down-entries="field['x-attrs'] && field['x-attrs'].dynamic_autosuggest"
@@ -103,12 +102,16 @@
       :is-loading="autocompleteLoading"
       :sort-text="$t('form.sort')"
       :sort-name="isContributorOrEquivalent"
+      :language="field['x-attrs'] && field['x-attrs'].set_label_language ? $i18n.locale : ''"
+      object-prop="label"
       @fetch-dropdown-entries="fetchAutocomplete"
       @hoverbox-active="$emit('fetch-info-data')">
       <template
         slot="drop-down-entry"
         slot-scope="props">
-        <span>{{ props.item[chipsPropertyName] }}</span>
+        <span>
+          {{ props.item.label[$i18n.locale] || props.item.label }}
+        </span>
         <span class="chips-dropdown-second">{{ props.item.additional }}</span>
         <span class="chips-dropdown-third">{{ props.item.source_name }}</span>
       </template>
@@ -136,13 +139,14 @@
       :allow-dynamic-drop-down-entries="true"
       :identifier="'source'"
       :hoverbox-content="hoverBoxData"
-      :object-prop="'name'"
+      :object-prop="'label'"
       :role-options="secondaryDropdown"
       :is-loading="autocompleteLoading"
       :sort-text="$t('form.sort')"
       :sort-name="true"
       :chips-editable="true"
       :roles-placeholder="$t('form.selectRoles')"
+      :language="$i18n.locale"
       v-model="fieldValueInt"
       class="base-form-field base-form-field-full"
       @fetch-dropdown-entries="fetchAutocomplete"
@@ -150,7 +154,7 @@
       <template
         slot="below-drop-down-entry"
         slot-scope="props">
-        <span>{{ props.item.name }}</span>
+        <span>{{ props.item.label }}</span>
         <span class="chips-dropdown-second">{{ props.item.additional }}</span>
         <span class="chips-dropdown-third">{{ props.item.source_name }}</span>
       </template>
@@ -317,14 +321,6 @@ export default {
     isContributorOrEquivalent() {
       return this.field.name === 'contributors'
         || (this.field['x-attrs'] && this.field['x-attrs'].equivalent === 'contributors');
-    },
-    chipsPropertyName() {
-      if (this.isContributorOrEquivalent || this.field.name === 'location') {
-        return 'name';
-      } if (this.field.name === 'keywords') {
-        return 'keyword';
-      }
-      return 'label';
     },
     // to determine text display for chips input
     fieldInput() {
