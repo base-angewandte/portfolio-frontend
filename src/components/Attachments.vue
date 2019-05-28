@@ -190,8 +190,7 @@
           v-for="(attached, index) of attachedList"
           :show-title="true"
           :selectable="!!fileText"
-          :selected="(action === 'publish' && attached.published)
-          || selectedFiles.includes(attached.id)"
+          :selected="selectedFiles.map(file => file.id || file).includes(attached.id)"
           :title="attached.original ? getFileName(attached.original) : attached.id"
           :subtext="attached.license ? attached.license.toUpperCase() : ''"
           :description="getFileType(attached)"
@@ -280,7 +279,6 @@ export default {
       showFileAction: false,
       selectedEntries: [],
       selectedFiles: [],
-      publishFiles: [],
       action: '',
       licenseSelected: {},
       imageHover: [],
@@ -299,7 +297,6 @@ export default {
         this.buttonText = this.$t(`form-view.${val}Button`);
       } else {
         this.fileText = '';
-        this.publishFiles = [];
         this.selectedFiles = [];
       }
     },
@@ -318,14 +315,16 @@ export default {
       this.$set(this.imageHover, index, value);
     },
     async saveFileMeta() {
+      // special case publish since publish / offline in one
+      const action = this.action === 'publish' ? 'change' : this.action;
       // check if files were selected
-      if ((this.action === 'publish' && !this.publishFiles.length) && !this.selectedFiles.length) {
+      if (!this.selectedFiles.length) {
         // if not notify user that he needs to select files
         this.$notify({
           group: 'request-notifications',
-          title: this.$t('notify.actionFailed', { action: this.$t(`notify.${this.action}`) }),
+          title: this.$t('notify.actionFailed', { action: this.$t(`notify.${action}`) }),
           text: this.$t('notify.selectForAction', {
-            action: this.$t(`notify.${this.action}File`),
+            action: this.$t(`notify.${action}File`),
             type: this.$tc('notify.media', 0),
           }),
           type: 'error',
@@ -341,12 +340,12 @@ export default {
         });
       } else {
         const [successIds, failIds] = await this.$store.dispatch('data/actionFiles', {
-          list: this.action === 'publish' ? this.publishFiles : this.selectedFiles,
+          list: this.selectedFiles,
           action: this.action,
           value: this.licenseSelected.value,
         });
         this.informUser({
-          successArr: successIds, failedArr: failIds, action: this.action, type: 'media',
+          successArr: successIds, failedArr: failIds, action, type: 'media',
         });
         if (successIds.length) {
           await this.fetchMedia();
@@ -354,7 +353,6 @@ export default {
         // clear all variables after action
         this.action = '';
         this.selectedFiles = [];
-        this.publishFiles = [];
         this.licenseSelected = {};
       }
     },
@@ -394,11 +392,11 @@ export default {
       } else {
         // filter item from array in case it was already added previously
         // easier than replacing the selected value for relevant item
-        this.publishFiles = this.publishFiles.filter(file => file.id !== objId);
-        // check if the new state equals the state saved to db --> only add if not
+        this.selectedFiles = this.selectedFiles.filter(file => file.id !== objId);
+        // check if file was selected and add it with opposite value
         /* eslint-disable-next-line */
-        if (sel !== published) {
-          this.publishFiles.push({ id: objId, selected: sel });
+        if (sel) {
+          this.selectedFiles.push({ id: objId, selected: !published });
         }
       }
     },
