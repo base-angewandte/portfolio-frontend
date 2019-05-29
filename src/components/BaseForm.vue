@@ -345,8 +345,10 @@ export default {
       const user = this.$store.getters['PortfolioAPI/user'];
       if (((equivalent && equivalent === 'contributors') || name === 'contributors')
         && (value.length <= 3 || user.name.toLowerCase().includes(value.toLowerCase()))) {
+        // TODO: REMOVE HARDCODED
+        // TODO: do we want GND id??
+        dropDownList.unshift({ label: 'Universität für Angewandte Kunst', source: 'http://d-nb.info/gnd/5299671-2' });
         dropDownList.unshift({ label: user.name, source: user.uuid, additional: this.$t('form.myself') });
-        // TODO: filter entry from list to prevent double display!
       }
       this.$set(this.dropdownLists, name, dropDownList);
     },

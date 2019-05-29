@@ -1,17 +1,19 @@
 <template>
-  <div class="wrapper">
-    <base-header
-      :lang="lang"
-      :active="'portfolio'"
-      :profile.prop="profile"
-      :urls.prop="urls" />
-    <BaseNotification />
-    <router-view />
-    <base-footer
-      ref="baseFooter"
-      :lang="lang"
-      :logged-in="isAuthenticated"
-      :urls.prop="urls" />
+  <div id="app">
+    <div class="wrapper">
+      <base-header
+        :lang="lang"
+        :active="'portfolio'"
+        :profile.prop="profile"
+        :urls.prop="urls" />
+      <BaseNotification />
+      <router-view />
+      <base-footer
+        ref="baseFooter"
+        :lang="lang"
+        :logged-in="isAuthenticated"
+        :urls.prop="urls" />
+    </div>
   </div>
 </template>
 
