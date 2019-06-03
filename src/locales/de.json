@@ -25,6 +25,9 @@
   "noEntriesFormSubtext": "Füllen Sie bitte den Titel aus. Mit Klick auf „Speichern“ wird der erste Eintrag angelegt.",
   "noMatchingEntriesTitle": "Keine passenden Einträge gefunden",
   "noMatchingEntriesSubtext": "Bitte passen Sie Ihre Suchkritierien an.",
+  "notAvailable": "Die Anwendung \"Portfolio\" ist im Moment leider nicht verfügbar.",
+  "returnHome": "Zur Start Seite",
+  "refresh": "Nochmal versuchen",
   "form": {
     "select": "Wähle",
     "write": "Schreibe eine",

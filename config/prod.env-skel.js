@@ -13,4 +13,11 @@ module.exports= {
   SKOSMOS_API: 'https://voc.uni-ak.ac.at/skosmos/rest/v1/',
   LOCALES: ['de', 'en'],
   DEFAULT_LOCALE: 'de',
+  AUTHENTICATION: {
+    LOGIN: 'https://basedev.uni-ak.ac.at/portfolio/accounts/login/',
+    LOGOUT: 'https://basedev.uni-ak.ac.at/portfolio/accounts/logout/',
+  },
+  CONTRIBUTOR_DEFAULTS: [
+    { label: 'Universität für Angewandte Kunst', source: 'http://d-nb.info/gnd/5299671-2' },
+  ],
 };

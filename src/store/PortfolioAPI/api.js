@@ -15,6 +15,7 @@ export const getAxiosInstance = () => {
 export const setAxiosInstance = ($axiosInstance) => {
   axiosInstance = $axiosInstance
 }
+
 export const request = (method, url, body, queryParameters, form, config) => {
   method = method.toLowerCase()
   let keys = Object.keys(queryParameters)

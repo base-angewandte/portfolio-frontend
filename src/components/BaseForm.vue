@@ -341,14 +341,21 @@ export default {
       return index > 0 && !!(index % 2);
     },
     setDropDown(data, value, equivalent, name) {
-      const dropDownList = [].concat(data);
+      let dropDownList = [].concat(data);
       const user = this.$store.getters['PortfolioAPI/user'];
       if (((equivalent && equivalent === 'contributors') || name === 'contributors')
         && (value.length <= 3 || user.name.toLowerCase().includes(value.toLowerCase()))) {
-        // TODO: REMOVE HARDCODED
-        // TODO: do we want GND id??
-        dropDownList.unshift({ label: 'Universität für Angewandte Kunst', source: 'http://d-nb.info/gnd/5299671-2' });
-        dropDownList.unshift({ label: user.name, source: user.uuid, additional: this.$t('form.myself') });
+        // check if additional contributors were specififed in the settings and add them
+        const defaultContributors = process.env.CONTRIBUTOR_DEFAULTS;
+        if (defaultContributors && defaultContributors.length) {
+          dropDownList = defaultContributors.concat(dropDownList);
+        }
+        // add user default
+        dropDownList.unshift({
+          label: user.name,
+          source: user.uuid,
+          additional: this.$t('form.myself'),
+        });
       }
       this.$set(this.dropdownLists, name, dropDownList);
     },

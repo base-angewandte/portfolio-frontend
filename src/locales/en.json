@@ -27,6 +27,9 @@
   "noEntriesFormSubtext": "Fill in a title and click 'Save' to create your first Entry.",
   "noMatchingEntriesTitle": "No matching entries found",
   "noMatchingEntriesSubtext": "Please adjust your search criteria.",
+  "notAvailable": "Unfortunately the application \"Portfolio\" is currently not available.",
+  "returnHome": "Return to Start Page",
+  "refresh": "Try Again",
   "form": {
     "select": "Select",
     "write": "Write (a)",

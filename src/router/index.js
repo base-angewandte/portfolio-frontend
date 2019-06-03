@@ -3,19 +3,23 @@ import Router from 'vue-router';
 import Dashboard from '../views/Dashboard';
 import FormView from '../views/FormView';
 import NotFoundComponent from '../views/NotFoundComponent';
+import NetworkError from '../views/404Error';
 import store from '../store';
 import { i18n } from '../plugins/i18n';
-import prodEnv from '../../config/prod.env';
 
 Vue.use(Router);
 
 export default new Router({
   mode: 'history',
-  base: '/portfolio/',
+  base: process.env.APP_PREFIX,
   routes: [
     {
       path: '*',
       component: NotFoundComponent,
+    },
+    {
+      path: '/404',
+      component: NetworkError,
     },
     {
       path: '/',
@@ -43,12 +47,12 @@ export default new Router({
           component: {
             template: '<router-view></router-view>',
           },
-          beforeEnter(to, from, next) {
+          async beforeEnter(to, from, next) {
             const { lang } = to.params;
             const path = to.path.replace(/^\/[a-z]{2}/, '');
-            if (!prodEnv.LOCALES.includes(lang)) return next(prodEnv.DEFAULT_LOCALE);
+            if (!process.env.LOCALES.includes(lang)) return next(process.env.DEFAULT_LOCALE);
             if (lang) {
-              import(`@/locales/${lang}.json`).then((msgs) => {
+              await import(`@/locales/${lang}.json`).then((msgs) => {
                 i18n.setLocaleMessage(lang, msgs.default || msgs);
                 sessionStorage.setItem('lang', lang);
                 store.commit('SkosmosAPI/setLang', lang);
