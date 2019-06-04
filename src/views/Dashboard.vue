@@ -20,7 +20,7 @@
     </BasePopUp>
     <BaseMediaPreview
       :show-preview="showPreview"
-      :image-url="previewUrl"
+      :media-url="previewUrl"
       :display-size="previewSize"
       @hide-preview="showPreview = false"/>
 
@@ -93,9 +93,11 @@ export default {
       this.$store.commit('data/hidePopUp');
     },
     loadPreview(fileData) {
-      const filePath = fileData.playlist || fileData.mp3 || fileData.original;
+      debugger;
+      const filePath = fileData.playlist || fileData.mp3
+        || fileData.pdf || fileData.original;
       // TODO: remove again as soon as video and pdf and audio are available
-      if (filePath && filePath.search(/(jpg|jpeg|gif|png|mp4|m3u8|mp3|ogg)$/ig) >= 0) {
+      if (filePath && filePath.search(/(jpg|jpeg|gif|png|m3u8|mp3|pdf)$/ig) >= 0) {
         /* eslint-disable-next-line */
         if (filePath.includes('http')) {
           this.previewUrl = filePath;
@@ -108,7 +110,7 @@ export default {
         }
         this.showPreview = !!this.previewUrl;
         // previewSize not required for audio (and pdf)
-        if (!fileData.mp3) {
+        if (!fileData.mp3 && !fileData.pdf) {
           this.previewSize = {
             height: `${fileData.metadata.ImageHeight ? fileData.metadata.ImageHeight.val
               : fileData.metadata.SourceImageHeight.val}px`,
