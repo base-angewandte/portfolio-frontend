@@ -380,25 +380,29 @@ const actions = {
         });
       } else {
         try {
-          await Promise.all(list.map(entry => new Promise(async (resolve) => {
+          await Promise.all(list.map(entry => new Promise(async (resolve, reject) => {
             if (entry.type) {
-              const { data } = await axios.get(`${process.env.SKOSMOS_API}potax/label`, {
-                params: {
-                  uri: entry.type || entry.to.type,
-                  lang: i18n.locale,
-                  format: 'application/json',
-                },
-              });
-              newList.push(Object.assign({}, entry, {
-                description: capitalizeString(data.prefLabel),
-              }));
+              try {
+                const { data } = await axios.get(`${process.env.SKOSMOS_API}potax/label`, {
+                  params: {
+                    uri: entry.type || entry.to.type,
+                    lang: i18n.locale,
+                    format: 'application/json',
+                  },
+                });
+                newList.push(Object.assign({}, entry, {
+                  description: capitalizeString(data.prefLabel),
+                }));
+              } catch (e) {
+                reject();
+              }
             } else {
               newList.push(Object.assign({}, entry));
             }
             resolve();
           })));
         } catch (e) {
-          return [].concat(list);
+          throw e;
         }
       }
     }

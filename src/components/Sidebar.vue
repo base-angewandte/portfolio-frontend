@@ -406,8 +406,19 @@ export default {
           q: this.filterString,
           link_selection_for: this.excludeLinked ? this.activeEntryId : '',
         });
-        // get the labels for the entries
-        this.listInt = await this.$store.dispatch('data/fetchSidebarTypes', response.results);
+        try {
+          // get the labels for the entries
+          this.listInt = await this.$store.dispatch('data/fetchSidebarTypes', response.results);
+        } catch (e) {
+          this.listInt = [].concat(response.results);
+          console.error(e);
+          this.$notify({
+            group: 'request-notifications',
+            title: this.$t('notify.somethingWrong'),
+            text: this.$t('notify.entryFetchFailTypes'),
+            type: 'error',
+          });
+        }
         this.entryNumber = response.count;
         // check if this was a general data request (no filters etc)
         // to determine if entries exist at all

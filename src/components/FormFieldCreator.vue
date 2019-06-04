@@ -324,7 +324,7 @@ export default {
     },
     // to determine text display for chips input
     fieldInput() {
-      return this.textInput.length > 3;
+      return this.textInput && this.textInput.length > 3;
     },
   },
   watch: {

@@ -134,6 +134,7 @@
     "formDataNotFound": "Leider konnte das Formular nicht geladen werden! Bitte versuchen Sie, die Seite neu zu laden.",
     "entryFetchFail": "Einträge nicht gefunden",
     "entryFetchFailSub": "Leider konnten die Einträge nicht geladen werden. \nBitte versuchen Sie, die Seite neu zu laden.",
+    "entryFetchFailTypes": "Beim Laden der Einträge ist etwas schief gelaufen und die Informationen werden möglicherweise nicht vollständig angezeigt.",
     "saveFail": "Speichern fehlgeschlagen",
     "saveSuccess": "Eintrag gespeichert",
     "saveSuccessSubtext": "Der Eintrag \"{title}\" konnte erfolgreich gespeichert werden.",

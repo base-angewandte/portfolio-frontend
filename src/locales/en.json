@@ -140,6 +140,7 @@
     "entryTypeNotFound": "Unfortunately the form for {type} was not found.\nPlease select a different type.",
     "entryFetchFail": "Fetching of Entries failed",
     "entryFetchFailSub": "Unfortunately there was a problem and we could not fetch the data.\nPlease try to refresh the page.",
+    "entryFetchFailTypes": "Something went wrong while fetching the entries and information displayed might not be complete.",
     "saveFail": "Saving to database failed",
     "saveSuccess": "Entry saved",
     "saveSuccessSubtext": "The entry \"{title}\" was successfully saved to the database.",

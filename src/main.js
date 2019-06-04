@@ -10,6 +10,7 @@ import store from './store';
 import 'normalize.css';
 import './styles/app.scss';
 import './styles/main.scss';
+
 import 'base-ui-components/dist/lib/base-ui-components.min.css';
 
 Vue.config.productionTip = false;

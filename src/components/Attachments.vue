@@ -440,10 +440,10 @@ export default {
       return '';
     },
     generateBoxText(metadata) {
-      const wantedAttributes = ['FileSize', 'ImageSize'];
+      const wantedAttributes = ['FileSize', 'ImageSize', 'Title', 'Artist', 'Year'];
       if (metadata) {
         return Object.keys(metadata).filter(key => wantedAttributes.includes(key))
-          .map(data => `${data}: ${metadata[data].val}`);
+          .map(data => `${metadata[data].val}`);
       }
       return [];
     },
