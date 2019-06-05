@@ -40,7 +40,7 @@ async function prepareData(valueObj) {
     ? transformTextData(valueObj.texts) : [].concat(valueObj.texts);
   // needed for publish single entry from form
   // TODO: improve this! (is handled in formview for traditionally saved entries --> duplicate)
-  let type = valueObj.type.length ? valueObj.type[0] : valueObj.type;
+  let type = valueObj.type && valueObj.type.length ? valueObj.type[0] : valueObj.type;
   type = type.source ? type : null;
 
   return Object.assign({}, valueObj, {
