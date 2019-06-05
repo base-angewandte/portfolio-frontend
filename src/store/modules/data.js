@@ -3,7 +3,7 @@ import Vue from 'vue';
 import axios from 'axios';
 import { i18n } from '../../plugins/i18n';
 
-import { capitalizeString, sorting } from '../../utils/commonUtils';
+import { sorting, capitalizeString } from '../../utils/commonUtils';
 
 function transformTextData(data) {
   const textData = [];
@@ -40,7 +40,8 @@ async function prepareData(valueObj) {
     ? transformTextData(valueObj.texts) : [].concat(valueObj.texts);
   // needed for publish single entry from form
   // TODO: improve this! (is handled in formview for traditionally saved entries --> duplicate)
-  const type = typeof valueObj.type === 'string' ? valueObj.type : valueObj.type[0].value;
+  let type = valueObj.type.length ? valueObj.type[0] : valueObj.type;
+  type = type.source ? type : null;
 
   return Object.assign({}, valueObj, {
     texts, type,
@@ -70,12 +71,11 @@ const state = {
     roles: [],
     languages: [],
     formats: [],
-    licenses: [],
+    medialicenses: [],
+    softwarelicenses: [],
     keywords: [],
     materials: [],
   },
-  validObjectTypes: [],
-  formObjectTypes: [],
   // entry types displayed in sidebar
   entryTypes: [],
   generalSchema: {},
@@ -103,12 +103,6 @@ const getters = {
     return state.linkedMedia.map(entry => entry.id);
   },
   getPrefetchedTypes: state => field => state.prefetchedTypes[field],
-  getFormObjectTypes(state) {
-    return state.formObjectTypes;
-  },
-  getValidObjectTypes(state) {
-    return state.formObjectTypes;
-  },
   getEntryTypes(state) {
     return state.entryTypes;
   },
@@ -176,7 +170,11 @@ const mutations = {
   },
   setLinked(state, { list, replace }) {
     const existingEntries = replace ? [] : state.linkedEntries;
-    state.linkedEntries = [].concat(list, existingEntries);
+    // add new list of entries and add a description (for type display)
+    state.linkedEntries = [].concat(list.map(entry => Object.assign({}, entry, {
+      description: entry.to && entry.to.type && entry.to.type.label
+        ? capitalizeString(entry.to.type.label[i18n.locale]) : '',
+    })), existingEntries);
   },
   deleteLinked(state, list) {
     state.linkedEntries = state.linkedEntries.filter(entry => !list.includes(entry.id));
@@ -191,17 +189,6 @@ const mutations = {
   setPrefetchedTypes(state, { field, data }) {
     Vue.set(state.prefetchedTypes, field, data);
   },
-  setFormObjectTypes(state, types) {
-    state.formObjectTypes = [].concat(types.filter(type => !!type.prefLabel)
-      .map(type => ({
-        label: capitalizeString(type.prefLabel.value || type.prefLabel
-          .find(label => label.lang === i18n.locale).value),
-        value: type.uri,
-      })));
-  },
-  setValidObjectTypes(state, types) {
-    state.validObjectTypes = [].concat(types);
-  },
   setGeneralSchema(state, schema) {
     state.generalSchema = Object.assign({}, schema);
   },
@@ -214,7 +201,7 @@ const mutations = {
 };
 
 const actions = {
-  async fetchGeneralFields({ state, getters, commit }) {
+  async fetchGeneralFields({ commit }) {
     return new Promise(async (resolve, reject) => {
       try {
         const jsonSchema = await axios.get(`${process.env.API}swagger.json`,
@@ -226,20 +213,6 @@ const actions = {
           });
         const formFields = jsonSchema.data.definitions.Entry.properties;
         commit('setGeneralSchema', formFields);
-        // if type is present as formfield fetch the available types here
-        if (formFields.type) {
-          // retrieve valid object types from swagger.json and set variable
-          commit('setValidObjectTypes', formFields.type.enum);
-          // if object types were not fetched previously do so
-          if (!getters.getFormObjectTypes.length) {
-            let { data } = await axios
-              .get(`${process.env.SKOSMOS_API}potax/data?lang=${i18n.locale}&uri=http://base.uni-ak.ac.at/portfolio/taxonomy/portfolio_taxonomy&format=application/json`);
-            // filter so only valid object types remain
-            data = data.graph.filter(type => !!type.prefLabel
-              && state.validObjectTypes.includes(type.uri));
-            commit('setFormObjectTypes', data);
-          }
-        }
         resolve(formFields);
       } catch (e) {
         console.error(e);
@@ -270,72 +243,33 @@ const actions = {
           'Accept-Language': i18n.locale,
         },
       });
-      const types = response.data;
-      // get the labels for all fetched types
-      const typeArr = await Promise.all(types.map(type => new Promise(async (resolve, reject) => {
-        try {
-          const labelData = await axios.get(`${process.env.SKOSMOS_API}potax/label`, {
-            params: {
-              uri: type,
-              lang: i18n.locale,
-              format: 'application/json',
-            },
-          });
-          if (labelData && labelData.data) {
-            const option = {
-              label: capitalizeString(labelData.data.prefLabel),
-              value: labelData.data.uri,
-            };
-            resolve(option);
-          } else {
-            resolve();
-          }
-        } catch (e) {
-          console.error(e);
-          reject(e);
-        }
-      })));
-      // filter out empty type
-      const entryTypes = typeArr.filter(type => !!type);
+      const entryTypes = sorting(response.data, 'label', i18n.locale);
       // add 'all types' option
       entryTypes.unshift({
-        label: i18n.t('dropdown.allTypes'),
+        label: i18n.availableLocales
+          .reduce((prev, curr) => {
+            Vue.set(prev, curr, i18n.t('dropdown.allTypes', curr));
+            return prev;
+          }, {}),
         value: '',
       });
-      commit('setEntryTypes', sorting(entryTypes, 'label'));
+      commit('setEntryTypes', entryTypes);
     } catch (e) {
       console.error(e);
       // TODO: inform user?
     }
   },
-  async fetchEntryData({ getters, commit, dispatch }, { id, lang }) {
+  async fetchEntryData({ commit, dispatch }, id) {
     return new Promise(async (resolve, reject) => {
       let entryData = {};
       try {
-        // TODO: check if entry data could be derived from sidebar data somehow
         entryData = await this.dispatch('PortfolioAPI/get', { kind: 'entry', id });
         if (entryData) {
           // Modifications of data received from backend needed:
-          // 1. type needs to be array in logic here! and labels need to be translated
-          // (for now only type, language still missing)
-          // 2. Text needs to look different (and text type needs to be fetched)
-          let objectType = [];
-          // if there is a type fetch the label for the saved uri
-          if (entryData.type) {
-            // check if object types are present in store and if data can be fetched locally
-            if (getters.getFormObjectTypes.length) {
-              objectType = [getters.getObjectTypeLabel(entryData.type)];
-            } else {
-              const { data } = await axios.get(`${process.env.SKOSMOS_API}potax/label`, {
-                params: {
-                  uri: entryData.type,
-                  lang,
-                  format: 'application/json',
-                },
-              });
-              objectType = [{ label: capitalizeString(data.prefLabel), value: data.uri }];
-            }
-          }
+          // 1. type needs to be array in logic here!
+          debugger;
+          const objectType = entryData.type && entryData.type.source ? [entryData.type] : [];
+          // 2. Text needs to look different
           const textData = entryData.texts && entryData.texts.length
             ? await Promise.all(entryData.texts
               .map(entry => new Promise(async (res) => {
@@ -354,7 +288,7 @@ const actions = {
             texts: textData,
           });
           commit('setCurrentItem', adjustedEntry);
-          await dispatch('setLinkedEntries', { list: entryData.relations || [], replace: true });
+          commit('setLinked', { list: entryData.relations || [], replace: true });
           try {
             await dispatch('fetchMediaData', entryData.id);
             resolve(adjustedEntry);
@@ -367,46 +301,6 @@ const actions = {
       }
       reject();
     });
-  },
-  async fetchSidebarTypes({ getters }, list) {
-    const newList = [];
-    if (list.length) {
-      if (getters.getFormObjectTypes.length) {
-        list.forEach((entry) => {
-          const type = entry.type || entry.to ? entry.type || entry.to.type : '';
-          newList.push(Object.assign({}, entry, {
-            description: getters.getObjectTypeLabel(type).label || '',
-          }));
-        });
-      } else {
-        try {
-          await Promise.all(list.map(entry => new Promise(async (resolve, reject) => {
-            if (entry.type) {
-              try {
-                const { data } = await axios.get(`${process.env.SKOSMOS_API}potax/label`, {
-                  params: {
-                    uri: entry.type || entry.to.type,
-                    lang: i18n.locale,
-                    format: 'application/json',
-                  },
-                });
-                newList.push(Object.assign({}, entry, {
-                  description: capitalizeString(data.prefLabel),
-                }));
-              } catch (e) {
-                reject();
-              }
-            } else {
-              newList.push(Object.assign({}, entry));
-            }
-            resolve();
-          })));
-        } catch (e) {
-          throw e;
-        }
-      }
-    }
-    return newList;
   },
   async fetchMediaData({ commit }, id) {
     // TODO: replace with Portofolio_API
@@ -587,10 +481,6 @@ const actions = {
       }
     })));
     return [successArr, errorArr];
-  },
-  async setLinkedEntries({ commit, dispatch }, { list, replace }) {
-    const modifiedList = await dispatch('fetchSidebarTypes', list);
-    commit('setLinked', { list: modifiedList, replace });
   },
 };
 

@@ -6,10 +6,14 @@ export const capitalizeString = (string) => {
     .map(partialString => partialString.slice(0, 1).toUpperCase() + partialString.slice(1)).join(' ');
 };
 
-export const sorting = (list, property) => list.sort((a, b) => {
-  const compA = property ? a[property].toLowerCase() : a.toLowerCase();
-  const compB = property ? b[property].toLowerCase() : b.toLowerCase();
-  if (compA > compB) {
+export const sorting = (list, property, lang) => list.sort((a, b) => {
+  let compA = property ? a[property] : a;
+  let compB = property ? b[property] : b;
+  if (lang) {
+    compA = compA[lang];
+    compB = compB[lang];
+  }
+  if (compA.toLowerCase() > compB.toLowerCase()) {
     return 1;
   }
   return -1;

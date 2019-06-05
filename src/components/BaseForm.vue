@@ -202,10 +202,11 @@ export default {
       if (field.type === 'integer') {
         return this.valueList[field.name] ? this.valueList[field.name].toString() : '';
       }
-      // check special case single-choice chips (is chips but is saved as string on backend)
+      // check special case single-choice chips (is chips but is saved as
+      // (multilang) object on backend)
       if (field['x-attrs'] && field['x-attrs'].field_type
         && field['x-attrs'].field_type.includes('chips')
-        && field.type === 'string') {
+        && field.type === 'object') {
         if (this.valueList[field.name] && this.valueList[field.name].length) {
           return [].concat(this.valueList[field.name]);
         }

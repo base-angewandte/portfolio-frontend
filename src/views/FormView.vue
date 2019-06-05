@@ -11,7 +11,7 @@
         <BaseMenuEntry
           :title="parent.title"
           :title-bold="true"
-          :subtext="parent.type.label"
+          :subtext="parent.type && parent.type.label ? parent.type.label[$i18n.locale] : ''"
           :show-thumbnails="false"
           entry-id="parentheader"
           icon="sheet-empty"/>
@@ -144,7 +144,7 @@ export default {
     },
     type() {
       const { type } = this.valueList;
-      return type && type.length && !this.showOverlay ? type[0].label : '';
+      return type && type.length && !this.showOverlay ? type[0].label[this.$i18n.locale] : '';
     },
     parent() {
       return this.$store.getters['data/getLatestParentItem'];
@@ -156,7 +156,7 @@ export default {
       return this.$store.state.data.prefetchedTypes;
     },
     objectTypes() {
-      return this.$store.getters['data/getFormObjectTypes'];
+      return this.$store.state.PortfolioAPI.schemas;
     },
     formDataPresent() {
       return !this.currentItemId || (!!Object.keys(this.formFields).length
@@ -182,7 +182,7 @@ export default {
         try {
           const response = await this.$store.dispatch('PortfolioAPI/get', {
             kind: 'jsonschema',
-            id: encodeURIComponent(this.valueList.type[0].value),
+            id: encodeURIComponent(this.valueList.type[0].source),
           });
           this.formFieldsExtension = response.properties || {};
         } catch (e) {
@@ -236,7 +236,7 @@ export default {
     },
     async updateForm() {
       try {
-        const data = await this.$store.dispatch('data/fetchEntryData', { id: this.currentItemId, lang: this.$i18n.locale });
+        const data = await this.$store.dispatch('data/fetchEntryData', this.currentItemId);
         this.valueList = Object.assign({}, data);
       } catch (e) {
         console.error(e);
@@ -474,9 +474,9 @@ export default {
         const number = parseInt(values, 10);
         return !Number.isNaN(number) ? number : 0;
       }
-      // special case single choice chips (saved as string in backend)
+      // special case single choice chips (saved as object in backend)
       if (field['x-attrs'] && field['x-attrs'].field_type && field['x-attrs'].field_type.includes('chips')
-        && field.type === 'string') {
+        && field.type === 'object') {
         // TODO: include objects with other than 'value' property (could be the
         // case for software license e.g.)
         return values && values.length ? values[0].value || values[0] : '';

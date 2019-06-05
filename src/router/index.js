@@ -2,7 +2,7 @@ import Vue from 'vue';
 import Router from 'vue-router';
 import Dashboard from '../views/Dashboard';
 import FormView from '../views/FormView';
-import NotFoundComponent from '../views/NotFoundComponent';
+import NotFoundComponent from '../views/EntryNotFound';
 import NetworkError from '../views/404Error';
 import store from '../store';
 import { i18n } from '../plugins/i18n';

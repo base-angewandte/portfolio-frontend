@@ -91,9 +91,6 @@
       :allow-dynamic-drop-down-entries="field['x-attrs'] && field['x-attrs'].dynamic_autosuggest"
       :allow-multiple-entries="field.name !== 'type'"
       :allow-unknown-entries="field['x-attrs'] && field['x-attrs'].allow_unkown_entries"
-      :always-linked="field.name === 'type'"
-      :identifier="field.name !== 'type' && field['x-attrs']
-      && field['x-attrs'].source ? 'source' : ''"
       :chips-editable="true"
       :class="['base-form-field']"
       :draggable="true"
@@ -103,6 +100,7 @@
       :sort-text="$t('form.sort')"
       :sort-name="isContributorOrEquivalent"
       :language="field['x-attrs'] && field['x-attrs'].set_label_language ? $i18n.locale : ''"
+      identifier="source"
       object-prop="label"
       @fetch-dropdown-entries="fetchAutocomplete"
       @hoverbox-active="$emit('fetch-info-data')">

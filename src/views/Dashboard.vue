@@ -93,7 +93,6 @@ export default {
       this.$store.commit('data/hidePopUp');
     },
     loadPreview(fileData) {
-      debugger;
       const filePath = fileData.playlist || fileData.mp3
         || fileData.pdf || fileData.original;
       // TODO: remove again as soon as video and pdf and audio are available

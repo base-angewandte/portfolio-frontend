@@ -39,6 +39,7 @@
             <BaseDropDown
               :label="$t('dropdown.filterByType')"
               :options="entryTypes"
+              :language="$i18n.locale"
               v-model="filterType"
               @value-selected="filterEntries($event, 'type')"/>
           </div>
@@ -139,6 +140,7 @@ import {
 import BaseOptions from './BaseOptions';
 import { entryHandlingMixin } from '../mixins/entryHandling';
 import { userInfo } from '../mixins/userInfo';
+import { capitalizeString } from '../utils/commonUtils';
 
 export default {
   components: {
@@ -406,19 +408,10 @@ export default {
           q: this.filterString,
           link_selection_for: this.excludeLinked ? this.activeEntryId : '',
         });
-        try {
-          // get the labels for the entries
-          this.listInt = await this.$store.dispatch('data/fetchSidebarTypes', response.results);
-        } catch (e) {
-          this.listInt = [].concat(response.results);
-          console.error(e);
-          this.$notify({
-            group: 'request-notifications',
-            title: this.$t('notify.somethingWrong'),
-            text: this.$t('notify.entryFetchFailTypes'),
-            type: 'error',
-          });
-        }
+        this.listInt = response.results
+          .map(entry => Object.assign({}, entry, {
+            description: entry.type && entry.type.label ? capitalizeString(entry.type.label[this.$i18n.locale]) : '',
+          }));
         this.entryNumber = response.count;
         // check if this was a general data request (no filters etc)
         // to determine if entries exist at all
