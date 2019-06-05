@@ -15,8 +15,8 @@
     "build-test": "npm run build && node server.js"
   },
   "dependencies": {
-    "axios": "^0.18.0",
-    "base-ui-components": "^0.0.12",
+    "axios": "^0.19.0",
+    "base-ui-components": "^0.0.13",
     "normalize.css": "^8.0.1",
     "vue": "^2.6.10",
     "vue-i18n": "^8.10.0",
