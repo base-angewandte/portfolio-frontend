@@ -267,7 +267,6 @@ const actions = {
         if (entryData) {
           // Modifications of data received from backend needed:
           // 1. type needs to be array in logic here!
-          debugger;
           const objectType = entryData.type && entryData.type.source ? [entryData.type] : [];
           // 2. Text needs to look different
           const textData = entryData.texts && entryData.texts.length
