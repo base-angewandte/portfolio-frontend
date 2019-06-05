@@ -391,6 +391,8 @@ export default {
       // will be done
       if (action === 'delete' && currentSelected) {
         this.$router.push('/');
+      } else if ((action === 'publish' || action === 'offline') && currentSelected) {
+        this.$emit('update-publish-state', action === 'publish');
       }
     },
     toggleSidebarOptions() {

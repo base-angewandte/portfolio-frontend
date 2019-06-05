@@ -76,7 +76,7 @@
               material: preFetchedData.materials,
               format: preFetchedData.formats,
               language: preFetchedData.languages,
-              open_source_license: preFetchedData.licenses,
+              open_source_licence: preFetchedData.softwarelicenses,
             }"
             class="form"
             @values-changed="handleInput($event, 'data')"/>

@@ -168,6 +168,7 @@
     "duplicated": "dupliziert",
     "linkd": "verknüpft",
     "changed": "geändert",
+    "licensed": "geändert",
     "actionSuccessTitle": "{action} erfolgreich",
     "actionSuccessSubtext": "1 {type} wurde erfolgreich {action}. | {count} {type} wurden erfolgreich {action}.",
     "actionFailed": "{action} fehlgeschlagen",

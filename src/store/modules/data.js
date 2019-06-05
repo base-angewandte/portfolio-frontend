@@ -3,7 +3,7 @@ import Vue from 'vue';
 import axios from 'axios';
 import { i18n } from '../../plugins/i18n';
 
-import { sorting, capitalizeString } from '../../utils/commonUtils';
+import { sorting, capitalizeString, setLangLabels } from '../../utils/commonUtils';
 
 function transformTextData(data) {
   const textData = [];
@@ -246,11 +246,7 @@ const actions = {
       const entryTypes = sorting(response.data, 'label', i18n.locale);
       // add 'all types' option
       entryTypes.unshift({
-        label: i18n.availableLocales
-          .reduce((prev, curr) => {
-            Vue.set(prev, curr, i18n.t('dropdown.allTypes', curr));
-            return prev;
-          }, {}),
+        label: setLangLabels('dropdown.allTypes', i18n.availableLocales),
         source: '',
       });
       commit('setEntryTypes', entryTypes);
@@ -458,7 +454,7 @@ const actions = {
           if (action === 'publish') {
             formData.append('published', mediaId.selected);
           } else if (action === 'license') {
-            formData.append('license', value);
+            formData.append('license', value.source ? JSON.stringify(value) : null);
           } else {
             console.error('file action unknown');
           }

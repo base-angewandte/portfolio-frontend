@@ -162,24 +162,13 @@
           <!-- TODO: replace this with skosmos project values! -->
           <BaseDropDown
             v-if="action === 'license'"
-            :options="[{
-                         label: 'CC-BY',
-                         value: 'cc-by',
-                       },
-                       {
-                         label: 'CC0',
-                         value: 'cc0',
-                       }
-                       ,
-                       {
-                         label: $t('nolicense'),
-                         value: 'no license',
-                       }
-            ]"
+            :options="licenses"
             :show-label="false"
             :label="$t('form-view.selectLicense')"
             :placeholder="$t('form-view.selectLicense')"
             v-model="licenseSelected"
+            :language="$i18n.locale"
+            value-prop="source"
             class="license-dropdown"/>
         </div>
       </transition>
@@ -192,7 +181,8 @@
           :selectable="!!fileText"
           :selected="selectedFiles.map(file => file.id || file).includes(attached.id)"
           :title="attached.original ? getFileName(attached.original) : attached.id"
-          :subtext="attached.license ? attached.license.toUpperCase() : ''"
+          :subtext="attached.license && attached.license.label
+          ? attached.license.label[$i18n.locale].toUpperCase() : ''"
           :description="getFileType(attached)"
           :image-url="getImagePath(attached.thumbnail || attached.cover, imageHover[index])"
           :box-size="{ width: 'calc(25% - 0.43em - (0.43em/2))' }"
@@ -241,6 +231,7 @@ import {
 import BaseOptions from './BaseOptions';
 import EyeIcon from '../assets/icons/eye.svg';
 import { userInfo } from '../mixins/userInfo';
+import { setLangLabels } from '../utils/commonUtils';
 
 export default {
   components: {
@@ -288,6 +279,12 @@ export default {
     isConverting() {
       return this.attachedList.some(file => !file.metadata);
     },
+    licenses() {
+      return ([{
+        label: setLangLabels('nolicense', this.$i18n.availableLocales),
+        source: '',
+      }]).concat(this.$store.getters['data/getPrefetchedTypes']('medialicenses'));
+    },
   },
   watch: {
     action(val) {
@@ -331,7 +328,7 @@ export default {
         });
         // check if a license was selected if action is license change
         // if not inform user he should select a license
-      } else if (this.action === 'license' && this.licenseSelected.value === undefined) {
+      } else if (this.action === 'license' && this.licenseSelected.source === undefined) {
         this.$notify({
           group: 'request-notifications',
           title: this.$t('notify.actionFailed', { action: this.$t('notify.license') }),
@@ -342,7 +339,7 @@ export default {
         const [successIds, failIds] = await this.$store.dispatch('data/actionFiles', {
           list: this.selectedFiles,
           action: this.action,
-          value: this.licenseSelected.value,
+          value: this.licenseSelected,
         });
         this.informUser({
           successArr: successIds, failedArr: failIds, action, type: 'media',

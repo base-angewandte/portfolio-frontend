@@ -28,7 +28,8 @@
       ref="sidebar"
       :class="['sidebar', { 'sidebar-full': !showForm, 'sidebar-hidden-mobile': showForm }]"
       @new-form="createNewForm"
-      @show-entry="routeToEntry"/>
+      @show-entry="routeToEntry"
+      @update-publish-state="updateFormData"/>
     <div
       v-if="showForm"
       class="form-view">
@@ -136,6 +137,12 @@ export default {
     },
     updateSidebarData() {
       this.$refs.sidebar.fetchSidebarData();
+    },
+    updateFormData(published) {
+      const formView = this.$refs.view;
+      if (formView && formView.valueList) {
+        this.$set(formView.valueList, 'published', published);
+      }
     },
     capitalizeFirstLetter(text) {
       if (text) {

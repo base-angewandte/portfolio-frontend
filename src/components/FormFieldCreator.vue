@@ -202,6 +202,7 @@ import {
   BaseChipsInput,
   BaseChipsBelow,
 } from 'base-ui-components';
+import { setLangLabels } from '../utils/commonUtils';
 
 export default {
   name: 'FormFieldCreator',
@@ -308,8 +309,7 @@ export default {
     textTypeDefault() {
       return {
         // map the language specific labels for no value selected to the default
-        label: this.$i18n.availableLocales
-          .reduce((prev, curr) => Object.assign({}, prev, { [curr]: this.$t('form.noTextType', curr) }), {}),
+        label: setLangLabels('form.noTextType', this.$i18n.availableLocales),
         source: '',
       };
     },

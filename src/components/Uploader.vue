@@ -16,23 +16,12 @@
     <div class="popup-text">
       <BaseDropDown
         :label="$t('upload.choose_license')"
-        :options="[
-          {
-            label: 'CC-BY',
-            value: 'cc-by',
-          },
-          {
-            label: 'CC0',
-            value: 'cc0',
-          },
-          {
-            label: $t('nolicense'),
-            value: 'no license',
-          }
-        ]"
+        :options="licenses"
         :show-label="true"
         :header-background-color="'rgb(240, 240, 240)'"
+        :language="$i18n.locale"
         v-model="license"
+        value-prop="source"
         class="upload-dropdown"/>
       <BaseDropDown
         :options="[
@@ -86,6 +75,7 @@ import {
   BaseLoader,
 } from 'base-ui-components';
 import axios from 'axios';
+import { setLangLabels } from '../utils/commonUtils';
 // import upload from '../assets/file-upload.fake.service';
 
 const STATUS_INITIAL = 0;
@@ -118,10 +108,11 @@ export default {
       currentStatus: null,
       uploadPercentage: [],
       publish: { label: this.$t('no'), value: 'false' },
-      license: {
-        label: this.$t('nolicense'),
+      defaultLicense: {
+        label: setLangLabels('nolicense', this.$i18n.availableLocales),
         value: 'no license',
       },
+      license: this.defaultLicense,
     };
   },
   computed: {
@@ -145,6 +136,9 @@ export default {
         return this.$t('upload.retry');
       }
       return this.$t('upload.done');
+    },
+    licenses() {
+      return ([this.defaultLicense]).concat(this.$store.getters['data/getPrefetchedTypes']('medialicenses'));
     },
   },
   mounted() {
@@ -172,7 +166,9 @@ export default {
                 // These values can not be empty (also no empty string) or it will give
                 // an error
                 formData.append('published', this.publish.value);
-                formData.append('license', this.license.value);
+                if (this.license.source) {
+                  formData.append('license', JSON.stringify(this.license));
+                }
 
                 this.currentStatus = STATUS_SAVING;
                 this.$emit('upload-start');
@@ -270,7 +266,8 @@ export default {
     align-items: flex-end;
 
     .upload-dropdown {
-      width: 100%;
+      width: calc(50% - #{$spacing} / 2);
+      flex: 0 0 auto;
     }
   }
 

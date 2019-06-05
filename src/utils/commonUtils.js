@@ -1,3 +1,5 @@
+import Vue from 'vue';
+import { i18n } from '../plugins/i18n';
 
 export const capitalizeString = (string) => {
   const newString = string.split('/')
@@ -18,3 +20,9 @@ export const sorting = (list, property, lang) => list.sort((a, b) => {
   }
   return -1;
 });
+
+export const setLangLabels = (key, locales) => locales
+  .reduce((prev, curr) => {
+    Vue.set(prev, curr, i18n.t(key, curr));
+    return prev;
+  }, {});
