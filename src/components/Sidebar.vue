@@ -41,6 +41,7 @@
               :options="entryTypes"
               :language="$i18n.locale"
               v-model="filterType"
+              value-prop="source"
               @value-selected="filterEntries($event, 'type')"/>
           </div>
         </template>
@@ -218,7 +219,7 @@ export default {
       timeout: null,
       filterType: {
         label: this.$t('dropdown.allTypes'),
-        value: '',
+        source: '',
       },
       sortParam: {},
       entriesExist: false,
@@ -404,7 +405,7 @@ export default {
           sort: this.sortParam.value,
           offset: (this.pageNumber - 1) * this.entriesPerPage,
           limit: this.entriesPerPage,
-          type: this.filterType.value,
+          type: this.filterType.source,
           q: this.filterString,
           link_selection_for: this.excludeLinked ? this.activeEntryId : '',
         });
@@ -415,7 +416,7 @@ export default {
         this.entryNumber = response.count;
         // check if this was a general data request (no filters etc)
         // to determine if entries exist at all
-        if (!(this.filterType.value || this.filterString || this.excludeLinked)) {
+        if (!(this.filterType.source || this.filterString || this.excludeLinked)) {
           this.entriesExist = !!this.entryNumber;
         }
         this.$emit('sidebar-data-changed');

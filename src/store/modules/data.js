@@ -251,7 +251,7 @@ const actions = {
             Vue.set(prev, curr, i18n.t('dropdown.allTypes', curr));
             return prev;
           }, {}),
-        value: '',
+        source: '',
       });
       commit('setEntryTypes', entryTypes);
     } catch (e) {
