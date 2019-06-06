@@ -20,7 +20,7 @@
     </BasePopUp>
     <BaseMediaPreview
       :show-preview="showPreview"
-      :image-url="previewUrl"
+      :media-url="previewUrl"
       :display-size="previewSize"
       @hide-preview="showPreview = false"/>
 
@@ -28,7 +28,8 @@
       ref="sidebar"
       :class="['sidebar', { 'sidebar-full': !showForm, 'sidebar-hidden-mobile': showForm }]"
       @new-form="createNewForm"
-      @show-entry="routeToEntry"/>
+      @show-entry="routeToEntry"
+      @update-publish-state="updateFormData"/>
     <div
       v-if="showForm"
       class="form-view">
@@ -93,9 +94,10 @@ export default {
       this.$store.commit('data/hidePopUp');
     },
     loadPreview(fileData) {
-      const filePath = fileData.playlist || fileData.original;
+      const filePath = fileData.playlist || fileData.mp3
+        || fileData.pdf || fileData.original;
       // TODO: remove again as soon as video and pdf and audio are available
-      if (filePath && filePath.search(/(jpg|jpeg|gif|png|mp4|m3u8|ogg)$/g) >= 0) {
+      if (filePath && filePath.search(/(jpg|jpeg|gif|png|m3u8|mp3|pdf)$/ig) >= 0) {
         /* eslint-disable-next-line */
         if (filePath.includes('http')) {
           this.previewUrl = filePath;
@@ -107,12 +109,15 @@ export default {
           this.previewUrl = `${process.env.PORTFOLIO_HOST}${filePath}`;
         }
         this.showPreview = !!this.previewUrl;
-        this.previewSize = {
-          height: `${fileData.metadata.ImageHeight ? fileData.metadata.ImageHeight.val
-            : fileData.metadata.SourceImageHeight.val}px`,
-          width: `${fileData.metadata.ImageWidth ? fileData.metadata.ImageWidth.val
-            : fileData.metadata.SourceImageWidth.val}px`,
-        };
+        // previewSize not required for audio (and pdf)
+        if (!fileData.mp3 && !fileData.pdf) {
+          this.previewSize = {
+            height: `${fileData.metadata.ImageHeight ? fileData.metadata.ImageHeight.val
+              : fileData.metadata.SourceImageHeight.val}px`,
+            width: `${fileData.metadata.ImageWidth ? fileData.metadata.ImageWidth.val
+              : fileData.metadata.SourceImageWidth.val}px`,
+          };
+        }
         // landing here if either file type is not supported or if file is not fully
         // converted yet
       } else {
@@ -132,6 +137,12 @@ export default {
     },
     updateSidebarData() {
       this.$refs.sidebar.fetchSidebarData();
+    },
+    updateFormData(published) {
+      const formView = this.$refs.view;
+      if (formView && formView.valueList) {
+        this.$set(formView.valueList, 'published', published);
+      }
     },
     capitalizeFirstLetter(text) {
       if (text) {

@@ -39,7 +39,9 @@
             <BaseDropDown
               :label="$t('dropdown.filterByType')"
               :options="entryTypes"
+              :language="$i18n.locale"
               v-model="filterType"
+              value-prop="source"
               @value-selected="filterEntries($event, 'type')"/>
           </div>
         </template>
@@ -139,6 +141,7 @@ import {
 import BaseOptions from './BaseOptions';
 import { entryHandlingMixin } from '../mixins/entryHandling';
 import { userInfo } from '../mixins/userInfo';
+import { capitalizeString } from '../utils/commonUtils';
 
 export default {
   components: {
@@ -216,7 +219,7 @@ export default {
       timeout: null,
       filterType: {
         label: this.$t('dropdown.allTypes'),
-        value: '',
+        source: '',
       },
       sortParam: {},
       entriesExist: false,
@@ -388,6 +391,8 @@ export default {
       // will be done
       if (action === 'delete' && currentSelected) {
         this.$router.push('/');
+      } else if ((action === 'publish' || action === 'offline') && currentSelected) {
+        this.$emit('update-publish-state', action === 'publish');
       }
     },
     toggleSidebarOptions() {
@@ -402,16 +407,18 @@ export default {
           sort: this.sortParam.value,
           offset: (this.pageNumber - 1) * this.entriesPerPage,
           limit: this.entriesPerPage,
-          type: this.filterType.value,
+          type: this.filterType.source,
           q: this.filterString,
           link_selection_for: this.excludeLinked ? this.activeEntryId : '',
         });
-        // get the labels for the entries
-        this.listInt = await this.$store.dispatch('data/fetchSidebarTypes', response.results);
+        this.listInt = response.results
+          .map(entry => Object.assign({}, entry, {
+            description: entry.type && entry.type.label ? capitalizeString(entry.type.label[this.$i18n.locale]) : '',
+          }));
         this.entryNumber = response.count;
         // check if this was a general data request (no filters etc)
         // to determine if entries exist at all
-        if (!(this.filterType.value || this.filterString || this.excludeLinked)) {
+        if (!(this.filterType.source || this.filterString || this.excludeLinked)) {
           this.entriesExist = !!this.entryNumber;
         }
         this.$emit('sidebar-data-changed');

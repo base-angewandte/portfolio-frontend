@@ -202,10 +202,11 @@ export default {
       if (field.type === 'integer') {
         return this.valueList[field.name] ? this.valueList[field.name].toString() : '';
       }
-      // check special case single-choice chips (is chips but is saved as string on backend)
+      // check special case single-choice chips (is chips but is saved as
+      // (multilang) object on backend)
       if (field['x-attrs'] && field['x-attrs'].field_type
         && field['x-attrs'].field_type.includes('chips')
-        && field.type === 'string') {
+        && field.type === 'object') {
         if (this.valueList[field.name] && this.valueList[field.name].length) {
           return [].concat(this.valueList[field.name]);
         }
@@ -341,12 +342,21 @@ export default {
       return index > 0 && !!(index % 2);
     },
     setDropDown(data, value, equivalent, name) {
-      const dropDownList = [].concat(data);
+      let dropDownList = [].concat(data);
       const user = this.$store.getters['PortfolioAPI/user'];
       if (((equivalent && equivalent === 'contributors') || name === 'contributors')
         && (value.length <= 3 || user.name.toLowerCase().includes(value.toLowerCase()))) {
-        dropDownList.unshift({ name: user.name, source: user.uuid, additional: this.$t('form.myself') });
-        // TODO: filter entry from list to prevent double display!
+        // check if additional contributors were specififed in the settings and add them
+        const defaultContributors = process.env.CONTRIBUTOR_DEFAULTS;
+        if (defaultContributors && defaultContributors.length) {
+          dropDownList = defaultContributors.concat(dropDownList);
+        }
+        // add user default
+        dropDownList.unshift({
+          label: user.name,
+          source: user.uuid,
+          additional: this.$t('form.myself'),
+        });
       }
       this.$set(this.dropdownLists, name, dropDownList);
     },

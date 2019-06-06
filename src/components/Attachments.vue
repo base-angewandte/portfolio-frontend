@@ -162,24 +162,13 @@
           <!-- TODO: replace this with skosmos project values! -->
           <BaseDropDown
             v-if="action === 'license'"
-            :options="[{
-                         label: 'CC-BY',
-                         value: 'cc-by',
-                       },
-                       {
-                         label: 'CC0',
-                         value: 'cc0',
-                       }
-                       ,
-                       {
-                         label: $t('nolicense'),
-                         value: 'no license',
-                       }
-            ]"
+            :options="licenses"
             :show-label="false"
             :label="$t('form-view.selectLicense')"
             :placeholder="$t('form-view.selectLicense')"
             v-model="licenseSelected"
+            :language="$i18n.locale"
+            value-prop="source"
             class="license-dropdown"/>
         </div>
       </transition>
@@ -190,10 +179,10 @@
           v-for="(attached, index) of attachedList"
           :show-title="true"
           :selectable="!!fileText"
-          :selected="(action === 'publish' && attached.published)
-          || selectedFiles.includes(attached.id)"
+          :selected="selectedFiles.map(file => file.id || file).includes(attached.id)"
           :title="attached.original ? getFileName(attached.original) : attached.id"
-          :subtext="attached.license ? attached.license.toUpperCase() : ''"
+          :subtext="attached.license && attached.license.label
+          ? attached.license.label[$i18n.locale].toUpperCase() : ''"
           :description="getFileType(attached)"
           :image-url="getImagePath(attached.thumbnail || attached.cover, imageHover[index])"
           :box-size="{ width: 'calc(25% - 0.43em - (0.43em/2))' }"
@@ -242,6 +231,7 @@ import {
 import BaseOptions from './BaseOptions';
 import EyeIcon from '../assets/icons/eye.svg';
 import { userInfo } from '../mixins/userInfo';
+import { setLangLabels } from '../utils/commonUtils';
 
 export default {
   components: {
@@ -280,7 +270,6 @@ export default {
       showFileAction: false,
       selectedEntries: [],
       selectedFiles: [],
-      publishFiles: [],
       action: '',
       licenseSelected: {},
       imageHover: [],
@@ -289,6 +278,12 @@ export default {
   computed: {
     isConverting() {
       return this.attachedList.some(file => !file.metadata);
+    },
+    licenses() {
+      return ([{
+        label: setLangLabels('nolicense', this.$i18n.availableLocales),
+        source: '',
+      }]).concat(this.$store.getters['data/getPrefetchedTypes']('medialicenses'));
     },
   },
   watch: {
@@ -299,7 +294,6 @@ export default {
         this.buttonText = this.$t(`form-view.${val}Button`);
       } else {
         this.fileText = '';
-        this.publishFiles = [];
         this.selectedFiles = [];
       }
     },
@@ -317,21 +311,23 @@ export default {
       this.$set(this.imageHover, index, value);
     },
     async saveFileMeta() {
+      // special case publish since publish / offline in one
+      const action = this.action === 'publish' ? 'change' : this.action;
       // check if files were selected
-      if ((this.action === 'publish' && !this.publishFiles.length) && !this.selectedFiles.length) {
+      if (!this.selectedFiles.length) {
         // if not notify user that he needs to select files
         this.$notify({
           group: 'request-notifications',
-          title: this.$t('notify.actionFailed', { action: this.$t(`notify.${this.action}`) }),
+          title: this.$t('notify.actionFailed', { action: this.$t(`notify.${action}`) }),
           text: this.$t('notify.selectForAction', {
-            action: this.$t(`notify.${this.action}File`),
+            action: this.$t(`notify.${action}File`),
             type: this.$tc('notify.media', 0),
           }),
           type: 'error',
         });
         // check if a license was selected if action is license change
         // if not inform user he should select a license
-      } else if (this.action === 'license' && this.licenseSelected.value === undefined) {
+      } else if (this.action === 'license' && this.licenseSelected.source === undefined) {
         this.$notify({
           group: 'request-notifications',
           title: this.$t('notify.actionFailed', { action: this.$t('notify.license') }),
@@ -340,12 +336,12 @@ export default {
         });
       } else {
         const [successIds, failIds] = await this.$store.dispatch('data/actionFiles', {
-          list: this.action === 'publish' ? this.publishFiles : this.selectedFiles,
+          list: this.selectedFiles,
           action: this.action,
-          value: this.licenseSelected.value,
+          value: this.licenseSelected,
         });
         this.informUser({
-          successArr: successIds, failedArr: failIds, action: this.action, type: 'media',
+          successArr: successIds, failedArr: failIds, action, type: 'media',
         });
         if (successIds.length) {
           await this.fetchMedia();
@@ -353,7 +349,6 @@ export default {
         // clear all variables after action
         this.action = '';
         this.selectedFiles = [];
-        this.publishFiles = [];
         this.licenseSelected = {};
       }
     },
@@ -393,11 +388,11 @@ export default {
       } else {
         // filter item from array in case it was already added previously
         // easier than replacing the selected value for relevant item
-        this.publishFiles = this.publishFiles.filter(file => file.id !== objId);
-        // check if the new state equals the state saved to db --> only add if not
+        this.selectedFiles = this.selectedFiles.filter(file => file.id !== objId);
+        // check if file was selected and add it with opposite value
         /* eslint-disable-next-line */
-        if (sel !== published) {
-          this.publishFiles.push({ id: objId, selected: sel });
+        if (sel) {
+          this.selectedFiles.push({ id: objId, selected: !published });
         }
       }
     },
@@ -441,10 +436,10 @@ export default {
       return '';
     },
     generateBoxText(metadata) {
-      const wantedAttributes = ['FileSize', 'ImageSize'];
+      const wantedAttributes = ['FileSize', 'ImageSize', 'Title', 'Artist', 'Year'];
       if (metadata) {
         return Object.keys(metadata).filter(key => wantedAttributes.includes(key))
-          .map(data => `${data}: ${metadata[data].val}`);
+          .map(data => `${metadata[data].val}`);
       }
       return [];
     },

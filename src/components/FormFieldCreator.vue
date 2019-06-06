@@ -52,10 +52,12 @@
       <template
         v-if="field.items && field.items.properties && field.items.properties.type">
         <BaseDropDown
-          :selected-option="fieldValueInt && fieldValueInt.type
+          :selected-option="fieldValueInt && fieldValueInt.type.source
           ? fieldValueInt.type : textTypeDefault"
           :options="textTypeOptions"
           :label="$t('form.texttype')"
+          :language="$i18n.locale"
+          value-prop="source"
           class="multiline-dropdown"
           @value-selected="$set(fieldValueInt, 'type', $event)"/>
       </template>
@@ -84,15 +86,11 @@
       :key="fieldKey"
       :placeholder="placeholder"
       :label="label"
-      :object-prop="chipsPropertyName"
       :list="dropDownList"
       v-model="fieldValueInt"
       :allow-dynamic-drop-down-entries="field['x-attrs'] && field['x-attrs'].dynamic_autosuggest"
       :allow-multiple-entries="field.name !== 'type'"
       :allow-unknown-entries="field['x-attrs'] && field['x-attrs'].allow_unkown_entries"
-      :always-linked="field.name === 'type'"
-      :identifier="field.name !== 'type' && field['x-attrs']
-      && field['x-attrs'].source ? 'source' : ''"
       :chips-editable="true"
       :class="['base-form-field']"
       :draggable="true"
@@ -101,12 +99,17 @@
       :is-loading="autocompleteLoading"
       :sort-text="$t('form.sort')"
       :sort-name="isContributorOrEquivalent"
+      :language="field['x-attrs'] && field['x-attrs'].set_label_language ? $i18n.locale : ''"
+      identifier="source"
+      object-prop="label"
       @fetch-dropdown-entries="fetchAutocomplete"
       @hoverbox-active="$emit('fetch-info-data')">
       <template
         slot="drop-down-entry"
         slot-scope="props">
-        <span>{{ props.item[chipsPropertyName] }}</span>
+        <span>
+          {{ props.item.label[$i18n.locale] || props.item.label }}
+        </span>
         <span class="chips-dropdown-second">{{ props.item.additional }}</span>
         <span class="chips-dropdown-third">{{ props.item.source_name }}</span>
       </template>
@@ -134,13 +137,14 @@
       :allow-dynamic-drop-down-entries="true"
       :identifier="'source'"
       :hoverbox-content="hoverBoxData"
-      :object-prop="'name'"
+      :object-prop="'label'"
       :role-options="secondaryDropdown"
       :is-loading="autocompleteLoading"
       :sort-text="$t('form.sort')"
       :sort-name="true"
       :chips-editable="true"
       :roles-placeholder="$t('form.selectRoles')"
+      :language="$i18n.locale"
       v-model="fieldValueInt"
       class="base-form-field base-form-field-full"
       @fetch-dropdown-entries="fetchAutocomplete"
@@ -148,7 +152,7 @@
       <template
         slot="below-drop-down-entry"
         slot-scope="props">
-        <span>{{ props.item.name }}</span>
+        <span>{{ props.item.label }}</span>
         <span class="chips-dropdown-second">{{ props.item.additional }}</span>
         <span class="chips-dropdown-third">{{ props.item.source_name }}</span>
       </template>
@@ -198,6 +202,7 @@ import {
   BaseChipsInput,
   BaseChipsBelow,
 } from 'base-ui-components';
+import { setLangLabels } from '../utils/commonUtils';
 
 export default {
   name: 'FormFieldCreator',
@@ -302,7 +307,11 @@ export default {
       return this.field.properties;
     },
     textTypeDefault() {
-      return { label: this.$t('form.noTextType'), value: '' };
+      return {
+        // map the language specific labels for no value selected to the default
+        label: setLangLabels('form.noTextType', this.$i18n.availableLocales),
+        source: '',
+      };
     },
     textTypeOptions() {
       return [this.textTypeDefault].concat(this.secondaryDropdown);
@@ -311,17 +320,9 @@ export default {
       return this.field.name === 'contributors'
         || (this.field['x-attrs'] && this.field['x-attrs'].equivalent === 'contributors');
     },
-    chipsPropertyName() {
-      if (this.isContributorOrEquivalent || this.field.name === 'location') {
-        return 'name';
-      } if (this.field.name === 'keywords') {
-        return 'keyword';
-      }
-      return 'label';
-    },
     // to determine text display for chips input
     fieldInput() {
-      return this.textInput.length > 3;
+      return this.textInput && this.textInput.length > 3;
     },
   },
   watch: {

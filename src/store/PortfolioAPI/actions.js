@@ -1,3 +1,4 @@
+import axios from 'axios';
 import * as Api from './api';
 import { i18n } from '../../plugins/i18n';
 
@@ -6,6 +7,29 @@ const $config = {
   xsrfCookieName: 'csrftoken_portfolio',
   xsrfHeaderName: 'X-CSRFToken',
 };
+
+const axiosInstance = axios.create();
+
+const axiosMaxRetries = 3;
+let axiosTries = 0;
+
+axiosInstance.interceptors.response.use((response) => {
+  axiosTries = 0;
+  return response;
+}, (error) => {
+  if (error.response && error.response.status === 403) {
+    window.location.href = `${process.env.AUTHENTICATION.LOGIN}`;
+  }
+  if (((error.config && error.response && error.response.status === 404)
+    || !error.response) && axiosTries < axiosMaxRetries) {
+    axiosTries += 1;
+    return axios.request(error.config);
+  }
+  return Promise.reject(error);
+});
+
+Api.setAxiosInstance(axiosInstance);
+
 
 export default {
   init({ commit, dispatch }, config) {

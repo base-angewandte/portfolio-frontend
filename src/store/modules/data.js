@@ -3,32 +3,20 @@ import Vue from 'vue';
 import axios from 'axios';
 import { i18n } from '../../plugins/i18n';
 
-import { capitalizeString, sorting } from '../../utils/commonUtils';
-
-function transformRoles(data) {
-  return data.map((contributor) => {
-    const roles = contributor.roles && contributor.roles.length ? contributor.roles
-      .map((role) => {
-        if (role.source) {
-          return { source: role.source };
-        }
-        return { source: role };
-      }) : [];
-    return Object.assign({}, contributor, { roles });
-  });
-}
+import { sorting, capitalizeString, setLangLabels } from '../../utils/commonUtils';
 
 function transformTextData(data) {
   const textData = [];
   if (data && data.length) {
     data.forEach((textItem) => {
       const textObj = {
-        type: textItem.type && typeof textItem.type === 'object'
-          ? textItem.type.source : textItem.type || '',
+        type: textItem.type,
       };
       const text = Object.keys(textItem).filter(props => !['type', 'text', 'data'].includes(props))
         .map(lang => Object.assign({}, {
-          language: `${process.env.LANG_URL}${lang}`,
+          language: {
+            source: `${process.env.LANG_URL}${lang}`,
+          },
           text: textItem[lang],
         }));
       Vue.set(textObj, 'data', text);
@@ -36,37 +24,6 @@ function transformTextData(data) {
     });
   }
   return textData;
-}
-
-// TODO: this should go to form view component (before save) since this is not relevant
-// for duplication!!
-function transformKeywords(keywords) {
-  return Promise.all(keywords
-    .map(keywordEntry => new Promise(async (resolve) => {
-      // check if it is a controlled voc keyword and if it is not object
-      // already (for duplicates only!!)
-      if (keywordEntry.source && typeof keywordEntry.keyword === 'string') {
-        const langObj = {};
-        const voc = keywordEntry.source.includes('disciplines') ? 'disciplines' : 'basekw';
-        await Promise.all(i18n.availableLocales.map(async (locale) => {
-          if (locale === i18n.locale) {
-            Vue.set(langObj, locale, keywordEntry.keyword);
-          } else {
-            const { data } = await axios.get(`https://voc.uni-ak.ac.at/skosmos/rest/v1/${voc}/label?lang=${locale}&uri=${keywordEntry.source}`);
-            Vue.set(langObj, locale, data.prefLabel);
-          }
-        }));
-        resolve(Object.assign({}, keywordEntry, {
-          keyword: langObj,
-        }));
-      } else if (typeof keywordEntry.keyword === 'string') {
-        resolve(Object.assign({}, keywordEntry, {
-          keyword: { [i18n.locale]: keywordEntry.keyword },
-        }));
-      } else {
-        resolve(Object.assign({}, keywordEntry));
-      }
-    })));
 }
 
 async function prepareData(valueObj) {
@@ -78,19 +35,16 @@ async function prepareData(valueObj) {
   // 2. texts need different object structure and text type needs to be string (uri)
   // but only needed for formData not duplicate
   // TODO: --> move to form view!!
-  const texts = valueObj.texts && valueObj.texts.length && !valueObj.texts[0].data
+  const texts = valueObj.texts && valueObj.texts.length
+  && (!valueObj.texts[0].data || !valueObj.texts[0].data.length)
     ? transformTextData(valueObj.texts) : [].concat(valueObj.texts);
-  const keywords = await transformKeywords(valueObj.keywords);
   // needed for publish single entry from form
   // TODO: improve this! (is handled in formview for traditionally saved entries --> duplicate)
-  const type = typeof valueObj.type === 'string' ? valueObj.type : valueObj.type[0].value;
-  // TODO: temporary fix for roles with labels!!! remove again!!!
-  const data = Object.assign({}, valueObj.data);
-  if (valueObj.data && valueObj.data.contributors) {
-    Vue.set(data, 'contributors', transformRoles(valueObj.data.contributors));
-  }
+  let type = valueObj.type && valueObj.type.length ? valueObj.type[0] : valueObj.type;
+  type = type.source ? type : null;
+
   return Object.assign({}, valueObj, {
-    texts, keywords, type, data,
+    texts, type,
   });
 }
 
@@ -117,12 +71,11 @@ const state = {
     roles: [],
     languages: [],
     formats: [],
-    licenses: [],
+    medialicenses: [],
+    softwarelicenses: [],
     keywords: [],
     materials: [],
   },
-  validObjectTypes: [],
-  formObjectTypes: [],
   // entry types displayed in sidebar
   entryTypes: [],
   generalSchema: {},
@@ -150,12 +103,6 @@ const getters = {
     return state.linkedMedia.map(entry => entry.id);
   },
   getPrefetchedTypes: state => field => state.prefetchedTypes[field],
-  getFormObjectTypes(state) {
-    return state.formObjectTypes;
-  },
-  getValidObjectTypes(state) {
-    return state.formObjectTypes;
-  },
   getEntryTypes(state) {
     return state.entryTypes;
   },
@@ -223,7 +170,11 @@ const mutations = {
   },
   setLinked(state, { list, replace }) {
     const existingEntries = replace ? [] : state.linkedEntries;
-    state.linkedEntries = [].concat(list, existingEntries);
+    // add new list of entries and add a description (for type display)
+    state.linkedEntries = [].concat(list.map(entry => Object.assign({}, entry, {
+      description: entry.to && entry.to.type && entry.to.type.label
+        ? capitalizeString(entry.to.type.label[i18n.locale]) : '',
+    })), existingEntries);
   },
   deleteLinked(state, list) {
     state.linkedEntries = state.linkedEntries.filter(entry => !list.includes(entry.id));
@@ -238,17 +189,6 @@ const mutations = {
   setPrefetchedTypes(state, { field, data }) {
     Vue.set(state.prefetchedTypes, field, data);
   },
-  setFormObjectTypes(state, types) {
-    state.formObjectTypes = [].concat(types.filter(type => !!type.prefLabel)
-      .map(type => ({
-        label: capitalizeString(type.prefLabel.value || type.prefLabel
-          .find(label => label.lang === i18n.locale).value),
-        value: type.uri,
-      })));
-  },
-  setValidObjectTypes(state, types) {
-    state.validObjectTypes = [].concat(types);
-  },
   setGeneralSchema(state, schema) {
     state.generalSchema = Object.assign({}, schema);
   },
@@ -261,7 +201,7 @@ const mutations = {
 };
 
 const actions = {
-  async fetchGeneralFields({ state, getters, commit }) {
+  async fetchGeneralFields({ commit }) {
     return new Promise(async (resolve, reject) => {
       try {
         const jsonSchema = await axios.get(`${process.env.API}swagger.json`,
@@ -273,20 +213,6 @@ const actions = {
           });
         const formFields = jsonSchema.data.definitions.Entry.properties;
         commit('setGeneralSchema', formFields);
-        // if type is present as formfield fetch the available types here
-        if (formFields.type) {
-          // retrieve valid object types from swagger.json and set variable
-          commit('setValidObjectTypes', formFields.type.enum);
-          // if object types were not fetched previously do so
-          if (!getters.getFormObjectTypes.length) {
-            let { data } = await axios
-              .get(`${process.env.SKOSMOS_API}potax/data?lang=${i18n.locale}&uri=http://base.uni-ak.ac.at/portfolio/taxonomy/portfolio_taxonomy&format=application/json`);
-            // filter so only valid object types remain
-            data = data.graph.filter(type => !!type.prefLabel
-              && state.validObjectTypes.includes(type.uri));
-            commit('setFormObjectTypes', data);
-          }
-        }
         resolve(formFields);
       } catch (e) {
         console.error(e);
@@ -317,159 +243,47 @@ const actions = {
           'Accept-Language': i18n.locale,
         },
       });
-      const types = response.data;
-      // get the labels for all fetched types
-      const typeArr = await Promise.all(types.map(type => new Promise(async (resolve, reject) => {
-        try {
-          const labelData = await axios.get(`${process.env.SKOSMOS_API}potax/label`, {
-            params: {
-              uri: type,
-              lang: i18n.locale,
-              format: 'application/json',
-            },
-          });
-          if (labelData && labelData.data) {
-            const option = {
-              label: capitalizeString(labelData.data.prefLabel),
-              value: labelData.data.uri,
-            };
-            resolve(option);
-          } else {
-            resolve();
-          }
-        } catch (e) {
-          console.error(e);
-          reject(e);
-        }
-      })));
-      // filter out empty type
-      const entryTypes = typeArr.filter(type => !!type);
+      const entryTypes = sorting(response.data, 'label', i18n.locale);
       // add 'all types' option
       entryTypes.unshift({
-        label: i18n.t('dropdown.allTypes'),
-        value: '',
+        label: setLangLabels('dropdown.allTypes', i18n.availableLocales),
+        source: '',
       });
-      commit('setEntryTypes', sorting(entryTypes, 'label'));
+      commit('setEntryTypes', entryTypes);
     } catch (e) {
       console.error(e);
       // TODO: inform user?
     }
   },
-  async fetchEntryData({ getters, commit, dispatch }, { id, lang }) {
+  async fetchEntryData({ commit, dispatch }, id) {
     return new Promise(async (resolve, reject) => {
       let entryData = {};
       try {
-        // TODO: check if entry data could be derived from sidebar data somehow
         entryData = await this.dispatch('PortfolioAPI/get', { kind: 'entry', id });
         if (entryData) {
           // Modifications of data received from backend needed:
-          // 1. type needs to be array in logic here! and labels need to be translated
-          // (for now only type, language still missing)
-          // 2. Text needs to look different (and text type needs to be fetched)
-          // 3. TODO: fetch role labels (currently only strings tho)
-          // 4. keywords: choose right language to display
-          let objectType = [];
-          // if there is a type fetch the label for the saved uri
-          if (entryData.type) {
-            // check if object types are present in store and if data can be fetched locally
-            if (getters.getFormObjectTypes.length) {
-              objectType = [getters.getObjectTypeLabel(entryData.type)];
-            } else {
-              const { data } = await axios.get(`${process.env.SKOSMOS_API}potax/label`, {
-                params: {
-                  uri: entryData.type,
-                  lang,
-                  format: 'application/json',
-                },
-              });
-              objectType = [{ label: capitalizeString(data.prefLabel), value: data.uri }];
-            }
-          }
+          // 1. type needs to be array in logic here!
+          const objectType = entryData.type && entryData.type.source ? [entryData.type] : [];
+          // 2. Text needs to look different
           const textData = entryData.texts && entryData.texts.length
             ? await Promise.all(entryData.texts
               .map(entry => new Promise(async (res) => {
                 const textObj = {};
-                let type = null;
-                if (entry.type) {
-                  // TODO: fetch locally if possible
-                  try {
-                    const typeResponse = await axios.get(`${process.env.SKOSMOS_API}povoc/label`, {
-                      params: {
-                        uri: entry.type,
-                        lang,
-                        format: 'application/json',
-                      },
-                    });
-                    if (typeResponse.data) {
-                      type = {
-                        label: capitalizeString(typeResponse.data.prefLabel),
-                        source: entry.type,
-                      };
-                    }
-                  } catch (e) {
-                    console.error(e);
-                    reject(e);
-                  }
-                }
+                const { type } = entry;
                 // TODO: temporary hack - probably should fetch label for lang as well
                 entry.data.forEach((language) => {
-                  const langInternal = language.language.split('/').pop();
+                  const langInternal = language.language.source.split('/').pop();
                   Vue.set(textObj, langInternal.toLowerCase(), language.text);
                 });
                 res(Object.assign({}, { type }, textObj));
               }))) : [];
 
-          const keywords = entryData.keywords
-            .map((keywordEntry) => {
-              const keyword = Object.assign({}, keywordEntry.keyword);
-              // use current locale to get right label
-              let keywordLocaleString = keyword[i18n.locale]
-                || keyword[i18n.fallbackLocale];
-              // if the label has not entry (e.g. non-cv keywords) try to find other languages
-              if (!keywordLocaleString) {
-                const locale = i18n.availableLocales
-                  .find(availableLocale => !!keyword[availableLocale]);
-                keywordLocaleString = keyword[locale];
-              }
-              return Object.assign({}, keywordEntry, {
-                keyword: capitalizeString(keywordLocaleString || keywordEntry.keyword),
-              });
-            });
-
-          let { contributors } = entryData.data;
-          if (contributors) {
-            contributors = await Promise.all(contributors
-              .map(contributor => new Promise(async (contres) => {
-                const tempRoles = await Promise.all(contributor.roles
-                  .map(role => new Promise(async (res) => {
-                    const labelResponse = await axios.get(`${process.env.SKOSMOS_API}povoc/label`, {
-                      params: {
-                        uri: role.source,
-                        lang,
-                        format: 'application/json',
-                      },
-                    });
-
-                    if (labelResponse.data) {
-                      res(Object.assign({}, role, {
-                        label: capitalizeString(labelResponse.data.prefLabel),
-                      }));
-                    }
-                    res(role);
-                  })));
-
-                contres(Object.assign({}, contributor, { roles: tempRoles }));
-              })));
-          }
-
           const adjustedEntry = Object.assign({}, entryData, {
             type: objectType,
             texts: textData,
-            keywords,
-            data: Object.assign({}, entryData.data, { contributors }),
           });
           commit('setCurrentItem', adjustedEntry);
-          await dispatch('setLinkedEntries', { list: entryData.relations || [], replace: true });
+          commit('setLinked', { list: entryData.relations || [], replace: true });
           try {
             await dispatch('fetchMediaData', entryData.id);
             resolve(adjustedEntry);
@@ -482,42 +296,6 @@ const actions = {
       }
       reject();
     });
-  },
-  async fetchSidebarTypes({ getters }, list) {
-    const newList = [];
-    if (list.length) {
-      if (getters.getFormObjectTypes.length) {
-        list.forEach((entry) => {
-          const type = entry.type || entry.to ? entry.type || entry.to.type : '';
-          newList.push(Object.assign({}, entry, {
-            description: getters.getObjectTypeLabel(type).label || '',
-          }));
-        });
-      } else {
-        try {
-          await Promise.all(list.map(entry => new Promise(async (resolve) => {
-            if (entry.type) {
-              const { data } = await axios.get(`${process.env.SKOSMOS_API}potax/label`, {
-                params: {
-                  uri: entry.type || entry.to.type,
-                  lang: i18n.locale,
-                  format: 'application/json',
-                },
-              });
-              newList.push(Object.assign({}, entry, {
-                description: capitalizeString(data.prefLabel),
-              }));
-            } else {
-              newList.push(Object.assign({}, entry));
-            }
-            resolve();
-          })));
-        } catch (e) {
-          return [].concat(list);
-        }
-      }
-    }
-    return newList;
   },
   async fetchMediaData({ commit }, id) {
     // TODO: replace with Portofolio_API
@@ -676,7 +454,7 @@ const actions = {
           if (action === 'publish') {
             formData.append('published', mediaId.selected);
           } else if (action === 'license') {
-            formData.append('license', value);
+            formData.append('license', value.source ? JSON.stringify(value) : null);
           } else {
             console.error('file action unknown');
           }
@@ -698,10 +476,6 @@ const actions = {
       }
     })));
     return [successArr, errorArr];
-  },
-  async setLinkedEntries({ commit, dispatch }, { list, replace }) {
-    const modifiedList = await dispatch('fetchSidebarTypes', list);
-    commit('setLinked', { list: modifiedList, replace });
   },
 };
 

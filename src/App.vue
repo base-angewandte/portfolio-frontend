@@ -1,17 +1,19 @@
 <template>
-  <div class="wrapper">
-    <base-header
-      :lang="lang"
-      :active="'portfolio'"
-      :profile.prop="profile"
-      :urls.prop="urls" />
-    <BaseNotification />
-    <router-view />
-    <base-footer
-      ref="baseFooter"
-      :lang="lang"
-      :logged-in="isAuthenticated"
-      :urls.prop="urls" />
+  <div id="app">
+    <div class="wrapper">
+      <base-header
+        :lang="lang"
+        :active="'portfolio'"
+        :profile.prop="profile"
+        :urls.prop="urls" />
+      <BaseNotification />
+      <router-view />
+      <base-footer
+        ref="baseFooter"
+        :lang="lang"
+        :logged-in="isAuthenticated"
+        :urls.prop="urls" />
+    </div>
   </div>
 </template>
 
@@ -30,10 +32,10 @@ export default {
     },
     urls() {
       return {
-        de: `/portfolio/de${this.$route.path}`,
-        en: `/portfolio/en${this.$route.path}`,
-        login: `${process.env.PORTFOLIO_HOST}${process.env.APP_PREFIX}/accounts/login/`,
-        logout: `${process.env.PORTFOLIO_HOST}${process.env.APP_PREFIX}/accounts/logout/`,
+        de: `${process.env.APP_PREFIX}/de${this.$route.path}`,
+        en: `${process.env.APP_PREFIX}/en${this.$route.path}`,
+        login: `${process.env.AUTHENTICATION.LOGIN}`,
+        logout: `${process.env.AUTHENTICATION.LOGOUT}`,
       };
     },
     isAuthenticated() {
@@ -45,6 +47,10 @@ export default {
     this.$store.dispatch('PortfolioAPI/init', {
       baseURL: `${process.env.PORTFOLIO_HOST}${process.env.APP_PREFIX}`,
       lang: this.$i18n.locale,
+    }).catch((e) => {
+      if ((e.response && e.response.status === '404') || e.message === 'Network Error') {
+        this.$router.push('/404');
+      }
     });
     this.$store.dispatch('SkosmosAPI/init', {
       baseURL: process.env.SKOSMOS_API,
