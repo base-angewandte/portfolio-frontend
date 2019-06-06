@@ -181,8 +181,7 @@
           :selectable="!!fileText"
           :selected="selectedFiles.map(file => file.id || file).includes(attached.id)"
           :title="attached.original ? getFileName(attached.original) : attached.id"
-          :subtext="attached.license && attached.license.label
-          ? attached.license.label[$i18n.locale].toUpperCase() : ''"
+          :subtext="getLicenseLabel(attached.license)"
           :description="getFileType(attached)"
           :image-url="getImagePath(attached.thumbnail || attached.cover, imageHover[index])"
           :box-size="{ width: 'calc(25% - 0.43em - (0.43em/2))' }"
@@ -462,6 +461,14 @@ export default {
           type: 'error',
         });
       }
+    },
+    getLicenseLabel(license) {
+      if (license && license.label) {
+        const lang = license.label[this.$i18n.locale] ? this.$i18n.locale
+          : this.$i18n.availableLocales.find(availableLang => !!license.label[availableLang]);
+        return license.label[lang];
+      }
+      return '';
     },
   },
 };
