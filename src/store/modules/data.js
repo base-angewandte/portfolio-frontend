@@ -12,7 +12,8 @@ function transformTextData(data) {
       const textObj = {
         type: textItem.type,
       };
-      const text = Object.keys(textItem).filter(props => !['type', 'text', 'data'].includes(props))
+      const text = Object.keys(textItem)
+        .filter(props => !['type', 'text', 'data'].includes(props))
         .map(lang => Object.assign({}, {
           language: {
             source: `${process.env.LANG_URL}${lang}`,
@@ -24,28 +25,6 @@ function transformTextData(data) {
     });
   }
   return textData;
-}
-
-async function prepareData(valueObj) {
-  // make necessary modifications to the valueList object
-  // 1. and 'description' property added for sidebar display needs to be removed before save
-  // (needs to be done here since also relevant for duplicate)
-  // eslint-disable-next-line
-  delete valueObj.description;
-  // 2. texts need different object structure and text type needs to be string (uri)
-  // but only needed for formData not duplicate
-  // TODO: --> move to form view!!
-  const texts = valueObj.texts && valueObj.texts.length
-  && (!valueObj.texts[0].data || !valueObj.texts[0].data.length)
-    ? transformTextData(valueObj.texts) : [].concat(valueObj.texts);
-  // needed for publish single entry from form
-  // TODO: improve this! (is handled in formview for traditionally saved entries --> duplicate)
-  let type = valueObj.type && valueObj.type.length ? valueObj.type[0] : valueObj.type;
-  type = type.source ? type : null;
-
-  return Object.assign({}, valueObj, {
-    texts, type,
-  });
 }
 
 const state = {
@@ -325,10 +304,9 @@ const actions = {
       commit('setMedia', { list: [], replace: true });
     }
   },
-  addOrUpdateEntry({ commit }, obj) {
+  addOrUpdateEntry({ commit }, data) {
     return new Promise(async (resolve, reject) => {
       try {
-        const data = await prepareData(obj);
         const createdEntry = await this.dispatch('PortfolioAPI/post', { kind: 'entry', id: data.id, data });
         if (createdEntry) {
           commit('setCurrentItem', createdEntry);
@@ -476,6 +454,76 @@ const actions = {
       }
     })));
     return [successArr, errorArr];
+  },
+  async removeUnknownProps({ state, dispatch }, { data, fields }) {
+    const newData = {};
+    Object.keys(data).forEach(async (key) => {
+      const field = fields[key];
+      const values = data[key];
+      // if the field does not exist in schema = this is not an allowed property - return
+      if (!field) {
+        return;
+      }
+      // special case data - which has separate schema - needs to be checked first since data prop
+      // also has hidden prop
+      if (key === 'data') {
+        const extensionData = await dispatch('removeUnknownProps', { data: values, fields: state.extensionSchema });
+        Vue.set(newData, key, extensionData);
+        // ignore props that are hidden (except data - see above)
+      } else if (field['x-attrs'] && field['x-attrs'].hidden) {
+        Vue.set(newData, key, values);
+        // handle special case texts - needs to be mapped to database schema
+      } else if (key === 'texts') {
+        const texts = values && values.length
+        && (!values[0].data || !values[0].data.length)
+          ? transformTextData(values) : [].concat(values);
+        Vue.set(newData, key, texts);
+        // special case single choice chips (saved as object in backend)
+      } else if (field['x-attrs'] && field['x-attrs'].field_type && field['x-attrs'].field_type.includes('chips')
+        && field.type === 'object') {
+        Vue.set(newData, key, values[0] || {});
+      } else if (field.type === 'integer') {
+        const number = parseInt(values, 10);
+        Vue.set(newData, key, !Number.isNaN(number) ? number : 0);
+        // check if field is array
+      } else if (field.type === 'array') {
+        // check if values are already present and set those if yes
+        if (values && values.length) {
+          const arrayValues = await Promise.all(values
+            .map(value => dispatch('removeUnknownProps', { data: value, fields: field.items.properties })));
+          Vue.set(newData, key, arrayValues);
+        } else {
+          // else return empty array
+          Vue.set(newData, key, []);
+        }
+        // check if field is object
+      } else if (field.type === 'object') {
+        const validProperties = {};
+        // special case languages which is object because of languages but is
+        // handled as string here (changed before save)
+        if (i18n.locale in field.properties) {
+          Vue.set(newData, key, values);
+        } else {
+          Object.keys(values).forEach(async (valueKey) => {
+            if (field.properties[valueKey]) {
+              if (field.properties[valueKey].type === 'object' || field.properties[valueKey].type === 'array') {
+                const validatedObj = await dispatch('removeUnknownProps', {
+                  data: values[valueKey],
+                  fields: field.properties,
+                });
+                this.$set(validProperties, [valueKey], validatedObj);
+              } else {
+                this.$set(validProperties, [valueKey], values[valueKey]);
+              }
+            }
+          });
+          Vue.set(newData, key, validProperties);
+        }
+      } else {
+        Vue.set(newData, key, values);
+      }
+    });
+    return newData;
   },
 };
 

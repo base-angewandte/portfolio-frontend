@@ -89,7 +89,7 @@
       :list="dropDownList"
       v-model="fieldValueInt"
       :allow-dynamic-drop-down-entries="field['x-attrs'] && field['x-attrs'].dynamic_autosuggest"
-      :allow-multiple-entries="field.name !== 'type'"
+      :allow-multiple-entries="!isChipsSingleSelect"
       :allow-unknown-entries="field['x-attrs'] && field['x-attrs'].allow_unkown_entries"
       :chips-editable="true"
       :class="['base-form-field']"
@@ -323,6 +323,11 @@ export default {
     // to determine text display for chips input
     fieldInput() {
       return this.textInput && this.textInput.length > 3;
+    },
+    isChipsSingleSelect() {
+      return (this.field['x-attrs'] && this.field['x-attrs'].field_type
+        && this.field['x-attrs'].field_type.includes('chips')
+        && this.field.type === 'object');
     },
   },
   watch: {

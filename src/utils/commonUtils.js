@@ -12,8 +12,8 @@ export const sorting = (list, property, lang) => list.sort((a, b) => {
   let compA = property ? a[property] : a;
   let compB = property ? b[property] : b;
   if (lang) {
-    compA = compA[lang];
-    compB = compB[lang];
+    compA = compA ? compA[lang] : '';
+    compB = compB ? compB[lang] : '';
   }
   if (compA.toLowerCase() > compB.toLowerCase()) {
     return 1;

@@ -128,7 +128,6 @@ export default {
     return {
       unsavedChanges: false,
       dataSaving: false,
-      formFieldsExtension: {},
       valueList: {},
       showOverlay: false,
       formIsLoading: false,
@@ -163,6 +162,9 @@ export default {
         && !!Object.keys(this.valueList).length
         && !(this.type && !Object.keys(this.formFieldsExtension).length));
     },
+    formFieldsExtension() {
+      return this.$store.getters['data/getExtensionSchema'];
+    },
   },
   watch: {
     async currentItemId(val) {
@@ -184,7 +186,7 @@ export default {
             kind: 'jsonschema',
             id: encodeURIComponent(this.valueList.type[0].source),
           });
-          this.formFieldsExtension = response.properties || {};
+          this.$store.commit('data/setExtensionSchema', response.properties || {});
         } catch (e) {
           this.$notify({
             group: 'request-notifications',
@@ -195,10 +197,10 @@ export default {
           // reset type
           this.valueList.type = [];
           // empty extension
-          this.formFieldsExtension = {};
+          this.$store.commit('data/setExtensionSchema', {});
         }
       } else {
-        this.formFieldsExtension = {};
+        this.$store.commit('data/setExtensionSchema', {});
       }
     },
   },
@@ -278,31 +280,11 @@ export default {
       // check if there is a title (only requirement for saving)
       if (this.valueList.title) {
         this.dataSaving = true;
-        // remove properties from contributor fields that can not be saved to the database
-        // TODO: check if this can be even further consolidated
-        const valueListToSave = {};
-        Object.keys(this.formFields).forEach((key) => {
-          this.$set(
-            valueListToSave,
-            key,
-            this.removeProperties(key, this.formFields[key], this.valueList[key]),
-          );
-        });
-        const data = {};
-        if (this.type) {
-          Object.keys(this.valueList.data).forEach((key) => {
-            this.$set(
-              data,
-              key,
-              this.removeProperties(key, this.formFieldsExtension[key], this.valueList.data[key]),
-            );
-          });
-        }
+        const validData = await this.$store.dispatch('data/removeUnknownProps', { data: this.valueList, fields: this.formFields });
         try {
           // check if the route indicates an already saved entry or a new entry
           if (!this.currentItemId) {
-            const newEntryId = await this.$store.dispatch('data/addOrUpdateEntry', Object
-              .assign({}, valueListToSave, { data }));
+            const newEntryId = await this.$store.dispatch('data/addOrUpdateEntry', validData);
             // also add linked entries if there are already any
             const list = this.$store.getters['data/getLinkedIds'];
             if (list.length) {
@@ -336,8 +318,7 @@ export default {
             this.$router.push(`/entry/${this.$store.state.data.currentItemId}`);
             // if id present just update the entry
           } else {
-            await this.$store.dispatch('data/addOrUpdateEntry', Object
-              .assign({}, valueListToSave, { data }));
+            await this.$store.dispatch('data/addOrUpdateEntry', validData);
           }
           this.$notify({
             group: 'request-notifications',
@@ -453,72 +434,6 @@ export default {
         this.valueList.published = false;
       }
       this.$emit('data-changed');
-    },
-    /**
-     * removing all properties that can not be saved to the database by comparing to the
-     * swagger provided information
-     *
-     * @param key: the key of the object property
-     * @param field: the field properties (title, type, x-attrs etc)
-     * @param values: the values from valueList for these property
-     * @returns {Array|Object|String|Boolean}
-     */
-    removeProperties(key, field, values) {
-      // special case texts - will be mapped to correct structure later
-      // TODO: integrate mapping here
-      if ((field['x-attrs'] && field['x-attrs'].hidden) || key === 'texts') {
-        return values;
-      }
-      // special case language specific labels
-      if (field.type === 'integer') {
-        const number = parseInt(values, 10);
-        return !Number.isNaN(number) ? number : 0;
-      }
-      // special case single choice chips (saved as object in backend)
-      if (field['x-attrs'] && field['x-attrs'].field_type && field['x-attrs'].field_type.includes('chips')
-        && field.type === 'object') {
-        return values[0] || {};
-      }
-      // check if field is array
-      if (field.type === 'array') {
-        // check if values are already present and set those if yes
-        if (values && values.length) {
-          return values
-            .map(value => this.removeProperties('', field.items, value));
-        }
-        // else return empty array
-        return [];
-        // check if field is object
-      }
-      if (field.type === 'object') {
-        const validProperties = {};
-        // special case languages which is object because of languages but is
-        // handled as string here (changed before save)
-        // TODO: maybe handle this here instead of store
-        if (this.$i18n.locale in field.properties) {
-          return values;
-        }
-        Object.keys(values).forEach((valueKey) => {
-          if (field.properties[valueKey]) {
-            if (field.properties[valueKey].type === 'object' || field.properties[valueKey].type === 'array') {
-              const validatedObj = this.removeProperties(
-                valueKey,
-                field.properties[valueKey],
-                values[valueKey],
-              );
-              this.$set(validProperties, [valueKey], validatedObj);
-            } else {
-              this.$set(validProperties, [valueKey], values[valueKey]);
-            }
-          }
-        });
-        return validProperties;
-      }
-      // TODO: temporary workaround for roles - remove!
-      if (field.type === 'string' && values && typeof values === 'object') {
-        return values.label;
-      }
-      return values;
     },
   },
 };
