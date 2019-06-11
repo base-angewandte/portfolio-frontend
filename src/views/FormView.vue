@@ -477,9 +477,7 @@ export default {
       // special case single choice chips (saved as object in backend)
       if (field['x-attrs'] && field['x-attrs'].field_type && field['x-attrs'].field_type.includes('chips')
         && field.type === 'object') {
-        // TODO: include objects with other than 'value' property (could be the
-        // case for software license e.g.)
-        return values && values.length ? values[0].value || values[0] : '';
+        return values[0] || {};
       }
       // check if field is array
       if (field.type === 'array') {
