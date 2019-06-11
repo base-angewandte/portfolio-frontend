@@ -385,7 +385,9 @@ const actions = {
       // check if entry needs to be modified or already has requested value
       if (entry[prop] !== value) {
         try {
-          await dispatch('addOrUpdateEntry', Object.assign({}, entry, { [prop]: value }));
+          // fetch fresh because value list might also contain unsaved changes...
+          const entryToUpdate = await this.dispatch('PortfolioAPI/get', { kind: 'entry', id: entry.id });
+          await dispatch('addOrUpdateEntry', Object.assign({}, entryToUpdate, { [prop]: value }));
           successArr.push(entry.id);
         } catch (e) {
           console.error(e);
@@ -456,6 +458,7 @@ const actions = {
     return [successArr, errorArr];
   },
   async removeUnknownProps({ state, dispatch }, { data, fields }) {
+    debugger;
     const newData = {};
     Object.keys(data).forEach(async (key) => {
       const field = fields[key];
