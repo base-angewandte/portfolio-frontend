@@ -199,24 +199,25 @@ export default {
       });
     },
     getInitialFieldValue(field) {
+      const value = this.valueList[field.name];
       if (field.type === 'integer') {
-        return this.valueList[field.name] ? this.valueList[field.name].toString() : '';
+        return value ? value.toString() : '';
       }
       // check special case single-choice chips (is chips but is saved as
       // (multilang) object on backend)
       if (field['x-attrs'] && field['x-attrs'].field_type
         && field['x-attrs'].field_type.includes('chips')
         && field.type === 'object') {
-        if (this.valueList[field.name] && this.valueList[field.name].length) {
-          return [].concat(this.valueList[field.name]);
+        if (value && Object.keys(value).length) {
+          return [].concat(value);
         }
         return [];
       }
       // check if field is array
       if (field.type === 'array') {
         // check if values are already present and set those if yes
-        if (this.valueList[field.name] && this.valueList[field.name].length) {
-          return [].concat(this.valueList[field.name]);
+        if (value && value.length) {
+          return [].concat(value);
         }
         if (field['x-attrs'] && !field['x-attrs'].field_type.includes('chips')
           && field.items.type === 'object') {
@@ -231,10 +232,10 @@ export default {
         Object.keys(field.properties).forEach((key) => {
           this.$set(initObj, key, this.getInitialFieldValue(field.properties[key]));
         });
-        return Object.assign({}, initObj, this.valueList[field.name]);
+        return Object.assign({}, initObj, value);
       }
       // if it is not a array or object simply return value from list or empty string
-      return this.valueList[field.name] ? this.valueList[field.name] : '';
+      return value || '';
     },
     initializeDropDownLists() {
       // TODO: this is called way to often - check why...
