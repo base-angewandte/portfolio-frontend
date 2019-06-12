@@ -4,6 +4,7 @@
 
 const path = require('path');
 const devEnv = require('./dev.env');
+const prodEnv = require('./prod.env');
 
 module.exports = {
   dev: {
@@ -60,8 +61,7 @@ module.exports = {
     // Paths
     assetsRoot: path.resolve(__dirname, '../dist'),
     assetsSubDirectory: 'static',
-//    assetsPublicPath: dotenv.parsed.APP_PREFIX + '/',
-    assetsPublicPath: '/portfolio/',
+    assetsPublicPath: prodEnv.APP_PREFIX + '/',
 
     /**
      * Source Maps

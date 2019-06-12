@@ -20,4 +20,5 @@ module.exports= {
   CONTRIBUTOR_DEFAULTS: [
     { label: 'Universität für Angewandte Kunst', source: 'http://d-nb.info/gnd/5299671-2' },
   ],
+  FONT_PATH: 'https://basedev.uni-ak.ac.at/bs/fonts/',
 };
