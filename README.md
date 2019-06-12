@@ -35,13 +35,7 @@ npm run build --report
 git, docker and docker-compose are required on the system
 
 ``` bash
-# to pull git repository and build the project
-make update
-
 # build the project
 make start
-
-# set the header file (currently same as make start, plans to keep container and just run gulp task in future)
-make set-header
 
 ```
