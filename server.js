@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
+const env = require('./config/prod.env');
 
 const app = express();
 
@@ -10,7 +11,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // parse application/json
 app.use(bodyParser.json());
 
-app.use('/portfolio/', express.static(path.join(__dirname, '/dist')));
+app.use(`${env.APP_PREFIX}/`, express.static(path.join(__dirname, '/dist')));
 
 app.listen(5000, function() {
   console.log('Express server listening on port 5000');
