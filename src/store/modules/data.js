@@ -483,7 +483,7 @@ const actions = {
         // special case single choice chips (saved as object in backend)
       } else if (field['x-attrs'] && field['x-attrs'].field_type && field['x-attrs'].field_type.includes('chips')
         && field.type === 'object') {
-        Vue.set(newData, key, values[0] || null);
+        Vue.set(newData, key, values[0]);
       } else if (field.type === 'integer') {
         const number = parseInt(values, 10);
         Vue.set(newData, key, !Number.isNaN(number) ? number : 0);
@@ -513,9 +513,9 @@ const actions = {
                   data: values[valueKey],
                   fields: field.properties,
                 });
-                this.$set(validProperties, [valueKey], validatedObj);
+                Vue.set(validProperties, valueKey, validatedObj);
               } else {
-                this.$set(validProperties, [valueKey], values[valueKey]);
+                Vue.set(validProperties, valueKey, values[valueKey]);
               }
             }
           });
