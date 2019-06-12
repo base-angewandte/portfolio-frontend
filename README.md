@@ -38,4 +38,7 @@ git, docker and docker-compose are required on the system
 # build the project
 make start
 
+# serve dist folder from webserver or to test run
+node server.js
+
 ```
