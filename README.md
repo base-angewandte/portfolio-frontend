@@ -36,9 +36,11 @@ git, docker and docker-compose are required on the system
 
 ``` bash
 # build the project
-make start
+make build-app
 
 # serve dist folder from webserver or to test run
 node server.js
+
+# if test-run: visit your site at http://localhost:5000
 
 ```
