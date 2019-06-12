@@ -4,7 +4,7 @@
 
 Portfolio/Showroom enable artists and scientists to announce, store and publish their own work and to exchange ideas with colleagues.
 
-## Build Setup
+## Project Setup
 
 git and npm (node) is required on the system
 
@@ -16,6 +16,11 @@ git clone https://github.com/base-angewandte/portfolio-frontend.git
 cp config/dev.env-skel.js config/dev.env.js
 cp config/prod.env-skel.js config/prod.env.js
 
+```
+
+## Development Setup
+
+```bash
 # install dependencies
 npm install
 
