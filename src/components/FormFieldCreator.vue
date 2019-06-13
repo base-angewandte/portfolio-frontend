@@ -103,6 +103,7 @@
       identifier="source"
       object-prop="label"
       @fetch-dropdown-entries="fetchAutocomplete"
+      @text-input="textInput = $event"
       @hoverbox-active="$emit('fetch-info-data')">
       <template
         slot="drop-down-entry"
@@ -114,8 +115,11 @@
         <span class="chips-dropdown-third">{{ props.item.source_name }}</span>
       </template>
       <template slot="no-options">
-        <span v-if="!fieldInput">
+        <span v-if="field['x-attrs'] && field['x-attrs'].dynamic_autosuggest && !fieldInput">
           {{ $t('form.startTyping') }}
+        </span>
+        <span v-else-if="!(field['x-attrs'] && field['x-attrs'].dynamic_autosuggest) && textInput">
+          {{ $t('form.noMatch') }}
         </span>
         <span v-else-if="fieldInput && !fetchingData && !autocompleteLoading">
           {{ $t('form.noResult') }}
