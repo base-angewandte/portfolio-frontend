@@ -63,6 +63,9 @@ export default {
     showForm() {
       return this.$route.name !== 'Dashboard';
     },
+    attachmentsCount() {
+      return this.$store.getters['data/getCurrentMedia'].length;
+    },
   },
   watch: {
     $route() {
@@ -70,6 +73,13 @@ export default {
         this.$store.commit('data/deleteCurrentItem');
       }
       this.$store.commit('data/setNewForm', this.$route.name === 'newEntry');
+    },
+    // if attachments in form were changed from 0 to >0 or from >0 to 0 --> update
+    // sidebar to display icon
+    attachmentsCount(curr, prev) {
+      if (this.showForm && (Boolean(curr) !== Boolean(prev))) {
+        this.$refs.sidebar.fetchSidebarData();
+      }
     },
   },
   mounted() {
