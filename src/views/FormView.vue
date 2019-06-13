@@ -72,7 +72,7 @@
             :form-field-json="formFieldsExtension"
             :value-list="valueList.data"
             :prefetched-drop-down-lists="{
-              contributors_secondary: preFetchedData.roles,
+              contributors_secondary: prefetchedRoles,
               material: preFetchedData.materials,
               format: preFetchedData.formats,
               language: preFetchedData.languages,
@@ -202,6 +202,17 @@ export default {
       } else {
         this.$store.commit('data/setExtensionSchema', {});
       }
+    },
+    formFieldsExtension(val) {
+      const contributorFields = Object.keys(val).reduce((prev, curr) => {
+        const field = val[curr];
+        if (field['x-attrs'] && field['x-attrs'].equivalent === 'contributors') {
+          prev.push(field['x-attrs'].default_role);
+        }
+        return prev;
+      }, []);
+      this.prefetchedRoles = this.$store.state.data.prefetchedTypes.roles
+        .filter(role => !contributorFields.includes(role.source));
     },
   },
   created() {
