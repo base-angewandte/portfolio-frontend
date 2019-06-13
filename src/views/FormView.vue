@@ -132,6 +132,7 @@ export default {
       showOverlay: false,
       formIsLoading: false,
       reloadSidebarData: false,
+      prefetchedRoles: [],
     };
   },
   computed: {
@@ -216,8 +217,6 @@ export default {
     },
   },
   created() {
-    // TODO: do this in store init?
-    // TODO: this is currently doubled now!!
     this.fetchGeneralFormFields();
     this.$store.dispatch('data/getStaticDropDowns');
     if (this.currentItemId) {
@@ -225,7 +224,6 @@ export default {
     }
   },
   methods: {
-    // TODO: this can be done in store init
     async fetchGeneralFormFields() {
       this.formIsLoading = true;
       try {
