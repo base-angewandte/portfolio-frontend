@@ -27,17 +27,18 @@
         @save="saveForm"
         @return="returnFromForm"
       />
-      <!-- OPTIONS -->
-      <BaseFormOptions
-        :is-new-form="$store.state.data.isNewForm"
-        :is-published="valueList.published"
-        :default-expanded="false"
-        @action-entry="actionEntry"/>
     </div>
 
     <!-- FORM -->
     <form
       class="form-container">
+      <!-- OPTIONS -->
+      <BaseFormOptions
+        :is-new-form="$store.state.data.isNewForm"
+        :is-published="valueList.published"
+        :default-expanded="false"
+        class="base-form-options"
+        @action-entry="actionEntry"/>
       <div
         v-if="formIsLoading"
         class="form-loading-area">
@@ -461,7 +462,6 @@ export default {
       top: $header-height;
       z-index: 5;
       padding-top: $spacing;
-      padding-bottom: $spacing-small;
 
       .base-row-parent {
         border-bottom: $separation-line;
@@ -492,6 +492,10 @@ export default {
 
     .form-container {
       position: relative;
+
+      .base-form-options {
+        margin-bottom: $spacing-small;
+      }
 
       .form-loading-area {
         position: absolute;
