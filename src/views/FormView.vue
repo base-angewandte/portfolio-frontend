@@ -244,6 +244,7 @@ export default {
     resetForm() {
       this.unsavedChanges = false;
       this.valueList = {};
+      this.valueList.data = {};
       this.$refs.baseForm.initializeValueObject();
     },
     async updateForm() {
@@ -277,11 +278,9 @@ export default {
         this.$set(this.valueList, type, Object.assign({}, this.valueList[type],
           JSON.parse(JSON.stringify(data))));
       } else {
-        // check if type has changed - if yes - delete old properties in data
-        if (!this.valueList.type
-          || JSON.stringify(this.valueList.type) !== JSON.stringify(data.type)) {
-          // TODO: not only delete but map data between fields!!
-          this.valueList.data = {};
+        // check if type has changed - if yes - map data to new fields
+        if (JSON.stringify(this.valueList.type) !== JSON.stringify(data.type)) {
+          // TODO: map data between fields!!
         }
         this.valueList = Object.assign({}, this.valueList, JSON.parse(JSON.stringify(data)));
       }
