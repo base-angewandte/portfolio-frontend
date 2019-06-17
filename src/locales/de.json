@@ -82,6 +82,7 @@
     "selectRoles": "Wähle Rollen",
     "startTyping": "Eingabe beginnen (min. 4 Buchstaben)",
     "noResult": "Keine Ergebnisse gefunden",
+    "noMatch": "Keine passenenden Optionen",
     "fetchingResults": "Vorschläge werden gesucht..."
   },
   "form-view": {

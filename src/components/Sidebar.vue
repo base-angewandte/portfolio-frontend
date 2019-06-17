@@ -96,6 +96,7 @@
         :selected="selectActive || showCheckbox"
         :list="listInt"
         :active-entry="activeEntry"
+        :selected-list="selectedList"
         @clicked="showEntry"
         @selected="selectEntry"/>
       <div
@@ -274,6 +275,9 @@ export default {
     entryTypes() {
       return this.$store.getters['data/getEntryTypes'];
     },
+    selectedList() {
+      return this.selectedMenuEntries.map(entry => entry.id);
+    },
   },
   watch: {
     list(val) {
@@ -396,7 +400,10 @@ export default {
       }
     },
     toggleSidebarOptions() {
-      this.$refs.menuList.entryProps.forEach(entry => this.$set(entry, 'selected', false));
+      const { menuList } = this.$refs;
+      if (menuList) {
+        this.$refs.menuList.entryProps.forEach(entry => this.$set(entry, 'selected', false));
+      }
       this.$store.commit('data/setOptions', !this.showCheckbox);
     },
     async fetchSidebarData() {

@@ -27,17 +27,18 @@
         @save="saveForm"
         @return="returnFromForm"
       />
-      <!-- OPTIONS -->
-      <BaseFormOptions
-        :is-new-form="$store.state.data.isNewForm"
-        :is-published="valueList.published"
-        :default-expanded="false"
-        @action-entry="actionEntry"/>
     </div>
 
     <!-- FORM -->
     <form
       class="form-container">
+      <!-- OPTIONS -->
+      <BaseFormOptions
+        :is-new-form="$store.state.data.isNewForm"
+        :is-published="valueList.published"
+        :default-expanded="false"
+        class="base-form-options"
+        @action-entry="actionEntry"/>
       <div
         v-if="formIsLoading"
         class="form-loading-area">
@@ -72,7 +73,7 @@
             :form-field-json="formFieldsExtension"
             :value-list="valueList.data"
             :prefetched-drop-down-lists="{
-              contributors_secondary: preFetchedData.roles,
+              contributors_secondary: prefetchedRoles,
               material: preFetchedData.materials,
               format: preFetchedData.formats,
               language: preFetchedData.languages,
@@ -132,6 +133,7 @@ export default {
       showOverlay: false,
       formIsLoading: false,
       reloadSidebarData: false,
+      prefetchedRoles: [],
     };
   },
   computed: {
@@ -203,10 +205,19 @@ export default {
         this.$store.commit('data/setExtensionSchema', {});
       }
     },
+    formFieldsExtension(val) {
+      const contributorFields = Object.keys(val).reduce((prev, curr) => {
+        const field = val[curr];
+        if (field['x-attrs'] && field['x-attrs'].equivalent === 'contributors') {
+          prev.push(field['x-attrs'].default_role);
+        }
+        return prev;
+      }, []);
+      this.prefetchedRoles = this.$store.state.data.prefetchedTypes.roles
+        .filter(role => !contributorFields.includes(role.source));
+    },
   },
   created() {
-    // TODO: do this in store init?
-    // TODO: this is currently doubled now!!
     this.fetchGeneralFormFields();
     this.$store.dispatch('data/getStaticDropDowns');
     if (this.currentItemId) {
@@ -214,7 +225,6 @@ export default {
     }
   },
   methods: {
-    // TODO: this can be done in store init
     async fetchGeneralFormFields() {
       this.formIsLoading = true;
       try {
@@ -234,6 +244,7 @@ export default {
     resetForm() {
       this.unsavedChanges = false;
       this.valueList = {};
+      this.valueList.data = {};
       this.$refs.baseForm.initializeValueObject();
     },
     async updateForm() {
@@ -267,11 +278,9 @@ export default {
         this.$set(this.valueList, type, Object.assign({}, this.valueList[type],
           JSON.parse(JSON.stringify(data))));
       } else {
-        // check if type has changed - if yes - delete old properties in data
-        if (!this.valueList.type
-          || JSON.stringify(this.valueList.type) !== JSON.stringify(data.type)) {
-          // TODO: not only delete but map data between fields!!
-          this.valueList.data = {};
+        // check if type has changed - if yes - map data to new fields
+        if (JSON.stringify(this.valueList.type) !== JSON.stringify(data.type)) {
+          // TODO: map data between fields!!
         }
         this.valueList = Object.assign({}, this.valueList, JSON.parse(JSON.stringify(data)));
       }
@@ -452,7 +461,6 @@ export default {
       top: $header-height;
       z-index: 5;
       padding-top: $spacing;
-      padding-bottom: $spacing-small;
 
       .base-row-parent {
         border-bottom: $separation-line;
@@ -483,6 +491,10 @@ export default {
 
     .form-container {
       position: relative;
+
+      .base-form-options {
+        margin-bottom: $spacing-small;
+      }
 
       .form-loading-area {
         position: absolute;

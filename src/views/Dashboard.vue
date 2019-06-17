@@ -22,7 +22,8 @@
       :show-preview="showPreview"
       :media-url="previewUrl"
       :display-size="previewSize"
-      @hide-preview="showPreview = false"/>
+      @hide-preview="showPreview = false"
+      @download="downloadFile"/>
 
     <Sidebar
       ref="sidebar"
@@ -43,6 +44,7 @@
 
 <script>
 import { BasePopUp, BaseMediaPreview } from 'base-ui-components';
+import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import { capitalizeString } from '../utils/commonUtils';
 
@@ -63,6 +65,9 @@ export default {
     showForm() {
       return this.$route.name !== 'Dashboard';
     },
+    attachmentsCount() {
+      return this.$store.getters['data/getCurrentMedia'].length;
+    },
   },
   watch: {
     $route() {
@@ -70,6 +75,13 @@ export default {
         this.$store.commit('data/deleteCurrentItem');
       }
       this.$store.commit('data/setNewForm', this.$route.name === 'newEntry');
+    },
+    // if attachments in form were changed from 0 to >0 or from >0 to 0 --> update
+    // sidebar to display icon
+    attachmentsCount(curr, prev) {
+      if (this.showForm && (Boolean(curr) !== Boolean(prev))) {
+        this.$refs.sidebar.fetchSidebarData();
+      }
     },
   },
   mounted() {
@@ -149,6 +161,29 @@ export default {
         return capitalizeString(text);
       }
       return '';
+    },
+    async downloadFile({ url, name }) {
+      try {
+        const { data } = await axios({
+          method: 'get',
+          url,
+          responseType: 'blob',
+        });
+        const fileUrl = window.URL.createObjectURL(new Blob([data]));
+        const link = document.createElement('a');
+        link.href = fileUrl;
+        link.setAttribute('download', name);
+        document.body.appendChild(link);
+        link.click();
+      } catch (e) {
+        this.showPreview = false;
+        this.$notify({
+          group: 'request-notifications',
+          title: this.$t('notify.somethingWrong'),
+          text: `An error occured during the download of file ${name}`,
+          type: 'error',
+        });
+      }
     },
   },
 };
