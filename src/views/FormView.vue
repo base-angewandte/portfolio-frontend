@@ -251,6 +251,7 @@ export default {
       try {
         const data = await this.$store.dispatch('data/fetchEntryData', this.currentItemId);
         this.valueList = Object.assign({}, data);
+        this.$set(this.valueList, 'data', Object.assign({}, data.data));
       } catch (e) {
         console.error(e);
         if (e.message.includes('404')) {
