@@ -301,7 +301,7 @@ export default {
             if (cancel) {
               cancel('new request started');
             }
-            const result = await axios.get(`${process.env.PORTFOLIO_HOST}${source}${value ? `${value}/` : ''}`, {
+            const result = await axios.get(`${process.env.PORTFOLIO_BACKEND_API}${source}${value ? `${value}/` : ''}`, {
               withCredentials: true,
               headers: {
                 'Accept-Language': this.$i18n.locale,
@@ -345,24 +345,38 @@ export default {
     setDropDown(data, value, equivalent, name) {
       let dropDownList = [].concat(data);
       const user = this.$store.getters['PortfolioAPI/user'];
-      if (((equivalent && equivalent === 'contributors') || name === 'contributors')
-        && (value.length <= 3 || user.name.toLowerCase().includes(value.toLowerCase()))) {
-        // check if additional contributors were specififed in the settings and add them
-        const defaultContributors = process.env.CONTRIBUTOR_DEFAULTS;
-        if (defaultContributors && defaultContributors.length) {
-          dropDownList = defaultContributors.concat(dropDownList);
-        }
-        // add user default
-        dropDownList.unshift({
+      // add defaults to fields that have defaults or whos equivalent has defaults
+      const defaults = equivalent ? process.env[`${equivalent.toUpperCase()}_DEFAULTS`]
+        : process.env[`${name.toUpperCase()}_DEFAULTS`];
+      dropDownList = this.setDropDownDefaults(
+        dropDownList,
+        defaults,
+        value,
+      );
+      // special case contributors - add user
+      if ((equivalent && equivalent === 'contributors') || name === 'contributors') {
+        // set user
+        dropDownList = this.setDropDownDefaults(dropDownList, [{
           label: user.name,
           source: user.uuid,
           additional: this.$t('form.myself'),
-        });
+        }], value);
       }
       this.$set(this.dropdownLists, name, dropDownList);
     },
     getFieldName(val) {
       return val.title || (this.$te(`form.${val.name}`) ? this.$t(`form.${val.name}`) : val.name);
+    },
+    setDropDownDefaults(list, defaults, input) {
+      let modifiedList = [].concat(list);
+      if (defaults && defaults.length) {
+        if (input.length > 3) {
+          modifiedList = modifiedList.filter(option => (!option.source
+            || !defaults.map(contr => contr.source).includes(option.source)));
+        }
+        modifiedList = defaults.concat(modifiedList);
+      }
+      return modifiedList;
     },
   },
 };

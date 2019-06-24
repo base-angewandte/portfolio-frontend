@@ -183,7 +183,7 @@ const actions = {
   async fetchGeneralFields({ commit }) {
     return new Promise(async (resolve, reject) => {
       try {
-        const jsonSchema = await axios.get(`${process.env.API}swagger.json`,
+        const jsonSchema = await axios.get(`${process.env.DATABASE_API}swagger.json`,
           {
             withCredentials: true,
             headers: {
@@ -203,7 +203,7 @@ const actions = {
     Object.keys(state.prefetchedTypes).forEach(async (field) => {
       if (!getters.getPrefetchedTypes(field).length) {
         const { data } = await axios
-          .get(`${process.env.PORTFOLIO_HOST}${process.env.APP_PREFIX}/autosuggest/v1/${field}/`, {
+          .get(`${process.env.AUTOSUGGEST_API}${field}/`, {
             withCredentials: true,
             headers: {
               'Accept-Language': i18n.locale,
@@ -216,7 +216,7 @@ const actions = {
   async fetchEntryTypes({ commit }) {
     // TODO: replace with C. store module!
     try {
-      const response = await axios.get(`${process.env.API}entry/types/`, {
+      const response = await axios.get(`${process.env.DATABASE_API}entry/types/`, {
         withCredentials: true,
         headers: {
           'Accept-Language': i18n.locale,
@@ -278,7 +278,7 @@ const actions = {
   },
   async fetchMediaData({ commit }, id) {
     // TODO: replace with Portofolio_API
-    const res = await axios.get(`${process.env.API}entry/${id}/media/`,
+    const res = await axios.get(`${process.env.DATABASE_API}entry/${id}/media/`,
       {
         withCredentials: true,
         xsrfCookieName: 'csrftoken_portfolio',
@@ -288,7 +288,7 @@ const actions = {
       const imageData = await Promise.all(res.data
         .map(imageId => new Promise(async (resolve, reject) => {
           try {
-            const result = await axios.get(`${process.env.API}media/${imageId}`,
+            const result = await axios.get(`${process.env.DATABASE_API}media/${imageId}`,
               {
                 withCredentials: true,
                 xsrfCookieName: 'csrftoken_portfolio',
@@ -424,7 +424,7 @@ const actions = {
       try {
         if (axiosAction === 'delete') {
           // TODO: replace with Portofolio_API
-          await axios[axiosAction](`${process.env.API}media/${id}/`,
+          await axios[axiosAction](`${process.env.DATABASE_API}media/${id}/`,
             {
               withCredentials: true,
               xsrfCookieName: 'csrftoken_portfolio',
@@ -439,7 +439,7 @@ const actions = {
             console.error('file action unknown');
           }
           // TODO: replace with Portofolio_API
-          await axios[axiosAction](`${process.env.API}media/${id}/`,
+          await axios[axiosAction](`${process.env.DATABASE_API}media/${id}/`,
             formData,
             {
               withCredentials: true,

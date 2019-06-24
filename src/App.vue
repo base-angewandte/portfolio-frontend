@@ -2,13 +2,18 @@
   <div id="app">
     <div class="wrapper">
       <base-header
+        v-if="showBaseHeader"
         :lang="lang"
         :active="'portfolio'"
         :profile.prop="profile"
         :urls.prop="urls" />
+      <div
+        v-else
+        class="header-placeholder"/>
       <BaseNotification />
       <router-view />
       <base-footer
+        v-if="showBaseHeader"
         ref="baseFooter"
         :lang="lang"
         :logged-in="isAuthenticated"
@@ -25,7 +30,7 @@ export default {
   },
   computed: {
     lang() {
-      return this.$store.state.SkosmosAPI.lang;
+      return this.$store.state.PortfolioAPI.lang;
     },
     profile() {
       return this.$store.state.PortfolioAPI ? this.$store.state.PortfolioAPI.user : {};
@@ -41,20 +46,19 @@ export default {
     isAuthenticated() {
       return this.$store.getters['PortfolioAPI/isAuthenticated'];
     },
+    showBaseHeader() {
+      return process.env.SHOW_HEADER;
+    },
   },
   beforeCreate() {
     // initializing stores before app instance is created
     this.$store.dispatch('PortfolioAPI/init', {
-      baseURL: `${process.env.PORTFOLIO_HOST}${process.env.APP_PREFIX}`,
+      baseURL: process.env.PORTFOLIO_BACKEND_API,
       lang: this.$i18n.locale,
     }).catch((e) => {
       if ((e.response && e.response.status === '404') || e.message === 'Network Error') {
         this.$router.push('/404');
       }
-    });
-    this.$store.dispatch('SkosmosAPI/init', {
-      baseURL: process.env.SKOSMOS_API,
-      lang: this.$i18n.locale,
     });
   },
 };
@@ -71,6 +75,15 @@ export default {
     padding: $spacing;
     position: relative;
     min-height: 100vh;
+
+    .header-placeholder {
+      position: fixed;
+      top: 0;
+      background-color: $background-color;
+      height: $header-height;
+      width: 100%;
+      z-index: 2;
+    }
 
     #app-container {
       margin-top: $header-height;
