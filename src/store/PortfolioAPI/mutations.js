@@ -21,4 +21,7 @@ export default {
   setUser(s, user) {
     if (typeof user === 'object') s.user = user;
   },
+  setLang(s, lang) {
+    if (lang) s.lang = lang;
+  },
 };

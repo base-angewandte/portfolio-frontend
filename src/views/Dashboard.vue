@@ -118,7 +118,7 @@ export default {
           /* eslint-disable-next-line */
           this.previewUrl = match[1] ? require(`@/assets/images/${match[1]}`) : '';
         } else {
-          this.previewUrl = `${process.env.PORTFOLIO_HOST}${filePath}`;
+          this.previewUrl = `${process.env.PORTFOLIO_BACKEND_API}${filePath}`;
         }
         this.showPreview = !!this.previewUrl;
         // previewSize not required for audio (and pdf)

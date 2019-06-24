@@ -4,5 +4,6 @@ const state = {
   loadmsg: 'inactive',
   schemas: [],
   user: {},
+  lang: null,
 };
 export default state;

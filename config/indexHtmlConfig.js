@@ -62,7 +62,7 @@ module.exports= {
   ],
   scripts: [
     {
-      src: envConfig.HEADER,
+      src: envConfig.SHOW_HEADER ? envConfig.HEADER : '',
       body: true,
     },
   ],
