@@ -14,7 +14,7 @@
         <div class="pop-up-text-container">
           <p
             class="sidebar-pop-up-text"
-            v-html="$store.state.data.popUp.text" />
+            v-html="popUpText" />
         </div>
       </div>
     </BasePopUp>
@@ -67,6 +67,9 @@ export default {
     },
     attachmentsCount() {
       return this.$store.getters['data/getCurrentMedia'].length;
+    },
+    popUpText() {
+      return this.$store.state.data.popUp.text;
     },
   },
   watch: {
