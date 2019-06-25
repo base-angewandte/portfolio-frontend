@@ -419,7 +419,7 @@ export default {
     },
     getImagePath(iconName, hover) {
       if (iconName && iconName.gif) {
-        return `${process.env.PORTFOLIO_BACKEND_API}${hover ? iconName.gif : iconName.jpg}`;
+        return `${process.env.MEDIA_SERVER_API}${hover ? iconName.gif : iconName.jpg}`;
       }
       if (iconName) {
         // for local images
