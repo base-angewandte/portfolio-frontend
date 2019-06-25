@@ -42,6 +42,7 @@ export default {
       }
       Api.setDomain(config.baseURL);
       commit('setApiLib', Api);
+      commit('setLang', config.lang);
       p.push(dispatch('fetchSchemas'));
       p.push(dispatch('fetchUser'));
       Promise.all(p).then((res) => {
