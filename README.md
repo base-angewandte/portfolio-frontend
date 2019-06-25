@@ -61,7 +61,8 @@ in folder /config the following variables can be set for development (dev.env) a
 | NODE_ENV              | node environment variable                                                                                                                                   |
 | DATABASE_API          | url for the backend rest api (database requests)                                                                                                            |
 | AUTOSUGGEST_API       | url for autocomplete fields                                                                                                                                 |
-| PORTFOLIO_BACKEND_API | base url of portfolio backend                                                                                                                               |
+| PORTFOLIO_BACKEND_API | base url of portfolio backend (with prefix)                                                                                                                      |
+| MEDIA_SERVER_API      | media server url (no prefix needed)                                                                                                    |
 | AUTHENTICATION        | cas server authentication urls                                                                                                                              |
 |     &nbsp;&nbsp;&nbsp;&nbsp;LOGIN             | for login                                                                                                                                                   |
 |     &nbsp;&nbsp;&nbsp;&nbsp;LOGOUT            | for logout                                                                                                                                                  |
