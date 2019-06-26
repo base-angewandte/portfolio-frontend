@@ -264,6 +264,7 @@ export default {
   .popup-text {
     display: flex;
     align-items: flex-end;
+    margin-top: $spacing;
 
     .upload-dropdown {
       width: calc(50% - #{$spacing} / 2);
@@ -280,8 +281,10 @@ export default {
   }
 
   .popup-upload-area {
+    max-height: ($row-height-small + $spacing) * 10;
+    overflow-y: auto;
 
-    .upload-bar {
+    .upload-bar:not(:last-child) {
       margin-bottom: $spacing;
     }
   }
@@ -302,6 +305,10 @@ export default {
   }
 
   @media screen and (max-width: $mobile) {
+    .popup-upload-area {
+      max-height: ($row-height-small + $spacing) * 5;
+    }
+
     .base-upload-bar-button + .base-upload-bar-button {
       margin-left: 0;
       margin-top: $spacing;

@@ -7,7 +7,9 @@ export const entryHandlingMixin = {
     confirmAction({ action, entries }) {
       const actionText = this.$t(`notify.${action}`);
       this.$store.commit('data/setSelected', entries);
-      const titles = entries.map(entry => entry.title);
+      const titles = entries.map(entry => entry.title
+        .replace(/</g, '\\<')
+        .replace(/>/g, '\\>'));
       this.$store.commit('data/setPopUp', {
         show: true,
         header: `${this.$tc('notify.entryActionTitle', titles.length, { action: actionText })}?`,

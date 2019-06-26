@@ -252,7 +252,7 @@ export default {
       return [
         {
           label: this.$t('dropdown.type'),
-          value: 'type',
+          value: `type_${this.$i18n.locale}`,
         },
         {
           label: this.$t('dropdown.title'),
