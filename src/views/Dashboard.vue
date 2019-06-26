@@ -21,6 +21,7 @@
     <BaseMediaPreview
       :show-preview="showPreview"
       :media-url="previewUrl"
+      :download-url="originalUrl"
       :display-size="previewSize"
       @hide-preview="showPreview = false"
       @download="downloadFile"/>
@@ -59,6 +60,7 @@ export default {
       showPreview: false,
       previewUrl: '',
       previewSize: {},
+      originalUrl: '',
     };
   },
   computed: {
@@ -109,23 +111,16 @@ export default {
       this.$store.commit('data/hidePopUp');
     },
     loadPreview(fileData) {
+      this.originalUrl = `${process.env.PORTFOLIO_BACKEND_API}${fileData.original}`;
       const filePath = fileData.playlist || fileData.mp3
         || fileData.pdf || fileData.original;
+      this.previewUrl = `${process.env.PORTFOLIO_BACKEND_API}${filePath}`;
       // TODO: remove again as soon as video and pdf and audio are available
-      if (filePath && filePath.search(/(jpg|jpeg|gif|png|m3u8|mp3|pdf)$/ig) >= 0) {
-        /* eslint-disable-next-line */
-        if (filePath.includes('http')) {
-          this.previewUrl = filePath;
-        } else if (filePath.includes('/images')) {
-          const match = /\/assets\/images\/(\w+\.\w+)$/.exec(filePath);
-          /* eslint-disable-next-line */
-          this.previewUrl = match[1] ? require(`@/assets/images/${match[1]}`) : '';
-        } else {
-          this.previewUrl = `${process.env.PORTFOLIO_BACKEND_API}${filePath}`;
-        }
+      if (filePath) {
         this.showPreview = !!this.previewUrl;
         // previewSize not required for audio (and pdf)
-        if (!fileData.mp3 && !fileData.pdf) {
+        if (fileData.metadata && (fileData.metadata.ImageHeight
+          || fileData.metadata.SourceImageHeight)) {
           this.previewSize = {
             height: `${fileData.metadata.ImageHeight ? fileData.metadata.ImageHeight.val
               : fileData.metadata.SourceImageHeight.val}px`,
@@ -133,8 +128,7 @@ export default {
               : fileData.metadata.SourceImageWidth.val}px`,
           };
         }
-        // landing here if either file type is not supported or if file is not fully
-        // converted yet
+        // landing here if file is not fully converted yet
       } else {
         this.$notify({
           group: 'request-notifications',
