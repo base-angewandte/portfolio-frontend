@@ -431,7 +431,7 @@ export default {
         } if (iconName.includes('http')) {
           return iconName;
         }
-        return `${process.env.PORTFOLIO_BACKEND_API}${iconName}`;
+        return `${process.env.MEDIA_SERVER_API}${iconName}`;
       }
       return '';
     },

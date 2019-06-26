@@ -111,10 +111,10 @@ export default {
       this.$store.commit('data/hidePopUp');
     },
     loadPreview(fileData) {
-      this.originalUrl = `${process.env.PORTFOLIO_BACKEND_API}${fileData.original}`;
+      this.originalUrl = `${process.env.MEDIA_SERVER_API}${fileData.original}`;
       const filePath = fileData.playlist || fileData.mp3
         || fileData.pdf || fileData.original;
-      this.previewUrl = `${process.env.PORTFOLIO_BACKEND_API}${filePath}`;
+      this.previewUrl = `${process.env.MEDIA_SERVER_API}${filePath}`;
       // TODO: remove again as soon as video and pdf and audio are available
       if (filePath) {
         this.showPreview = !!this.previewUrl;
