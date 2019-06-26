@@ -206,6 +206,7 @@
     "publish_images": "Publish files?",
     "upload": "Upload",
     "done": "Done",
-    "retry": "Try Again"
+    "retry": "Try Again",
+    "quotaExceeded": "Unfortunately you exceeded your quota, because you have only {space} of space left. Please remove some files to enable uploading."
   }
 }

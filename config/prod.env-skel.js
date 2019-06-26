@@ -4,7 +4,7 @@ module.exports= {
   DATABASE_API: 'https://basedev.uni-ak.ac.at/portfolio/api/v1/',
   AUTOSUGGEST_API: 'https://basedev.uni-ak.ac.at/portfolio/autosuggest/v1/',
   PORTFOLIO_BACKEND_API: 'https://basedev.uni-ak.ac.at/portfolio',
-  MEDIA_SERVER_API: 'https://basedev.uni-ak.ac.at/',
+  MEDIA_SERVER_API: 'https://basedev.uni-ak.ac.at',
   AUTHENTICATION: {
     LOGIN: 'https://basedev.uni-ak.ac.at/portfolio/accounts/login/',
     LOGOUT: 'https://basedev.uni-ak.ac.at/portfolio/accounts/logout/',

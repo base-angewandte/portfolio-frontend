@@ -200,6 +200,7 @@
     "publish_images": "Dateien veröffentlichen?",
     "upload": "Hochladen",
     "done": "Fertig",
-    "retry": "Erneut versuchen"
+    "retry": "Erneut versuchen",
+    "quotaExceeded": "Leider überschreitet dieser Upload Ihr Quota und Sie haben nur noch {space} übrig. Bitte entfernen Sie Dateien um den Upload zu ermöglichen."
   }
 }
