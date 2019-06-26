@@ -272,6 +272,7 @@ export default {
       action: '',
       licenseSelected: {},
       imageHover: [],
+      timeout: null,
     };
   },
   computed: {
@@ -297,14 +298,17 @@ export default {
       }
     },
     attachedList() {
-      // request media data again every minute if media are still converting
-      while (this.isConverting) {
-        /* eslint-disable-next-line */
-        setTimeout(() => {
-          this.fetchMedia();
-        }, 1000);
-      }
+      this.checkConverting();
     },
+  },
+  mounted() {
+    this.checkConverting();
+  },
+  destroyed() {
+    if (this.timeout) {
+      clearTimeout(this.timeout);
+      this.timeout = null;
+    }
   },
   methods: {
     changeVideoHoverState(event, index, value) {
@@ -469,6 +473,18 @@ export default {
         return license.label[lang];
       }
       return '';
+    },
+    checkConverting() {
+      if (this.timeout) {
+        clearTimeout(this.timeout);
+        this.timeout = null;
+      }
+      // request media data again in a minute if media are still converting
+      if (this.isConverting) {
+        this.timeout = setTimeout(() => {
+          this.fetchMedia();
+        }, 60000);
+      }
     },
   },
 };
