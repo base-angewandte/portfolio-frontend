@@ -26,6 +26,7 @@
             :filename="file.name"
             :filesize="userQuotaExceeded ? convertDiskSpace(file.size) : ''"
             :status="getStatus(file.name)"
+            :show-remove="isInitial"
             class="upload-bar"
             @remove-item="removeFile(index)"/>
         </transition-group>
