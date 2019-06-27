@@ -20,7 +20,7 @@ axiosInstance.interceptors.response.use((response) => {
   if (error.response && error.response.status === 403) {
     window.location.href = `${process.env.AUTHENTICATION.LOGIN}`;
   }
-  if (((error.config && error.response && error.response.status === 404)
+  if (((error.config && error.response && error.response.status >= 404)
     || !error.response) && axiosTries < axiosMaxRetries) {
     axiosTries += 1;
     return axios.request(error.config);

@@ -85,7 +85,8 @@
     "startTyping": "Start typing (min. 4 characters)",
     "noResult": "No results found",
     "noMatch": "No matching option",
-    "fetchingResults": "Suggestions are being fetched..."
+    "fetchingResults": "Suggestions are being fetched...",
+    "until": "until"
   },
   "form-view": {
     "notFound": "Entry Not Found",

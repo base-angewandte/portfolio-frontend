@@ -83,7 +83,8 @@
     "startTyping": "Eingabe beginnen (min. 4 Buchstaben)",
     "noResult": "Keine Ergebnisse gefunden",
     "noMatch": "Keine passenenden Optionen",
-    "fetchingResults": "Vorschläge werden gesucht..."
+    "fetchingResults": "Vorschläge werden gesucht...",
+    "until": "bis"
   },
   "form-view": {
     "notFound": "Eintrag nicht gefunden.",

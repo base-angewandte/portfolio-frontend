@@ -18,6 +18,7 @@
         :key="fieldKey + 'date'"
         :label="label"
         :placeholder="placeholder"
+        :range-separator="$t('form.until')"
         :id="fieldKey"
         :format="field['x-attrs'].date_format"
         :type="dateType.includes('timerange') ? dateType.includes('daterange')
@@ -31,6 +32,7 @@
         :key="fieldKey + 'time'"
         :label="$t('form.time')"
         :placeholder="placeholder"
+        :range-separator="$t('form.until')"
         :id="fieldKey"
         :type="'timerange'"
         v-model="fieldValueInt"
