@@ -182,7 +182,8 @@
     "quotaExceeded": "Leider konnten Dateien nicht hochgeladen werden da Ihr Portfolio Speicherplatz voll ist. Bitte löschen Sie Dateien um Speicherplatz frei zu geben.",
     "displayImage": "Vollanzeige nicht möglich",
     "notSupported": "Die Anzeige dieses Dateityps wird im Moment leider nicht unterstützt",
-    "notConverted": "Bitte haben Sie noch etwas Geduld bis die Datei vollständig konvertiert ist."
+    "notConverted": "Bitte haben Sie noch etwas Geduld bis die Datei vollständig konvertiert ist.",
+    "userQuotaUpdate": "Der verfügbare Speicherplatz konnte nicht aktualisiert werden und wird möglicherweise inkorrekt angezeigt."
   },
   "dropdown": {
     "type": "Nach Typ",
@@ -201,6 +202,6 @@
     "upload": "Hochladen",
     "done": "Fertig",
     "retry": "Erneut versuchen",
-    "quotaExceeded": "Leider überschreitet dieser Upload Ihr Quota und Sie haben nur noch {space} übrig. Bitte entfernen Sie Dateien um den Upload zu ermöglichen."
+    "quotaExceeded": "Leider überschreitet dieser Upload Ihren verfügbaren Speicherplatz und Sie haben nur noch {space} übrig. Bitte entfernen Sie Dateien um den Upload zu ermöglichen."
   }
 }

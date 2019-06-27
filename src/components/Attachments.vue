@@ -349,6 +349,10 @@ export default {
         });
         if (successIds.length) {
           await this.fetchMedia();
+          // check if action was delete and if yes propagate to parent to update user quota
+          if (action === 'delete') {
+            this.$emit('files-deleted');
+          }
         }
         // clear all variables after action
         this.action = '';

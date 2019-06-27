@@ -2,11 +2,13 @@
   <div>
     <AttachmentButtonRow
       :current-id="entryId"
+      @upload-done="updateUserQuota"
       @open-new-form="$emit('open-new-form')"/>
     <Attachments
       :key="'attachmentArea'"
       :linked-list="linkedList"
       :attached-list="mediaList"
+      @files-deleted="updateUserQuota"
       @show-preview="$emit('show-preview', $event)"/>
   </div>
 </template>
@@ -28,6 +30,21 @@ export default {
     },
     entryId() {
       return this.$route.params.id;
+    },
+  },
+  methods: {
+    updateUserQuota() {
+      console.log('updating');
+      try {
+        this.$store.dispatch('PortfolioAPI/fetchUser');
+      } catch (e) {
+        this.$notify({
+          group: 'request-notifications',
+          title: this.$t('notify.somethingWrong'),
+          text: this.$t('notify.saveBeforeUpload'),
+          type: 'error',
+        });
+      }
     },
   },
 };
