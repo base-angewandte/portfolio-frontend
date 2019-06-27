@@ -34,7 +34,6 @@ export default {
   },
   methods: {
     updateUserQuota() {
-      console.log('updating');
       try {
         this.$store.dispatch('PortfolioAPI/fetchUser');
       } catch (e) {

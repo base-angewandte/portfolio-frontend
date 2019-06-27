@@ -411,8 +411,7 @@ export default {
       return '';
     },
     getFileType(file) {
-      const matches = file.id.match(/^([a-z]):/);
-      const type = matches && matches.length ? matches[1] : '';
+      const { type } = file;
       if (file.metadata && type) {
         if (type === 'i') {
           return this.$t('form-view.image');
