@@ -47,7 +47,7 @@
 import { BasePopUp, BaseMediaPreview } from 'base-ui-components';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
-import { capitalizeString } from '../utils/commonUtils';
+import { capitalizeString, getApiUrl } from '../utils/commonUtils';
 
 export default {
   components: {
@@ -111,10 +111,10 @@ export default {
       this.$store.commit('data/hidePopUp');
     },
     loadPreview(fileData) {
-      this.originalUrl = `${process.env.MEDIA_SERVER_API}${fileData.original}`;
+      this.originalUrl = getApiUrl(fileData.original);
       const filePath = fileData.playlist || fileData.mp3
         || fileData.pdf || fileData.original;
-      this.previewUrl = `${process.env.MEDIA_SERVER_API}${filePath}`;
+      this.previewUrl = getApiUrl(filePath);
       // TODO: remove again as soon as video and pdf and audio are available
       if (filePath) {
         this.showPreview = !!this.previewUrl;

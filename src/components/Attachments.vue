@@ -230,7 +230,7 @@ import {
 import BaseOptions from './BaseOptions';
 import EyeIcon from '../assets/icons/eye.svg';
 import { userInfo } from '../mixins/userInfo';
-import { setLangLabels } from '../utils/commonUtils';
+import { setLangLabels, getApiUrl } from '../utils/commonUtils';
 
 export default {
   components: {
@@ -426,7 +426,7 @@ export default {
     },
     getImagePath(iconName, hover) {
       if (iconName && iconName.gif) {
-        return `${process.env.MEDIA_SERVER_API}${hover ? iconName.gif : iconName.jpg}`;
+        return getApiUrl(hover ? iconName.gif : iconName.jpg);
       }
       if (iconName) {
         // for local images
@@ -438,7 +438,7 @@ export default {
         } if (iconName.includes('http')) {
           return iconName;
         }
-        return `${process.env.MEDIA_SERVER_API}${iconName}`;
+        return getApiUrl(iconName);
       }
       return '';
     },

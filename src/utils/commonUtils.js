@@ -43,3 +43,10 @@ export const convertSpace = (bytes, si) => {
   } while (Math.abs(newBytes) >= thresh && u < units.length - 1);
   return `${newBytes.toFixed(1)} ${units[u]}`;
 };
+
+export const getApiUrl = (requestUrl = '') => {
+  if (!requestUrl.includes(process.env.BACKEND_PREFIX)) {
+    return `${process.env.PORTFOLIO_BACKEND_BASE_URL}${process.env.BACKEND_PREFIX}${requestUrl}`;
+  }
+  return `${process.env.PORTFOLIO_BACKEND_BASE_URL}${requestUrl}`;
+};

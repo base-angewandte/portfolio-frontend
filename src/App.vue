@@ -23,6 +23,8 @@
 </template>
 
 <script>
+import { getApiUrl } from './utils/commonUtils';
+
 export default {
   name: 'App',
   components: {
@@ -53,7 +55,7 @@ export default {
   beforeCreate() {
     // initializing stores before app instance is created
     this.$store.dispatch('PortfolioAPI/init', {
-      baseURL: process.env.PORTFOLIO_BACKEND_API,
+      baseURL: getApiUrl(),
       lang: this.$i18n.locale,
     }).catch((e) => {
       if ((e.response && e.response.status === '404') || e.message === 'Network Error') {
