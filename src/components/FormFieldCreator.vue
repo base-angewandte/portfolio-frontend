@@ -25,6 +25,7 @@
         ? 'daterange' : 'single' : dateType"
         :date-format-labels="{date: $t('form.date'), year: $t('form.year') }"
         :format-tabs-legend="$t('form.dateTabsLegend')"
+        :language="$i18n.locale"
         v-model="fieldValueInt"
         :class="['base-form-field']"/>
       <BaseDateInput
@@ -345,7 +346,7 @@ export default {
     fieldValueInt: {
       handler(val) {
         // prevent event being fired when change comes from outside
-        if (JSON.stringify(this.fieldValue) !== JSON.stringify(val)) {
+        if (val !== undefined && JSON.stringify(this.fieldValue) !== JSON.stringify(val)) {
           this.$emit('field-value-changed', val);
         }
       },
@@ -360,7 +361,7 @@ export default {
   },
   methods: {
     setFieldValue(val) {
-      if (typeof val === 'object') {
+      if (val && typeof val === 'object') {
         if (val.length >= 0) {
           this.fieldValueInt = [].concat(JSON.parse(JSON.stringify(val)));
         } else {
