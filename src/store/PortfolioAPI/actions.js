@@ -52,6 +52,7 @@ export default {
   },
   fetchSchemas({ state, commit }) {
     return new Promise((resolve, reject) => {
+      $config.headers = { 'Accept-Language': i18n.locale };
       commit('setLoading', 'Fetching available Schemas');
       state.apilib.api_v1_jsonschema_list({ $config }).then((res) => {
         commit('setSchemas', res.data);
