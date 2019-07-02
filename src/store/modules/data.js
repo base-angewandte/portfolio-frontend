@@ -3,7 +3,9 @@ import Vue from 'vue';
 import axios from 'axios';
 import { i18n } from '../../plugins/i18n';
 
-import { sorting, capitalizeString, setLangLabels } from '../../utils/commonUtils';
+import {
+  sorting, capitalizeString, setLangLabels, getApiUrl,
+} from '../../utils/commonUtils';
 
 function transformTextData(data) {
   const textData = [];
@@ -45,16 +47,8 @@ const state = {
   linkedEntries: [],
   linkedMedia: [],
   // the object properties are named after the respective endpoint!
-  prefetchedTypes: {
-    texttypes: [],
-    roles: [],
-    languages: [],
-    formats: [],
-    medialicenses: [],
-    softwarelicenses: [],
-    keywords: [],
-    materials: [],
-  },
+  prefetchedTypes: {},
+  mediaLicenses: [],
   // entry types displayed in sidebar
   entryTypes: [],
   generalSchema: {},
@@ -81,7 +75,13 @@ const getters = {
   getMediaIds(state) {
     return state.linkedMedia.map(entry => entry.id);
   },
-  getPrefetchedTypes: state => field => state.prefetchedTypes[field],
+  getPrefetchedTypes: state => (field, source) => {
+    if (source === 'source') {
+      return state.prefetchedTypes[field];
+    }
+    const prop = source.replace('source_', '');
+    return state.prefetchedTypes[`${field}_${prop}`];
+  },
   getEntryTypes(state) {
     return state.entryTypes;
   },
@@ -165,8 +165,13 @@ const mutations = {
   deleteMedia(state, list) {
     state.linkedMedia = state.linkedMedia.filter(entry => !list.includes(entry.id));
   },
-  setPrefetchedTypes(state, { field, data }) {
-    Vue.set(state.prefetchedTypes, field, data);
+  setPrefetchedTypes(state, { field, data, source }) {
+    if (source === 'source') {
+      Vue.set(state.prefetchedTypes, field, data);
+    } else {
+      const prop = source.replace('source_', '');
+      Vue.set(state.prefetchedTypes, `${field}_${prop}`, data);
+    }
   },
   setGeneralSchema(state, schema) {
     state.generalSchema = Object.assign({}, schema);
@@ -180,7 +185,7 @@ const mutations = {
 };
 
 const actions = {
-  async fetchGeneralFields({ commit }) {
+  async fetchGeneralFields({ commit, dispatch }) {
     return new Promise(async (resolve, reject) => {
       try {
         const jsonSchema = await axios.get(`${process.env.DATABASE_API}swagger.json`,
@@ -192,6 +197,8 @@ const actions = {
           });
         const formFields = jsonSchema.data.definitions.Entry.properties;
         commit('setGeneralSchema', formFields);
+        // get fields that should be prefetched
+        dispatch('getStaticDropDowns', formFields);
         resolve(formFields);
       } catch (e) {
         console.error(e);
@@ -199,30 +206,48 @@ const actions = {
       }
     });
   },
-  getStaticDropDowns({ state, getters, commit }) {
-    Object.keys(state.prefetchedTypes).forEach(async (field) => {
-      if (!getters.getPrefetchedTypes(field).length) {
-        const { data } = await axios
-          .get(`${process.env.AUTOSUGGEST_API}${field}/`, {
-            withCredentials: true,
-            headers: {
-              'Accept-Language': i18n.locale,
-            },
-          });
-        commit('setPrefetchedTypes', { field, data });
-      }
-    });
+  async getStaticDropDowns({ commit, getters }, schema) {
+    const prefetchFields = Object.keys(schema)
+      .map((field) => {
+        const attrs = schema[field] ? schema[field]['x-attrs'] : null;
+        if (attrs && !!attrs.prefetch) {
+          return { [field]: attrs.prefetch };
+        }
+        return '';
+      }).filter(Boolean);
+    await Promise.all(prefetchFields.map(field => new Promise(async (resolve, reject) => {
+      const [name, sources] = Object.entries(field)[0];
+      await Promise.all(sources.map(source => new Promise(async () => {
+        if (!getters.getPrefetchedTypes(name, source)) {
+          const url = getApiUrl(schema[name]['x-attrs'][source]);
+          try {
+            const { data } = await axios
+              .get(url, {
+                withCredentials: true,
+                headers: {
+                  'Accept-Language': i18n.locale,
+                },
+              });
+            commit('setPrefetchedTypes', { field: name, data, source });
+            resolve('x');
+          } catch (e) {
+            reject(e);
+          }
+        }
+        resolve();
+      })));
+    })));
   },
   async fetchEntryTypes({ commit }) {
     // TODO: replace with C. store module!
     try {
-      const response = await axios.get(`${process.env.DATABASE_API}entry/types/`, {
+      const { data } = await axios.get(`${process.env.DATABASE_API}entry/types/`, {
         withCredentials: true,
         headers: {
           'Accept-Language': i18n.locale,
         },
       });
-      const entryTypes = sorting(response.data, 'label', i18n.locale);
+      const entryTypes = sorting(data, 'label', i18n.locale);
       // add 'all types' option
       entryTypes.unshift({
         label: setLangLabels('dropdown.allTypes', i18n.availableLocales),
@@ -233,6 +258,9 @@ const actions = {
       console.error(e);
       // TODO: inform user?
     }
+  },
+  async fetchMediaLicenses() {
+    // TODO!!!
   },
   async fetchEntryData({ commit, dispatch }, id) {
     return new Promise(async (resolve, reject) => {

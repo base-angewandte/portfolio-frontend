@@ -2,7 +2,6 @@
 module.exports= {
   NODE_ENV: 'production',
   DATABASE_API: 'https://basedev.uni-ak.ac.at/portfolio/api/v1/',
-  AUTOSUGGEST_API: 'https://basedev.uni-ak.ac.at/portfolio/autosuggest/v1/',
   PORTFOLIO_BACKEND_BASE_URL: 'https://basedev.uni-ak.ac.at',
   BACKEND_PREFIX: '/portfolio',
   AUTHENTICATION: {
@@ -23,6 +22,24 @@ module.exports= {
     {
       label: "Wien, Österreich",
       source: "https://api.geocode.earth/v1/place?ids=whosonfirst:locality:101748073",
+    },
+    {
+      source:"https://api.geocode.earth/v1/place?ids=openstreetmap:venue:way/25427674",
+      label:"Universität für angewandte Kunst in Wien, Wien, Österreich",
+      house_number:"2",
+      street:"Oskar-Kokoschka-Platz",
+      postcode:"1010",
+      locality:"Wien",
+      region:"Wien",
+      country:"Österreich",
+      geometry:{
+        type:"Point",
+        coordinates: [
+          16.382464,
+          48.208126,
+        ]
+      },
+      source_name:"geocode.earth",
     }
   ],
   FONT_PATH: 'https://basedev.uni-ak.ac.at/bs/fonts/',

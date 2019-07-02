@@ -50,7 +50,7 @@
         :form-field-json="formFields"
         :value-list="valueList"
         :prefetched-drop-down-lists="{
-          texts_secondary: preFetchedData.texttypes,
+          texts_secondary: preFetchedData.texts_type,
           type: objectTypes,
           keywords: preFetchedData.keywords,
         }"
@@ -74,10 +74,10 @@
             :value-list="valueList.data"
             :prefetched-drop-down-lists="{
               contributors_secondary: prefetchedRoles,
-              material: preFetchedData.materials,
-              format: preFetchedData.formats,
-              language: preFetchedData.languages,
-              open_source_license: preFetchedData.softwarelicenses,
+              material: preFetchedData.material,
+              format: preFetchedData.format,
+              language: preFetchedData.language,
+              open_source_license: preFetchedData.open_source_license,
             }"
             class="form"
             @values-changed="handleInput($event, 'data')"/>
@@ -184,11 +184,23 @@ export default {
     async type(val) {
       if (val) {
         try {
-          const response = await this.$store.dispatch('PortfolioAPI/get', {
+          const { properties } = await this.$store.dispatch('PortfolioAPI/get', {
             kind: 'jsonschema',
             id: encodeURIComponent(this.valueList.type[0].source),
           });
-          this.$store.commit('data/setExtensionSchema', response.properties || {});
+          this.$store.commit('data/setExtensionSchema', properties || {});
+          await this.$store.dispatch('data/getStaticDropDowns', properties);
+
+          // prepare roles by filtering all the roles that have separate fields
+          const contributorFields = Object.keys(properties).reduce((prev, curr) => {
+            const field = properties[curr];
+            if (field['x-attrs'] && field['x-attrs'].equivalent === 'contributors') {
+              prev.push(field['x-attrs'].default_role);
+            }
+            return prev;
+          }, []);
+          this.prefetchedRoles = this.$store.state.data.prefetchedTypes.contributors_role
+            .filter(role => !contributorFields.includes(role.source));
         } catch (e) {
           this.$notify({
             group: 'request-notifications',
@@ -205,21 +217,10 @@ export default {
         this.$store.commit('data/setExtensionSchema', {});
       }
     },
-    formFieldsExtension(val) {
-      const contributorFields = Object.keys(val).reduce((prev, curr) => {
-        const field = val[curr];
-        if (field['x-attrs'] && field['x-attrs'].equivalent === 'contributors') {
-          prev.push(field['x-attrs'].default_role);
-        }
-        return prev;
-      }, []);
-      this.prefetchedRoles = this.$store.state.data.prefetchedTypes.roles
-        .filter(role => !contributorFields.includes(role.source));
-    },
   },
   created() {
     this.fetchGeneralFormFields();
-    this.$store.dispatch('data/getStaticDropDowns');
+    // this.$store.dispatch('data/getStaticDropDowns');
     if (this.currentItemId) {
       this.updateForm();
     }
