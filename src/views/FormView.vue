@@ -461,7 +461,7 @@ export default {
       position: sticky;
       top: $header-height;
       z-index: 5;
-      padding-top: $spacing;
+      padding: $spacing 0 $spacing-small;
 
       .base-row-parent {
         border-bottom: $separation-line;
@@ -492,6 +492,7 @@ export default {
 
     .form-container {
       position: relative;
+      margin-top: -$spacing-small;
 
       .base-form-options {
         margin-bottom: $spacing-small;

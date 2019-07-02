@@ -507,8 +507,9 @@ const actions = {
           Vue.set(newData, key, values);
         } else {
           Object.keys(values).forEach(async (valueKey) => {
-            if (field.properties[valueKey]) {
-              if (field.properties[valueKey].type === 'object' || field.properties[valueKey].type === 'array') {
+            const childProps = field.properties[valueKey];
+            if (childProps) {
+              if (childProps.type === 'object' || (childProps.type === 'array' && childProps.items.properties)) {
                 const validatedObj = await dispatch('removeUnknownProps', {
                   data: values[valueKey],
                   fields: field.properties,
