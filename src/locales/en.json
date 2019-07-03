@@ -29,6 +29,7 @@
   "noMatchingEntriesSubtext": "Please adjust your search criteria.",
   "notAvailable": "Unfortunately the application \"Portfolio\" is currently not available.",
   "returnHome": "Return to Start Page",
+  "returnToDashboard": "Return to entry list",
   "refresh": "Try Again",
   "form": {
     "select": "Select",
