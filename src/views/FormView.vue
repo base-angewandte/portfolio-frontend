@@ -167,6 +167,9 @@ export default {
     formFieldsExtension() {
       return this.$store.getters['data/getExtensionSchema'];
     },
+    attachmentsCount() {
+      return this.$store.getters['data/getCurrentMedia'].length;
+    },
   },
   watch: {
     async currentItemId(val) {
@@ -215,6 +218,14 @@ export default {
         }
       } else {
         this.$store.commit('data/setExtensionSchema', {});
+      }
+    },
+    // if attachments in form were changed from 0 to >0 or from >0 to 0 --> update
+    // sidebar to display icon
+    attachmentsCount(curr, prev) {
+      // formisloading as indicator if route was changed to reduce requests
+      if (!this.formIsLoading && Boolean(curr) !== Boolean(prev)) {
+        this.$emit('data-changed');
       }
     },
   },
