@@ -4,7 +4,7 @@ import axios from 'axios';
 import { i18n } from '../../plugins/i18n';
 
 import {
-  sorting, capitalizeString, setLangLabels, getApiUrl,
+  sorting, capitalizeString, setLangLabels, getApiUrl, hasFieldContent,
 } from '../../utils/commonUtils';
 
 function transformTextData(data) {
@@ -23,7 +23,10 @@ function transformTextData(data) {
           text: textItem[lang],
         }));
       Vue.set(textObj, 'data', text);
-      textData.push(textObj);
+      // check if textObj has any content at all
+      if (textObj.data.some(textObjData => !!textObjData.text) || textObj.type.source) {
+        textData.push(textObj);
+      }
     });
   }
   return textData;
@@ -511,7 +514,7 @@ const actions = {
     const newData = {};
     Object.keys(data).forEach(async (key) => {
       const field = fields[key];
-      const values = data[key];
+      let values = data[key];
       // if the field does not exist in schema = this is not an allowed property - return
       if (!field) {
         return;
@@ -541,6 +544,10 @@ const actions = {
       } else if (field.type === 'array') {
         // check if values are already present and set those if yes
         if (values && values.length) {
+          // a check if a group field actually has content - otherwise it is removed
+          if (field['x-attrs'] && field['x-attrs'].field_type === 'group') {
+            values = values.filter(value => hasFieldContent(value));
+          }
           const arrayValues = await Promise.all(values
             .map(value => dispatch('removeUnknownProps', { data: value, fields: field.items.properties })));
           Vue.set(newData, key, arrayValues);

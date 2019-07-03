@@ -50,3 +50,25 @@ export const getApiUrl = (requestUrl = '') => {
   }
   return `${process.env.PORTFOLIO_BACKEND_BASE_URL}${requestUrl}`;
 };
+
+/**
+ * this function can be used for any variable (any data type) to check if it has content
+ *
+ * @param fieldValues
+ * @returns {boolean}
+ */
+export const hasFieldContent = (fieldValues) => {
+  let hasContent = false;
+  if (typeof fieldValues === 'object') {
+    if (fieldValues.length >= 0) {
+      fieldValues.forEach((values) => { hasContent = hasFieldContent(values) || hasContent; });
+    } else {
+      const objectKeys = Object.keys(fieldValues);
+      objectKeys
+        .forEach((key) => { hasContent = hasFieldContent(fieldValues[key]) || hasContent; });
+    }
+  } else {
+    hasContent = fieldValues === 0 || !!fieldValues || hasContent;
+  }
+  return hasContent;
+};
