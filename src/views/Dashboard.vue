@@ -47,7 +47,7 @@
 import { BasePopUp, BaseMediaPreview } from 'base-ui-components';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
-import { capitalizeString } from '../utils/commonUtils';
+import { capitalizeString, getApiUrl } from '../utils/commonUtils';
 
 export default {
   components: {
@@ -67,9 +67,6 @@ export default {
     showForm() {
       return this.$route.name !== 'Dashboard';
     },
-    attachmentsCount() {
-      return this.$store.getters['data/getCurrentMedia'].length;
-    },
     popUpText() {
       return this.$store.state.data.popUp.text;
     },
@@ -80,13 +77,6 @@ export default {
         this.$store.commit('data/deleteCurrentItem');
       }
       this.$store.commit('data/setNewForm', this.$route.name === 'newEntry');
-    },
-    // if attachments in form were changed from 0 to >0 or from >0 to 0 --> update
-    // sidebar to display icon
-    attachmentsCount(curr, prev) {
-      if (this.showForm && (Boolean(curr) !== Boolean(prev))) {
-        this.$refs.sidebar.fetchSidebarData();
-      }
     },
   },
   mounted() {
@@ -111,10 +101,10 @@ export default {
       this.$store.commit('data/hidePopUp');
     },
     loadPreview(fileData) {
-      this.originalUrl = `${process.env.MEDIA_SERVER_API}${fileData.original}`;
+      this.originalUrl = getApiUrl(fileData.original);
       const filePath = fileData.playlist || fileData.mp3
         || fileData.pdf || fileData.original;
-      this.previewUrl = `${process.env.MEDIA_SERVER_API}${filePath}`;
+      this.previewUrl = getApiUrl(filePath);
       // TODO: remove again as soon as video and pdf and audio are available
       if (filePath) {
         this.showPreview = !!this.previewUrl;

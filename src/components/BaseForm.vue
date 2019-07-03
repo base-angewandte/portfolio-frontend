@@ -101,6 +101,7 @@ import axios from 'axios';
 import FormFieldCreator from './FormFieldCreator';
 import RemoveIcon from '../assets/icons/remove.svg';
 import PlusIcon from '../assets/icons/plus.svg';
+import { getApiUrl } from '../utils/commonUtils';
 
 const { CancelToken } = axios;
 let cancel;
@@ -281,7 +282,7 @@ export default {
       if (index >= 0) {
         this.$set(this.valueListInt[fieldName], index, JSON.parse(JSON.stringify(value)));
       } else {
-        this.$set(this.valueListInt, fieldName, JSON.parse(JSON.stringify(value)));
+        this.$set(this.valueListInt, fieldName, value ? JSON.parse(JSON.stringify(value)) : value);
       }
       this.$emit('values-changed', this.valueListInt);
     },
@@ -301,7 +302,7 @@ export default {
             if (cancel) {
               cancel('new request started');
             }
-            const result = await axios.get(`${process.env.PORTFOLIO_BACKEND_API}${source}${value ? `${value}/` : ''}`, {
+            const result = await axios.get(`${getApiUrl(source)}${value ? `${value}/` : ''}`, {
               withCredentials: true,
               headers: {
                 'Accept-Language': this.$i18n.locale,

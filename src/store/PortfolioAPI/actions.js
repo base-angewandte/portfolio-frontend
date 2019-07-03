@@ -18,9 +18,9 @@ axiosInstance.interceptors.response.use((response) => {
   return response;
 }, (error) => {
   if (error.response && error.response.status === 403) {
-    window.location.href = `${process.env.AUTHENTICATION.LOGIN}`;
+    window.location.href = `${process.env.HEADER_URLS.LOGIN}`;
   }
-  if (((error.config && error.response && error.response.status === 404)
+  if (((error.config && error.response && error.response.status >= 404)
     || !error.response) && axiosTries < axiosMaxRetries) {
     axiosTries += 1;
     return axios.request(error.config);
@@ -52,6 +52,7 @@ export default {
   },
   fetchSchemas({ state, commit }) {
     return new Promise((resolve, reject) => {
+      $config.headers = { 'Accept-Language': i18n.locale };
       commit('setLoading', 'Fetching available Schemas');
       state.apilib.api_v1_jsonschema_list({ $config }).then((res) => {
         commit('setSchemas', res.data);

@@ -73,8 +73,8 @@
     <Uploader
       v-if="!!filesToUpload.length"
       :file-list="filesToUpload"
-      @cancel="filesToUpload = []"
-      @success="updateFiles"/>
+      @cancel="resetFiles"
+      @success="resetFiles"/>
 
     <BasePopUp
       :show="showEntryPopUp"
@@ -243,8 +243,9 @@ export default {
       }
       this.showEntryPopUp = false;
     },
-    updateFiles() {
+    resetFiles() {
       this.filesToUpload = [];
+      this.$emit('upload-done');
     },
   },
 };

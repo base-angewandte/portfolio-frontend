@@ -4,7 +4,12 @@ build-app:
 set-header:
 	docker run --mount type=bind,source=$(shell pwd)/dist,target=/app/dist portfolio-build-container
 
+rebuild:
+	docker run --mount type=bind,source=$(shell pwd)/dist,target=/app/dist portfolio-build-container
+
 git-update:
 	if [ "$(shell whoami)" != "base" ]; then sudo -u base git pull; else git pull; fi
 
-update: git-update build-app
+update: git-update rebuild
+
+update-complete: git-update build-app

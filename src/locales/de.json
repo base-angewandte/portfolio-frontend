@@ -27,6 +27,7 @@
   "noMatchingEntriesSubtext": "Bitte passen Sie Ihre Suchkritierien an.",
   "notAvailable": "Die Anwendung \"Portfolio\" ist im Moment leider nicht verfügbar.",
   "returnHome": "Zur Start Seite",
+  "returnToDashboard": "Zurück zur Übersicht",
   "refresh": "Nochmal versuchen",
   "form": {
     "select": "Wähle",
@@ -83,7 +84,8 @@
     "startTyping": "Eingabe beginnen (min. 4 Buchstaben)",
     "noResult": "Keine Ergebnisse gefunden",
     "noMatch": "Keine passenenden Optionen",
-    "fetchingResults": "Vorschläge werden gesucht..."
+    "fetchingResults": "Vorschläge werden gesucht...",
+    "until": "bis"
   },
   "form-view": {
     "notFound": "Eintrag nicht gefunden.",
@@ -182,7 +184,8 @@
     "quotaExceeded": "Leider konnten Dateien nicht hochgeladen werden da Ihr Portfolio Speicherplatz voll ist. Bitte löschen Sie Dateien um Speicherplatz frei zu geben.",
     "displayImage": "Vollanzeige nicht möglich",
     "notSupported": "Die Anzeige dieses Dateityps wird im Moment leider nicht unterstützt",
-    "notConverted": "Bitte haben Sie noch etwas Geduld bis die Datei vollständig konvertiert ist."
+    "notConverted": "Bitte haben Sie noch etwas Geduld bis die Datei vollständig konvertiert ist.",
+    "userQuotaUpdate": "Der verfügbare Speicherplatz konnte nicht aktualisiert werden und wird möglicherweise inkorrekt angezeigt."
   },
   "dropdown": {
     "type": "Nach Typ",
@@ -200,6 +203,7 @@
     "publish_images": "Dateien veröffentlichen?",
     "upload": "Hochladen",
     "done": "Fertig",
-    "retry": "Erneut versuchen"
+    "retry": "Erneut versuchen",
+    "quotaExceeded": "Leider überschreitet dieser Upload Ihren verfügbaren Speicherplatz und Sie haben nur noch {space} übrig. Bitte entfernen Sie Dateien um den Upload zu ermöglichen."
   }
 }

@@ -3,17 +3,38 @@
     :show="!!fileList.length"
     :title="$t('upload.title')"
     @close="cancelUpload()">
+    <transition-group name="list-complete">
+      <div
+        v-if="userQuotaExceeded"
+        key="user-warning"
+        class="base-uploader-user-warning">
+        <FailIcon
+          class="icon base-uploader-user-warning-icon"
+        />
+        {{ $t('upload.quotaExceeded', { space: convertDiskSpace(userSpace) }) }}
+      </div>
+      <div
+        key="upload-area"
+        class="popup-upload-area">
+        <transition-group
+          name="bar-move"
+          class="transition">
+          <BaseUploadBar
+            v-for="(file, index) of fileList"
+            :key="file.name"
+            :progress="uploadPercentage[index]"
+            :filename="file.name"
+            :filesize="userQuotaExceeded ? convertDiskSpace(file.size) : ''"
+            :status="getStatus(file.name)"
+            :show-remove="isInitial"
+            class="upload-bar"
+            @remove-item="removeFile(index)"/>
+        </transition-group>
+      </div>
+    </transition-group>
     <div
-      class="popup-upload-area">
-      <BaseUploadBar
-        v-for="(file, index) of fileList"
-        :key="index"
-        :progress="uploadPercentage[index]"
-        :filename="file.name"
-        :status="getStatus(file.name)"
-        class="upload-bar"/>
-    </div>
-    <div class="popup-text">
+      key="popup-text"
+      class="popup-text">
       <BaseDropDown
         :label="$t('upload.choose_license')"
         :options="licenses"
@@ -50,7 +71,7 @@
         :icon="!isSaving && !isFailed ? 'check-mark' : ''"
         :icon-position="'right'"
         :icon-size="'small'"
-        :disabled="isSaving"
+        :disabled="isSaving || userQuotaExceeded"
         class="base-upload-bar-button"
         @clicked="startUpload">
         <template
@@ -75,7 +96,8 @@ import {
   BaseLoader,
 } from 'base-ui-components';
 import axios from 'axios';
-import { setLangLabels } from '../utils/commonUtils';
+import FailIcon from '../assets/icons/attention.svg';
+import { setLangLabels, convertSpace } from '../utils/commonUtils';
 // import upload from '../assets/file-upload.fake.service';
 
 const STATUS_INITIAL = 0;
@@ -91,6 +113,7 @@ export default {
     BaseInput,
     BaseUploadBar,
     BaseLoader,
+    FailIcon,
   },
   props: {
     fileList: {
@@ -138,7 +161,14 @@ export default {
       return this.$t('upload.done');
     },
     licenses() {
-      return ([this.defaultLicense]).concat(this.$store.getters['data/getPrefetchedTypes']('medialicenses'));
+      return ([this.defaultLicense]).concat(this.$store.getters['data/getPrefetchedTypes']('medialicenses', 'source'));
+    },
+    userSpace() {
+      return this.$store.state.PortfolioAPI.user.space;
+    },
+    userQuotaExceeded() {
+      return this.userSpace < this.fileList
+        .reduce((prev, curr) => prev + curr.size, 0);
     },
   },
   mounted() {
@@ -254,12 +284,36 @@ export default {
       }
       return '';
     },
+    removeFile(index) {
+      this.fileList.splice(index, 1);
+    },
+    convertDiskSpace(bytes) {
+      return convertSpace(bytes, true);
+    },
   },
 };
 </script>
 
 <style lang="scss" scoped>
   @import "../styles/variables.scss";
+
+  .base-uploader-user-warning {
+    color: #ff4444;
+    fill: #ff4444;
+    margin-bottom: $spacing;
+    display: flex;
+    align-items: center;
+
+    .icon {
+      max-height: $icon-large;
+      width: $icon-large;
+
+      &.base-uploader-user-warning-icon {
+        margin-right: $spacing-small;
+        flex: 0 0 auto;
+      }
+    }
+  }
 
   .popup-text {
     display: flex;
@@ -302,6 +356,29 @@ export default {
 
   .base-upload-bar-button + .base-upload-bar-button {
     margin-left: $spacing;
+  }
+
+  .list-complete-enter, .list-complete-leave-to {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+
+  .list-complete-leave-active {
+    position: absolute;
+  }
+
+  .list-complete-move {
+    transition: all 500ms;
+  }
+
+  .transition {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .bar-move-leave-active {
+    opacity: 0;
+    transition: all 300ms;
   }
 
   @media screen and (max-width: $mobile) {

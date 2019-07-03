@@ -6,7 +6,7 @@ Portfolio/Showroom enable artists and scientists to announce, store and publish 
 
 ## Project Setup
 
-git and npm (node) is required on the system
+git is required on the system
 
 ``` bash
 # clone the git repository
@@ -19,6 +19,8 @@ cp config/prod.env-skel.js config/prod.env.js
 ```
 
 ## Development Setup
+
+git and npm (node) is required on the system
 
 ```bash
 # install dependencies
@@ -59,16 +61,16 @@ in folder /config the following variables can be set for development (dev.env) a
 | Variable              | Description                                                                                                                                                 |
 |-----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | NODE_ENV              | node environment variable                                                                                                                                   |
-| DATABASE_API          | url for the backend rest api (database requests)                                                                                                            |
-| AUTOSUGGEST_API       | url for autocomplete fields                                                                                                                                 |
-| PORTFOLIO_BACKEND_API | base url of portfolio backend (with prefix)                                                                                                                      |
-| MEDIA_SERVER_API      | media server url (no prefix needed)                                                                                                    |
-| AUTHENTICATION        | cas server authentication urls                                                                                                                              |
+| DATABASE_API          | url for the backend rest api (database requests)                                                                                                            |                                                                                                                              |
+| PORTFOLIO_BACKEND_BASE_URL | base url of portfolio backend                                                                                                                      |
+| BACKEND_PREFIX      | a prefix for the backend                                                                                                 |
+| HEADER_URLS        | header / footer urls                                                                                                                              |
 |     &nbsp;&nbsp;&nbsp;&nbsp;LOGIN             | for login                                                                                                                                                   |
 |     &nbsp;&nbsp;&nbsp;&nbsp;LOGOUT            | for logout                                                                                                                                                  |
-| SHOW_HEADER           | show base header                                                                                                                                                            |
-| HEADER_HOST           | the base url for the header                                                                                                                                 |
-| HEADER                | the complete header url, no need to set manually, can be set via `gulp set-header` or `make set-header` (in production)                                                         |
+|     &nbsp;&nbsp;&nbsp;&nbsp;TERMS            | to link to terms and conditions                                                                                                                                                |
+|     &nbsp;&nbsp;&nbsp;&nbsp;NOTICE            | to link to site legal notice                                                                                                                              |
+| HEADER_JSON           | json file url where the latest header version is specified                                                                                                                                  |
+| HEADER                | the complete header url, no need to set manually (will be overwritten!), can be set via `gulp set-header` or `make set-header` (in production)                                                         |
 | APP_PREFIX            | the desired prefix of the appication                                                                                                                        |
 | LANG_URL              | the skosmos uri of the languages project                                                                                                                    |
 | LOCALES               | available locales                                                                                                                                           |

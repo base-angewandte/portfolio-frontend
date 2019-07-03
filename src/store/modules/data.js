@@ -3,7 +3,9 @@ import Vue from 'vue';
 import axios from 'axios';
 import { i18n } from '../../plugins/i18n';
 
-import { sorting, capitalizeString, setLangLabels } from '../../utils/commonUtils';
+import {
+  sorting, capitalizeString, setLangLabels, getApiUrl, hasFieldContent,
+} from '../../utils/commonUtils';
 
 function transformTextData(data) {
   const textData = [];
@@ -21,7 +23,10 @@ function transformTextData(data) {
           text: textItem[lang],
         }));
       Vue.set(textObj, 'data', text);
-      textData.push(textObj);
+      // check if textObj has any content at all
+      if (textObj.data.some(textObjData => !!textObjData.text) || textObj.type.source) {
+        textData.push(textObj);
+      }
     });
   }
   return textData;
@@ -45,16 +50,8 @@ const state = {
   linkedEntries: [],
   linkedMedia: [],
   // the object properties are named after the respective endpoint!
-  prefetchedTypes: {
-    texttypes: [],
-    roles: [],
-    languages: [],
-    formats: [],
-    medialicenses: [],
-    softwarelicenses: [],
-    keywords: [],
-    materials: [],
-  },
+  prefetchedTypes: {},
+  mediaLicensesPath: '',
   // entry types displayed in sidebar
   entryTypes: [],
   generalSchema: {},
@@ -81,7 +78,13 @@ const getters = {
   getMediaIds(state) {
     return state.linkedMedia.map(entry => entry.id);
   },
-  getPrefetchedTypes: state => field => state.prefetchedTypes[field],
+  getPrefetchedTypes: state => (field, source) => {
+    if (source === 'source') {
+      return state.prefetchedTypes[field];
+    }
+    const prop = source.replace('source_', '');
+    return state.prefetchedTypes[`${field}_${prop}`];
+  },
   getEntryTypes(state) {
     return state.entryTypes;
   },
@@ -165,8 +168,13 @@ const mutations = {
   deleteMedia(state, list) {
     state.linkedMedia = state.linkedMedia.filter(entry => !list.includes(entry.id));
   },
-  setPrefetchedTypes(state, { field, data }) {
-    Vue.set(state.prefetchedTypes, field, data);
+  setPrefetchedTypes(state, { field, data, source }) {
+    if (source === 'source') {
+      Vue.set(state.prefetchedTypes, field, data);
+    } else {
+      const prop = source.replace('source_', '');
+      Vue.set(state.prefetchedTypes, `${field}_${prop}`, data);
+    }
   },
   setGeneralSchema(state, schema) {
     state.generalSchema = Object.assign({}, schema);
@@ -177,10 +185,13 @@ const mutations = {
   setEntryTypes(state, data) {
     state.entryTypes = [].concat(data);
   },
+  setMediaLicensesPath(state, url) {
+    state.mediaLicensesPath = url;
+  },
 };
 
 const actions = {
-  async fetchGeneralFields({ commit }) {
+  async fetchGeneralFields({ commit, dispatch }) {
     return new Promise(async (resolve, reject) => {
       try {
         const jsonSchema = await axios.get(`${process.env.DATABASE_API}swagger.json`,
@@ -191,7 +202,13 @@ const actions = {
             },
           });
         const formFields = jsonSchema.data.definitions.Entry.properties;
+        // information for media license source is also contained in swagger.json --> extract!
+        const mediaPath = jsonSchema.data.paths['/api/v1/media/'].post.parameters
+          .find(param => param.name === 'license')['x-attrs'].source;
         commit('setGeneralSchema', formFields);
+        commit('setMediaLicensesPath', mediaPath);
+        // get fields that should be prefetched
+        dispatch('getStaticDropDowns', formFields);
         resolve(formFields);
       } catch (e) {
         console.error(e);
@@ -199,30 +216,63 @@ const actions = {
       }
     });
   },
-  getStaticDropDowns({ state, getters, commit }) {
-    Object.keys(state.prefetchedTypes).forEach(async (field) => {
-      if (!getters.getPrefetchedTypes(field).length) {
-        const { data } = await axios
-          .get(`${process.env.AUTOSUGGEST_API}${field}/`, {
-            withCredentials: true,
-            headers: {
-              'Accept-Language': i18n.locale,
-            },
-          });
-        commit('setPrefetchedTypes', { field, data });
-      }
-    });
+  async getStaticDropDowns({ state, commit, getters }, schema) {
+    const prefetchFields = Object.keys(schema)
+      .map((field) => {
+        const attrs = schema[field] ? schema[field]['x-attrs'] : null;
+        if (attrs && attrs.prefetch && attrs.prefetch.length) {
+          return {
+            [field]: attrs.prefetch.map(source => ({
+              path: attrs[source],
+              sourceAttribute: source,
+            })),
+          };
+        }
+        return '';
+      }).filter(Boolean);
+    // special case media licenses (can not be retrieved from form field information)
+    if (state.mediaLicensesPath) {
+      prefetchFields.push({
+        medialicenses: [{
+          path: state.mediaLicensesPath,
+          sourceAttribute: 'source',
+        }],
+      });
+    }
+    await Promise.all(prefetchFields.map(field => new Promise(async (resolve, reject) => {
+      const [fieldName, sources] = Object.entries(field)[0];
+      await Promise.all(sources.map(source => new Promise(async () => {
+        const { path, sourceAttribute } = source;
+        if (!getters.getPrefetchedTypes(fieldName, sourceAttribute)) {
+          const url = getApiUrl(path);
+          try {
+            const { data } = await axios
+              .get(url, {
+                withCredentials: true,
+                headers: {
+                  'Accept-Language': i18n.locale,
+                },
+              });
+            commit('setPrefetchedTypes', { field: fieldName, data, source: sourceAttribute });
+            resolve('x');
+          } catch (e) {
+            reject(e);
+          }
+        }
+        resolve();
+      })));
+    })));
   },
   async fetchEntryTypes({ commit }) {
     // TODO: replace with C. store module!
     try {
-      const response = await axios.get(`${process.env.DATABASE_API}entry/types/`, {
+      const { data } = await axios.get(`${process.env.DATABASE_API}entry/types/`, {
         withCredentials: true,
         headers: {
           'Accept-Language': i18n.locale,
         },
       });
-      const entryTypes = sorting(response.data, 'label', i18n.locale);
+      const entryTypes = sorting(data, 'label', i18n.locale);
       // add 'all types' option
       entryTypes.unshift({
         label: setLangLabels('dropdown.allTypes', i18n.availableLocales),
@@ -233,6 +283,9 @@ const actions = {
       console.error(e);
       // TODO: inform user?
     }
+  },
+  async fetchMediaLicenses() {
+    // TODO!!!
   },
   async fetchEntryData({ commit, dispatch }, id) {
     return new Promise(async (resolve, reject) => {
@@ -461,7 +514,7 @@ const actions = {
     const newData = {};
     Object.keys(data).forEach(async (key) => {
       const field = fields[key];
-      const values = data[key];
+      let values = data[key];
       // if the field does not exist in schema = this is not an allowed property - return
       if (!field) {
         return;
@@ -491,6 +544,10 @@ const actions = {
       } else if (field.type === 'array') {
         // check if values are already present and set those if yes
         if (values && values.length) {
+          // a check if a group field actually has content - otherwise it is removed
+          if (field['x-attrs'] && field['x-attrs'].field_type === 'group') {
+            values = values.filter(value => hasFieldContent(value));
+          }
           const arrayValues = await Promise.all(values
             .map(value => dispatch('removeUnknownProps', { data: value, fields: field.items.properties })));
           Vue.set(newData, key, arrayValues);
@@ -507,8 +564,9 @@ const actions = {
           Vue.set(newData, key, values);
         } else {
           Object.keys(values).forEach(async (valueKey) => {
-            if (field.properties[valueKey]) {
-              if (field.properties[valueKey].type === 'object' || field.properties[valueKey].type === 'array') {
+            const childProps = field.properties[valueKey];
+            if (childProps) {
+              if (childProps.type === 'object' || (childProps.type === 'array' && childProps.items.properties)) {
                 const validatedObj = await dispatch('removeUnknownProps', {
                   data: values[valueKey],
                   fields: field.properties,

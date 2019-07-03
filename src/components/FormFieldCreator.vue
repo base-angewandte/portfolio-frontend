@@ -18,12 +18,14 @@
         :key="fieldKey + 'date'"
         :label="label"
         :placeholder="placeholder"
+        :range-separator="$t('form.until')"
         :id="fieldKey"
         :format="field['x-attrs'].date_format"
         :type="dateType.includes('timerange') ? dateType.includes('daterange')
         ? 'daterange' : 'single' : dateType"
         :date-format-labels="{date: $t('form.date'), year: $t('form.year') }"
         :format-tabs-legend="$t('form.dateTabsLegend')"
+        :language="$i18n.locale"
         v-model="fieldValueInt"
         :class="['base-form-field']"/>
       <BaseDateInput
@@ -31,6 +33,7 @@
         :key="fieldKey + 'time'"
         :label="$t('form.time')"
         :placeholder="placeholder"
+        :range-separator="$t('form.until')"
         :id="fieldKey"
         :type="'timerange'"
         v-model="fieldValueInt"
@@ -91,7 +94,7 @@
       :allow-dynamic-drop-down-entries="field['x-attrs'] && field['x-attrs'].dynamic_autosuggest"
       :allow-multiple-entries="!isChipsSingleSelect"
       :allow-unknown-entries="field['x-attrs'] && field['x-attrs'].allow_unkown_entries"
-      :chips-editable="true"
+      :chips-editable="field['x-attrs'] && field['x-attrs'].allow_unkown_entries"
       :class="['base-form-field']"
       :draggable="true"
       :hoverbox-content="hoverBoxData"
@@ -343,7 +346,7 @@ export default {
     fieldValueInt: {
       handler(val) {
         // prevent event being fired when change comes from outside
-        if (JSON.stringify(this.fieldValue) !== JSON.stringify(val)) {
+        if (val !== undefined && JSON.stringify(this.fieldValue) !== JSON.stringify(val)) {
           this.$emit('field-value-changed', val);
         }
       },
@@ -358,7 +361,7 @@ export default {
   },
   methods: {
     setFieldValue(val) {
-      if (typeof val === 'object') {
+      if (val && typeof val === 'object') {
         if (val.length >= 0) {
           this.fieldValueInt = [].concat(JSON.parse(JSON.stringify(val)));
         } else {

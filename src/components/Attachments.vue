@@ -230,7 +230,7 @@ import {
 import BaseOptions from './BaseOptions';
 import EyeIcon from '../assets/icons/eye.svg';
 import { userInfo } from '../mixins/userInfo';
-import { setLangLabels } from '../utils/commonUtils';
+import { setLangLabels, getApiUrl } from '../utils/commonUtils';
 
 export default {
   components: {
@@ -272,6 +272,7 @@ export default {
       action: '',
       licenseSelected: {},
       imageHover: [],
+      timeout: null,
     };
   },
   computed: {
@@ -282,7 +283,7 @@ export default {
       return ([{
         label: setLangLabels('nolicense', this.$i18n.availableLocales),
         source: '',
-      }]).concat(this.$store.getters['data/getPrefetchedTypes']('medialicenses'));
+      }]).concat(this.$store.getters['data/getPrefetchedTypes']('medialicenses', 'source'));
     },
   },
   watch: {
@@ -297,13 +298,17 @@ export default {
       }
     },
     attachedList() {
-      // request media data again every minute if media are still converting
-      if (this.isConverting) {
-        setTimeout(() => {
-          this.fetchMedia();
-        }, 60 * 1000);
-      }
+      this.checkConverting();
     },
+  },
+  mounted() {
+    this.checkConverting();
+  },
+  destroyed() {
+    if (this.timeout) {
+      clearTimeout(this.timeout);
+      this.timeout = null;
+    }
   },
   methods: {
     changeVideoHoverState(event, index, value) {
@@ -344,6 +349,10 @@ export default {
         });
         if (successIds.length) {
           await this.fetchMedia();
+          // check if action was delete and if yes propagate to parent to update user quota
+          if (action === 'delete') {
+            this.$emit('files-deleted');
+          }
         }
         // clear all variables after action
         this.action = '';
@@ -402,8 +411,7 @@ export default {
       return '';
     },
     getFileType(file) {
-      const matches = file.id.match(/^([a-z]):/);
-      const type = matches && matches.length ? matches[1] : '';
+      const { type } = file;
       if (file.metadata && type) {
         if (type === 'i') {
           return this.$t('form-view.image');
@@ -418,7 +426,7 @@ export default {
     },
     getImagePath(iconName, hover) {
       if (iconName && iconName.gif) {
-        return `${process.env.MEDIA_SERVER_API}${hover ? iconName.gif : iconName.jpg}`;
+        return getApiUrl(hover ? iconName.gif : iconName.jpg);
       }
       if (iconName) {
         // for local images
@@ -430,7 +438,7 @@ export default {
         } if (iconName.includes('http')) {
           return iconName;
         }
-        return `${process.env.MEDIA_SERVER_API}${iconName}`;
+        return getApiUrl(iconName);
       }
       return '';
     },
@@ -468,6 +476,18 @@ export default {
         return license.label[lang];
       }
       return '';
+    },
+    checkConverting() {
+      if (this.timeout) {
+        clearTimeout(this.timeout);
+        this.timeout = null;
+      }
+      // request media data again in a minute if media are still converting
+      if (this.isConverting) {
+        this.timeout = setTimeout(() => {
+          this.fetchMedia();
+        }, 60000);
+      }
     },
   },
 };

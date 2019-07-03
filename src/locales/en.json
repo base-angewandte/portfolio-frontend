@@ -29,6 +29,7 @@
   "noMatchingEntriesSubtext": "Please adjust your search criteria.",
   "notAvailable": "Unfortunately the application \"Portfolio\" is currently not available.",
   "returnHome": "Return to Start Page",
+  "returnToDashboard": "Return to entry list",
   "refresh": "Try Again",
   "form": {
     "select": "Select",
@@ -85,7 +86,8 @@
     "startTyping": "Start typing (min. 4 characters)",
     "noResult": "No results found",
     "noMatch": "No matching option",
-    "fetchingResults": "Suggestions are being fetched..."
+    "fetchingResults": "Suggestions are being fetched...",
+    "until": "until"
   },
   "form-view": {
     "notFound": "Entry Not Found",
@@ -188,7 +190,8 @@
     "quotaExceeded": "Unfortunately files could not be uploaded, because you exceeded your user quota. Please free some space in order to upload.",
     "displayImage": "Full display not possible",
     "notSupported": "Unfortunately display of this file type is currently not supported.",
-    "notConverted": "Please wait until the file was converted."
+    "notConverted": "Please wait until the file was converted.",
+    "userQuotaUpdate": "The available user space could not be updated and might be displayed incorrectly."
   },
   "dropdown": {
     "type": "By Type",
@@ -206,6 +209,7 @@
     "publish_images": "Publish files?",
     "upload": "Upload",
     "done": "Done",
-    "retry": "Try Again"
+    "retry": "Try Again",
+    "quotaExceeded": "Unfortunately you exceeded your quota, because you have only {space} of space left. Please remove some files to enable uploading."
   }
 }
