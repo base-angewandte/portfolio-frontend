@@ -502,7 +502,7 @@ export default {
       .form-loading-area {
         position: absolute;
         width: 100%;
-        height: 100%;
+        height: 100vh;
         z-index: 2;
         background-color: rgba(255,255,255, 0.50);
 
