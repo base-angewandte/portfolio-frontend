@@ -283,7 +283,7 @@ export default {
       return ([{
         label: setLangLabels('nolicense', this.$i18n.availableLocales),
         source: '',
-      }]).concat(this.$store.getters['data/getPrefetchedTypes']('medialicenses'));
+      }]).concat(this.$store.getters['data/getPrefetchedTypes']('medialicenses', 'source'));
     },
   },
   watch: {

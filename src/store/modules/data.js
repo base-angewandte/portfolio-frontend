@@ -48,7 +48,7 @@ const state = {
   linkedMedia: [],
   // the object properties are named after the respective endpoint!
   prefetchedTypes: {},
-  mediaLicenses: [],
+  mediaLicensesPath: '',
   // entry types displayed in sidebar
   entryTypes: [],
   generalSchema: {},
@@ -182,6 +182,9 @@ const mutations = {
   setEntryTypes(state, data) {
     state.entryTypes = [].concat(data);
   },
+  setMediaLicensesPath(state, url) {
+    state.mediaLicensesPath = url;
+  },
 };
 
 const actions = {
@@ -196,7 +199,11 @@ const actions = {
             },
           });
         const formFields = jsonSchema.data.definitions.Entry.properties;
+        // information for media license source is also contained in swagger.json --> extract!
+        const mediaPath = jsonSchema.data.paths['/api/v1/media/'].post.parameters
+          .find(param => param.name === 'license')['x-attrs'].source;
         commit('setGeneralSchema', formFields);
+        commit('setMediaLicensesPath', mediaPath);
         // get fields that should be prefetched
         dispatch('getStaticDropDowns', formFields);
         resolve(formFields);
@@ -206,20 +213,35 @@ const actions = {
       }
     });
   },
-  async getStaticDropDowns({ commit, getters }, schema) {
+  async getStaticDropDowns({ state, commit, getters }, schema) {
     const prefetchFields = Object.keys(schema)
       .map((field) => {
         const attrs = schema[field] ? schema[field]['x-attrs'] : null;
-        if (attrs && !!attrs.prefetch) {
-          return { [field]: attrs.prefetch };
+        if (attrs && attrs.prefetch && attrs.prefetch.length) {
+          return {
+            [field]: attrs.prefetch.map(source => ({
+              path: attrs[source],
+              sourceAttribute: source,
+            })),
+          };
         }
         return '';
       }).filter(Boolean);
+    // special case media licenses (can not be retrieved from form field information)
+    if (state.mediaLicensesPath) {
+      prefetchFields.push({
+        medialicenses: [{
+          path: state.mediaLicensesPath,
+          sourceAttribute: 'source',
+        }],
+      });
+    }
     await Promise.all(prefetchFields.map(field => new Promise(async (resolve, reject) => {
-      const [name, sources] = Object.entries(field)[0];
+      const [fieldName, sources] = Object.entries(field)[0];
       await Promise.all(sources.map(source => new Promise(async () => {
-        if (!getters.getPrefetchedTypes(name, source)) {
-          const url = getApiUrl(schema[name]['x-attrs'][source]);
+        const { path, sourceAttribute } = source;
+        if (!getters.getPrefetchedTypes(fieldName, sourceAttribute)) {
+          const url = getApiUrl(path);
           try {
             const { data } = await axios
               .get(url, {
@@ -228,7 +250,7 @@ const actions = {
                   'Accept-Language': i18n.locale,
                 },
               });
-            commit('setPrefetchedTypes', { field: name, data, source });
+            commit('setPrefetchedTypes', { field: fieldName, data, source: sourceAttribute });
             resolve('x');
           } catch (e) {
             reject(e);

@@ -161,7 +161,7 @@ export default {
       return this.$t('upload.done');
     },
     licenses() {
-      return ([this.defaultLicense]).concat(this.$store.getters['data/getPrefetchedTypes']('medialicenses'));
+      return ([this.defaultLicense]).concat(this.$store.getters['data/getPrefetchedTypes']('medialicenses', 'source'));
     },
     userSpace() {
       return this.$store.state.PortfolioAPI.user.space;
