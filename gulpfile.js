@@ -6,10 +6,11 @@ const env = require('./config/prod.env');
 
 gulp.task('set-header', async function () {
   try {
-    const res = await axios.get(`${env.HEADER_HOST}bs/base-header.json`);
+    const res = await axios.get(`${env.HEADER_JSON}`);
+    const baseUrl = env.HEADER_JSON.match(/(^https?:\/\/[a-z-.]+)/)[0];
     return gulp.src(['config/prod.env.js'], { base: './' })
-      .pipe(replace(/(HEADER: ).*/, function (match, p1) {
-        return `${p1}'${env.HEADER_HOST}${res.data.latest}',`
+      .pipe(replace(/(\s+HEADER: ).*/, function (match, p1) {
+        return `${p1}'${baseUrl}/${res.data.latest}',`
       }))
       .pipe(gulp.dest('.'))
       .on('end', function () { log('Header file set to: ' + res.data.latest) })

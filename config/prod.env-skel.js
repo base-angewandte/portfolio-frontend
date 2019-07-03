@@ -4,12 +4,13 @@ module.exports= {
   DATABASE_API: 'https://basedev.uni-ak.ac.at/portfolio/api/v1/',
   PORTFOLIO_BACKEND_BASE_URL: 'https://basedev.uni-ak.ac.at',
   BACKEND_PREFIX: '/portfolio',
-  AUTHENTICATION: {
+  HEADER_URLS: {
     LOGIN: 'https://basedev.uni-ak.ac.at/portfolio/accounts/login/',
     LOGOUT: 'https://basedev.uni-ak.ac.at/portfolio/accounts/logout/',
+    TERMS: 'https://basedev.uni-ak.ac.at/terms',
+    NOTICE: 'https://basedev.uni-ak.ac.at/site-notice',
   },
-  SHOW_HEADER: true,
-  HEADER_HOST: 'https://basedev.uni-ak.ac.at/',
+  HEADER_JSON: 'https://portfolio-dev.uni-ak.ac.at/bs/portfolio-showroom-header.json',
   HEADER: 'https://basedev.uni-ak.ac.at/bs/js/base-header.2f43c9ee481679497c60.js',
   APP_PREFIX: '/portfolio',
   LANG_URL: 'http://base.uni-ak.ac.at/portfolio/languages/',

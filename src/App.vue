@@ -1,23 +1,20 @@
 <template>
   <div id="app">
     <div class="wrapper">
-      <base-header
-        v-if="showBaseHeader"
+      <component
         :lang="lang"
         :active="'portfolio'"
         :profile.prop="profile"
-        :urls.prop="urls" />
-      <div
-        v-else
-        class="header-placeholder"/>
+        :urls.prop="urls"
+        :is="`${headerName}-header`" />
       <BaseNotification />
       <router-view />
-      <base-footer
-        v-if="showBaseHeader"
+      <component
         ref="baseFooter"
         :lang="lang"
         :logged-in="isAuthenticated"
-        :urls.prop="urls" />
+        :urls.prop="urls"
+        :is="`${headerName}-footer`" />
     </div>
   </div>
 </template>
@@ -41,15 +38,23 @@ export default {
       return {
         de: `${process.env.APP_PREFIX}/de${this.$route.path}`,
         en: `${process.env.APP_PREFIX}/en${this.$route.path}`,
-        login: `${process.env.AUTHENTICATION.LOGIN}`,
-        logout: `${process.env.AUTHENTICATION.LOGOUT}`,
+        login: process.env.HEADER_URLS.LOGIN,
+        logout: process.env.HEADER_URLS.LOGOUT,
+        terms: process.env.HEADER_URLS.TERMS,
+        siteNotice: process.env.HEADER_URLS.NOTICE,
       };
     },
     isAuthenticated() {
       return this.$store.getters['PortfolioAPI/isAuthenticated'];
     },
-    showBaseHeader() {
-      return process.env.SHOW_HEADER;
+    headerName() {
+      return process.env.HEADER_JSON.match(/\/([a-z-]+)-header\.json$/)[1];
+    },
+    headerComponent() {
+      return 'portfolio-showroom-header';
+    },
+    footerComponent() {
+      return 'portfolio-showroom-footer';
     },
   },
   beforeCreate() {
@@ -77,15 +82,6 @@ export default {
     padding: $spacing;
     position: relative;
     min-height: 100vh;
-
-    .header-placeholder {
-      position: fixed;
-      top: 0;
-      background-color: $background-color;
-      height: $header-height;
-      width: 100%;
-      z-index: 2;
-    }
 
     #app-container {
       margin-top: $header-height;
