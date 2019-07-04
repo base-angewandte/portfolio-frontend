@@ -10,7 +10,7 @@
         :text="$t('form-view.addExistingEntry')"
         :subtext="$t('form-view.clickordrag')"
         icon="camera"
-        class="file-boxes-margin"
+        class="file-box file-boxes-margin"
         @dropped="droppedEntries($event)"
         @clicked="openEntrySelect"/>
       <BaseBoxButton
@@ -19,7 +19,7 @@
         :box-size="{ width: 'calc(25% - 8px)'}"
         :text="$t('form-view.addNewEntry')"
         icon="sheet-empty"
-        class="file-boxes-margin"
+        class="file-box file-boxes-margin"
         @clicked="$emit('open-new-form')"/>
       <label class="file-select">
         <BaseDropBox
@@ -258,7 +258,7 @@ export default {
     margin-top: $spacing;
 
     .file-boxes-margin {
-      margin-right: 16px;
+      margin-right: $spacing;
     }
 
     .file-select {
@@ -285,6 +285,25 @@ export default {
   .menu-wrapper {
     padding: 0 $spacing $spacing;
     background-color: rgb(240, 240, 240);
+  }
+
+  @media screen and (max-width: $tablet) {
+    .file-boxes {
+      flex-wrap: wrap;
+
+      .file-box {
+        flex: 0 0 calc(50% - #{$spacing}/2);
+
+        &:nth-of-type(2n) {
+          margin-right: 0;
+        }
+      }
+
+      .file-select {
+        margin-top: $spacing;
+        width: 100%;
+      }
+    }
   }
 
   @media screen and (max-width: $mobile) {

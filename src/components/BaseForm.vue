@@ -449,6 +449,18 @@ export default {
     }
   }
 
+  @media screen and (max-width: 870px) {
+    .base-form {
+      .base-form-field-half {
+        flex: 0 0 100%;
+      }
+
+      .base-form-field-left-margin {
+        margin-left: 0;
+      }
+    }
+  }
+
   @media screen and (max-width: $mobile) {
     .base-form {
       padding: $spacing $spacing-small $spacing-small;

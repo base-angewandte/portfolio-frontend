@@ -591,6 +591,35 @@ export default {
     }
   }
 
+  @media screen and (max-width: $tablet) {
+    .attachment-area {
+      .attachment-area-subheader {
+      }
+
+      .linked-area {
+
+        .box-area {
+
+          .linked-base-box {
+            flex: 0 0 calc(50% - #{$spacing-small});
+          }
+
+          .linked-base-box:nth-of-type(n + 3) {
+            margin-top: $spacing;
+          }
+
+          .linked-base-box:not(:nth-child(4n)) {
+            margin-right: 0;
+          }
+
+          .linked-base-box:not(:nth-child(2n)) {
+            margin-right: $spacing;
+          }
+        }
+      }
+    }
+  }
+
   @media screen and (max-width: $mobile) {
     .attachment-area {
       .attachment-area-subheader {
