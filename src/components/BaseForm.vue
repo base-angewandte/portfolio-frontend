@@ -101,7 +101,7 @@ import axios from 'axios';
 import FormFieldCreator from './FormFieldCreator';
 import RemoveIcon from '../assets/icons/remove.svg';
 import PlusIcon from '../assets/icons/plus.svg';
-import { getApiUrl } from '../utils/commonUtils';
+import { getApiUrl, getLangLabel } from '../utils/commonUtils';
 
 const { CancelToken } = axios;
 let cancel;
@@ -167,8 +167,9 @@ export default {
     },
     prefetchedDropDownLists(val) {
       Object.keys(val).forEach((dropDown) => {
-        if (!this.dropdownLists[dropDown] || !this.dropdownLists[dropDown].length) {
-          this.initializeDropDownLists();
+        if ((val[dropDown] && val[dropDown].length)
+          && (!this.dropdownLists[dropDown] || !this.dropdownLists[dropDown].length)) {
+          this.setDropDown(val[dropDown], '', '', dropDown);
         }
       });
     },
@@ -239,7 +240,6 @@ export default {
       return value || '';
     },
     initializeDropDownLists() {
-      // TODO: this is called way to often - check why...
       this.formFieldListInt.forEach((field) => {
         // check if a source is specified in the 'x-attrs'
         const sources = field['x-attrs']
@@ -274,10 +274,11 @@ export default {
           this.fieldIsLoading = '';
           cancel('value already selected');
         }
-        // and reset the dropdownlist
-        // commented out for now because this is not the right behaviour with
-        // fixed drop down lists
-        // this.setDropDown([], '', equivalent, fieldName);
+        const fieldAttrs = this.formFieldJson[fieldName]['x-attrs'];
+        // reset the dropdownlist for dynamic autosuggest
+        if (fieldAttrs.dynamic_autosuggest) {
+          this.setDropDown([], '', fieldAttrs.equivalent, fieldName);
+        }
       }
       if (index >= 0) {
         this.$set(this.valueListInt[fieldName], index, JSON.parse(JSON.stringify(value)));
@@ -371,11 +372,16 @@ export default {
     setDropDownDefaults(list, defaults, input) {
       let modifiedList = [].concat(list);
       if (defaults && defaults.length) {
+        // only use defaults that match the input string
+        const inputMatches = defaults
+          .filter(defaultOption => getLangLabel(defaultOption.label, true).toLowerCase()
+            .includes(input.toLowerCase()));
         if (input.length > 3) {
+          // only add defaults that match the input
           modifiedList = modifiedList.filter(option => (!option.source
             || !defaults.map(contr => contr.source).includes(option.source)));
         }
-        modifiedList = defaults.concat(modifiedList);
+        modifiedList = inputMatches.concat(modifiedList);
       }
       return modifiedList;
     },
