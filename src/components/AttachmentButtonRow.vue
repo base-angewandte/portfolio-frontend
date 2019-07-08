@@ -47,7 +47,7 @@
     <div
       v-else
       key="mobile-file-area"
-      class="file-list mobile-elements">
+      class="file-list">
       <BaseMenuEntry
         key="mobile-addFile"
         entry-id="addFile"
@@ -69,13 +69,12 @@
           class="mobile-file-list-attach"/>
         <input
           ref="fileInputMobile"
-          :onchange="handleFileSelect"
-          :oninput="alternateFileSelect"
           type="file"
           multiple
           class="hide"
           @click="resetInput"
           @input="alternateFileSelect"
+          @touch="alternateFileSelect2"
           @change="handleFileSelect">
       </label>
     </div>
@@ -160,6 +159,7 @@ export default {
   },
   mounted() {
     const inputEl = this.$refs.fileInput || this.$refs.fileInputMobile;
+    debugger;
     inputEl.addEventListener('change', (e) => {
       console.log('event listener');
       console.log(e);
@@ -168,6 +168,7 @@ export default {
   methods: {
     resetInput() {
       console.log('reset');
+      debugger;
       const inputRef = this.$refs.fileInput || this.$refs.fileInputMobile;
       console.log(inputRef);
       inputRef.value = '';
@@ -330,12 +331,6 @@ export default {
         margin-top: $spacing;
         width: 100%;
       }
-    }
-  }
-
-  @media screen and (max-width: $mobile) {
-    .file-boxes {
-      display: none;
     }
   }
 </style>
