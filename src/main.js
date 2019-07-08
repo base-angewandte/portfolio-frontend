@@ -7,7 +7,7 @@ import App from './App';
 import router from './router';
 import store from './store';
 
-import './utils/DragDropTouch';
+// import './utils/DragDropTouch';
 
 import 'normalize.css';
 import './styles/app.scss';
