@@ -515,6 +515,8 @@ export default {
 
         .attachment-options {
           display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
         }
       }
 
