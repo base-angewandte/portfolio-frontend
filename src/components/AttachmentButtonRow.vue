@@ -185,6 +185,7 @@ export default {
         }
         console.log(this.filesToUpload);
       } else {
+        console.log('error');
         this.$notify({
           group: 'request-notifications',
           title: this.$t('notify.uploadingNotPossible'),
