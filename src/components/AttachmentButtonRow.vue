@@ -36,6 +36,7 @@
           type="file"
           multiple
           @click="resetInput"
+          @input="alternateFileSelect"
           @change="handleFileSelect">
       </label>
 
@@ -147,6 +148,8 @@ export default {
   },
   methods: {
     resetInput() {
+      console.log('input');
+      console.log(this.$refs.fileInput.value);
       this.$refs.fileInput.value = '';
     },
     droppedEntries(e) {
@@ -170,7 +173,7 @@ export default {
       }
     },
     handleFileSelect(e) {
-      console.log('file select triggered');
+      console.log('file select triggersdgfdfged');
       console.log(e);
       if (this.$route.params.id) {
         // get files - depending if dragged or selected from file browse different event prop
@@ -193,6 +196,9 @@ export default {
           type: 'error',
         });
       }
+    },
+    alternateFileSelect() {
+      console.log('INPUT');
     },
     openEntrySelect() {
       this.showEntryPopUp = true;
