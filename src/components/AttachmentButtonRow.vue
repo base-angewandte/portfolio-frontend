@@ -38,8 +38,6 @@
           multiple
           class="hide"
           @click="resetInput"
-          @select="alternateFileSelect2"
-          @input="alternateFileSelect"
           @change="handleFileSelect">
       </label>
 
@@ -73,8 +71,6 @@
           multiple
           class="hide"
           @click="resetInput"
-          @input="alternateFileSelect"
-          @touch="alternateFileSelect2"
           @change="handleFileSelect">
       </label>
     </div>
@@ -157,20 +153,9 @@ export default {
       return window.innerWidth <= 640;
     },
   },
-  mounted() {
-    const inputEl = this.$refs.fileInput || this.$refs.fileInputMobile;
-    debugger;
-    inputEl.addEventListener('change', (e) => {
-      console.log('event listener');
-      console.log(e);
-    });
-  },
   methods: {
     resetInput() {
-      console.log('reset');
-      debugger;
       const inputRef = this.$refs.fileInput || this.$refs.fileInputMobile;
-      console.log(inputRef);
       inputRef.value = '';
     },
     droppedEntries(e) {
@@ -194,12 +179,8 @@ export default {
       }
     },
     handleFileSelect(e) {
-      console.log('file select triggersdgfdfged');
-      console.log(e);
       if (this.$route.params.id) {
         // get files - depending if dragged or selected from file browse different event prop
-        console.log(e.target);
-        console.log(e.target.files);
         const files = e.dataTransfer ? e.dataTransfer.files : e.target.files;
         // check if it was actual files that were dragged in
         if (files && files.length) {
@@ -207,9 +188,7 @@ export default {
             this.filesToUpload.push(files[i]);
           }
         }
-        console.log(this.filesToUpload);
       } else {
-        console.log('error');
         this.$notify({
           group: 'request-notifications',
           title: this.$t('notify.uploadingNotPossible'),
@@ -217,12 +196,6 @@ export default {
           type: 'error',
         });
       }
-    },
-    alternateFileSelect() {
-      console.log('INPUT');
-    },
-    alternateFileSelect2() {
-      console.log('select');
     },
     openEntrySelect() {
       this.showEntryPopUp = true;
