@@ -170,8 +170,12 @@ export default {
       }
     },
     handleFileSelect(e) {
+      console.log('file select triggered');
+      console.log(e);
       if (this.$route.params.id) {
         // get files - depending if dragged or selected from file browse different event prop
+        console.log(e.target);
+        console.log(e.target.files);
         const files = e.dataTransfer ? e.dataTransfer.files : e.target.files;
         // check if it was actual files that were dragged in
         if (files && files.length) {
@@ -179,6 +183,7 @@ export default {
             this.filesToUpload.push(files[i]);
           }
         }
+        console.log(this.filesToUpload);
       } else {
         this.$notify({
           group: 'request-notifications',

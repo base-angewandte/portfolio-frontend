@@ -274,6 +274,7 @@ export default {
       };
       this.uploadError = null;
       this.fileList.forEach((file, index) => this.$set(this.uploadPercentage, index, 0));
+      console.log(this.fileList);
     },
     getStatus(fileName) {
       if (this.uploadedFiles.includes(fileName)) {
