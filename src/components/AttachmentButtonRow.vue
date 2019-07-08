@@ -38,6 +38,7 @@
           multiple
           class="hide"
           @click="resetInput"
+          @select="alternateFileSelect2"
           @input="alternateFileSelect"
           @change="handleFileSelect">
       </label>
@@ -68,6 +69,8 @@
           class="mobile-file-list-attach"/>
         <input
           ref="fileInputMobile"
+          :onchange="handleFileSelect"
+          :oninput="alternateFileSelect"
           type="file"
           multiple
           class="hide"
@@ -156,8 +159,7 @@ export default {
     },
   },
   mounted() {
-    const inputEl = this.$refs.fileInput;
-    debugger;
+    const inputEl = this.$refs.fileInput || this.$refs.fileInputMobile;
     inputEl.addEventListener('change', (e) => {
       console.log('event listener');
       console.log(e);
@@ -166,7 +168,6 @@ export default {
   methods: {
     resetInput() {
       console.log('reset');
-      debugger;
       const inputRef = this.$refs.fileInput || this.$refs.fileInputMobile;
       console.log(inputRef);
       inputRef.value = '';
@@ -218,6 +219,9 @@ export default {
     },
     alternateFileSelect() {
       console.log('INPUT');
+    },
+    alternateFileSelect2() {
+      console.log('select');
     },
     openEntrySelect() {
       this.showEntryPopUp = true;
