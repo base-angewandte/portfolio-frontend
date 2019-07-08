@@ -1,6 +1,7 @@
 <template>
   <div>
     <div
+      v-if="!isMobile"
       key="file-area"
       class="file-boxes">
       <BaseDropBox
@@ -35,6 +36,7 @@
           ref="fileInput"
           type="file"
           multiple
+          class="hide"
           @click="resetInput"
           @input="alternateFileSelect"
           @change="handleFileSelect">
@@ -42,6 +44,7 @@
 
     </div>
     <div
+      v-else
       key="mobile-file-area"
       class="file-list mobile-elements">
       <BaseMenuEntry
@@ -64,9 +67,12 @@
           title="Datei anhängen"
           class="mobile-file-list-attach"/>
         <input
+          ref="fileInputMobile"
           type="file"
           multiple
+          class="hide"
           @click="resetInput"
+          @input="alternateFileSelect"
           @change="handleFileSelect">
       </label>
     </div>
@@ -145,12 +151,25 @@ export default {
     linkedList() {
       return this.$store.getters['data/getCurrentLinked'];
     },
+    isMobile() {
+      return window.innerWidth <= 640;
+    },
+  },
+  mounted() {
+    const inputEl = this.$refs.fileInput;
+    debugger;
+    inputEl.addEventListener('change', (e) => {
+      console.log('event listener');
+      console.log(e);
+    });
   },
   methods: {
     resetInput() {
-      console.log('input');
-      console.log(this.$refs.fileInput.value);
-      this.$refs.fileInput.value = '';
+      console.log('reset');
+      debugger;
+      const inputRef = this.$refs.fileInput || this.$refs.fileInputMobile;
+      console.log(inputRef);
+      inputRef.value = '';
     },
     droppedEntries(e) {
       // check if it was not a file that was dragged in and if anything is attached to event at all
@@ -275,19 +294,11 @@ export default {
 
     .file-select {
       width: 50%;
-
-      & > input[type='file'] {
-        display: none;
-      }
     }
   }
 
   .file-list {
     margin-top: $spacing;
-
-    & input[type='file'] {
-      display: none;
-    }
 
     .mobile-file-list-attach {
       border-top: $separation-line;
