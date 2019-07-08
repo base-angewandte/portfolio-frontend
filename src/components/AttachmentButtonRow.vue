@@ -94,7 +94,7 @@
           :select-active="true"
           :options-visible="false"
           :new-enabled="false"
-          :height="'60vh'"
+          :height="isMobile ? '50vh' : '60vh'"
           :hide-active="true"
           :entry-number="totalEntries"
           :exclude-linked="true"
