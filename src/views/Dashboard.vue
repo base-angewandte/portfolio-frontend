@@ -177,8 +177,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "../styles/variables";
-
   .sidebar-pop-up {
     text-align: center;
     font-size: $font-size-large;

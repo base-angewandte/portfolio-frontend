@@ -20,18 +20,4 @@ gulp.task('set-header', async function () {
   }
 });
 
-gulp.task('set-font-path', async function () {
-  try {
-    const fontPath = env.FONT_PATH || '~/assets/fonts/'
-    return gulp.src(['./src/styles/fonts.scss'])
-      .pipe(replace(/^(\$font_path: ).*/, function (match, p1) {
-        return p1 + "'" + fontPath + "';"
-      }))
-      .pipe(gulp.dest('./src/styles/'))
-      .on('end', function () { log('Font path set to "' + fontPath + '"') })
-  } catch (e) {
-    log.warn('WARNING: font path in fonts.scss not set or potentially set to invalid path')
-  }
-});
-
-gulp.task('default', gulp.series(gulp.parallel('set-header', 'set-font-path')));
+gulp.task('default', gulp.series(gulp.parallel('set-header')));

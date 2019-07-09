@@ -33,8 +33,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "../styles/variables";
-
   .not-found-background {
     height: 100%;
     text-align: center;

@@ -462,8 +462,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "../styles/variables";
-
   .form-component {
     position: relative;
     min-height: 100vh;
