@@ -27,6 +27,19 @@ export const setLangLabels = (key, locales) => locales
     return prev;
   }, {});
 
+export const getLangLabel = (value, locale, useAny = false) => {
+  if (typeof value === 'string') return value;
+  if (value && locale && value[locale]) {
+    return value[locale];
+  }
+  if (value && locale && useAny) {
+    const lang = Object.keys(value).find(key => !!value[key]);
+    // return the first one that has content
+    return value[lang] || value[locale];
+  }
+  return value;
+};
+
 export const convertSpace = (bytes, si) => {
   let newBytes = bytes;
   const thresh = si ? 1000 : 1024;

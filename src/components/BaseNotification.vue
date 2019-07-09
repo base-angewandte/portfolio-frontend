@@ -66,8 +66,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "../styles/variables";
-
   .notification-container{
     position: sticky;
     top: $header-height;

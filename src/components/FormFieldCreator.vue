@@ -245,7 +245,7 @@ export default {
       default: '',
     },
     placeholder: {
-      type: String,
+      type: [String, Object],
       default: '',
     },
     tabs: {
@@ -393,8 +393,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "../styles/variables.scss";
-
   .base-form-field-array {
     margin-top: $spacing-small;
     display: flex;

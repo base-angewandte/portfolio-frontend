@@ -1,6 +1,7 @@
 <template>
   <div>
     <div
+      v-if="!isMobile"
       key="file-area"
       class="file-boxes">
       <BaseDropBox
@@ -10,7 +11,7 @@
         :text="$t('form-view.addExistingEntry')"
         :subtext="$t('form-view.clickordrag')"
         icon="camera"
-        class="file-boxes-margin"
+        class="file-box file-boxes-margin"
         @dropped="droppedEntries($event)"
         @clicked="openEntrySelect"/>
       <BaseBoxButton
@@ -19,7 +20,7 @@
         :box-size="{ width: 'calc(25% - 8px)'}"
         :text="$t('form-view.addNewEntry')"
         icon="sheet-empty"
-        class="file-boxes-margin"
+        class="file-box file-boxes-margin"
         @clicked="$emit('open-new-form')"/>
       <label class="file-select">
         <BaseDropBox
@@ -35,14 +36,16 @@
           ref="fileInput"
           type="file"
           multiple
+          class="hide"
           @click="resetInput"
           @change="handleFileSelect">
       </label>
 
     </div>
     <div
+      v-else
       key="mobile-file-area"
-      class="file-list mobile-elements">
+      class="file-list">
       <BaseMenuEntry
         key="mobile-addFile"
         entry-id="addFile"
@@ -63,8 +66,10 @@
           title="Datei anhängen"
           class="mobile-file-list-attach"/>
         <input
+          ref="fileInputMobile"
           type="file"
           multiple
+          class="hide"
           @click="resetInput"
           @change="handleFileSelect">
       </label>
@@ -89,7 +94,7 @@
           :select-active="true"
           :options-visible="false"
           :new-enabled="false"
-          :height="'60vh'"
+          :height="isMobile ? '50vh' : '60vh'"
           :hide-active="true"
           :entry-number="totalEntries"
           :exclude-linked="true"
@@ -144,10 +149,14 @@ export default {
     linkedList() {
       return this.$store.getters['data/getCurrentLinked'];
     },
+    isMobile() {
+      return window.innerWidth <= 640;
+    },
   },
   methods: {
     resetInput() {
-      this.$refs.fileInput.value = '';
+      const inputRef = this.$refs.fileInput || this.$refs.fileInputMobile;
+      inputRef.value = '';
     },
     droppedEntries(e) {
       // check if it was not a file that was dragged in and if anything is attached to event at all
@@ -258,24 +267,16 @@ export default {
     margin-top: $spacing;
 
     .file-boxes-margin {
-      margin-right: 16px;
+      margin-right: $spacing;
     }
 
     .file-select {
       width: 50%;
-
-      & > input[type='file'] {
-        display: none;
-      }
     }
   }
 
   .file-list {
     margin-top: $spacing;
-
-    & input[type='file'] {
-      display: none;
-    }
 
     .mobile-file-list-attach {
       border-top: $separation-line;
@@ -287,9 +288,22 @@ export default {
     background-color: rgb(240, 240, 240);
   }
 
-  @media screen and (max-width: $mobile) {
+  @media screen and (max-width: $tablet) {
     .file-boxes {
-      display: none;
+      flex-wrap: wrap;
+
+      .file-box {
+        flex: 0 0 calc(50% - #{$spacing}/2);
+
+        &:nth-of-type(2n) {
+          margin-right: 0;
+        }
+      }
+
+      .file-select {
+        margin-top: $spacing;
+        width: 100%;
+      }
     }
   }
 </style>

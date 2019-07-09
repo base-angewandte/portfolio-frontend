@@ -130,6 +130,7 @@ export default {
         flex-grow: 1;
         flex-shrink: 0;
         justify-content: flex-end;
+        max-width: 100%;
       }
 
       .base-options-after {

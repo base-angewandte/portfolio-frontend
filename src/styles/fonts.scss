@@ -1,4 +1,4 @@
-$font_path: 'https://basedev.uni-ak.ac.at/bs/fonts/';
+$font_path: '~@/assets/fonts/';
 
 /* source-sans-pro-regular - latin */
 @font-face {
@@ -11,7 +11,6 @@ $font_path: 'https://basedev.uni-ak.ac.at/bs/fonts/';
   url($font_path + 'source-sans-pro-v11-latin-regular.woff2') format('woff2'), /* Super Modern Browsers */
   url($font_path + 'source-sans-pro-v11-latin-regular.woff') format('woff'), /* Modern Browsers */
   url($font_path + 'source-sans-pro-v11-latin-regular.ttf') format('truetype'), /* Safari, Android, iOS */
-  url($font_path + 'source-sans-pro-v11-latin-regular.svg#SourceSansPro') format('svg'); /* Legacy iOS */
 }
 
 /* source-sans-pro-600 - latin */
@@ -25,7 +24,6 @@ $font_path: 'https://basedev.uni-ak.ac.at/bs/fonts/';
   url($font_path + 'source-sans-pro-v11-latin-600.woff2') format('woff2'), /* Super Modern Browsers */
   url($font_path + 'source-sans-pro-v11-latin-600.woff') format('woff'), /* Modern Browsers */
   url($font_path + 'source-sans-pro-v11-latin-600.ttf') format('truetype'), /* Safari, Android, iOS */
-  url($font_path + 'source-sans-pro-v11-latin-600.svg#SourceSansPro') format('svg'); /* Legacy iOS */
 }
 
 /* source-sans-pro-700 - latin */
@@ -39,5 +37,4 @@ $font_path: 'https://basedev.uni-ak.ac.at/bs/fonts/';
   url($font_path + 'source-sans-pro-v11-latin-700.woff2') format('woff2'), /* Super Modern Browsers */
   url($font_path + 'source-sans-pro-v11-latin-700.woff') format('woff'), /* Modern Browsers */
   url($font_path + 'source-sans-pro-v11-latin-700.ttf') format('truetype'), /* Safari, Android, iOS */
-  url($font_path + 'source-sans-pro-v11-latin-700.svg#SourceSansPro') format('svg'); /* Legacy iOS */
 }

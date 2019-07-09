@@ -1,19 +1,19 @@
 'use strict'
 module.exports= {
   NODE_ENV: 'production',
-  DATABASE_API: 'https://basedev.uni-ak.ac.at/portfolio/api/v1/',
-  PORTFOLIO_BACKEND_BASE_URL: 'https://basedev.uni-ak.ac.at',
-  BACKEND_PREFIX: '/portfolio',
+  DATABASE_API: 'insert complete api url here e.g. https://basedev.uni-ak.ac.at/portfolio/api/v1/',
+  PORTFOLIO_BACKEND_BASE_URL: 'insert backend server url here e.g. https://basedev.uni-ak.ac.at',
+  BACKEND_PREFIX: 'if backend route has a prefix insert it here e.g. /portfolio else leave as empty string',
   HEADER_URLS: {
-    LOGIN: 'https://basedev.uni-ak.ac.at/portfolio/accounts/login/',
-    LOGOUT: 'https://basedev.uni-ak.ac.at/portfolio/accounts/logout/',
-    TERMS: 'https://basedev.uni-ak.ac.at/terms',
-    NOTICE: 'https://basedev.uni-ak.ac.at/site-notice',
+    LOGIN: 'insert your cas server login route here e.g. https://basedev.uni-ak.ac.at/portfolio/accounts/login/',
+    LOGOUT: 'insert your cas server logout route here e.g. https://basedev.uni-ak.ac.at/portfolio/accounts/logout/',
+    TERMS: 'insert a url to a terms and conditions page here e.g. https://basedev.uni-ak.ac.at/terms',
+    NOTICE: 'insert a url to a site notice https://basedev.uni-ak.ac.at/site-notice',
   },
   HEADER_JSON: 'https://portfolio-dev.uni-ak.ac.at/bs/portfolio-showroom-header.json',
   HEADER: 'https://basedev.uni-ak.ac.at/bs/js/base-header.2f43c9ee481679497c60.js',
-  APP_PREFIX: '/portfolio',
-  LANG_URL: 'http://base.uni-ak.ac.at/portfolio/languages/',
+  APP_PREFIX: 'specify a route prefix for the frontend e.g. /portfolio',
+  LANG_URL: 'the skosmos url (no need to modify) http://base.uni-ak.ac.at/portfolio/languages/',
   LOCALES: ['de', 'en'],
   DEFAULT_LOCALE: 'de',
   CONTRIBUTORS_DEFAULTS: [
@@ -43,5 +43,5 @@ module.exports= {
       source_name:"geocode.earth",
     }
   ],
-  FONT_PATH: 'https://basedev.uni-ak.ac.at/bs/fonts/',
+  FONT_PATH: 'the path to the fonts files (in case of doubt leave empty) e.g. https://basedev.uni-ak.ac.at/bs/fonts/',
 };

@@ -77,6 +77,5 @@ in folder /config the following variables can be set for development (dev.env) a
 | DEFAULT_LOCALE        | a default language if one should be set (else the browser language will be used)                                                                            |
 | CONTRIBUTORS_DEFAULT*  | a default displayed for all contributor fields (Contributors and Roles (e.g. authors, architects), required attributes: label, optional: source, additional |
 | LOCATION_DEFAULT*      | a default displayed for the location input field                                                                                                            |
-| FONT_PATH              | directing to fonts on server; used in `gulp set-font-path` to set font path in fonts.scss; default: '~/assets/fonts/'|
 
 (*if there are any other dynamic autocomplete fields in future, defaults can be added as {backend property name}_DEFAULT as well)
