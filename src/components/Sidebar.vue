@@ -5,7 +5,7 @@
     class="menu-sidebar">
 
     <div class="sidebar-head">
-      <div class="base-row">
+      <div :class="['base-row', { 'base-row-with-form': isNewForm || !!activeEntryId }]">
         <BaseButton
           v-if="newEnabled"
           :active="isNewForm"
@@ -529,8 +529,20 @@ export default {
   }
 
   @media screen and (max-width: $tablet) {
-    .menu-sidebar .sidebar-head .sidebar-drop-downs {
-      flex-wrap: wrap;
+    .menu-sidebar .sidebar-head {
+      & .sidebar-drop-downs {
+        flex-wrap: wrap;
+      }
+
+      .base-row-with-form {
+        height: auto;
+        flex-wrap: wrap;
+
+        .base-row-button {
+          width: 100%;
+          border-bottom: $separation-line;
+        }
+      }
     }
   }
 

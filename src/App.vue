@@ -119,7 +119,7 @@ export default {
   }
 
   .base-row {
-    height: $row-height-large;
+    min-height: $row-height-large;
     box-shadow: $box-shadow-reg;
     display: flex;
     margin-bottom: $spacing-small;
@@ -199,7 +199,6 @@ export default {
 
     .base-row {
       height: auto;
-      flex-wrap: wrap;
     }
   }
 </style>
