@@ -11,6 +11,7 @@
         :text="$t('form-view.addExistingEntry')"
         :subtext="$t('form-view.clickordrag')"
         icon="camera"
+        drop-type="elements"
         class="file-box file-boxes-margin"
         @dropped="droppedEntries($event)"
         @clicked="openEntrySelect"/>
