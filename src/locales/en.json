@@ -126,7 +126,10 @@
     "video": "Video",
     "image": "Image",
     "document": "Document",
-    "file": "File"
+    "file": "File",
+    "download": "Download",
+    "view": "View",
+    "noPreview": "No preview available for this file type."
   },
   "notify": {
     "entry": "entries | entry | entries",

@@ -120,7 +120,10 @@
     "video": "Video",
     "image": "Bild",
     "document": "Dokument",
-    "file": "Datei"
+    "file": "Datei",
+    "download": "Download",
+    "view": "Anzeigen",
+    "noPreview": "Für diesen Datei Typ ist keine Anzeige verfügbar."
   },
   "notify": {
     "entry": "Einträge | Eintrag | Einträge",
