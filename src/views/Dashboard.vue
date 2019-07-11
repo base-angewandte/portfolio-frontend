@@ -109,7 +109,6 @@ export default {
       const filePath = fileData.playlist || fileData.mp3
         || fileData.pdf || fileData.original;
       this.previewUrl = getApiUrl(filePath);
-      console.log(this.previewUrl);
       // TODO: remove again as soon as video and pdf and audio are available
       if (filePath) {
         this.showPreview = !!this.previewUrl;
