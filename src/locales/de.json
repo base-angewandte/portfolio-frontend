@@ -119,7 +119,10 @@
     "audio": "Audio",
     "video": "Video",
     "image": "Bild",
-    "document": "Dokument"
+    "document": "Dokument",
+    "file": "Datei",
+    "download": "Download",
+    "view": "Anzeigen"
   },
   "notify": {
     "entry": "Einträge | Eintrag | Einträge",

@@ -112,7 +112,7 @@
         slot="drop-down-entry"
         slot-scope="props">
         <span>
-          {{ props.item.label[$i18n.locale] || props.item.label }}
+          {{ getLabel(props.item.label) }}
         </span>
         <span class="chips-dropdown-second">{{ props.item.additional }}</span>
         <span class="chips-dropdown-third">{{ props.item.source_name }}</span>
@@ -209,7 +209,7 @@ import {
   BaseChipsInput,
   BaseChipsBelow,
 } from 'base-ui-components';
-import { setLangLabels } from '../utils/commonUtils';
+import { setLangLabels, getLangLabel } from '../utils/commonUtils';
 
 export default {
   name: 'FormFieldCreator',
@@ -387,6 +387,9 @@ export default {
         source: this.field['x-attrs'].source,
         equivalent: this.field['x-attrs'].equivalent,
       });
+    },
+    getLabel(value) {
+      return getLangLabel(value, this.$i18n.locale, true);
     },
   },
 };

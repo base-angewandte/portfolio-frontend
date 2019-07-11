@@ -23,6 +23,10 @@
       :media-url="previewUrl"
       :download-url="originalUrl"
       :display-size="previewSize"
+      :info-texts="{
+        download: $t('form-view.download'),
+        view: $t('form-view.view'),
+      }"
       @hide-preview="showPreview = false"
       @download="downloadFile"/>
 
@@ -45,7 +49,7 @@
 
 <script>
 import { BasePopUp, BaseMediaPreview } from 'base-ui-components';
-import axios from 'axios';
+// import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import { capitalizeString, getApiUrl } from '../utils/commonUtils';
 
@@ -151,14 +155,8 @@ export default {
     },
     async downloadFile({ url, name }) {
       try {
-        const { data } = await axios({
-          method: 'get',
-          url,
-          responseType: 'blob',
-        });
-        const fileUrl = window.URL.createObjectURL(new Blob([data]));
         const link = document.createElement('a');
-        link.href = fileUrl;
+        link.href = `${url}?download`;
         link.setAttribute('download', name);
         document.body.appendChild(link);
         link.click();

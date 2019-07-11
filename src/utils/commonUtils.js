@@ -35,7 +35,7 @@ export const getLangLabel = (value, locale, useAny = false) => {
   if (value && locale && useAny) {
     const lang = Object.keys(value).find(key => !!value[key]);
     // return the first one that has content
-    return value[lang] || value[locale];
+    return (value[lang] || value[locale]);
   }
   return value;
 };

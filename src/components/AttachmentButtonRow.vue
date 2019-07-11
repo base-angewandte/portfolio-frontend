@@ -11,8 +11,9 @@
         :text="$t('form-view.addExistingEntry')"
         :subtext="$t('form-view.clickordrag')"
         icon="camera"
+        drop-type="elements"
         class="file-box file-boxes-margin"
-        @dropped="droppedEntries($event)"
+        @dropped-element="droppedEntries"
         @clicked="openEntrySelect"/>
       <BaseBoxButton
         key="addNew"
@@ -31,7 +32,7 @@
           :text="$t('form-view.attachFile')"
           :subtext="$t('form-view.clickordrag')"
           icon="camera"
-          @dropped="handleFileSelect($event)"/>
+          @dropped-file="handleFileSelect($event)"/>
         <input
           ref="fileInput"
           type="file"
@@ -158,24 +159,19 @@ export default {
       const inputRef = this.$refs.fileInput || this.$refs.fileInputMobile;
       inputRef.value = '';
     },
-    droppedEntries(e) {
-      // check if it was not a file that was dragged in and if anything is attached to event at all
-      if (!e.dataTransfer.files.length && e.dataTransfer.items) {
-        // get the id of the dragged item
-        const id = e.dataTransfer.getData('text/plain');
-        // check if the dragged item was actually the one already open
-        if (id !== this.currentId) {
-          // if not link the entry
-          this.linkEntries([id]);
-        } else {
-          // otherwise issue a warning that entry can not be linked to itself
-          this.$notify({
-            group: 'request-notifications',
-            title: this.$t('notify.linkingNotPossible'),
-            text: this.$t('notify.selfLinked'),
-            type: 'error',
-          });
-        }
+    droppedEntries(elementId) {
+      // check if the dragged item was actually the one already open
+      if (elementId !== this.currentId) {
+        // if not link the entry
+        this.linkEntries([elementId]);
+      } else {
+        // otherwise issue a warning that entry can not be linked to itself
+        this.$notify({
+          group: 'request-notifications',
+          title: this.$t('notify.linkingNotPossible'),
+          text: this.$t('notify.selfLinked'),
+          type: 'error',
+        });
       }
     },
     handleFileSelect(e) {

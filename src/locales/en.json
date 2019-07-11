@@ -125,7 +125,10 @@
     "audio": "Audio",
     "video": "Video",
     "image": "Image",
-    "document": "Document"
+    "document": "Document",
+    "file": "File",
+    "download": "Download",
+    "view": "View"
   },
   "notify": {
     "entry": "entries | entry | entries",
