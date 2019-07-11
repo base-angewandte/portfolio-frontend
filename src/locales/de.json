@@ -122,8 +122,7 @@
     "document": "Dokument",
     "file": "Datei",
     "download": "Download",
-    "view": "Anzeigen",
-    "noPreview": "Für diesen Datei Typ ist keine Anzeige verfügbar."
+    "view": "Anzeigen"
   },
   "notify": {
     "entry": "Einträge | Eintrag | Einträge",

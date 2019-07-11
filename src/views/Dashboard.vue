@@ -26,7 +26,6 @@
       :info-texts="{
         download: $t('form-view.download'),
         view: $t('form-view.view'),
-        noPreview: $t('form-view.noPreview'),
       }"
       @hide-preview="showPreview = false"
       @download="downloadFile"/>
@@ -110,6 +109,7 @@ export default {
       const filePath = fileData.playlist || fileData.mp3
         || fileData.pdf || fileData.original;
       this.previewUrl = getApiUrl(filePath);
+      console.log(this.previewUrl);
       // TODO: remove again as soon as video and pdf and audio are available
       if (filePath) {
         this.showPreview = !!this.previewUrl;
@@ -156,20 +156,9 @@ export default {
     },
     async downloadFile({ url, name }) {
       try {
-        /*
-        const { data } = await axios({
-          method: 'get',
-          url,
-          responseType: 'blob',
-          withCredentials: true,
-        });
-        const fileUrl = window.URL.createObjectURL(new Blob([data]));
-         */
         const link = document.createElement('a');
         link.href = `${url}?download`;
         link.setAttribute('download', name);
-        // link.setAttribute('target', '_blank');
-        console.log(link);
         document.body.appendChild(link);
         link.click();
       } catch (e) {
