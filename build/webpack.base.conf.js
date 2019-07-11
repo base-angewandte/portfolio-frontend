@@ -54,11 +54,18 @@ module.exports = {
       },
       {
         test: /\.svg$/,
-        loader: 'vue-svg-loader',
-        options: {
-          // Removes svg title, default is false when not passing any options
-          removeTitle: true
-        }
+        use: [
+          {
+            loader: 'babel-loader',
+          },
+          {
+            loader: 'vue-svg-loader',
+            options: {
+              // Removes svg title, default is false when not passing any options
+              removeTitle: true,
+            }
+          },
+          ],
       },
       {
         test: /\.(png|jpe?g|gif)(\?.*)?$/,
