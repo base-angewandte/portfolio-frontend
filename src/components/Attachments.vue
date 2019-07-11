@@ -419,8 +419,10 @@ export default {
           return this.$t('form-view.video');
         } if (type === 'a') {
           return this.$t('form-view.audio');
+        } if (type === 'd') {
+          return this.$t('form-view.document');
         }
-        return this.$t('form-view.document');
+        return this.$t('form-view.file');
       }
       return this.$t('form-view.fileConverting');
     },

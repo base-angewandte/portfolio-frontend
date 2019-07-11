@@ -125,7 +125,8 @@
     "audio": "Audio",
     "video": "Video",
     "image": "Image",
-    "document": "Document"
+    "document": "Document",
+    "file": "File"
   },
   "notify": {
     "entry": "entries | entry | entries",
