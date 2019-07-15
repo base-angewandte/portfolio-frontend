@@ -54,7 +54,7 @@ export default new Router({
             if (lang) {
               await import(`@/locales/${lang}.json`).then((msgs) => {
                 i18n.setLocaleMessage(lang, msgs.default || msgs);
-                sessionStorage.setItem('lang', lang);
+                localStorage.setItem('lang', lang);
                 store.commit('PortfolioAPI/setLang', lang);
                 i18n.locale = lang;
                 return next(path);
