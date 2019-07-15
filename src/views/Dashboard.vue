@@ -27,6 +27,7 @@
         download: $t('form-view.download'),
         view: $t('form-view.view'),
       }"
+      :orientation="imageOrientation"
       @hide-preview="showPreview = false"
       @download="downloadFile"/>
 
@@ -65,6 +66,7 @@ export default {
       previewUrl: '',
       previewSize: {},
       originalUrl: '',
+      imageOrientation: 0,
     };
   },
   computed: {
@@ -109,7 +111,6 @@ export default {
       const filePath = fileData.playlist || fileData.mp3
         || fileData.pdf || fileData.original;
       this.previewUrl = getApiUrl(filePath);
-      // TODO: remove again as soon as video and pdf and audio are available
       if (filePath) {
         this.showPreview = !!this.previewUrl;
         // previewSize not required for audio (and pdf)
@@ -121,6 +122,9 @@ export default {
             width: `${fileData.metadata.ImageWidth ? fileData.metadata.ImageWidth.val
               : fileData.metadata.SourceImageWidth.val}px`,
           };
+        }
+        if (fileData.metadata.Orientation) {
+          this.imageOrientation = fileData.metadata.Orientation.num;
         }
         // landing here if file is not fully converted yet
       } else {
