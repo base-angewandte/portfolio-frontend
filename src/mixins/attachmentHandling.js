@@ -7,14 +7,16 @@ export const attachmentHandlingMixin = {
     async actionLinked({ list, action }) {
       const fromId = this.$store.getters['data/getCurrentItemId'];
       const failArr = [];
+      const successArr = [];
       await Promise.all(list.map(relationId => new Promise(async (resolve) => {
         try {
-          if (action === 'save') {
+          if (action === 'link') {
             const data = { from_entry: fromId, to_entry: relationId };
             await this.$store.dispatch('PortfolioAPI/post', { kind: 'relation', data });
-          } else if (action === 'delete') {
+          } else if (action === 'unlink') {
             await this.$store.dispatch('PortfolioAPI/delete', { kind: 'relation', id: relationId });
           }
+          successArr.push(relationId);
         } catch (e) {
           console.error(e);
           failArr.push(relationId);
@@ -24,6 +26,7 @@ export const attachmentHandlingMixin = {
       // TODO: currently only number of failed links no title - is this good enough?
       this.informUser({
         failedArr: failArr,
+        successArr,
         type: 'entry',
         action,
       });
