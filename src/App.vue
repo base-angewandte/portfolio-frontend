@@ -199,6 +199,7 @@ export default {
 
     .base-row {
       height: auto;
+      flex-wrap: wrap;
     }
   }
 </style>
