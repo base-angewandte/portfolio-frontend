@@ -409,15 +409,15 @@ export default {
     async fetchSidebarData() {
       this.isLoading = true;
       try {
-        const response = await this.$store.dispatch('PortfolioAPI/get', {
-          kind: 'entry',
-          sort: this.sortParam.value,
-          offset: (this.pageNumber - 1) * this.entriesPerPage,
-          limit: this.entriesPerPage,
-          type: this.filterType.source,
-          q: this.filterString,
-          link_selection_for: this.excludeLinked ? this.activeEntryId : '',
-        });
+        let offset = (this.pageNumber - 1) * this.entriesPerPage;
+        let response = await this.dataRequest(offset);
+        // should there be not enough entries to give results with the current offset
+        // try again with a offset 0
+        if (offset >= response.count) {
+          offset = 0;
+          this.pageNumber = 1;
+          response = await this.dataRequest(offset);
+        }
         this.listInt = response.results
           .map(entry => Object.assign({}, entry, {
             description: entry.type && entry.type.label ? capitalizeString(entry.type.label[this.$i18n.locale]) : '',
@@ -440,6 +440,18 @@ export default {
       }
       await this.$store.dispatch('data/fetchEntryTypes');
       this.isLoading = false;
+    },
+    async dataRequest(offset) {
+      const response = await this.$store.dispatch('PortfolioAPI/get', {
+        kind: 'entry',
+        sort: this.sortParam.value,
+        offset,
+        limit: this.entriesPerPage,
+        type: this.filterType.source,
+        q: this.filterString,
+        link_selection_for: this.excludeLinked ? this.activeEntryId : '',
+      });
+      return response;
     },
     calculateSidebarHeight() {
       const sidebarHeight = this.$refs.menuContainer.clientHeight - 32 - 16;
