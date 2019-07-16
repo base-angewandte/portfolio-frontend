@@ -40,7 +40,7 @@
         class="base-form-options"
         @action-entry="actionEntry"/>
       <div
-        v-if="formIsLoading"
+        v-if="formIsLoading || extensionIsLoading"
         class="form-loading-area">
         <BaseLoader class="loader" />
       </div>
@@ -130,8 +130,11 @@ export default {
       unsavedChanges: false,
       dataSaving: false,
       valueList: {},
+      // variable for steering the overlay animation for linking
+      // a new entry
       showOverlay: false,
       formIsLoading: false,
+      extensionIsLoading: false,
       reloadSidebarData: false,
       prefetchedRoles: [],
     };
@@ -174,7 +177,6 @@ export default {
   watch: {
     async currentItemId(val) {
       window.scrollTo(0, 0);
-      this.formIsLoading = true;
       if (val) {
         this.resetForm();
         await this.updateForm();
@@ -182,11 +184,11 @@ export default {
         this.resetForm();
       }
       this.showOverlay = false;
-      this.formIsLoading = false;
     },
     async type(val) {
       if (val) {
         try {
+          this.extensionIsLoading = true;
           const { properties } = await this.$store.dispatch('PortfolioAPI/get', {
             kind: 'jsonschema',
             id: encodeURIComponent(this.valueList.type[0].source),
@@ -216,6 +218,7 @@ export default {
           // empty extension
           this.$store.commit('data/setExtensionSchema', {});
         }
+        this.extensionIsLoading = false;
       } else {
         this.$store.commit('data/setExtensionSchema', {});
       }
@@ -229,16 +232,18 @@ export default {
       }
     },
   },
-  created() {
-    this.fetchGeneralFormFields();
+  async created() {
+    this.formIsLoading = true;
+    await this.fetchGeneralFormFields();
     // this.$store.dispatch('data/getStaticDropDowns');
     if (this.currentItemId) {
       this.updateForm();
+    } else {
+      this.formIsLoading = false;
     }
   },
   methods: {
     async fetchGeneralFormFields() {
-      this.formIsLoading = true;
       try {
         await this.$store.dispatch('data/fetchGeneralFields');
       } catch (e) {
@@ -251,7 +256,6 @@ export default {
           type: 'error',
         });
       }
-      this.formIsLoading = false;
     },
     resetForm() {
       this.unsavedChanges = false;
@@ -260,9 +264,11 @@ export default {
       this.$refs.baseForm.initializeValueObject();
     },
     async updateForm() {
+      this.formIsLoading = true;
       try {
         const data = await this.$store.dispatch('data/fetchEntryData', this.currentItemId);
         this.valueList = Object.assign({}, data);
+        this.extensionIsLoading = !!this.type;
         this.$set(this.valueList, 'data', Object.assign({}, data.data));
       } catch (e) {
         console.error(e);
@@ -278,6 +284,7 @@ export default {
           this.$router.push('/');
         }
       }
+      this.formIsLoading = false;
     },
     handleInput(data, type) {
       if ((!!data.type && !!this.valueList.type
