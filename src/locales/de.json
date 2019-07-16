@@ -122,7 +122,10 @@
     "document": "Dokument",
     "file": "Datei",
     "download": "Download",
-    "view": "Anzeigen"
+    "view": "Anzeigen",
+    "created": "Eintrag erzeugt am",
+    "lastModified": "Eintrag zuletzt gespeichert am",
+    "at": "um"
   },
   "notify": {
     "entry": "Einträge | Eintrag | Einträge",

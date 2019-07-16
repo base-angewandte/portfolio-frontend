@@ -99,6 +99,12 @@
       </transition>
 
     </form>
+    <div
+      v-if="valueList.date_created && valueList.date_changed"
+      class="last-modified">{{
+        `${$t('form-view.created')} ${createHumanReadableData(valueList.date_created)};
+      ${$t('form-view.lastModified')} ${createHumanReadableData(valueList.date_changed)}`
+      }}</div>
   </div>
 </template>
 
@@ -464,6 +470,11 @@ export default {
       }
       this.$emit('data-changed');
     },
+    createHumanReadableData(val) {
+      const date = new Date(val);
+      const { locale } = this.$i18n;
+      return `${date.toLocaleDateString(locale)} ${this.$t('form-view.at')} ${date.toLocaleTimeString(locale)}`;
+    },
   },
 };
 </script>
@@ -540,6 +551,12 @@ export default {
       color: $font-color-second;
       padding: $spacing;
     }
+  }
+
+  .last-modified {
+    margin: $spacing;
+    color: $font-color-second;
+    font-size: $font-size-small;
   }
 
   .slide-fade-form-enter-active, .slide-fade-form-move {

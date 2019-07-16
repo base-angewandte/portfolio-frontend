@@ -128,7 +128,10 @@
     "document": "Document",
     "file": "File",
     "download": "Download",
-    "view": "View"
+    "view": "View",
+    "created": "Entry created",
+    "lastModified": "Entry last modified",
+    "at": "at"
   },
   "notify": {
     "entry": "entries | entry | entries",
