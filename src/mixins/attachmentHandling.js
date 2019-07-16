@@ -10,10 +10,10 @@ export const attachmentHandlingMixin = {
       const successArr = [];
       await Promise.all(list.map(relationId => new Promise(async (resolve) => {
         try {
-          if (action === 'link') {
+          if (action === 'save') {
             const data = { from_entry: fromId, to_entry: relationId };
             await this.$store.dispatch('PortfolioAPI/post', { kind: 'relation', data });
-          } else if (action === 'unlink') {
+          } else if (action === 'delete') {
             await this.$store.dispatch('PortfolioAPI/delete', { kind: 'relation', id: relationId });
           }
           successArr.push(relationId);
@@ -27,7 +27,7 @@ export const attachmentHandlingMixin = {
       this.informUser({
         failedArr: failArr,
         successArr,
-        type: 'entry',
+        type: 'link',
         action,
       });
       // fetch entry new to update relations

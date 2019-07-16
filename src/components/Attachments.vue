@@ -2,224 +2,123 @@
   <div class="attachment-area">
 
     <!-- ATTACHED ENTRIES -->
-    <div
-      v-if="linkedList.length"
-      class="linked-area">
-
-      <!-- HEADER ROW -->
-      <div class="header-row">
-        <BaseOptions
-          :show-options="showEntryAction"
-          @options-toggle="showEntryAction = $event">
-          <template slot="beforeOptions">
-            <h3
-              v-if="showTitle"
-              class="attachment-area-subheader">{{ $t('form-view.attachedEntries') }}</h3>
-          </template>
-          <template slot="options">
-            <BaseButton
-              v-if="!showEntryAction"
-              :text="$t('form-view.deleteLinked')"
-              icon-size="large"
-              icon="waste-bin"
-              button-style="single"
-              class="attachment-options"
-              @clicked="showEntryAction = true"/>
-            <div
-              v-else
-              class="attachment-options">
-              <BaseButton
-                :text="$t('cancel')"
-                icon-size="large"
-                icon="remove"
-                button-style="single"
-                @clicked="showEntryAction = false"/>
-              <BaseButton
-                :text="$t('form-view.deleteButton')"
-                icon-size="large"
-                icon="save-file"
-                button-style="single"
-                @clicked="deleteLinked"/>
-            </div>
-          </template>
-        </BaseOptions>
-      </div>
-
-      <!-- ACTION AREA -->
-      <transition name="slide">
-        <div
-          v-if="showEntryAction"
-          key="message-area"
-          class="message-area">
-          <div class="message-area-text">
-            {{ $t('form-view.deleteLinkedText') }}
-          </div>
-          <div class="message-area-subtext">
-            {{ $t('form-view.deleteLinkedSubtext') }}
-          </div>
-        </div>
-      </transition>
-
-      <!-- BOX AREA -->
-      <div
-        key="box-area"
-        class="box-area">
+    <AttachmentsSection
+      ref="linkedSection"
+      :attached-list="linkedList"
+      :message-text="$t('form-view.deleteLinkedText')"
+      :message-subtext="$t('form-view.deleteLinkedSubtext')"
+      :option-button-text="$t('form-view.deleteLinked')"
+      :action-button-text="$t('form-view.deleteButton')"
+      :cancel-text="$t('cancel')"
+      :header-text="$t('form-view.attachedEntries')"
+      :action="entryAction"
+      :is-loading="entriesLoading"
+      @set-action="entryAction = 'delete'"
+      @submit-action="deleteLinked">
+      <template
+        slot="attached-box"
+        slot-scope="props">
         <BaseImageBox
-          v-for="linked of linkedList"
-          :selectable="!!showEntryAction"
-          :key="linked.id"
+          :selectable="props.selectActive"
+          :key="props.item.id"
           :box-size="{ width: 'calc(25% - 0.43em - (0.43em/2))' }"
-          :title="linked.to.title"
-          :subtext="linked.to.subtitle"
-          :description="linked.description"
-          :image-url="linked.to.image ? getImagePath(linked.to.image) : ''"
+          :title="props.item.to.title"
+          :subtext="props.item.to.subtitle"
+          :description="props.item.description"
+          :image-url="props.item.to.image ? getImagePath(props.item.to.image) : ''"
           show-title
           class="linked-base-box"
-          @select-triggered="entrySelected(linked.id, $event)"
-          @clicked="goToLinked(linked.to.id)"/>
-
-        <!-- ACTION BUTTON -->
-        <BaseBoxButton
-          v-if="!!showEntryAction"
-          :text="$t('form-view.deleteLinked')"
-          :box-size="{ width: 'calc(25% - 12px)' }"
-          icon="save-file"
-          box-style="small"
-          class="linked-base-box"
-          @clicked="deleteLinked"/>
-      </div>
-    </div>
+          @select-triggered="entrySelected(props.item.id, $event)"
+          @clicked="goToLinked(props.item.to.id)"/>
+      </template>
+    </AttachmentsSection>
 
     <!-- ATTACHED FILES -->
-    <div
-      v-if="attachedList.length"
-      class="linked-area">
-
-      <!-- HEADER ROW -->
-      <div class="header-row">
-        <BaseOptions
-          :show-options="showFileAction"
-          @options-toggle="fileText = action = ''; showFileAction = $event">
-          <template slot="beforeOptions">
-            <h3
-              v-if="showTitle"
-              class="attachment-area-subheader">{{ $t('form-view.attachedFiles') }}</h3>
-          </template>
-          <template slot="options">
-            <div
-              v-if="!fileText"
-              class="attachment-options">
-              <BaseButton
-                :text="$t('form-view.changeLicense')"
-                icon-size="large"
-                icon="licence"
-                button-style="single"
-                @clicked="action = 'license'"/>
-              <BaseButton
-                :text="$t('form-view.publishMedia')"
-                icon-size="large"
-                icon="eye"
-                button-style="single"
-                @clicked="action = 'publish'"/>
-              <BaseButton
-                :text="$t('form-view.deleteMedia')"
-                icon-size="large"
-                icon="waste-bin"
-                button-style="single"
-                @clicked="action = 'delete'"/>
-            </div>
-            <div
-              v-else
-              class="attachment-options">
-              <BaseButton
-                :text="$t('cancel')"
-                icon-size="large"
-                icon="remove"
-                button-style="single"
-                @clicked="action = ''"/>
-              <BaseButton
-                :text="buttonText"
-                icon-size="large"
-                icon="save-file"
-                button-style="single"
-                @clicked="saveFileMeta"/>
-            </div>
-          </template>
-        </BaseOptions>
-      </div>
-
-      <!-- ACTION AREA -->
-      <transition name="slide">
-        <div
-          v-if="fileText"
-          class="message-area">
-          <div class="message-area-text">
-            {{ fileText }}
-          </div>
-          <div class="message-area-subtext">
-            {{ fileSubtext }}
-          </div>
-          <!-- TODO: replace this with skosmos project values! -->
-          <BaseDropDown
-            v-if="action === 'license'"
-            :options="licenses"
-            :show-label="false"
-            :label="$t('form-view.selectLicense')"
-            :placeholder="$t('form-view.selectLicense')"
-            v-model="licenseSelected"
-            :language="$i18n.locale"
-            value-prop="source"
-            class="license-dropdown"/>
-        </div>
-      </transition>
-
-      <!-- BOX AREA -->
-      <div class="box-area">
+    <AttachmentsSection
+      ref="fileSection"
+      :attached-list="attachedList"
+      :message-text="fileText"
+      :message-subtext="fileSubtext"
+      :cancel-text="$t('cancel')"
+      :header-text="$t('form-view.attachedFiles')"
+      :action-button-text="buttonText"
+      :action="action"
+      :isLoading="filesLoading"
+      @set-action="setAction"
+      @submit-action="saveFileMeta">
+      <template
+        slot="option-buttons"
+        slot-scope="scope">
+        <BaseButton
+          :text="$t('form-view.changeLicense')"
+          icon-size="large"
+          icon="licence"
+          button-style="single"
+          @clicked="scope.setAction('license')"/>
+        <BaseButton
+          :text="$t('form-view.publishMedia')"
+          icon-size="large"
+          icon="eye"
+          button-style="single"
+          @clicked="scope.setAction('publish')"/>
+        <BaseButton
+          :text="$t('form-view.deleteMedia')"
+          icon-size="large"
+          icon="waste-bin"
+          button-style="single"
+          @clicked="scope.setAction('delete')"/>
+      </template>
+      <template slot="options-message-area-after">
+        <BaseDropDown
+          v-if="action === 'license'"
+          :options="licenses"
+          :show-label="false"
+          :label="$t('form-view.selectLicense')"
+          :placeholder="$t('form-view.selectLicense')"
+          v-model="licenseSelected"
+          :language="$i18n.locale"
+          value-prop="source"
+          class="license-dropdown"/>
+      </template>
+      <template
+        slot="attached-box"
+        slot-scope="props">
         <BaseImageBox
-          v-for="(attached, index) of attachedList"
           :show-title="true"
-          :selectable="!!fileText"
-          :selected="selectedFiles.map(file => file.id || file).includes(attached.id)"
-          :title="attached.original ? getFileName(attached.original) : attached.id"
-          :subtext="getLicenseLabel(attached.license)"
-          :description="getFileType(attached)"
-          :image-url="getImagePath(attached.thumbnail || attached.cover, imageHover[index])"
+          :selectable="props.selectActive"
+          :selected="selectedFiles.map(file => file.id || file).includes(props.item.id)"
+          :title="props.item.original ? getFileName(props.item.original) : props.item.id"
+          :subtext="getLicenseLabel(props.item.license)"
+          :description="getFileType(props.item)"
+          :image-url="getImagePath(props.item.thumbnail
+          || props.item.cover, imageHover[props.index])"
           :box-size="{ width: 'calc(25% - 0.43em - (0.43em/2))' }"
           :box-ratio="100"
-          :box-text="generateBoxText(attached.metadata)"
-          :key="attached.id"
-          :class="['linked-base-box', { 'image-box': !!attached.thumbnail }]"
-          @mouseenter.native="changeVideoHoverState($event, index, true)"
-          @mouseleave.native="changeVideoHoverState($event, index, false)"
-          @select-triggered="filesSelected(attached.id, $event, attached.published)"
-          @clicked="$emit('show-preview', attached)">
+          :box-text="generateBoxText(props.item.metadata)"
+          :key="props.item.id"
+          class="linked-base-box"
+          @mouseenter.native="changeVideoHoverState($event, props.index, true)"
+          @mouseleave.native="changeVideoHoverState($event, props.index, false)"
+          @select-triggered="filesSelected(props.item.id, $event, props.item.published)"
+          @clicked="$emit('show-preview', props.item)">
           <template slot="top">
             <div
-              v-if="attached.published"
+              v-if="props.item.published"
               class="file-published">
               <EyeIcon
                 aria-labelledby="title"
                 class="published-icon">
                 <title>Published</title>
                 <desc>
-                  {{ `file ${getFileName(attached.original)} was published` }}
+                  {{ `file ${getFileName(props.item.original)} is released for publication` }}
                 </desc>
               </EyeIcon>
             </div>
           </template>
         </BaseImageBox>
+      </template>
+    </AttachmentsSection>
 
-        <!-- ACTION BUTTON -->
-        <BaseBoxButton
-          v-if="action"
-          :text="buttonText"
-          :box-size="{ width: 'calc(25% - 12px)' }"
-          icon="save-file"
-          box-style="small"
-          class="linked-base-box"
-          @clicked="saveFileMeta"/>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -230,10 +129,12 @@ import {
 import BaseOptions from './BaseOptions';
 import EyeIcon from '../assets/icons/eye.svg';
 import { userInfo } from '../mixins/userInfo';
-import { setLangLabels, getApiUrl } from '../utils/commonUtils';
+import { setLangLabels, getApiUrl, getLangLabel } from '../utils/commonUtils';
+import AttachmentsSection from './AttachmentsSection';
 
 export default {
   components: {
+    AttachmentsSection,
     BaseBoxButton,
     BaseDropDown,
     BaseImageBox,
@@ -255,24 +156,21 @@ export default {
         return [];
       },
     },
-    showTitle: {
-      type: Boolean,
-      default: true,
-    },
   },
   data() {
     return {
       fileText: '',
       fileSubtext: '',
       buttonText: '',
-      showEntryAction: false,
-      showFileAction: false,
+      entryAction: '',
       selectedEntries: [],
       selectedFiles: [],
       action: '',
       licenseSelected: {},
       imageHover: [],
       timeout: null,
+      entriesLoading: false,
+      filesLoading: false,
     };
   },
   computed: {
@@ -287,16 +185,6 @@ export default {
     },
   },
   watch: {
-    action(val) {
-      if (val) {
-        this.fileSubtext = this.$t(`form-view.${val}Subtext`);
-        this.fileText = this.$t('form-view.fileActionText', { action: this.$t(`form-view.${val}Text`) });
-        this.buttonText = this.$t(`form-view.${val}Button`);
-      } else {
-        this.fileText = '';
-        this.selectedFiles = [];
-      }
-    },
     attachedList() {
       this.checkConverting();
     },
@@ -314,9 +202,10 @@ export default {
     changeVideoHoverState(event, index, value) {
       this.$set(this.imageHover, index, value);
     },
-    async saveFileMeta() {
+    async saveFileMeta(act) {
+      this.filesLoading = true;
       // special case publish since publish / offline in one
-      const action = this.action === 'publish' ? 'change' : this.action;
+      const action = act === 'publish' ? 'change' : act;
       // check if files were selected
       if (!this.selectedFiles.length) {
         // if not notify user that he needs to select files
@@ -358,13 +247,16 @@ export default {
         this.action = '';
         this.selectedFiles = [];
         this.licenseSelected = {};
+        this.filesLoading = false;
       }
     },
     async deleteLinked() {
+      this.entriesLoading = true;
       // check if user has selected entries
       if (this.selectedEntries.length) {
-        await this.$parent.actionLinked({ list: this.selectedEntries, action: 'unlink' });
-        this.showEntryAction = false;
+        this.$refs.linkedSection.attachmentsLoading = true;
+        await this.$parent.actionLinked({ list: this.selectedEntries, action: 'delete' });
+        this.entryAction = '';
         this.selectedEntries = [];
       } else {
         // notify user to select entries
@@ -378,6 +270,7 @@ export default {
           type: 'error',
         });
       }
+      this.entriesLoading = false;
     },
     entrySelected(objId, sel) {
       if (sel) {
@@ -473,9 +366,7 @@ export default {
     },
     getLicenseLabel(license) {
       if (license && license.label) {
-        const lang = license.label[this.$i18n.locale] ? this.$i18n.locale
-          : this.$i18n.availableLocales.find(availableLang => !!license.label[availableLang]);
-        return license.label[lang];
+        return getLangLabel(license.label, this.$i18n.locale, true);
       }
       return '';
     },
@@ -491,6 +382,17 @@ export default {
         }, 60000);
       }
     },
+    setAction(val) {
+      if (val) {
+        this.action = val;
+        this.fileSubtext = this.$t(`form-view.${val}Subtext`);
+        this.fileText = this.$t('form-view.fileActionText', { action: this.$t(`form-view.${val}Text`) });
+        this.buttonText = this.$t(`form-view.${val}Button`);
+      } else {
+        this.fileText = '';
+        this.selectedFiles = [];
+      }
+    },
   },
 };
 </script>
@@ -499,156 +401,82 @@ export default {
   @import "../styles/variables.scss";
 
   .attachment-area {
-    .attachment-area-subheader {
-      font-size: $font-size-regular;
-      color: $font-color-second;
-      font-weight: normal;
-      margin: $spacing;
 
-    }
+    .linked-base-box {
+      cursor: pointer;
 
-    .linked-area {
-
-      .header-row {
+      .file-published {
+        height: $icon-max;
+        width: $icon-max;
+        position: absolute;
+        border-radius: $icon-max/2;
+        background: radial-gradient(closest-side,
+          rgba(255,255,255,1) 50%,
+          rgba(255,255,255,0) 100%);
+        right: -$spacing-small;
+        top: -$spacing-small;
         display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
 
-        .attachment-options {
-          display: flex;
-          flex-wrap: wrap;
-          justify-content: center;
-        }
-      }
-
-      .box-area {
-        display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
-
-        .linked-base-box {
-          cursor: pointer;
-
-          .file-published {
-            height: $icon-max;
-            width: $icon-max;
-            position: absolute;
-            border-radius: $icon-max/2;
-            background: radial-gradient(closest-side,
-              rgba(255,255,255,1) 50%,
-              rgba(255,255,255,0) 100%);
-            right: -$spacing-small;
-            top: -$spacing-small;
-            display: flex;
-
-            .published-icon {
-              height: $icon-medium;
-              max-width: $icon-medium;
-              margin: auto;
-            }
-          }
-        }
-
-        .linked-base-box:nth-of-type(n + 5) {
-          margin-top: $spacing;
-        }
-
-        .linked-base-box:not(:nth-child(4n)) {
-          margin-right: $spacing;
-        }
-
-        .image-box {
-          cursor: pointer;
+        .published-icon {
+          height: $icon-medium;
+          max-width: $icon-medium;
+          margin: auto;
         }
       }
     }
 
-    .message-area {
-      margin-bottom: $spacing-large;
-      text-align: center;
-      color: $font-color-second;
-      backface-visibility: hidden;
-      z-index: 1;
-
-      .message-area-text {
-        font-size: $font-size-large;
-      }
-
-      .message-area-subtext {
-        font-size: $font-size-small;
-      }
-
-      .license-dropdown {
-        margin: $spacing auto 0 auto;
-        text-align: left;
-      }
+    .linked-base-box:nth-of-type(n + 5) {
+      margin-top: $spacing;
     }
 
-    .slide-enter-active {
-      transition: all .5s ease-in-out;
+    .linked-base-box:not(:nth-child(4n)) {
+      margin-right: $spacing;
     }
+  }
 
-    .slide-enter {
-      opacity: 0;
-      transform: translateY(-#{$spacing});
-    }
+  .license-dropdown {
+    margin: $spacing auto 0 auto;
+    text-align: left;
   }
 
   @media screen and (max-width: $tablet) {
     .attachment-area {
-      .attachment-area-subheader {
+
+      .linked-base-box {
+        flex: 0 0 calc(50% - #{$spacing-small});
       }
 
-      .linked-area {
+      .linked-base-box:nth-of-type(n + 3) {
+        margin-top: $spacing;
+      }
 
-        .box-area {
+      .linked-base-box:not(:nth-child(4n)) {
+        margin-right: 0;
+      }
 
-          .linked-base-box {
-            flex: 0 0 calc(50% - #{$spacing-small});
-          }
-
-          .linked-base-box:nth-of-type(n + 3) {
-            margin-top: $spacing;
-          }
-
-          .linked-base-box:not(:nth-child(4n)) {
-            margin-right: 0;
-          }
-
-          .linked-base-box:not(:nth-child(2n)) {
-            margin-right: $spacing;
-          }
-        }
+      .linked-base-box:not(:nth-child(2n)) {
+        margin-right: $spacing;
       }
     }
   }
 
   @media screen and (max-width: $mobile) {
     .attachment-area {
-      .attachment-area-subheader {
+
+      .linked-base-box {
+        flex: 0 0 calc(50% - #{$spacing-small});
       }
 
-      .linked-area {
+      .linked-base-box:nth-of-type(n + 3) {
+        margin-top: $spacing;
+      }
 
-        .box-area {
+      .linked-base-box:not(:nth-child(4n)) {
+        margin-right: 0;
+      }
 
-          .linked-base-box {
-            flex: 0 0 calc(50% - #{$spacing-small});
-          }
-
-          .linked-base-box:nth-of-type(n + 3) {
-            margin-top: $spacing;
-          }
-
-          .linked-base-box:not(:nth-child(4n)) {
-            margin-right: 0;
-          }
-
-          .linked-base-box:not(:nth-child(2n)) {
-            margin-right: $spacing;
-          }
-        }
+      .linked-base-box:not(:nth-child(2n)) {
+        margin-right: $spacing;
       }
     }
   }

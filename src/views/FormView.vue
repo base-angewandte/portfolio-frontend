@@ -317,7 +317,7 @@ export default {
             // also add linked entries if there are already any
             const list = this.$store.getters['data/getLinkedIds'];
             if (list.length) {
-              this.actionLinked({ list, action: 'link' });
+              this.actionLinked({ list, action: 'save' });
               // TODO: also do this for attached media??
             }
             // link entry to parent if parent items are present
