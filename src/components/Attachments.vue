@@ -43,7 +43,7 @@
       :header-text="$t('form-view.attachedFiles')"
       :action-button-text="buttonText"
       :action="action"
-      :isLoading="filesLoading"
+      :is-loading="filesLoading"
       @set-action="setAction"
       @submit-action="saveFileMeta">
       <template

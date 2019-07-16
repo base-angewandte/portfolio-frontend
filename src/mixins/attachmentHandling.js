@@ -5,6 +5,10 @@ export const attachmentHandlingMixin = {
   mixins: [userInfo],
   methods: {
     async actionLinked({ list, action }) {
+      const { attachmentArea } = this.$refs;
+      if (attachmentArea) {
+        attachmentArea.entriesLoading = true;
+      }
       const fromId = this.$store.getters['data/getCurrentItemId'];
       const failArr = [];
       const successArr = [];
@@ -42,6 +46,9 @@ export const attachmentHandlingMixin = {
           text: this.$t('notify.fetchLinkedFail'),
           type: 'error',
         });
+      }
+      if (attachmentArea) {
+        attachmentArea.entriesLoading = false;
       }
     },
   },

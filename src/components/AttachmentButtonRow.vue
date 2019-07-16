@@ -203,7 +203,6 @@ export default {
     async linkEntries(val) {
       const list = [];
       val.forEach((entryId) => {
-        // TODO: also check if it is a parent already!!!!!
         if (!this.linkedList.map(e => e.to.id).includes(entryId)) {
           list.push(entryId);
         } else {
