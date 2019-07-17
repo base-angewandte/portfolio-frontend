@@ -43,7 +43,8 @@ const state = {
     text: '',
     icon: '',
     buttonText: '',
-    action: '',
+    action: null,
+    isLoading: false,
   },
   selectedEntries: [],
   // saved here are all the data from linked entries (not just id as in currentItem)
@@ -120,7 +121,7 @@ const mutations = {
     state.showOptions = val;
   },
   setPopUp(state, data) {
-    state.popUp = data;
+    state.popUp = Object.assign({}, state.popUp, data);
   },
   hidePopUp(state) {
     state.popUp = {
@@ -130,6 +131,7 @@ const mutations = {
       icon: '',
       buttonTextRight: '',
       buttonTextLeft: '',
+      isLoading: false,
       actionRight: undefined,
       actionLeft: undefined,
     };
@@ -187,6 +189,9 @@ const mutations = {
   },
   setMediaLicensesPath(state, url) {
     state.mediaLicensesPath = url;
+  },
+  setPopUpLoading(state, val) {
+    Vue.set(state.popUp, 'isLoading', val);
   },
 };
 

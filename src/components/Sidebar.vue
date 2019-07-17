@@ -287,6 +287,13 @@ export default {
         this.selectedMenuEntries = [];
       }
     },
+    $route(from) {
+      if (from.name === 'Dashboard') {
+        // refetch sidebar data when switching from overview to form view
+        this.calculateSidebarHeight();
+        this.fetchSidebarData();
+      }
+    },
   },
   created() {
     this.$store.dispatch('data/fetchEntryTypes');
@@ -454,7 +461,7 @@ export default {
     calculateSidebarHeight() {
       const sidebarHeight = this.$refs.menuContainer.clientHeight - 32 - 16;
       // hardcoded because unfortunately no other possibility found
-      const entryHeight = 56;
+      const entryHeight = window.innerWidth >= 640 ? 56 : 48;
       this.entriesPerPage = Math.floor(sidebarHeight / entryHeight);
     },
   },
@@ -540,18 +547,22 @@ export default {
   }
 
   @media screen and (max-width: $tablet) {
-    .menu-sidebar .sidebar-head {
-      & .sidebar-drop-downs {
-        flex-wrap: wrap;
-      }
+    .menu-sidebar {
+      height: calc(100vh - #{$header-height} - #{$row-height-small} - 130px);
 
-      .base-row-with-form {
-        height: auto;
-        flex-wrap: wrap;
+      .sidebar-head {
+        & .sidebar-drop-downs {
+          flex-wrap: wrap;
+        }
 
-        .base-row-button {
-          width: 100%;
-          border-bottom: $separation-line;
+        .base-row-with-form {
+          height: auto;
+          flex-wrap: wrap;
+
+          .base-row-button {
+            width: 100%;
+            border-bottom: $separation-line;
+          }
         }
       }
     }
@@ -568,6 +579,8 @@ export default {
     }
 
     .menu-sidebar {
+      height: calc(100vh - #{$header-height} - (2 * #{$spacing}));
+
       .search-bar {
         border-left: none;
       }

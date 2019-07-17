@@ -458,6 +458,7 @@ export default {
       }
     },
     async action(action) {
+      // mixin method actionEntries
       await this.actionEntries(action);
       if (action === 'delete') {
         this.$router.push('/');
@@ -480,7 +481,7 @@ export default {
 <style lang="scss" scoped>
   .form-component {
     position: relative;
-    min-height: 100vh;
+    min-height: 80vh;
 
     .form-head {
       background-color: $background-color;

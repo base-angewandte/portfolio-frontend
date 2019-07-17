@@ -7,6 +7,7 @@
         || $t('cancel')"
       :button-right-text="capitalizeFirstLetter($store.state.data.popUp.buttonTextRight)"
       :button-right-icon="$store.state.data.popUp.icon"
+      :is-loading="$store.state.data.popUp.isLoading"
       @close="cancelAction"
       @button-left="cancelAction($store.state.data.popUp.actionLeft)"
       @button-right="$store.state.data.popUp.actionRight()">
