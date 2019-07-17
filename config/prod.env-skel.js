@@ -10,8 +10,8 @@ module.exports= {
     TERMS: 'insert a url to a terms and conditions page here e.g. https://basedev.uni-ak.ac.at/terms',
     NOTICE: 'insert a url to a site notice https://basedev.uni-ak.ac.at/site-notice',
   },
-  HEADER_JSON: 'https://portfolio-dev.uni-ak.ac.at/bs/portfolio-showroom-header.json',
-  HEADER: 'https://basedev.uni-ak.ac.at/bs/js/base-header.2f43c9ee481679497c60.js',
+  HEADER_JSON: 'specify the header json that will have the latest header version https://portfolio-dev.uni-ak.ac.at/bs/portfolio-showroom-header.json',
+  HEADER: 'no need to modify - this will be updated upon build from HEADER_JSON or by running "gulp set-header" https://portfolio-dev.uni-ak.ac.at/bs/js/portfolio-showroom-header.b8e7639f5fb0f610212c.js',
   APP_PREFIX: 'specify a route prefix for the frontend e.g. /portfolio',
   LANG_URL: 'the skosmos url (no need to modify) http://base.uni-ak.ac.at/portfolio/languages/',
   LOCALES: ['de', 'en'],
@@ -40,7 +40,7 @@ module.exports= {
           48.208126,
         ]
       },
-      source_name:"geocode.earth",
+      source_name:"",
     }
   ],
   FONT_PATH: 'the path to the fonts files (in case of doubt leave empty) e.g. https://basedev.uni-ak.ac.at/bs/fonts/',
