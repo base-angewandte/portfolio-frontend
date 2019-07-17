@@ -3,7 +3,9 @@
     <div class="body" />
     <div class="whitebox">
       <div class="info-area">
-        <div class="info-text">{{ $t('notAvailable') }}</div>
+        <div class="info-text">
+          {{ $t('notAvailable') }}
+        </div>
         <div class="info-buttons">
           <BaseButton
             :text="$t('returnHome')"

@@ -9,7 +9,7 @@
         :title-bold="true"
         :is-activatable="false"
         :subtext="type"
-        :show-thumbnails="false"/>
+        :show-thumbnails="false" />
     </div>
     <div
       id="form-back-button"
@@ -17,14 +17,14 @@
         'form-button',
         'mobile-elements',
         { 'form-button-child' : showBackButton }
-    ]">
+      ]">
       <BaseButton
         :text="unsavedChanges ? $t('cancel') : $t('back')"
         :icon="unsavedChanges ? '' : 'arrow-left'"
         icon-size="small"
         button-style="row"
         class="form-button-inner"
-        @clicked="$emit('return')"/>
+        @clicked="$emit('return')" />
     </div>
     <div
       id="form-save-button"
@@ -48,7 +48,6 @@
         </template>
       </BaseButton>
     </div>
-
   </div>
 </template>
 

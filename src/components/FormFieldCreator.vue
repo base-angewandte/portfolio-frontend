@@ -3,41 +3,41 @@
     <!-- TEXT FIELD -->
     <BaseInput
       v-if="fieldType === 'text'"
+      :id="fieldKey"
       :key="fieldKey"
+      v-model="fieldValueInt"
       :label="label"
       :placeholder="placeholder"
-      :id="fieldKey"
-      v-model="fieldValueInt"
-      :class="['base-form-field']"/>
+      :class="['base-form-field']" />
 
     <!-- DATE FIELD -->
     <div
       v-else-if="fieldType === 'date'"
       class="date-field">
       <BaseDateInput
+        :id="fieldKey"
         :key="fieldKey + 'date'"
+        v-model="fieldValueInt"
         :label="label"
         :placeholder="placeholder"
         :range-separator="$t('form.until')"
-        :id="fieldKey"
         :format="field['x-attrs'].date_format"
         :type="dateType.includes('timerange') ? dateType.includes('daterange')
-        ? 'daterange' : 'single' : dateType"
+          ? 'daterange' : 'single' : dateType"
         :date-format-labels="{date: $t('form.date'), year: $t('form.year') }"
         :format-tabs-legend="$t('form.dateTabsLegend')"
         :language="$i18n.locale"
-        v-model="fieldValueInt"
-        :class="['base-form-field']"/>
+        :class="['base-form-field']" />
       <BaseDateInput
         v-if="dateType.includes('timerange')"
+        :id="fieldKey"
         :key="fieldKey + 'time'"
+        v-model="fieldValueInt"
         :label="$t('form.time')"
         :placeholder="placeholder"
         :range-separator="$t('form.until')"
-        :id="fieldKey"
         :type="'timerange'"
-        v-model="fieldValueInt"
-        :class="['base-form-field']"/>
+        :class="['base-form-field']" />
     </div>
 
     <!--MULTILINE TEXT FIELD -->
@@ -56,13 +56,13 @@
         v-if="field.items && field.items.properties && field.items.properties.type">
         <BaseDropDown
           :selected-option="fieldValueInt && fieldValueInt.type.source
-          ? fieldValueInt.type : textTypeDefault"
+            ? fieldValueInt.type : textTypeDefault"
           :options="textTypeOptions"
           :label="$t('form.texttype')"
           :language="$i18n.locale"
           value-prop="source"
           class="multiline-dropdown"
-          @value-selected="$set(fieldValueInt, 'type', $event)"/>
+          @value-selected="$set(fieldValueInt, 'type', $event)" />
       </template>
     </BaseMultilineTextInput>
 
@@ -70,27 +70,27 @@
     <BaseAutocompleteInput
       v-else-if="fieldType === 'autocomplete'"
       :key="fieldKey"
+      v-model="fieldValueInt"
       :label="label"
       :placeholder="placeholder"
       :list="dropDownList"
       :object-prop="'label'"
       :is-loading="autocompleteLoading"
-      v-model="fieldValueInt"
       :class="['base-form-field']"
       @autocomplete="$emit('fetch-autocomplete', {
         value: $event,
         name: field.name,
         source: field['x-attrs'].source
-    })"/>
+      })" />
 
     <!-- CHIPS INPUT -->
     <BaseChipsInput
       v-else-if="fieldType === 'chips'"
       :key="fieldKey"
+      v-model="fieldValueInt"
       :placeholder="placeholder"
       :label="label"
       :list="dropDownList"
-      v-model="fieldValueInt"
       :allow-dynamic-drop-down-entries="field['x-attrs'] && field['x-attrs'].dynamic_autosuggest"
       :allow-multiple-entries="!isChipsSingleSelect"
       :allow-unknown-entries="field['x-attrs'] && field['x-attrs'].allow_unkown_entries"
@@ -137,6 +137,7 @@
     <BaseChipsBelow
       v-else-if="fieldType === 'chips-below'"
       :key="fieldKey"
+      v-model="fieldValueInt"
       :label="label"
       :placeholder="placeholder"
       :list="dropDownList"
@@ -152,7 +153,6 @@
       :chips-editable="true"
       :roles-placeholder="$t('form.selectRoles')"
       :language="$i18n.locale"
-      v-model="fieldValueInt"
       class="base-form-field base-form-field-full"
       @fetch-dropdown-entries="fetchAutocomplete"
       @hoverbox-active="$emit('fetch-info-data')">
@@ -193,7 +193,7 @@
           :form-field-json="groupFormFields"
           :value-list="fieldValueInt"
           class="base-form-subform"
-          @values-changed="$emit('subform-input', $event)"/>
+          @values-changed="$emit('subform-input', $event)" />
       </div>
     </div>
   </div>

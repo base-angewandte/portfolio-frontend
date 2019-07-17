@@ -2,7 +2,6 @@
 <template>
   <div class="form-component">
     <div class="form-head">
-
       <!-- PARENT HEADER -->
       <div
         v-if="parent"
@@ -14,7 +13,7 @@
           :subtext="parent.type && parent.type.label ? parent.type.label[$i18n.locale] : ''"
           :show-thumbnails="false"
           entry-id="parentheader"
-          icon="sheet-empty"/>
+          icon="sheet-empty" />
       </div>
 
       <!-- HEADER ROW -->
@@ -25,8 +24,7 @@
         :unsaved-changes="unsavedChanges"
         :is-saving="dataSaving"
         @save="saveForm"
-        @return="returnFromForm"
-      />
+        @return="returnFromForm" />
     </div>
 
     <!-- FORM -->
@@ -38,7 +36,7 @@
         :is-published="valueList.published"
         :default-expanded="false"
         class="base-form-options"
-        @action-entry="actionEntry"/>
+        @action-entry="actionEntry" />
       <div
         v-if="formIsLoading || extensionIsLoading"
         class="form-loading-area">
@@ -54,18 +52,17 @@
           type: objectTypes,
           keywords: preFetchedData.keywords,
         }"
-        @values-changed="handleInput($event)"
-      />
+        @values-changed="handleInput($event)" />
       <transition-group
         name="slide-fade-form">
-
         <!-- FORM EXTENSION -->
         <div
           v-if="type && formDataPresent"
           key="extended-section">
           <div
             key="extended-title"
-            class="subtitle">{{ $t('form-view.formExtended') }}
+            class="subtitle">
+            {{ $t('form-view.formExtended') }}
           </div>
           <BaseForm
             key="extended-form"
@@ -80,7 +77,7 @@
               open_source_license: preFetchedData.open_source_license,
             }"
             class="form"
-            @values-changed="handleInput($event, 'data')"/>
+            @values-changed="handleInput($event, 'data')" />
         </div>
 
         <!-- ATTACHMENTS -->
@@ -88,23 +85,24 @@
           v-if="!formIsLoading && formDataPresent"
           key="attachments"
           @open-new-form="openNewForm"
-          @show-preview="$emit('show-preview', $event)"/>
+          @show-preview="$emit('show-preview', $event)" />
       </transition-group>
       <transition name="slide-child-form">
         <BaseForm
           v-if="showOverlay"
           ref="overlay"
           :form-field-json="formFields"
-          class="form slide-in-form"/>
+          class="form slide-in-form" />
       </transition>
-
     </form>
     <div
       v-if="valueList.date_created && valueList.date_changed"
-      class="last-modified">{{
+      class="last-modified">
+      {{
         `${$t('form-view.created')} ${createHumanReadableData(valueList.date_created)};
       ${$t('form-view.lastModified')} ${createHumanReadableData(valueList.date_changed)}`
-      }}</div>
+      }}
+    </div>
   </div>
 </template>
 

@@ -9,14 +9,14 @@
         icon-size="large"
         icon="eye"
         button-style="single"
-        @clicked="$emit('action-entry', isPublished ? 'offline' : 'publish')"/>
+        @clicked="$emit('action-entry', isPublished ? 'offline' : 'publish')" />
       <BaseButton
         :disabled="isNewForm"
         :text="$tc('delete')"
         icon-size="large"
         icon="waste-bin"
         button-style="single"
-        @clicked="$emit('action-entry', 'delete')"/>
+        @clicked="$emit('action-entry', 'delete')" />
     </template>
   </BaseOptions>
 </template>

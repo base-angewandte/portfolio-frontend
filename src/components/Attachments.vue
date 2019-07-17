@@ -1,6 +1,5 @@
 <template>
   <div class="attachment-area">
-
     <!-- ATTACHED ENTRIES -->
     <AttachmentsSection
       ref="linkedSection"
@@ -19,8 +18,8 @@
         slot="attached-box"
         slot-scope="props">
         <BaseImageBox
-          :selectable="props.selectActive"
           :key="props.item.id"
+          :selectable="props.selectActive"
           :box-size="{ width: 'calc(25% - 0.43em - (0.43em/2))' }"
           :title="props.item.to.title"
           :subtext="props.item.to.subtitle"
@@ -29,7 +28,7 @@
           show-title
           class="linked-base-box"
           @select-triggered="entrySelected(props.item.id, $event)"
-          @clicked="goToLinked(props.item.to.id)"/>
+          @clicked="goToLinked(props.item.to.id)" />
       </template>
     </AttachmentsSection>
 
@@ -54,36 +53,37 @@
           icon-size="large"
           icon="licence"
           button-style="single"
-          @clicked="scope.setAction('license')"/>
+          @clicked="scope.setAction('license')" />
         <BaseButton
           :text="$t('form-view.publishMedia')"
           icon-size="large"
           icon="eye"
           button-style="single"
-          @clicked="scope.setAction('publish')"/>
+          @clicked="scope.setAction('publish')" />
         <BaseButton
           :text="$t('form-view.deleteMedia')"
           icon-size="large"
           icon="waste-bin"
           button-style="single"
-          @clicked="scope.setAction('delete')"/>
+          @clicked="scope.setAction('delete')" />
       </template>
       <template slot="options-message-area-after">
         <BaseDropDown
           v-if="action === 'license'"
+          v-model="licenseSelected"
           :options="licenses"
           :show-label="false"
           :label="$t('form-view.selectLicense')"
           :placeholder="$t('form-view.selectLicense')"
-          v-model="licenseSelected"
           :language="$i18n.locale"
           value-prop="source"
-          class="license-dropdown"/>
+          class="license-dropdown" />
       </template>
       <template
         slot="attached-box"
         slot-scope="props">
         <BaseImageBox
+          :key="props.item.id"
           :show-title="true"
           :selectable="props.selectActive"
           :selected="selectedFiles.map(file => file.id || file).includes(props.item.id)"
@@ -91,11 +91,10 @@
           :subtext="getLicenseLabel(props.item.license)"
           :description="getFileType(props.item)"
           :image-url="getImagePath(props.item.thumbnail
-          || props.item.cover, imageHover[props.index])"
+            || props.item.cover, imageHover[props.index])"
           :box-size="{ width: 'calc(25% - 0.43em - (0.43em/2))' }"
           :box-ratio="100"
           :box-text="generateBoxText(props.item.metadata)"
-          :key="props.item.id"
           class="linked-base-box"
           @mouseenter.native="changeVideoHoverState($event, props.index, true)"
           @mouseleave.native="changeVideoHoverState($event, props.index, false)"
@@ -118,15 +117,13 @@
         </BaseImageBox>
       </template>
     </AttachmentsSection>
-
   </div>
 </template>
 
 <script>
 import {
-  BaseBoxButton, BaseImageBox, BaseButton, BaseDropDown,
+  BaseImageBox, BaseButton, BaseDropDown,
 } from 'base-ui-components';
-import BaseOptions from './BaseOptions';
 import EyeIcon from '../assets/icons/eye.svg';
 import { userInfo } from '../mixins/userInfo';
 import { setLangLabels, getApiUrl, getLangLabel } from '../utils/commonUtils';
@@ -135,11 +132,9 @@ import AttachmentsSection from './AttachmentsSection';
 export default {
   components: {
     AttachmentsSection,
-    BaseBoxButton,
     BaseDropDown,
     BaseImageBox,
     BaseButton,
-    BaseOptions,
     EyeIcon,
   },
   mixins: [userInfo],

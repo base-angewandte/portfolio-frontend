@@ -2,7 +2,6 @@
   <div class="base-form">
     <template
       v-for="(element, index) in formFieldListInt">
-
       <!-- ALLOW FOR MULTIPLE VALUES PER FIELD -->
       <template
         v-if="allowMultiply(element)">
@@ -14,7 +13,7 @@
             element['x-attrs'] && element['x-attrs'].field_format === 'half'
               ? 'base-form-field-half' : 'base-form-field-full',
             { 'base-form-field-left-margin': isHalfField(element) }
-        ]">
+          ]">
           <FormFieldCreator
             :key="index + '-' + valueIndex"
             :field-key="index + '-' + valueIndex"
@@ -24,7 +23,7 @@
             :label="getFieldName(element)"
             :placeholder="element['x-attrs'] && element['x-attrs'].placeholder
               ? element['x-attrs'].placeholder : $t('form.select') + ' '
-            + getFieldName(element)"
+                + getFieldName(element)"
             :tabs="['en', 'de']"
             :drop-down-list="dropdownLists[element.name]"
             :secondary-dropdown="dropdownLists[element.name + '_secondary']"
@@ -49,7 +48,6 @@
                   class="field-group-icon" />
               </span>
             </button>
-
           </div>
         </div>
         <div
@@ -65,7 +63,6 @@
                 class="field-group-icon" />
             </span>
           </button>
-
         </div>
       </template>
       <template v-else>
@@ -78,7 +75,7 @@
           :label="getFieldName(element)"
           :placeholder="element['x-attrs'] && element['x-attrs'].placeholder
             ? element['x-attrs'].placeholder : $t('form.select') + ' '
-          + getFieldName(element)"
+              + getFieldName(element)"
           :drop-down-list="dropdownLists[element.name]"
           :secondary-dropdown="dropdownLists[element.name + '_secondary']"
           :autocomplete-loading="fieldIsLoading === element.name"
@@ -89,8 +86,7 @@
             { 'base-form-field-left-margin': isHalfField(element) }
           ]"
           @field-value-changed="setFieldValue($event, element.name)"
-          @fetch-autocomplete="fetchAutocomplete"
-        />
+          @fetch-autocomplete="fetchAutocomplete" />
       </template>
     </template>
   </div>

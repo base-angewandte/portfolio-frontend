@@ -3,7 +3,6 @@
     id="menu-sidebar"
     :style="calcStyle"
     class="menu-sidebar">
-
     <div class="sidebar-head">
       <div :class="['base-row', { 'base-row-with-form': isNewForm || !!activeEntryId }]">
         <BaseButton
@@ -15,12 +14,12 @@
           icon-size="large"
           class="base-row-button"
           button-style="row"
-          @clicked="getNewForm"/>
+          @clicked="getNewForm" />
         <BaseSearch
           :show-image="true"
           :placeholder="$t('search')"
           class="search-bar"
-          @input="filterEntries($event, 'title')"/>
+          @input="filterEntries($event, 'title')" />
       </div>
       <BaseOptions
         :always-show-options-button="true"
@@ -31,18 +30,18 @@
         <template slot="afterOptions">
           <div class="sidebar-drop-downs">
             <BaseDropDown
+              v-model="sortParam"
               :placeholder="$t('dropdown.sortBy')"
               :label="$t('dropdown.sortBy')"
               :options="sortOptions"
-              v-model="sortParam"
-              @value-selected="fetchSidebarData"/>
+              @value-selected="fetchSidebarData" />
             <BaseDropDown
+              v-model="filterType"
               :label="$t('dropdown.filterByType')"
               :options="entryTypes"
               :language="$i18n.locale"
-              v-model="filterType"
               value-prop="source"
-              @value-selected="filterEntries($event, 'type')"/>
+              @value-selected="filterEntries($event, 'type')" />
           </div>
         </template>
         <template
@@ -53,29 +52,28 @@
             icon-size="large"
             icon="eye"
             button-style="single"
-            @clicked="handleAction('publish')"/>
+            @clicked="handleAction('publish')" />
           <BaseButton
             :text="$tc('offline', 2)"
             :disabled="isLoading"
             icon-size="large"
             icon="forbidden"
             button-style="single"
-            @clicked="handleAction('offline')"/>
+            @clicked="handleAction('offline')" />
           <BaseButton
             :text="$tc('duplicate', 2)"
             :disabled="isLoading"
             icon-size="large"
             icon="duplicate"
             button-style="single"
-            @clicked="duplicateEntries"/>
+            @clicked="duplicateEntries" />
           <BaseButton
             :text="$tc('delete', 2)"
             :disabled="isLoading"
             icon-size="large"
             icon="waste-bin"
             button-style="single"
-            @clicked="handleAction('delete')"/>
-
+            @clicked="handleAction('delete')" />
         </template>
       </BaseOptions>
     </div>
@@ -98,13 +96,13 @@
         :active-entry="activeEntry"
         :selected-list="selectedList"
         @clicked="showEntry"
-        @selected="selectEntry"/>
+        @selected="selectEntry" />
       <div
         v-else-if="!entriesExist && !isLoading"
         class="no-entries">
         <p class="no-entries-title">
           {{ isNewForm ? $t('noEntriesTitle', { action: $t('actionSave') })
-          : $t('noEntriesTitle', { action: $t('actionCreate') }) }}
+            : $t('noEntriesTitle', { action: $t('actionCreate') }) }}
         </p>
         <p class="no-entries-subtext">
           {{ isNewForm ? $t('noEntriesFormSubtext') : $t('noEntriesMainSubtext') }}
@@ -126,7 +124,7 @@
       v-if="pageTotal > 1"
       :total="pageTotal"
       :current="pageNumber"
-      @set-page="setPage"/>
+      @set-page="setPage" />
   </div>
 </template>
 

@@ -1,8 +1,12 @@
 <template>
   <div class="not-found-background">
     <div class="not-found-text">
-      <h1 class="not-found-title">{{ $t('form-view.notFound') }}</h1>
-      <p class="not-found-subtext">{{ $t('form-view.notFoundSubtext', { id: entryId }) }}</p>
+      <h1 class="not-found-title">
+        {{ $t('form-view.notFound') }}
+      </h1>
+      <p class="not-found-subtext">
+        {{ $t('form-view.notFoundSubtext', { id: entryId }) }}
+      </p>
       <BaseButton
         :text="$t('returnToDashboard')"
         button-style="row"

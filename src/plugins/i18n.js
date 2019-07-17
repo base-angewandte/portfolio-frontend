@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import VueI18n from 'vue-i18n';
-import prodEnv from '../../config/prod.env';
+
+const prodEnv = require('../../config/prod.env');
 
 Vue.use(VueI18n);
 

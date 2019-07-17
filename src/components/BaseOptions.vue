@@ -18,7 +18,7 @@
         @clicked="showOptionsToggle = !showOptionsToggle" />
       <div
         v-else-if="!optionsHidden && !isMobile"
-        class="base-options-inline" >
+        class="base-options-inline">
         <slot name="options" />
       </div>
       <div
@@ -30,7 +30,7 @@
     <transition name="slide-fade-options">
       <div
         v-if="useOptionsButton && showOptionsToggle"
-        class="base-options-below" >
+        class="base-options-below">
         <slot name="options" />
       </div>
       <slot name="animations" />

@@ -8,7 +8,6 @@
     <div
       v-if="attachedList.length"
       class="base-attachments-section__area">
-
       <!-- HEADER ROW -->
       <div class="base-attachments-section__header-row">
         <BaseOptions
@@ -17,7 +16,9 @@
           <template slot="beforeOptions">
             <h3
               v-if="headerText"
-              class="base-attachments-section__header">{{ headerText }}</h3>
+              class="base-attachments-section__header">
+              {{ headerText }}
+            </h3>
           </template>
           <template slot="options">
             <div
@@ -31,7 +32,7 @@
                   icon-size="large"
                   icon="waste-bin"
                   button-style="single"
-                  @clicked="setAction('delete')"/>
+                  @clicked="setAction('delete')" />
               </slot>
             </div>
             <div
@@ -42,13 +43,13 @@
                 icon-size="large"
                 icon="remove"
                 button-style="single"
-                @clicked="actionInt = ''"/>
+                @clicked="actionInt = ''" />
               <BaseButton
                 :text="actionButtonText"
                 icon-size="large"
                 icon="save-file"
                 button-style="single"
-                @clicked="submitAction"/>
+                @clicked="submitAction" />
             </div>
           </template>
         </BaseOptions>
@@ -81,7 +82,7 @@
               :key="attached.id"
               :selectable="selectActive"
               :box-size="{ width: 'calc(25% - 0.43em - (0.43em/2))' }"
-              :box-ratio="100"/>
+              :box-ratio="100" />
           </slot>
         </template>
 
@@ -93,7 +94,7 @@
           icon="save-file"
           box-style="small"
           class="linked-base-box"
-          @clicked="submitAction"/>
+          @clicked="submitAction" />
       </div>
     </div>
   </div>

@@ -4,7 +4,7 @@
       :show="$store.state.data.popUp.show"
       :title="capitalizeFirstLetter($store.state.data.popUp.header)"
       :button-left-text="capitalizeFirstLetter($store.state.data.popUp.buttonTextLeft)
-      || $t('cancel')"
+        || $t('cancel')"
       :button-right-text="capitalizeFirstLetter($store.state.data.popUp.buttonTextRight)"
       :button-right-icon="$store.state.data.popUp.icon"
       @close="cancelAction"
@@ -29,21 +29,21 @@
       }"
       :orientation="imageOrientation"
       @hide-preview="showPreview = false"
-      @download="downloadFile"/>
+      @download="downloadFile" />
 
     <Sidebar
       ref="sidebar"
       :class="['sidebar', { 'sidebar-full': !showForm, 'sidebar-hidden-mobile': showForm }]"
       @new-form="createNewForm"
       @show-entry="routeToEntry"
-      @update-publish-state="updateFormData"/>
+      @update-publish-state="updateFormData" />
     <div
       v-if="showForm"
       class="form-view">
       <router-view
         ref="view"
         @show-preview="loadPreview"
-        @data-changed="updateSidebarData()"/>
+        @data-changed="updateSidebarData()" />
     </div>
   </div>
 </template>
