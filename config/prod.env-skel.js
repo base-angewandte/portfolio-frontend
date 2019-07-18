@@ -43,5 +43,4 @@ module.exports= {
       source_name:"",
     }
   ],
-  FONT_PATH: 'the path to the fonts files (in case of doubt leave empty) e.g. https://basedev.uni-ak.ac.at/bs/fonts/',
 };
