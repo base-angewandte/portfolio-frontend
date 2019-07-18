@@ -14,7 +14,7 @@
         drop-type="elements"
         class="file-box file-boxes-margin"
         @dropped-element="droppedEntries"
-        @clicked="openEntrySelect"/>
+        @clicked="openEntrySelect" />
       <BaseBoxButton
         key="addNew"
         :show-plus="true"
@@ -22,7 +22,7 @@
         :text="$t('form-view.addNewEntry')"
         icon="sheet-empty"
         class="file-box file-boxes-margin"
-        @clicked="$emit('open-new-form')"/>
+        @clicked="$emit('open-new-form')" />
       <label class="file-select">
         <BaseDropBox
           key="addFile"
@@ -32,7 +32,7 @@
           :text="$t('form-view.attachFile')"
           :subtext="$t('form-view.clickordrag')"
           icon="camera"
-          @dropped-file="handleFileSelect($event)"/>
+          @dropped-file="handleFileSelect($event)" />
         <input
           ref="fileInput"
           type="file"
@@ -41,7 +41,6 @@
           @click="resetInput"
           @change="handleFileSelect">
       </label>
-
     </div>
     <div
       v-else
@@ -58,14 +57,14 @@
         entry-id="addNew"
         icon="sheet-plus"
         title="Neuen Eintrag anhängen"
-        @clicked="$emit('open-new-form')"/>
+        @clicked="$emit('open-new-form')" />
       <label class="file-select">
         <BaseMenuEntry
           key="mobile-addExisting"
           entry-id="addExisting"
           icon="sheet-plus"
           title="Datei anhängen"
-          class="mobile-file-list-attach"/>
+          class="mobile-file-list-attach" />
         <input
           ref="fileInputMobile"
           type="file"
@@ -80,7 +79,7 @@
       v-if="!!filesToUpload.length"
       :file-list="filesToUpload"
       @cancel="resetFiles"
-      @success="resetFiles"/>
+      @success="resetFiles" />
 
     <BasePopUp
       :show="showEntryPopUp"
@@ -101,7 +100,7 @@
           :exclude-linked="true"
           :options-disabled="true"
           class="menu"
-          @selected-changed="selectedEntries = [].concat($event)"/>
+          @selected-changed="selectedEntries = [].concat($event)" />
       </div>
     </BasePopUp>
   </div>
@@ -203,7 +202,6 @@ export default {
     async linkEntries(val) {
       const list = [];
       val.forEach((entryId) => {
-        // TODO: also check if it is a parent already!!!!!
         if (!this.linkedList.map(e => e.to.id).includes(entryId)) {
           list.push(entryId);
         } else {

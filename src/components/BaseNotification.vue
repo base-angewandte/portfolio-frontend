@@ -16,18 +16,17 @@
             @click="props.close">
             <FailIcon
               v-if="props.item.type === 'error'"
-              class="icon notification-status-icon"
-            />
+              class="icon notification-status-icon" />
             <SuccessIcon
               v-else-if="props.item.type === 'success'"
-              class="icon notification-status-icon"
-            />
+              class="icon notification-status-icon" />
             <div class="notification-text">
               <div
                 class="notification-title"
                 v-html="notificationTitle(props.item.title)" />
-              <div class="notification-message">{{ props.item.text }}</div>
-
+              <div class="notification-message">
+                {{ props.item.text }}
+              </div>
             </div>
 
             <div

@@ -2,7 +2,6 @@
 <template>
   <div class="form-component">
     <div class="form-head">
-
       <!-- PARENT HEADER -->
       <div
         v-if="parent"
@@ -14,7 +13,7 @@
           :subtext="parent.type && parent.type.label ? parent.type.label[$i18n.locale] : ''"
           :show-thumbnails="false"
           entry-id="parentheader"
-          icon="sheet-empty"/>
+          icon="sheet-empty" />
       </div>
 
       <!-- HEADER ROW -->
@@ -25,8 +24,7 @@
         :unsaved-changes="unsavedChanges"
         :is-saving="dataSaving"
         @save="saveForm"
-        @return="returnFromForm"
-      />
+        @return="returnFromForm" />
     </div>
 
     <!-- FORM -->
@@ -38,9 +36,9 @@
         :is-published="valueList.published"
         :default-expanded="false"
         class="base-form-options"
-        @action-entry="actionEntry"/>
+        @action-entry="actionEntry" />
       <div
-        v-if="formIsLoading"
+        v-if="formIsLoading || extensionIsLoading"
         class="form-loading-area">
         <BaseLoader class="loader" />
       </div>
@@ -54,18 +52,17 @@
           type: objectTypes,
           keywords: preFetchedData.keywords,
         }"
-        @values-changed="handleInput($event)"
-      />
+        @values-changed="handleInput($event)" />
       <transition-group
         name="slide-fade-form">
-
         <!-- FORM EXTENSION -->
         <div
           v-if="type && formDataPresent"
           key="extended-section">
           <div
             key="extended-title"
-            class="subtitle">{{ $t('form-view.formExtended') }}
+            class="subtitle">
+            {{ $t('form-view.formExtended') }}
           </div>
           <BaseForm
             key="extended-form"
@@ -80,7 +77,7 @@
               open_source_license: preFetchedData.open_source_license,
             }"
             class="form"
-            @values-changed="handleInput($event, 'data')"/>
+            @values-changed="handleInput($event, 'data')" />
         </div>
 
         <!-- ATTACHMENTS -->
@@ -88,17 +85,24 @@
           v-if="!formIsLoading && formDataPresent"
           key="attachments"
           @open-new-form="openNewForm"
-          @show-preview="$emit('show-preview', $event)"/>
+          @show-preview="$emit('show-preview', $event)" />
       </transition-group>
       <transition name="slide-child-form">
         <BaseForm
           v-if="showOverlay"
           ref="overlay"
           :form-field-json="formFields"
-          class="form slide-in-form"/>
+          class="form slide-in-form" />
       </transition>
-
     </form>
+    <div
+      v-if="valueList.date_created && valueList.date_changed"
+      class="last-modified">
+      {{
+        `${$t('form-view.created')} ${createHumanReadableData(valueList.date_created)};
+      ${$t('form-view.lastModified')} ${createHumanReadableData(valueList.date_changed)}`
+      }}
+    </div>
   </div>
 </template>
 
@@ -130,8 +134,11 @@ export default {
       unsavedChanges: false,
       dataSaving: false,
       valueList: {},
+      // variable for steering the overlay animation for linking
+      // a new entry
       showOverlay: false,
       formIsLoading: false,
+      extensionIsLoading: false,
       reloadSidebarData: false,
       prefetchedRoles: [],
     };
@@ -174,7 +181,6 @@ export default {
   watch: {
     async currentItemId(val) {
       window.scrollTo(0, 0);
-      this.formIsLoading = true;
       if (val) {
         this.resetForm();
         await this.updateForm();
@@ -182,11 +188,11 @@ export default {
         this.resetForm();
       }
       this.showOverlay = false;
-      this.formIsLoading = false;
     },
     async type(val) {
       if (val) {
         try {
+          this.extensionIsLoading = true;
           const { properties } = await this.$store.dispatch('PortfolioAPI/get', {
             kind: 'jsonschema',
             id: encodeURIComponent(this.valueList.type[0].source),
@@ -216,6 +222,7 @@ export default {
           // empty extension
           this.$store.commit('data/setExtensionSchema', {});
         }
+        this.extensionIsLoading = false;
       } else {
         this.$store.commit('data/setExtensionSchema', {});
       }
@@ -229,16 +236,18 @@ export default {
       }
     },
   },
-  created() {
-    this.fetchGeneralFormFields();
+  async created() {
+    this.formIsLoading = true;
+    await this.fetchGeneralFormFields();
     // this.$store.dispatch('data/getStaticDropDowns');
     if (this.currentItemId) {
       this.updateForm();
+    } else {
+      this.formIsLoading = false;
     }
   },
   methods: {
     async fetchGeneralFormFields() {
-      this.formIsLoading = true;
       try {
         await this.$store.dispatch('data/fetchGeneralFields');
       } catch (e) {
@@ -251,7 +260,6 @@ export default {
           type: 'error',
         });
       }
-      this.formIsLoading = false;
     },
     resetForm() {
       this.unsavedChanges = false;
@@ -260,9 +268,11 @@ export default {
       this.$refs.baseForm.initializeValueObject();
     },
     async updateForm() {
+      this.formIsLoading = true;
       try {
         const data = await this.$store.dispatch('data/fetchEntryData', this.currentItemId);
         this.valueList = Object.assign({}, data);
+        this.extensionIsLoading = !!this.type;
         this.$set(this.valueList, 'data', Object.assign({}, data.data));
       } catch (e) {
         console.error(e);
@@ -278,6 +288,7 @@ export default {
           this.$router.push('/');
         }
       }
+      this.formIsLoading = false;
     },
     handleInput(data, type) {
       if ((!!data.type && !!this.valueList.type
@@ -447,6 +458,7 @@ export default {
       }
     },
     async action(action) {
+      // mixin method actionEntries
       await this.actionEntries(action);
       if (action === 'delete') {
         this.$router.push('/');
@@ -457,6 +469,11 @@ export default {
       }
       this.$emit('data-changed');
     },
+    createHumanReadableData(val) {
+      const date = new Date(val);
+      const { locale } = this.$i18n;
+      return `${date.toLocaleDateString(locale)} ${this.$t('form-view.at')} ${date.toLocaleTimeString(locale)}`;
+    },
   },
 };
 </script>
@@ -464,7 +481,7 @@ export default {
 <style lang="scss" scoped>
   .form-component {
     position: relative;
-    min-height: 100vh;
+    min-height: 80vh;
 
     .form-head {
       background-color: $background-color;
@@ -533,6 +550,12 @@ export default {
       color: $font-color-second;
       padding: $spacing;
     }
+  }
+
+  .last-modified {
+    margin: $spacing;
+    color: $font-color-second;
+    font-size: $font-size-small;
   }
 
   .slide-fade-form-enter-active, .slide-fade-form-move {

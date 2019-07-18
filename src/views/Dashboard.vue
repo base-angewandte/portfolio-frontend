@@ -4,9 +4,10 @@
       :show="$store.state.data.popUp.show"
       :title="capitalizeFirstLetter($store.state.data.popUp.header)"
       :button-left-text="capitalizeFirstLetter($store.state.data.popUp.buttonTextLeft)
-      || $t('cancel')"
+        || $t('cancel')"
       :button-right-text="capitalizeFirstLetter($store.state.data.popUp.buttonTextRight)"
       :button-right-icon="$store.state.data.popUp.icon"
+      :is-loading="$store.state.data.popUp.isLoading"
       @close="cancelAction"
       @button-left="cancelAction($store.state.data.popUp.actionLeft)"
       @button-right="$store.state.data.popUp.actionRight()">
@@ -27,22 +28,23 @@
         download: $t('form-view.download'),
         view: $t('form-view.view'),
       }"
+      :orientation="imageOrientation"
       @hide-preview="showPreview = false"
-      @download="downloadFile"/>
+      @download="downloadFile" />
 
     <Sidebar
       ref="sidebar"
       :class="['sidebar', { 'sidebar-full': !showForm, 'sidebar-hidden-mobile': showForm }]"
       @new-form="createNewForm"
       @show-entry="routeToEntry"
-      @update-publish-state="updateFormData"/>
+      @update-publish-state="updateFormData" />
     <div
       v-if="showForm"
       class="form-view">
       <router-view
         ref="view"
         @show-preview="loadPreview"
-        @data-changed="updateSidebarData()"/>
+        @data-changed="updateSidebarData()" />
     </div>
   </div>
 </template>
@@ -65,6 +67,7 @@ export default {
       previewUrl: '',
       previewSize: {},
       originalUrl: '',
+      imageOrientation: 0,
     };
   },
   computed: {
@@ -109,7 +112,6 @@ export default {
       const filePath = fileData.playlist || fileData.mp3
         || fileData.pdf || fileData.original;
       this.previewUrl = getApiUrl(filePath);
-      // TODO: remove again as soon as video and pdf and audio are available
       if (filePath) {
         this.showPreview = !!this.previewUrl;
         // previewSize not required for audio (and pdf)
@@ -121,6 +123,9 @@ export default {
             width: `${fileData.metadata.ImageWidth ? fileData.metadata.ImageWidth.val
               : fileData.metadata.SourceImageWidth.val}px`,
           };
+        }
+        if (fileData.metadata.Orientation) {
+          this.imageOrientation = fileData.metadata.Orientation.num;
         }
         // landing here if file is not fully converted yet
       } else {

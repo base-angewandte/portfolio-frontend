@@ -122,11 +122,15 @@
     "document": "Dokument",
     "file": "Datei",
     "download": "Download",
-    "view": "Anzeigen"
+    "view": "Anzeigen",
+    "created": "Eintrag erzeugt am",
+    "lastModified": "Eintrag zuletzt gespeichert am",
+    "at": "um"
   },
   "notify": {
     "entry": "Einträge | Eintrag | Einträge",
     "media": "Dateien | Datei | Dateien",
+    "link": "Verknüpfungen | Verknüpfung | Verknüpfungen",
     "linkingNotPossible": "Verknüpfung nicht möglich",
     "alreadyLinked": "Dieser Eintrag ist bereits verknüpft.",
     "selfLinked": "Einträge können nicht mit sich selbst verknüpft werden.",
@@ -151,7 +155,6 @@
     "publish": "veröffentlichen",
     "offline": "offline nehmen",
     "duplicate": "Duplizierung",
-    "link": "Verknüfung",
     "upload": "Dateiupload",
     "change": "Freigabestatus ändern",
     "entryActionTitle": "Eintrag {action} | Einträge {action}",

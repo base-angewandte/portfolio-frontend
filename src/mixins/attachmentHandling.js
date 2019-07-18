@@ -5,8 +5,13 @@ export const attachmentHandlingMixin = {
   mixins: [userInfo],
   methods: {
     async actionLinked({ list, action }) {
+      const { attachmentArea } = this.$refs;
+      if (attachmentArea) {
+        attachmentArea.entriesLoading = true;
+      }
       const fromId = this.$store.getters['data/getCurrentItemId'];
       const failArr = [];
+      const successArr = [];
       await Promise.all(list.map(relationId => new Promise(async (resolve) => {
         try {
           if (action === 'save') {
@@ -15,6 +20,7 @@ export const attachmentHandlingMixin = {
           } else if (action === 'delete') {
             await this.$store.dispatch('PortfolioAPI/delete', { kind: 'relation', id: relationId });
           }
+          successArr.push(relationId);
         } catch (e) {
           console.error(e);
           failArr.push(relationId);
@@ -24,7 +30,8 @@ export const attachmentHandlingMixin = {
       // TODO: currently only number of failed links no title - is this good enough?
       this.informUser({
         failedArr: failArr,
-        type: 'entry',
+        successArr,
+        type: 'link',
         action,
       });
       // fetch entry new to update relations
@@ -39,6 +46,9 @@ export const attachmentHandlingMixin = {
           text: this.$t('notify.fetchLinkedFail'),
           type: 'error',
         });
+      }
+      if (attachmentArea) {
+        attachmentArea.entriesLoading = false;
       }
     },
   },

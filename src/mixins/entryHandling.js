@@ -20,6 +20,7 @@ export const entryHandlingMixin = {
       });
     },
     async actionEntries(action) {
+      this.$store.commit('data/setPopUpLoading', true);
       let success = [];
       let failed = [];
       let noAction = [];
@@ -30,6 +31,7 @@ export const entryHandlingMixin = {
       } else if (action === 'offline') {
         [success, failed, noAction] = await this.$store.dispatch('data/modifyEntries', { prop: 'published', value: false });
       }
+      this.$store.commit('data/setPopUpLoading', false);
       this.informUser({
         successArr: success,
         failedArr: failed,

@@ -9,8 +9,7 @@
         key="user-warning"
         class="base-uploader-user-warning">
         <FailIcon
-          class="icon base-uploader-user-warning-icon"
-        />
+          class="icon base-uploader-user-warning-icon" />
         {{ $t('upload.quotaExceeded', { space: convertDiskSpace(userSpace) }) }}
       </div>
       <div
@@ -28,7 +27,7 @@
             :status="getStatus(file.name)"
             :show-remove="isInitial"
             class="upload-bar"
-            @remove-item="removeFile(index)"/>
+            @remove-item="removeFile(index)" />
         </transition-group>
       </div>
     </transition-group>
@@ -36,23 +35,23 @@
       key="popup-text"
       class="popup-text">
       <BaseDropDown
+        v-model="license"
         :label="$t('upload.choose_license')"
         :options="licenses"
         :show-label="true"
         :header-background-color="'rgb(240, 240, 240)'"
         :language="$i18n.locale"
-        v-model="license"
         value-prop="source"
-        class="upload-dropdown"/>
+        class="upload-dropdown" />
       <BaseDropDown
+        v-model="publish"
         :options="[
           { label: $t('no'), value: 'false' },
           { label: $t('yes'), value: 'true' }]"
         :header-background-color="'rgb(240, 240, 240)'"
         :label="$t('upload.publish_images')"
         :show-label="true"
-        v-model="publish"
-        class="upload-dropdown"/>
+        class="upload-dropdown" />
     </div>
     <template
       slot="button-row">
@@ -63,8 +62,7 @@
         :icon-position="'right'"
         :icon-size="'small'"
         class="base-upload-bar-button"
-        @clicked="cancelUpload"
-      />
+        @clicked="cancelUpload" />
       <!-- @event buttonRight -->
       <BaseButton
         :text="buttonText"
@@ -90,7 +88,6 @@
 import {
   BasePopUp,
   BaseDropDown,
-  BaseInput,
   BaseUploadBar,
   BaseButton,
   BaseLoader,
@@ -110,7 +107,6 @@ export default {
     BaseButton,
     BasePopUp,
     BaseDropDown,
-    BaseInput,
     BaseUploadBar,
     BaseLoader,
     FailIcon,

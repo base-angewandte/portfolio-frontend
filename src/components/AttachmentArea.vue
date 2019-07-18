@@ -3,13 +3,14 @@
     <AttachmentButtonRow
       :current-id="entryId"
       @upload-done="updateUserQuota"
-      @open-new-form="$emit('open-new-form')"/>
+      @open-new-form="$emit('open-new-form')" />
     <Attachments
+      ref="attachmentArea"
       :key="'attachmentArea'"
       :linked-list="linkedList"
       :attached-list="mediaList"
       @files-deleted="updateUserQuota"
-      @show-preview="$emit('show-preview', $event)"/>
+      @show-preview="$emit('show-preview', $event)" />
   </div>
 </template>
 

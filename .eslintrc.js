@@ -44,6 +44,10 @@ module.exports = {
     'import/no-extraneous-dependencies': ['error', {
       optionalDependencies: ['test/unit/index.js']
     }],
+    'vue/html-closing-bracket-newline': ['error', {
+      singleline: 'never',
+      multiline: 'never',
+    }],
     // allow debugger and console during development
     'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
     'no-console': 'off',

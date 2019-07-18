@@ -3,7 +3,6 @@
     id="menu-sidebar"
     :style="calcStyle"
     class="menu-sidebar">
-
     <div class="sidebar-head">
       <div :class="['base-row', { 'base-row-with-form': isNewForm || !!activeEntryId }]">
         <BaseButton
@@ -15,12 +14,12 @@
           icon-size="large"
           class="base-row-button"
           button-style="row"
-          @clicked="getNewForm"/>
+          @clicked="getNewForm" />
         <BaseSearch
           :show-image="true"
           :placeholder="$t('search')"
           class="search-bar"
-          @input="filterEntries($event, 'title')"/>
+          @input="filterEntries($event, 'title')" />
       </div>
       <BaseOptions
         :always-show-options-button="true"
@@ -31,18 +30,18 @@
         <template slot="afterOptions">
           <div class="sidebar-drop-downs">
             <BaseDropDown
+              v-model="sortParam"
               :placeholder="$t('dropdown.sortBy')"
               :label="$t('dropdown.sortBy')"
               :options="sortOptions"
-              v-model="sortParam"
-              @value-selected="fetchSidebarData"/>
+              @value-selected="fetchSidebarData" />
             <BaseDropDown
+              v-model="filterType"
               :label="$t('dropdown.filterByType')"
               :options="entryTypes"
               :language="$i18n.locale"
-              v-model="filterType"
               value-prop="source"
-              @value-selected="filterEntries($event, 'type')"/>
+              @value-selected="filterEntries($event, 'type')" />
           </div>
         </template>
         <template
@@ -53,29 +52,28 @@
             icon-size="large"
             icon="eye"
             button-style="single"
-            @clicked="handleAction('publish')"/>
+            @clicked="handleAction('publish')" />
           <BaseButton
             :text="$tc('offline', 2)"
             :disabled="isLoading"
             icon-size="large"
             icon="forbidden"
             button-style="single"
-            @clicked="handleAction('offline')"/>
+            @clicked="handleAction('offline')" />
           <BaseButton
             :text="$tc('duplicate', 2)"
             :disabled="isLoading"
             icon-size="large"
             icon="duplicate"
             button-style="single"
-            @clicked="duplicateEntries"/>
+            @clicked="duplicateEntries" />
           <BaseButton
             :text="$tc('delete', 2)"
             :disabled="isLoading"
             icon-size="large"
             icon="waste-bin"
             button-style="single"
-            @clicked="handleAction('delete')"/>
-
+            @clicked="handleAction('delete')" />
         </template>
       </BaseOptions>
     </div>
@@ -98,13 +96,13 @@
         :active-entry="activeEntry"
         :selected-list="selectedList"
         @clicked="showEntry"
-        @selected="selectEntry"/>
+        @selected="selectEntry" />
       <div
         v-else-if="!entriesExist && !isLoading"
         class="no-entries">
         <p class="no-entries-title">
           {{ isNewForm ? $t('noEntriesTitle', { action: $t('actionSave') })
-          : $t('noEntriesTitle', { action: $t('actionCreate') }) }}
+            : $t('noEntriesTitle', { action: $t('actionCreate') }) }}
         </p>
         <p class="no-entries-subtext">
           {{ isNewForm ? $t('noEntriesFormSubtext') : $t('noEntriesMainSubtext') }}
@@ -126,7 +124,7 @@
       v-if="pageTotal > 1"
       :total="pageTotal"
       :current="pageNumber"
-      @set-page="setPage"/>
+      @set-page="setPage" />
   </div>
 </template>
 
@@ -289,6 +287,13 @@ export default {
         this.selectedMenuEntries = [];
       }
     },
+    $route(from) {
+      if (from.name === 'Dashboard') {
+        // refetch sidebar data when switching from overview to form view
+        this.calculateSidebarHeight();
+        this.fetchSidebarData();
+      }
+    },
   },
   created() {
     this.$store.dispatch('data/fetchEntryTypes');
@@ -409,15 +414,15 @@ export default {
     async fetchSidebarData() {
       this.isLoading = true;
       try {
-        const response = await this.$store.dispatch('PortfolioAPI/get', {
-          kind: 'entry',
-          sort: this.sortParam.value,
-          offset: (this.pageNumber - 1) * this.entriesPerPage,
-          limit: this.entriesPerPage,
-          type: this.filterType.source,
-          q: this.filterString,
-          link_selection_for: this.excludeLinked ? this.activeEntryId : '',
-        });
+        let offset = (this.pageNumber - 1) * this.entriesPerPage;
+        let response = await this.dataRequest(offset);
+        // should there be not enough entries to give results with the current offset
+        // try again with a offset 0
+        if (offset >= response.count) {
+          offset = 0;
+          this.pageNumber = 1;
+          response = await this.dataRequest(offset);
+        }
         this.listInt = response.results
           .map(entry => Object.assign({}, entry, {
             description: entry.type && entry.type.label ? capitalizeString(entry.type.label[this.$i18n.locale]) : '',
@@ -441,10 +446,22 @@ export default {
       await this.$store.dispatch('data/fetchEntryTypes');
       this.isLoading = false;
     },
+    async dataRequest(offset) {
+      const response = await this.$store.dispatch('PortfolioAPI/get', {
+        kind: 'entry',
+        sort: this.sortParam.value,
+        offset,
+        limit: this.entriesPerPage,
+        type: this.filterType.source,
+        q: this.filterString,
+        link_selection_for: this.excludeLinked ? this.activeEntryId : '',
+      });
+      return response;
+    },
     calculateSidebarHeight() {
       const sidebarHeight = this.$refs.menuContainer.clientHeight - 32 - 16;
       // hardcoded because unfortunately no other possibility found
-      const entryHeight = 56;
+      const entryHeight = window.innerWidth >= 640 ? 56 : 48;
       this.entriesPerPage = Math.floor(sidebarHeight / entryHeight);
     },
   },
@@ -514,34 +531,23 @@ export default {
     }
   }
 
-  .slide-toggle-enter-active,
-  .slide-toggle-leave-active {
-    transition: height .5s ease;
-  }
-  .slide-toggle-enter-active {
-    height: calc(4 * #{$row-height-small});
-  }
-  .slide-toggle-enter,
-  .slide-toggle-leave-active {
-    height: 0;
-  }
-  .slide-toggle-leave {
-    height: calc(4 * #{$row-height-small});
-  }
-
   @media screen and (max-width: $tablet) {
-    .menu-sidebar .sidebar-head {
-      & .sidebar-drop-downs {
-        flex-wrap: wrap;
-      }
+    .menu-sidebar {
+      height: calc(100vh - #{$header-height} - #{$row-height-small} - 130px);
 
-      .base-row-with-form {
-        height: auto;
-        flex-wrap: wrap;
+      .sidebar-head {
+        & .sidebar-drop-downs {
+          flex-wrap: wrap;
+        }
 
-        .base-row-button {
-          width: 100%;
-          border-bottom: $separation-line;
+        .base-row-with-form {
+          height: auto;
+          flex-wrap: wrap;
+
+          .base-row-button {
+            width: 100%;
+            border-bottom: $separation-line;
+          }
         }
       }
     }
@@ -558,6 +564,8 @@ export default {
     }
 
     .menu-sidebar {
+      height: calc(100vh - #{$header-height} - (2 * #{$spacing}));
+
       .search-bar {
         border-left: none;
       }

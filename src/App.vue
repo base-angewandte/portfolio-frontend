@@ -2,19 +2,19 @@
   <div id="app">
     <div class="wrapper">
       <component
+        :is="`${headerName}-header`"
         :lang="lang"
         :active="'portfolio'"
         :profile.prop="profile"
-        :urls.prop="urls"
-        :is="`${headerName}-header`" />
+        :urls.prop="urls" />
       <BaseNotification />
       <router-view />
       <component
+        :is="`${headerName}-footer`"
         ref="baseFooter"
         :lang="lang"
         :logged-in="isAuthenticated"
-        :urls.prop="urls"
-        :is="`${headerName}-footer`" />
+        :urls.prop="urls" />
     </div>
   </div>
 </template>
@@ -199,6 +199,7 @@ export default {
 
     .base-row {
       height: auto;
+      flex-wrap: wrap;
     }
   }
 </style>
