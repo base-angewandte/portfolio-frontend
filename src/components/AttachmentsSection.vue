@@ -56,9 +56,10 @@
       </div>
 
       <!-- ACTION AREA -->
-      <transition name="slide">
+      <transition-group name="slide">
         <div
           v-if="selectActive"
+          :key="headerText + '_messageArea'"
           class="base-attachments-section__message-area">
           <div class="base-attachments-section__message-area-text">
             {{ messageText }}
@@ -68,34 +69,36 @@
           </div>
           <slot name="options-message-area-after" />
         </div>
-      </transition>
 
-      <!-- BOX AREA -->
-      <div class="base-attachments-section__box-area">
-        <template v-for="(attached, index) of attachedList">
-          <slot
-            :item="attached"
-            :index="index"
-            :select-active="selectActive"
-            name="attached-box">
-            <BaseImageBox
-              :key="attached.id"
-              :selectable="selectActive"
-              :box-size="{ width: 'calc(25% - 0.43em - (0.43em/2))' }"
-              :box-ratio="100" />
-          </slot>
-        </template>
+        <!-- BOXAREA -->
+        <div
+          :key="headerText + '_boxArea'"
+          class="base-attachments-section__box-area">
+          <template v-for="(attached, index) of attachedList">
+            <slot
+              :item="attached"
+              :index="index"
+              :select-active="selectActive"
+              name="attached-box">
+              <BaseImageBox
+                :key="attached.id"
+                :selectable="selectActive"
+                :box-size="{ width: 'calc(25% - 0.43em - (0.43em/2))' }"
+                :box-ratio="100" />
+            </slot>
+          </template>
 
-        <!-- ACTION BUTTON -->
-        <BaseBoxButton
-          v-if="showActionButtonBox && actionInt"
-          :text="actionButtonText"
-          :box-size="{ width: 'calc(25% - 0.43em - (0.43em/2))' }"
-          icon="save-file"
-          box-style="small"
-          class="linked-base-box"
-          @clicked="submitAction" />
-      </div>
+          <!-- ACTION BUTTON -->
+          <BaseBoxButton
+            v-if="showActionButtonBox && actionInt"
+            :text="actionButtonText"
+            :box-size="{ width: 'calc(25% - 0.43em - (0.43em/2))' }"
+            icon="save-file"
+            box-style="small"
+            class="linked-base-box"
+            @clicked="submitAction" />
+        </div>
+      </transition-group>
     </div>
   </div>
 </template>
@@ -282,9 +285,25 @@ export default {
         transition: all .5s ease-in-out;
       }
 
+      .slide-move {
+        transition: all .15s ease-out;
+      }
+
       .slide-enter {
         opacity: 0;
         transform: translateY(-#{$spacing});
+      }
+
+      .slide-leave-to {
+        opacity: 0;
+        transform: translateY(-#{$spacing});
+      }
+
+      .slide-leave-active {
+        position: absolute;
+        width: 100%;
+        margin: auto;
+        transition: opacity 0.15s ease, transform 0.3s ease;
       }
     }
   }

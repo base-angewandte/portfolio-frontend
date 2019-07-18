@@ -152,15 +152,21 @@ export default {
   .slide-fade-options-enter-active, .slide-fade-options-move {
     transition: all 0.5s ease;
   }
-  .slide-fade-options-enter, .slide-fade-options-leave-to {
+
+  .slide-fade-options-enter {
     opacity: 0;
     transform: translateY(-#{2*$spacing});
+  }
+
+  .slide-fade-options-leave-to {
+    opacity: 0;
+    transform: translateY(-#{$spacing});
   }
 
   .slide-fade-options-leave-active {
     position: absolute;
     width: 100%;
     margin: auto;
-    transition: all 0.3s ease;
+    transition: opacity 0.15s ease, transform 0.3s ease;
   }
 </style>

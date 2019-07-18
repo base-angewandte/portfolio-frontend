@@ -531,21 +531,6 @@ export default {
     }
   }
 
-  .slide-toggle-enter-active,
-  .slide-toggle-leave-active {
-    transition: height .5s ease;
-  }
-  .slide-toggle-enter-active {
-    height: calc(4 * #{$row-height-small});
-  }
-  .slide-toggle-enter,
-  .slide-toggle-leave-active {
-    height: 0;
-  }
-  .slide-toggle-leave {
-    height: calc(4 * #{$row-height-small});
-  }
-
   @media screen and (max-width: $tablet) {
     .menu-sidebar {
       height: calc(100vh - #{$header-height} - #{$row-height-small} - 130px);
