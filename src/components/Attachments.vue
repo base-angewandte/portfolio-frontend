@@ -242,8 +242,8 @@ export default {
         this.action = '';
         this.selectedFiles = [];
         this.licenseSelected = {};
-        this.filesLoading = false;
       }
+      this.filesLoading = false;
     },
     async deleteLinked() {
       this.entriesLoading = true;
