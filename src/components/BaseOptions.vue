@@ -157,16 +157,4 @@ export default {
     opacity: 0;
     transform: translateY(-#{2*$spacing});
   }
-
-  .slide-fade-options-leave-to {
-    opacity: 0;
-    transform: translateY(-#{$spacing});
-  }
-
-  .slide-fade-options-leave-active {
-    position: absolute;
-    width: 100%;
-    margin: auto;
-    transition: opacity 0.15s ease, transform 0.3s ease;
-  }
 </style>
