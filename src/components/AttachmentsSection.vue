@@ -281,14 +281,6 @@ export default {
         }
       }
 
-      .linked-base-box:nth-of-type(n + 5) {
-        margin-top: $spacing;
-      }
-
-      .linked-base-box:not(:nth-child(4n)) {
-        margin-right: $spacing;
-      }
-
       .slide-enter-active {
         transition: all .5s ease-in-out;
       }
@@ -314,6 +306,14 @@ export default {
         transition: opacity 0.15s ease, transform 0.3s ease;
       }
     }
+  }
+
+  .linked-base-box:nth-of-type(n + 5) {
+    margin-top: $spacing;
+  }
+
+  .linked-base-box:not(:nth-child(4n)) {
+    margin-right: $spacing;
   }
 
   @media screen and (max-width: $tablet) {
