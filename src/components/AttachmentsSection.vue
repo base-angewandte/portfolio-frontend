@@ -43,7 +43,7 @@
                 icon-size="large"
                 icon="remove"
                 button-style="single"
-                @clicked="actionInt = ''" />
+                @clicked="cancelAction" />
               <BaseButton
                 :text="actionButtonText"
                 icon-size="large"
@@ -215,6 +215,10 @@ export default {
     },
     submitAction() {
       this.$emit('submit-action', this.actionInt);
+    },
+    cancelAction() {
+      this.actionInt = '';
+      this.$emit('cancel-action');
     },
   },
 };

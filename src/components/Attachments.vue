@@ -13,7 +13,8 @@
       :action="entryAction"
       :is-loading="entriesLoading"
       @set-action="entryAction = 'delete'"
-      @submit-action="deleteLinked">
+      @submit-action="deleteLinked"
+      @cancel-action="resetSelected">
       <template
         slot="attached-box"
         slot-scope="props">
@@ -44,7 +45,8 @@
       :action="action"
       :is-loading="filesLoading"
       @set-action="setAction"
-      @submit-action="saveFileMeta">
+      @submit-action="saveFileMeta"
+      @cancel-action="resetSelected">
       <template
         slot="option-buttons"
         slot-scope="scope">
@@ -387,6 +389,10 @@ export default {
         this.fileText = '';
         this.selectedFiles = [];
       }
+    },
+    resetSelected() {
+      this.selectedEntries = [];
+      this.selectedFiles = [];
     },
   },
 };
