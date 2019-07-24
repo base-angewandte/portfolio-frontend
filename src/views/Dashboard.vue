@@ -150,6 +150,9 @@ export default {
       // TODO: image zoom?
     },
     updateSidebarData() {
+      if (!this.$refs.sidebar.entriesExist) {
+        this.$refs.sidebar.resetFilters();
+      }
       this.$refs.sidebar.fetchSidebarData();
     },
     updateFormData(published) {

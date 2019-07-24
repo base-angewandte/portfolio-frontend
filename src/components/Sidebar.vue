@@ -16,10 +16,11 @@
           button-style="row"
           @clicked="getNewForm" />
         <BaseSearch
+          v-model="filterString"
           :show-image="true"
           :placeholder="$t('search')"
           class="search-bar"
-          @input="filterEntries($event, 'title')" />
+          @input-change="filterEntries($event, 'title')" />
       </div>
       <BaseOptions
         :always-show-options-button="true"
@@ -98,24 +99,13 @@
         @clicked="showEntry"
         @selected="selectEntry" />
       <div
-        v-else-if="!entriesExist && !isLoading"
+        v-else-if="!isLoading"
         class="no-entries">
         <p class="no-entries-title">
-          {{ isNewForm ? $t('noEntriesTitle', { action: $t('actionSave') })
-            : $t('noEntriesTitle', { action: $t('actionCreate') }) }}
+          {{ noEntriesTitle }}
         </p>
         <p class="no-entries-subtext">
-          {{ isNewForm ? $t('noEntriesFormSubtext') : $t('noEntriesMainSubtext') }}
-        </p>
-      </div>
-      <div
-        v-else-if="entriesExist && !isLoading"
-        class="no-entries">
-        <p class="no-entries-title">
-          {{ $t('noMatchingEntriesTitle') }}
-        </p>
-        <p class="no-entries-subtext">
-          {{ $t('noMatchingEntriesSubtext') }}
+          {{ noEntriesSubtext }}
         </p>
       </div>
     </div>
@@ -216,12 +206,15 @@ export default {
       entryNumber: null,
       isLoading: false,
       timeout: null,
+      filterString: '',
       filterType: {
         label: this.$t('dropdown.allTypes'),
         source: '',
       },
       sortParam: {},
       entriesExist: false,
+      noEntriesTitle: '',
+      noEntriesSubtext: '',
     };
   },
   computed: {
@@ -288,6 +281,8 @@ export default {
       }
     },
     $route(from) {
+      console.log('show entry');
+      this.setInfoText();
       if (from.name === 'Dashboard') {
         // refetch sidebar data when switching from overview to form view
         this.calculateSidebarHeight();
@@ -332,10 +327,7 @@ export default {
         }
         this.timeout = setTimeout(() => {
           if (val.length === 0 || val.length > 3) {
-            this.filterString = val;
             this.fetchSidebarData();
-          } else {
-            this.filterString = '';
           }
         }, 600);
       }
@@ -428,9 +420,12 @@ export default {
             description: entry.type && entry.type.label ? capitalizeString(entry.type.label[this.$i18n.locale]) : '',
           }));
         this.entryNumber = response.count;
+        if (!this.entryNumber) {
+          this.setInfoText();
+        }
         // check if this was a general data request (no filters etc)
         // to determine if entries exist at all
-        if (!(this.filterType.source || this.filterString || this.excludeLinked)) {
+        if (!(this.filterType.source || this.filterString)) {
           this.entriesExist = !!this.entryNumber;
         }
         this.$emit('sidebar-data-changed');
@@ -463,6 +458,28 @@ export default {
       // hardcoded because unfortunately no other possibility found
       const entryHeight = window.innerWidth >= 640 ? 56 : 48;
       this.entriesPerPage = Math.floor(sidebarHeight / entryHeight);
+    },
+    setInfoText() {
+      if (this.entriesExist && (this.filterString || this.filterType.source)) {
+        this.noEntriesTitle = this.$t('noMatchingEntriesTitle');
+        this.noEntriesSubtext = this.$t('noMatchingEntriesSubtext');
+      } else if (this.excludeLinked) {
+        this.noEntriesTitle = this.$t('noLinkEntriesTitle');
+        this.noEntriesSubtext = this.$t('noLinkEntriesSubtext');
+      } else if (this.isNewForm) {
+        this.noEntriesTitle = this.$t('noEntriesTitle', { action: this.$t('actionSave') });
+        this.noEntriesSubtext = this.$t('noEntriesFormSubtext');
+      } else {
+        this.noEntriesTitle = this.$t('noEntriesTitle', { action: this.$t('actionCreate') });
+        this.noEntriesSubtext = this.$t('noEntriesMainSubtext');
+      }
+    },
+    resetFilters() {
+      this.filterString = '';
+      this.filterType = {
+        label: this.$t('dropdown.allTypes'),
+        source: '',
+      };
     },
   },
 };
@@ -524,6 +541,7 @@ export default {
       text-align: center;
       color: $font-color-second;
       margin-bottom: $spacing;
+      padding: 0 $spacing-large;
     }
 
     .no-entries-title {

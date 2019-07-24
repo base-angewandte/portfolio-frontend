@@ -23,6 +23,8 @@
   "noEntriesTitle": "{action} your first Entry.",
   "actionSave": "Save",
   "actionCreate": "Create",
+  "noLinkEntriesTitle": "No Entries available.",
+  "noLinkEntriesSubtext": "You can not link any more Entries, since there are no more entries available or all existing entries are already linked.",
   "noEntriesMainSubtext": "Click 'New' to create your first Entry.",
   "noEntriesFormSubtext": "Fill in a title and click 'Save' to create your first Entry.",
   "noMatchingEntriesTitle": "No matching entries found",
