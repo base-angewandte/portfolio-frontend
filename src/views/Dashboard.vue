@@ -13,9 +13,15 @@
       @button-right="$store.state.data.popUp.actionRight()">
       <div class="sidebar-pop-up">
         <div class="pop-up-text-container">
-          <p
-            class="sidebar-pop-up-text"
-            v-html="popUpText" />
+          <p class="sidebar-pop-up-title">{{ $store.state.data.popUp.textTitle }}</p>
+          <ul
+            class="sidebar-pop-up-text">
+            <li
+              v-for="(title, index) in $store.state.data.popUp.textList"
+              :key="index">
+              {{ title + '\n' }}
+            </li>
+          </ul>
         </div>
       </div>
     </BasePopUp>
@@ -75,7 +81,7 @@ export default {
       return this.$route.name !== 'Dashboard';
     },
     popUpText() {
-      return this.$store.state.data.popUp.text;
+      return this.$store.state.data.popUp.textList;
     },
   },
   watch: {
@@ -184,21 +190,31 @@ export default {
     text-align: center;
     font-size: $font-size-large;
     min-height: 150px;
-    max-width: 80%;
     display: flex;
     justify-content: center;
     align-items: center;
     margin: auto;
 
     .pop-up-text-container {
-      max-width: 100%;
+      width: 100%;
+
+      .sidebar-pop-up-title {
+        margin: $spacing;
+      }
 
       .sidebar-pop-up-text {
-        margin: auto;
         text-align: center;
         overflow-wrap: break-word;
         word-wrap: break-word;
         hyphens: auto;
+        max-height: calc(49vh - #{$spacing});
+        overflow-y: auto;
+        padding: 0 $spacing-large;
+
+        li {
+          // necessary otherwise scrollbar always shown...
+          height: $line-height;
+        }
       }
     }
   }

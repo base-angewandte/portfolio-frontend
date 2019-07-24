@@ -40,7 +40,8 @@ const state = {
   popUp: {
     show: false,
     header: '',
-    text: '',
+    textTitle: '',
+    textList: [],
     icon: '',
     buttonText: '',
     action: null,
@@ -127,7 +128,8 @@ const mutations = {
     state.popUp = {
       show: false,
       header: '',
-      text: '',
+      textTitle: '',
+      textList: [],
       icon: '',
       buttonTextRight: '',
       buttonTextLeft: '',

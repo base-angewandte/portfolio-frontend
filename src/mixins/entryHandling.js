@@ -13,7 +13,8 @@ export const entryHandlingMixin = {
       this.$store.commit('data/setPopUp', {
         show: true,
         header: `${this.$tc('notify.entryActionTitle', titles.length, { action: actionText })}?`,
-        text: `${this.$tc('notify.entryActionText', titles.length, { action: actionText })}<br>${titles.join(',<br>')}`,
+        textTitle: this.$tc('notify.entryActionText', titles.length, { action: actionText }),
+        textList: titles,
         icon: action === 'delete' ? 'waste-bin' : 'eye',
         buttonTextRight: this.$tc('notify.entryActionTitle', titles.length, { action: actionText }),
         actionRight: () => this.action(action),

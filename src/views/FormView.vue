@@ -403,7 +403,8 @@ export default {
           this.$store.commit('data/setPopUp', {
             show: true,
             header: this.$t('notify.unsavedChangesTitle'),
-            text: this.$t('notify.unsavedChangesText'),
+            textTitle: this.$t('notify.unsavedChangesText'),
+            textList: [],
             icon: 'save-file',
             buttonTextRight: this.$t('notify.saveChanges'),
             buttonTextLeft: this.$t('notify.dismissChanges'),
