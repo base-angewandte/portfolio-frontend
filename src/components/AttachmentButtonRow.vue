@@ -23,7 +23,8 @@
         icon="sheet-empty"
         class="file-box file-boxes-margin"
         @clicked="$emit('open-new-form')" />
-      <label class="file-select">
+      <label
+        class="file-select">
         <BaseDropBox
           key="addFile"
           :show-plus="true"
@@ -32,9 +33,11 @@
           :text="$t('form-view.attachFile')"
           :subtext="$t('form-view.clickordrag')"
           icon="camera"
-          @dropped-file="handleFileSelect($event)" />
+          @dropped-file="handleFileSelect($event)"
+          @clicked="fileBoxClick"/>
         <input
           ref="fileInput"
+          :disabled="!currentId"
           type="file"
           multiple
           class="hide"
@@ -154,7 +157,19 @@ export default {
     },
   },
   methods: {
+    fileBoxClick() {
+      // check if entry was already saved
+      if (!this.currentId) {
+        this.$notify({
+          group: 'request-notifications',
+          title: this.$t('notify.uploadingNotPossible'),
+          text: this.$t('notify.saveBeforeUpload'),
+          type: 'error',
+        });
+      }
+    },
     resetInput() {
+      console.log('shalsdfj');
       const inputRef = this.$refs.fileInput || this.$refs.fileInputMobile;
       inputRef.value = '';
     },
@@ -174,22 +189,13 @@ export default {
       }
     },
     handleFileSelect(e) {
-      if (this.$route.params.id) {
-        // get files - depending if dragged or selected from file browse different event prop
-        const files = e.dataTransfer ? e.dataTransfer.files : e.target.files;
-        // check if it was actual files that were dragged in
-        if (files && files.length) {
-          for (let i = 0; i < files.length; i += 1) {
-            this.filesToUpload.push(files[i]);
-          }
+      // get files - depending if dragged or selected from file browse different event prop
+      const files = e.dataTransfer ? e.dataTransfer.files : e.target.files;
+      // check if it was actual files that were dragged in
+      if (files && files.length) {
+        for (let i = 0; i < files.length; i += 1) {
+          this.filesToUpload.push(files[i]);
         }
-      } else {
-        this.$notify({
-          group: 'request-notifications',
-          title: this.$t('notify.uploadingNotPossible'),
-          text: this.$t('notify.saveBeforeUpload'),
-          type: 'error',
-        });
       }
     },
     openEntrySelect() {

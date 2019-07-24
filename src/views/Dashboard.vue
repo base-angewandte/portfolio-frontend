@@ -13,7 +13,9 @@
       @button-right="$store.state.data.popUp.actionRight()">
       <div class="sidebar-pop-up">
         <div class="pop-up-text-container">
-          <p class="sidebar-pop-up-title">{{ $store.state.data.popUp.textTitle }}</p>
+          <p class="sidebar-pop-up-title">
+            {{ $store.state.data.popUp.textTitle }}
+          </p>
           <ul
             class="sidebar-pop-up-text">
             <li
