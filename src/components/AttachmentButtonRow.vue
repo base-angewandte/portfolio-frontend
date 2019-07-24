@@ -169,7 +169,6 @@ export default {
       }
     },
     resetInput() {
-      console.log('shalsdfj');
       const inputRef = this.$refs.fileInput || this.$refs.fileInputMobile;
       inputRef.value = '';
     },

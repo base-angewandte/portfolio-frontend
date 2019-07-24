@@ -281,7 +281,6 @@ export default {
       }
     },
     $route(from) {
-      console.log('show entry');
       this.setInfoText();
       if (from.name === 'Dashboard') {
         // refetch sidebar data when switching from overview to form view
