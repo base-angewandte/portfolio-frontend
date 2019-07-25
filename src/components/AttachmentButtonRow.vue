@@ -34,7 +34,7 @@
           :subtext="$t('form-view.clickordrag')"
           icon="camera"
           @dropped-file="handleFileSelect($event)"
-          @clicked="fileBoxClick"/>
+          @clicked="fileBoxClick" />
         <input
           ref="fileInput"
           :disabled="!currentId"

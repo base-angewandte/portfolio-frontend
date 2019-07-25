@@ -136,8 +136,8 @@
     "at": "at"
   },
   "notify": {
-    "entry": "entries | entry | entries",
-    "media": "files | file | files",
+    "entry": "Entries | Entry | Entries",
+    "media": "Files | File | Files",
     "link": "Links | Link | Links",
     "linkingNotPossible": "Linking not possible",
     "alreadyLinked": "This entry is already linked.",

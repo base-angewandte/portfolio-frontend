@@ -41,6 +41,10 @@ html {
     padding: 0;
     list-style-type: none;
   }
+
+  h5 {
+    font-size: $font-size-regular;
+  }
 }
 
 @media screen and (max-width: $mobile) {

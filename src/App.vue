@@ -139,26 +139,26 @@ export default {
   BaseNotification component ... */
   .notification-wrapper {
     box-shadow: 0 3px 3px rgba(0, 0, 0, .05);
+    background-color: white;
 
-    &:not(:first-child) {
-      border-top: $separation-line;
+    &:not(:last-child) {
+      border-bottom: 2px solid #f0f0f0;
     }
   }
 
   .v-slide-enter-active,
   .v-slide-leave-active,
   .v-slide-move {
-    transition: all 0.8s;
+    transition: opacity 0.8s;
+  }
+
+  .slide-fade-enter, .v-slide-leave-to {
+    opacity: 0;
   }
 
   .v-slide-leave-active {
     z-index: 0;
     position: absolute;
-  }
-
-  .v-slide-leave-to, .v-slide-enter-from {
-    transition: all 1s ease-out;
-    opacity: 0;
   }
 
   @media screen and (max-width: $mobile) {

@@ -1,6 +1,17 @@
 /* eslint-disable-next-line */
 export const userInfo = {
   methods: {
+    /**
+     * @param successArr: an array with all successfully modified items
+     *  (ids sufficient, will only display number)
+     * @param failedArr: an array with all failed items (ids or name/title strings)
+     * @param noActionArr: array with items no action was taken on
+     * @param action: type of action (e.g. publish, delete)
+     * @param type: item type (entries, files or links)
+     * @param listEntries: flag to specify if entries should be listed for failed
+     * @param entryCount: provide number to steer if info text is displayed in
+     *  singular or plural (0 will display plural)
+     */
     informUser({
       successArr = [],
       failedArr = [],
@@ -31,7 +42,7 @@ export const userInfo = {
           text: this.$tc('notify.actionFailSubtext', failedNumber, {
             count: failedNumber,
             action: this.$t(`notify.${action}d`),
-            type: `${this.$tc(`notify.${type}`, failedNumber)}\n${listEntries ? failedArr.join(',\n') : ''}`,
+            type: `${this.$tc(`notify.${type}`, failedNumber)} ${listEntries ? failedArr.join(', ') : ''}`,
           }),
           type: 'error',
         });
@@ -42,7 +53,7 @@ export const userInfo = {
           title: this.$t('notify.noAction'),
           text: `${this.$t('notify.noActionList', {
             action: this.$t(`notify.${action}d`),
-          })}\n${noActionArr.join(',\n')}`,
+          })} ${noActionArr.join(', ')}`,
           type: 'error',
         });
       }
