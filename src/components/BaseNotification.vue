@@ -86,13 +86,13 @@ export default {
 
     .notifications {
       position: absolute;
-      background-color: white;
     }
   }
 
   .notification {
     position: relative;
     padding: $spacing;
+    background-color: white;
 
     font-size: $font-size-small;
 
