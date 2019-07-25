@@ -409,7 +409,7 @@ export default {
         let response = await this.dataRequest(offset);
         // should there be not enough entries to give results with the current offset
         // try again with a offset 0
-        if (offset >= response.count) {
+        if (offset && offset >= response.count) {
           offset = 0;
           this.pageNumber = 1;
           response = await this.dataRequest(offset);
