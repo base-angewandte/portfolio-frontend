@@ -275,7 +275,6 @@ export default {
         this.extensionIsLoading = !!this.type;
         this.$set(this.valueList, 'data', Object.assign({}, data.data));
       } catch (e) {
-        console.error(e);
         if (e.message.includes('404')) {
           this.$router.push(`/notFound?id=${this.currentItemId}`);
         } else {

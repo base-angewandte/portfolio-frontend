@@ -215,7 +215,6 @@ export default {
                       },
                     });
                   this.uploadedFiles.push(file.name);
-                  this.currentStatus = STATUS_SUCCESS;
                   resolve();
                 } catch (err) {
                   this.uploadPercentage[index] = 0;
@@ -227,6 +226,7 @@ export default {
               }
               resolve();
             })));
+          this.currentStatus = STATUS_SUCCESS;
         } catch (e) {
           if (e.message.includes('422')) {
             console.error(e);

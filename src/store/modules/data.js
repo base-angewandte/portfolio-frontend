@@ -169,9 +169,6 @@ const mutations = {
     const existingMedia = replace ? [] : state.linkedMedia;
     state.linkedMedia = [].concat(list, existingMedia);
   },
-  deleteMedia(state, list) {
-    state.linkedMedia = state.linkedMedia.filter(entry => !list.includes(entry.id));
-  },
   setPrefetchedTypes(state, { field, data, source }) {
     if (source === 'source') {
       Vue.set(state.prefetchedTypes, field, data);
@@ -291,9 +288,6 @@ const actions = {
       // TODO: inform user?
     }
   },
-  async fetchMediaLicenses() {
-    // TODO!!!
-  },
   async fetchEntryData({ commit, dispatch }, id) {
     return new Promise(async (resolve, reject) => {
       let entryData = {};
@@ -324,7 +318,7 @@ const actions = {
           commit('setCurrentItem', adjustedEntry);
           commit('setLinked', { list: entryData.relations || [], replace: true });
           try {
-            await dispatch('fetchMediaData', entryData.id);
+            dispatch('fetchMediaData', entryData.id);
             resolve(adjustedEntry);
           } catch (e) {
             reject(e);
@@ -348,7 +342,7 @@ const actions = {
       const imageData = await Promise.all(res.data
         .map(imageId => new Promise(async (resolve, reject) => {
           try {
-            const result = await axios.get(`${process.env.DATABASE_API}media/${imageId}`,
+            const result = await axios.get(`${process.env.DATABASE_API}media/${imageId}/`,
               {
                 withCredentials: true,
                 xsrfCookieName: 'csrftoken_portfolio',
