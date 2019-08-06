@@ -18,6 +18,7 @@ axiosInstance.interceptors.response.use((response) => {
   return response;
 }, (error) => {
   if (error.response && error.response.status === 403) {
+    sessionStorage.clear();
     window.location.href = `${process.env.HEADER_URLS.LOGIN}`;
   }
   if (((error.config && error.response && error.response.status >= 404)

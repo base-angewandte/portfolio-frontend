@@ -238,13 +238,41 @@ export default {
   },
   async created() {
     this.formIsLoading = true;
+    // check if a parent was stored in session storage
+    const storedParentString = sessionStorage.getItem('parent');
+    if (storedParentString) {
+      this.$store.commit('data/setParentItem', JSON.parse(storedParentString));
+    }
     await this.fetchGeneralFormFields();
     // this.$store.dispatch('data/getStaticDropDowns');
     if (this.currentItemId) {
-      this.updateForm();
+      await this.updateForm();
     } else {
       this.formIsLoading = false;
     }
+    // check if previously unsaved changes were stored in session storage
+    const storedValueList = JSON.parse(sessionStorage.getItem('valueList'));
+    // if it matches the current entry id, merge it with db fetched data
+    if (storedValueList && storedValueList.id === this.currentItemId) {
+      this.valueList = Object.assign({}, this.valueList, storedValueList);
+      this.unsavedChanges = true;
+    }
+    // add event listener triggered before unload
+    window.addEventListener('beforeunload', () => {
+      // if there are unsaved changes store them in session storage,
+      // otherwise clear storage
+      if (this.unsavedChanges && Object.keys(this.valueList).length) {
+        sessionStorage.setItem('valueList', JSON.stringify(this.valueList));
+      } else {
+        sessionStorage.removeItem('valueList');
+      }
+      // check if there is a parent item, otherwise clear storage item
+      if (this.parent) {
+        sessionStorage.setItem('parent', JSON.stringify(this.parent));
+      } else {
+        sessionStorage.removeItem('parent');
+      }
+    });
   },
   methods: {
     async fetchGeneralFormFields() {
