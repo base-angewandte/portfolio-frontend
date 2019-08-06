@@ -12,6 +12,8 @@
         :subtext="$t('form-view.clickordrag')"
         icon="camera"
         drop-type="elements"
+        drag-item-class="base-menu-entry"
+        drop-element-name="menuEntry"
         class="file-box file-boxes-margin"
         @dropped-element="droppedEntries"
         @clicked="openEntrySelect" />

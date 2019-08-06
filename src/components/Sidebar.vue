@@ -206,6 +206,7 @@ export default {
       entryNumber: null,
       isLoading: false,
       timeout: null,
+      resizeTimeout: null,
       filterString: '',
       filterType: {
         label: this.$t('dropdown.allTypes'),
@@ -291,11 +292,16 @@ export default {
   },
   created() {
     this.$store.dispatch('data/fetchEntryTypes');
+    // add event listener for full responsiveness
+    window.addEventListener('resize', this.setResizeTimeout);
   },
   mounted() {
     this.listInt = this.list;
     this.calculateSidebarHeight();
     this.fetchSidebarData();
+  },
+  destroyed() {
+    window.removeEventListener('resize', this.setResizeTimeout);
   },
   methods: {
     showEntry(index) {
@@ -456,7 +462,8 @@ export default {
       const sidebarHeight = this.$refs.menuContainer.clientHeight - 32 - 16;
       // hardcoded because unfortunately no other possibility found
       const entryHeight = window.innerWidth >= 640 ? 56 : 48;
-      this.entriesPerPage = Math.floor(sidebarHeight / entryHeight);
+      const numberOfEntries = Math.floor(sidebarHeight / entryHeight);
+      this.entriesPerPage = numberOfEntries > 4 ? numberOfEntries : 4;
     },
     setInfoText() {
       if (this.entriesExist && (this.filterString || this.filterType.source)) {
@@ -479,6 +486,18 @@ export default {
         label: this.$t('dropdown.allTypes'),
         source: '',
       };
+    },
+    setResizeTimeout() {
+      // check if there is a timeout already set and clear it if yes
+      if (this.resizeTimeout) {
+        clearTimeout(this.resizeTimeout);
+        this.resizeTimeout = null;
+      }
+      // then set time out new
+      this.resizeTimeout = setTimeout(() => {
+        this.calculateSidebarHeight();
+        this.fetchSidebarData();
+      }, 500);
     },
   },
 };
@@ -517,6 +536,7 @@ export default {
     flex: 1 1 auto;
     overflow-y: auto;
     overflow-x: hidden;
+    min-height: $row-height-large;
 
     #menu-list {
       height: 100%;
