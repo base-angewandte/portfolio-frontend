@@ -68,6 +68,11 @@ export default {
       }
     });
   },
+  created() {
+    // prevent app from displaying dropped files
+    window.addEventListener('dragover', e => e.preventDefault());
+    window.addEventListener('drop', e => e.preventDefault());
+  },
 };
 </script>
 
