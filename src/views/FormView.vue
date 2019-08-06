@@ -541,7 +541,7 @@ export default {
       }
 
       .slide-in-form {
-        top: 0;
+        top: $spacing-small + $row-height-small;
         position: absolute;
       }
     }
