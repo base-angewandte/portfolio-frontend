@@ -112,6 +112,7 @@
 
     <BasePagination
       v-if="pageTotal > 1"
+      ref="pagination"
       :total="pageTotal"
       :current="pageNumber"
       @set-page="setPage" />
@@ -459,7 +460,12 @@ export default {
       return response;
     },
     calculateSidebarHeight() {
-      const sidebarHeight = this.$refs.menuContainer.clientHeight - 32 - 16;
+      let sidebarHeight = this.$refs.menuContainer.clientHeight;
+      // if pagination element is not present yet (on initial render) deduct height and spacing
+      // from sidebar height
+      if (!this.$refs.pagination) {
+        sidebarHeight = sidebarHeight - 32 - 16;
+      }
       // hardcoded because unfortunately no other possibility found
       const entryHeight = window.innerWidth >= 640 ? 56 : 48;
       const numberOfEntries = Math.floor(sidebarHeight / entryHeight);
