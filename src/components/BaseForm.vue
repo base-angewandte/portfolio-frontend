@@ -134,6 +134,7 @@ export default {
       fieldProperties: [],
       dropdownLists: {},
       timeout: null,
+      // variable to specify a field that is currently loading autocomplete data
       fieldIsLoading: '',
     };
   },
@@ -341,7 +342,18 @@ export default {
       return index > 0 && !!(index % 2);
     },
     setDropDown(data, value, equivalent, name) {
-      let dropDownList = [].concat(data);
+      const modifiedData = data.map((entry) => {
+        if (!['GND', 'VIAF'].includes(entry.source_name)) return entry;
+        // regex to filter additional info from GND and VIAF
+        const pattern = /^(([^0-9\n,|]*?,[^0-9,\n|]*|[^0-9\n|,]*)$|([^0-9\n,|]*?,[^0-9,\n|]*|[^0-9\n|,]*)(, | \| | )(.*)$)/;
+        const match = pattern.exec(entry.label);
+        if (match && match[1]) {
+          return Object.assign({}, entry, match[3] && match[5]
+            ? { label: match[3], additional: match[5] } : { label: match[1], additional: '' });
+        }
+        return entry;
+      });
+      let dropDownList = [].concat(modifiedData);
       const user = this.$store.getters['PortfolioAPI/user'];
       // add defaults to fields that have defaults or whos equivalent has defaults
       const defaults = equivalent ? process.env[`${equivalent.toUpperCase()}_DEFAULTS`]
