@@ -178,6 +178,7 @@ export default {
   methods: {
     initializeValueObject() {
       this.formFieldListInt = Object.keys(this.formFieldJson)
+        // filter out hidden properties and $ref property from JSON
         .filter(key => !this.formFieldJson[key].$ref
           && !(this.formFieldJson[key]['x-attrs'] && this.formFieldJson[key]['x-attrs'].hidden))
         .map(key => Object.assign({}, { name: key }, this.formFieldJson[key]));
@@ -215,7 +216,7 @@ export default {
       // check if field is array
       if (field.type === 'array') {
         // check if values are already present and set those if yes
-        if (value && value.length) {
+        if (typeof value === 'object' && value && value.length) {
           return [].concat(value);
         }
         if (field['x-attrs'] && !field['x-attrs'].field_type.includes('chips')
@@ -234,7 +235,7 @@ export default {
         return Object.assign({}, initObj, value);
       }
       // if it is not a array or object simply return value from list or empty string
-      return value || '';
+      return (typeof value === 'string' ? value : '');
     },
     initializeDropDownLists() {
       this.formFieldListInt.forEach((field) => {
