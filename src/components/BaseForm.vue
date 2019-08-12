@@ -345,7 +345,7 @@ export default {
       const modifiedData = data.map((entry) => {
         if (!['GND', 'VIAF'].includes(entry.source_name)) return entry;
         // regex to filter additional info from GND and VIAF
-        const pattern = /^(([^0-9\n,|]*?,[^0-9,\n|]*|[^0-9\n|,]*)$|([^0-9\n,|]*?,[^0-9,\n|]*|[^0-9\n|,]*)(, | \| | )(.*)$)/;
+        const pattern = /^(([^0-9,|]*?,[^0-9,|]*|[^0-9|,]*)$|([^0-9,|]*?, [^0-9,|]*|[^0-9|,]*)(, | \| | )(.*)$)/;
         const match = pattern.exec(entry.label);
         if (match && match[1]) {
           return Object.assign({}, entry, match[3] && match[5]
