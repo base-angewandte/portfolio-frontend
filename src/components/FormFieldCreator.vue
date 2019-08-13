@@ -50,6 +50,7 @@
       :placeholder="placeholder"
       :input="fieldValueInt"
       :tabs-legend="$t('form.textTabsLegend')"
+      :active-tab="activeTab"
       class="base-form-field base-form-field-full"
       @text-input="setMultilineValue($event)">
       <template
@@ -282,6 +283,7 @@ export default {
       fieldValueInt: JSON.parse(JSON.stringify(this.fieldValue)),
       textInput: '',
       fetchingData: false,
+      activeTab: '',
     };
   },
   computed: {
@@ -341,6 +343,9 @@ export default {
     fieldValue(val) {
       if (JSON.stringify(this.fieldValueInt) !== JSON.stringify(val)) {
         this.setFieldValue(val);
+        if (this.tabs && this.tabs.length) {
+          this.activeTab = this.setActiveTab();
+        }
       }
     },
     fieldValueInt: {
@@ -358,6 +363,9 @@ export default {
   },
   mounted() {
     this.setFieldValue(this.fieldValue);
+    if (this.tabs && this.tabs.length) {
+      this.activeTab = this.setActiveTab();
+    }
   },
   methods: {
     setFieldValue(val) {
@@ -372,7 +380,7 @@ export default {
       }
     },
     setMultilineValue(val) {
-      if (typeof val === 'string') {
+      if (!val || typeof val === 'string') {
         this.fieldValueInt = val;
       } else {
         this.fieldValueInt = Object.assign({}, this.fieldValueInt, JSON.parse(JSON.stringify(val)));
@@ -390,6 +398,15 @@ export default {
     },
     getLabel(value) {
       return getLangLabel(value, this.$i18n.locale, true);
+    },
+    setActiveTab() {
+      const currentLocale = this.$i18n.locale;
+      // check which locales have content
+      const localesWithContent = process.env.LOCALES.filter(lang => !!this.fieldValueInt[lang]);
+      // if none of the locales has content or the current locale has content
+      // - return current locale - else first alternative
+      return !localesWithContent.length || this.fieldValueInt[currentLocale]
+        ? currentLocale : localesWithContent[0];
     },
   },
 };
