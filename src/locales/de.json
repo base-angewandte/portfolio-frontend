@@ -125,8 +125,8 @@
     "file": "Datei",
     "download": "Download",
     "view": "Anzeigen",
-    "created": "Eintrag erzeugt am",
-    "lastModified": "Eintrag zuletzt gespeichert am",
+    "created": "Erstellt am",
+    "lastModified": "Zuletzt gespeichert am",
     "at": "um"
   },
   "notify": {

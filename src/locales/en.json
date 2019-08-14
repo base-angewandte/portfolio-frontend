@@ -131,8 +131,8 @@
     "file": "File",
     "download": "Download",
     "view": "View",
-    "created": "Entry created",
-    "lastModified": "Entry last modified",
+    "created": "Created on",
+    "lastModified": "Last modified on",
     "at": "at"
   },
   "notify": {

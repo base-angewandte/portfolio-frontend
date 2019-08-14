@@ -99,8 +99,8 @@
       v-if="valueList.date_created && valueList.date_changed"
       class="last-modified">
       {{
-        `${$t('form-view.created')} ${createHumanReadableData(valueList.date_created)};
-      ${$t('form-view.lastModified')} ${createHumanReadableData(valueList.date_changed)}`
+        `${$t('form-view.created')} ${createHumanReadableData(valueList.date_created)}` }} <br>
+      {{ `${$t('form-view.lastModified')} ${createHumanReadableData(valueList.date_changed)}`
       }}
     </div>
   </div>
@@ -581,9 +581,10 @@ export default {
   }
 
   .last-modified {
-    margin: $spacing;
+    margin: $spacing 0;
     color: $font-color-second;
     font-size: $font-size-small;
+    line-height: $line-height;
   }
 
   .slide-fade-form-enter-active, .slide-fade-form-move {
