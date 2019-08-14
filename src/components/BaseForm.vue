@@ -277,6 +277,12 @@ export default {
         if (fieldAttrs.dynamic_autosuggest) {
           this.setDropDown([], '', fieldAttrs.equivalent, fieldName);
         }
+        // if the field has contributors as equivalent set the role!
+        if (fieldAttrs.equivalent === 'contributors') {
+          const fieldRole = this.$store.state.data.prefetchedTypes.contributors_role
+            .find(role => role.source === fieldAttrs.default_role);
+          value.forEach(entry => this.$set(entry, 'roles', [fieldRole]));
+        }
       }
       if (index >= 0) {
         this.$set(this.valueListInt[fieldName], index, JSON.parse(JSON.stringify(value)));
