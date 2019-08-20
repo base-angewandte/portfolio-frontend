@@ -17,14 +17,19 @@ axiosInstance.interceptors.response.use((response) => {
   axiosTries = 0;
   return response;
 }, (error) => {
-  if (error.response && error.response.status === 403) {
-    sessionStorage.clear();
-    window.location.href = `${process.env.HEADER_URLS.LOGIN}`;
+  if (axiosTries >= axiosMaxRetries) {
+    axiosTries = 0;
+    window.location.href = '/404';
+    return Promise.reject(error);
   }
   if (((error.config && error.response && error.response.status >= 404)
     || !error.response) && axiosTries < axiosMaxRetries) {
     axiosTries += 1;
     return axios.request(error.config);
+  }
+  if (error.response && error.response.status === 403) {
+    sessionStorage.clear();
+    window.location.href = `${process.env.HEADER_URLS.LOGIN}`;
   }
   return Promise.reject(error);
 });
