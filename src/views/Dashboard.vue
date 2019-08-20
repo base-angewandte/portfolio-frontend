@@ -116,6 +116,10 @@ export default {
       this.$store.commit('data/hidePopUp');
     },
     loadPreview(fileData) {
+      // reset media variables on new image load
+      this.previewSize = null;
+      this.imageOrientation = 0;
+
       this.originalUrl = getApiUrl(fileData.original);
       const filePath = fileData.playlist || fileData.mp3
         || fileData.pdf || fileData.original;
