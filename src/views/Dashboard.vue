@@ -44,7 +44,7 @@
       ref="sidebar"
       :class="['sidebar', { 'sidebar-full': !showForm, 'sidebar-hidden-mobile': showForm }]"
       @new-form="createNewForm"
-      @show-entry="routeToEntry"
+      @show-entry="checkUnsavedChanges"
       @update-publish-state="updateFormData" />
     <div
       v-if="showForm"
@@ -104,6 +104,31 @@ export default {
         formView.resetForm();
       }
       this.$router.push('/new');
+    },
+    checkUnsavedChanges(id) {
+      if (this.$refs.view && this.$refs.view.unsavedChanges) {
+        this.$store.commit('data/setPopUp', {
+          show: true,
+          header: this.$t('notify.unsavedChangesTitle'),
+          textTitle: this.$t('notify.unsavedChangesText'),
+          textList: [],
+          icon: 'save-file',
+          buttonTextRight: this.$t('notify.saveChanges'),
+          buttonTextLeft: this.$t('notify.dismissChanges'),
+          actionRight: async () => {
+            try {
+              await this.$refs.view.saveForm();
+              this.routeToEntry(id);
+            } catch (e) {
+              console.error(e);
+            }
+            this.$store.commit('data/hidePopUp');
+          },
+          actionLeft: () => { this.routeToEntry(id); },
+        });
+      } else {
+        this.routeToEntry(id);
+      }
     },
     routeToEntry(id) {
       this.$store.commit('data/deleteParentItems');
