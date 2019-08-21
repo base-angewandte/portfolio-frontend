@@ -391,6 +391,8 @@ export default {
             this.reloadSidebarData = false;
           }
           this.unsavedChanges = false;
+          this.dataSaving = false;
+          return true;
         } catch (e) {
           this.$notify({
             group: 'request-notifications',
@@ -398,8 +400,9 @@ export default {
             text: e.message,
             type: 'error',
           });
+          this.dataSaving = false;
+          return false;
         }
-        this.dataSaving = false;
       } else {
         this.$notify({
           group: 'request-notifications',
@@ -407,6 +410,7 @@ export default {
           text: this.$t('notify.addTitle'),
           type: 'error',
         });
+        return false;
       }
     },
     returnFromForm() {

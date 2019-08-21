@@ -117,8 +117,10 @@ export default {
           buttonTextLeft: this.$t('notify.dismissChanges'),
           actionRight: async () => {
             try {
-              await this.$refs.view.saveForm();
-              this.routeToEntry(id);
+              const saveSuccess = await this.$refs.view.saveForm();
+              if (saveSuccess) {
+                this.routeToEntry(id);
+              }
             } catch (e) {
               console.error(e);
             }
