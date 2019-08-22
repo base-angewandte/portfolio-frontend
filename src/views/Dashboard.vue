@@ -61,7 +61,7 @@
 import { BasePopUp, BaseMediaPreview } from 'base-ui-components';
 // import axios from 'axios';
 import Sidebar from '../components/Sidebar';
-import { capitalizeString, getApiUrl } from '../utils/commonUtils';
+import { capitalizeString, getApiUrl, getLangLabel } from '../utils/commonUtils';
 
 export default {
   components: {
@@ -190,14 +190,16 @@ export default {
       const activeSidebarEntry = this.$refs.sidebar.listInt[activeSidebarEntryIndex];
       // only fetching entries if
       // a) title or type have changed
-      // b) sorting is last modified
+      // b) sorting is last modified and entry is not the first one
       // c) entry is new entry
-      if (this.$refs.sidebar.sortParam.value === 'date_modified'
+      if ((this.$refs.sidebar.sortParam.value === 'date_modified' && this.$refs.sidebar.activeEntry !== 0)
         || !this.$refs.view.currentItemId
         || (activeSidebarEntry
           && (activeSidebarEntry.title !== this.$refs.view.title
             || ((!activeSidebarEntry.type && this.$refs.view.type)
-              || activeSidebarEntry.type.label[this.$i18n.locale] !== this.$refs.view.type)))) {
+              || (activeSidebarEntry.type
+                && getLangLabel(activeSidebarEntry.type.label, this.$i18n.locale)
+                !== this.$refs.view.type))))) {
         this.$refs.sidebar.fetchSidebarData();
       }
     },
