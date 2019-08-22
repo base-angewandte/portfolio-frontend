@@ -186,7 +186,20 @@ export default {
       if (!this.$refs.sidebar.entriesExist) {
         this.$refs.sidebar.resetFilters();
       }
-      this.$refs.sidebar.fetchSidebarData();
+      const activeSidebarEntryIndex = this.$refs.sidebar.activeEntry;
+      const activeSidebarEntry = this.$refs.sidebar.listInt[activeSidebarEntryIndex];
+      // only fetching entries if
+      // a) title or type have changed
+      // b) sorting is last modified
+      // c) entry is new entry
+      if (this.$refs.sidebar.sortParam.value === 'date_modified'
+        || !this.$refs.view.currentItemId
+        || (activeSidebarEntry
+          && (activeSidebarEntry.title !== this.$refs.view.title
+            || ((!activeSidebarEntry.type && this.$refs.view.type)
+              || activeSidebarEntry.type.label[this.$i18n.locale] !== this.$refs.view.type)))) {
+        this.$refs.sidebar.fetchSidebarData();
+      }
     },
     updateFormData(published) {
       const formView = this.$refs.view;

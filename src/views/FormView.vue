@@ -139,7 +139,6 @@ export default {
       showOverlay: false,
       formIsLoading: false,
       extensionIsLoading: false,
-      reloadSidebarData: false,
       prefetchedRoles: [],
     };
   },
@@ -318,11 +317,6 @@ export default {
       this.formIsLoading = false;
     },
     handleInput(data, type) {
-      if ((!!data.type && !!this.valueList.type
-        && JSON.stringify(this.valueList.type[0]) !== JSON.stringify(data.type[0]))
-        || (!!data.title && this.valueList.title !== data.title)) {
-        this.reloadSidebarData = true;
-      }
       this.unsavedChanges = true;
       // check if type is set (= this event is coming from a subform)
       if (type) {
@@ -349,7 +343,6 @@ export default {
             const list = this.$store.getters['data/getLinkedIds'];
             if (list.length) {
               this.actionLinked({ list, action: 'save' });
-              // TODO: also do this for attached media??
             }
             // link entry to parent if parent items are present
             const parent = this.$store.getters['data/getLatestParentItem'];
@@ -375,10 +368,12 @@ export default {
                 this.$store.commit('data/deleteParentItems');
               }
             }
+            this.$emit('data-changed');
             this.$router.push(`/entry/${this.$store.state.data.currentItemId}`);
             // if id present just update the entry
           } else {
             await this.$store.dispatch('data/addOrUpdateEntry', validData);
+            this.$emit('data-changed');
           }
           this.$notify({
             group: 'request-notifications',
@@ -386,10 +381,6 @@ export default {
             text: this.$t('notify.saveSuccessSubtext', { title: this.valueList.title }),
             type: 'success',
           });
-          if (this.reloadSidebarData) {
-            this.$emit('data-changed');
-            this.reloadSidebarData = false;
-          }
           this.unsavedChanges = false;
           this.dataSaving = false;
           return true;
