@@ -213,7 +213,10 @@ export default {
         label: this.$t('dropdown.allTypes'),
         source: '',
       },
-      sortParam: {},
+      sortParam: {
+        label: this.$t('dropdown.date_modified'),
+        value: 'date_modified',
+      },
       entriesExist: false,
       noEntriesTitle: '',
       noEntriesSubtext: '',
@@ -262,6 +265,10 @@ export default {
         {
           label: this.$t('dropdown.date_created'),
           value: 'date_created',
+        },
+        {
+          label: this.$t('dropdown.date_modified'),
+          value: 'date_modified',
         },
       ];
     },

@@ -207,8 +207,9 @@
     "type": "By Type",
     "title": "A – Z",
     "-title": "Z – A",
-    "date_created": "Oldest First",
-    "-date_created": "Newest First",
+    "date_created": "First Created",
+    "date_modified": "Last Modified",
+    "-date_created": "Last Created",
     "allTypes": "All Types",
     "sortBy": "Sort By",
     "filterByType": "Filter By Type"

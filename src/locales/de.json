@@ -201,8 +201,9 @@
     "type": "Nach Typ",
     "title": "A – Z",
     "-title": "Z – A",
-    "date_created": "Ältester Eintrag zuerst",
-    "-date_created": "Neuster Eintrag zuerst",
+    "date_created": "Zuerst erstellt",
+    "date_modified": "Zuletzt geändert",
+    "-date_created": "Zuletzt erstellt",
     "allTypes": "Alle Typen",
     "sortBy": "Sortieren nach",
     "filterByType": "Nach Typ Filtern"
