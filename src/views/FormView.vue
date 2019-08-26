@@ -180,6 +180,8 @@ export default {
   watch: {
     async currentItemId(val) {
       window.scrollTo(0, 0);
+      sessionStorage.removeItem('valueList');
+      sessionStorage.removeItem('parent');
       if (val) {
         this.resetForm();
         await this.updateForm();

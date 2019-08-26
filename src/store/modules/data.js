@@ -565,6 +565,10 @@ const actions = {
           Vue.set(newData, key, values);
         } else {
           Object.keys(values).forEach(async (valueKey) => {
+            // this is needed for Date fields that need to be removed if no value present
+            if (!hasFieldContent(values[valueKey])) {
+              return;
+            }
             const childProps = field.properties[valueKey];
             if (childProps) {
               if (childProps.type === 'object' || (childProps.type === 'array' && childProps.items.properties)) {
