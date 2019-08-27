@@ -108,6 +108,7 @@
 
 <script>
 import { BaseMenuEntry, BaseLoader } from 'base-ui-components';
+import axios from 'axios';
 import BaseRow from '../components/BaseRow';
 import BaseFormOptions from '../components/BaseFormOptions';
 import BaseForm from '../components/BaseForm';
@@ -212,16 +213,19 @@ export default {
           this.prefetchedRoles = this.$store.state.data.prefetchedTypes.contributors_role
             .filter(role => !contributorFields.includes(role.source));
         } catch (e) {
-          this.$notify({
-            group: 'request-notifications',
-            title: this.$t('notify.somethingWrong'),
-            text: this.$t('notify.entryTypeNotFound', { type: val }),
-            type: 'error',
-          });
-          // reset type
-          this.valueList.type = [];
-          // empty extension
-          this.$store.commit('data/setExtensionSchema', {});
+          // check if request was cancelled and ignore if yes - otherwise notify user
+          if (!axios.isCancel(e)) {
+            this.$notify({
+              group: 'request-notifications',
+              title: this.$t('notify.somethingWrong'),
+              text: this.$t('notify.entryTypeNotFound', { type: val }),
+              type: 'error',
+            });
+            // reset type
+            this.valueList.type = [];
+            // empty extension
+            this.$store.commit('data/setExtensionSchema', {});
+          }
         }
         this.extensionIsLoading = false;
       } else {

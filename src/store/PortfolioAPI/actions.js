@@ -10,6 +10,9 @@ const $config = {
 
 const axiosInstance = axios.create();
 
+const { CancelToken } = axios;
+let cancel;
+
 const axiosMaxRetries = 3;
 let axiosTries = 0;
 
@@ -22,8 +25,9 @@ axiosInstance.interceptors.response.use((response) => {
     window.location.href = '/404';
     return Promise.reject(error);
   }
-  if (((error.config && error.response && error.response.status >= 404)
-    || !error.response) && axiosTries < axiosMaxRetries) {
+  // if there is an error config to draw from and max tries are not reached try again
+  if (((error.response && error.response.status >= 404)
+    || !error.response) && error.config && axiosTries < axiosMaxRetries) {
     axiosTries += 1;
     return axios.request(error.config);
   }
@@ -35,7 +39,6 @@ axiosInstance.interceptors.response.use((response) => {
 });
 
 Api.setAxiosInstance(axiosInstance);
-
 
 export default {
   init({ commit, dispatch }, config) {
@@ -87,6 +90,18 @@ export default {
     /* eslint-disable-next-line camelcase */
     kind, type, id, sort, offset, limit, q, link_selection_for,
   }) {
+    // special case jsonschema where previous request should be cancelled if new one is started
+    if (kind === 'jsonschema') {
+      // cancel previous request if there is any
+      if (cancel) {
+        cancel('new jsonschema request started');
+      }
+      /* eslint-disable-next-line */
+      $config.cancelToken = new CancelToken(function executor(c) {
+        // An executor function receives a cancel function as a parameter
+        cancel = c.bind(this);
+      });
+    }
     let p = {};
     return new Promise((resolve, reject) => {
       $config.headers = { 'Accept-Language': i18n.locale };
@@ -105,6 +120,8 @@ export default {
       }).catch((error) => {
         commit('setLoadingFinished', `Error while fetching ${kind}`);
         reject(error);
+      }).finally(() => {
+        cancel = null;
       });
     });
   },
