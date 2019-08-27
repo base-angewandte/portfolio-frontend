@@ -516,8 +516,6 @@ const actions = {
     Object.keys(data).forEach(async (key) => {
       const field = fields[key];
       let values = data[key];
-      console.log(key);
-      console.log(hasFieldContent(values));
       // if the field does not exist in schema = this is not an allowed property -
       // or field does not contain any values return
       if (!field || !hasFieldContent(values)) {
@@ -540,27 +538,22 @@ const actions = {
         // special case single choice chips (saved as object in backend)
       } else if (field['x-attrs'] && field['x-attrs'].field_type && field['x-attrs'].field_type.includes('chips')
         && field.type === 'object') {
-        Vue.set(newData, key, values[0] || {});
+        Vue.set(newData, key, values[0]);
       } else if (field.type === 'integer') {
         const number = parseInt(values, 10);
         Vue.set(newData, key, !Number.isNaN(number) ? number : 0);
-        // check if field is array
-      } else if (field.type === 'array') {
-        // check if values are already present and set those if yes
-        if (values && values.length) {
-          // a check if a group field actually has content - otherwise it is removed
-          if (field['x-attrs'] && field['x-attrs'].field_type === 'group') {
-            values = values.filter(value => hasFieldContent(value));
-          }
-          const arrayValues = await Promise.all(values
-            .map(value => dispatch('removeUnknownProps', { data: value, fields: field.items.properties })));
-          Vue.set(newData, key, arrayValues);
-        } else {
-          // else return empty array
-          Vue.set(newData, key, []);
+        // check if field is array and values are array values
+        // (was neccessary because of published_in)
+      } else if (field.type === 'array' && typeof values === 'object' && values.length) {
+        // a check if a group field actually has content - otherwise it is removed
+        if (field['x-attrs'] && field['x-attrs'].field_type === 'group') {
+          values = values.filter(value => hasFieldContent(value));
         }
-        // check if field is object
-      } else if (field.type === 'object') {
+        const arrayValues = await Promise.all(values
+          .map(value => dispatch('removeUnknownProps', { data: value, fields: field.items.properties })));
+        Vue.set(newData, key, arrayValues);
+      // check if field is object
+      } else if (field.type === 'object' && typeof values === 'object' && !values.length) {
         const validProperties = {};
         // special case languages which is object because of languages but is
         // handled as string here (changed before save)
@@ -587,7 +580,9 @@ const actions = {
           });
           Vue.set(newData, key, validProperties);
         }
-      } else {
+        // check if field type is string and values are actually matching the type
+        // (was necessary because of published_in)
+      } else if (field.type === 'string' && typeof values === 'string') {
         Vue.set(newData, key, values);
       }
     });
