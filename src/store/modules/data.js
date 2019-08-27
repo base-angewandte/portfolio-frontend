@@ -516,8 +516,11 @@ const actions = {
     Object.keys(data).forEach(async (key) => {
       const field = fields[key];
       let values = data[key];
-      // if the field does not exist in schema = this is not an allowed property - return
-      if (!field) {
+      console.log(key);
+      console.log(hasFieldContent(values));
+      // if the field does not exist in schema = this is not an allowed property -
+      // or field does not contain any values return
+      if (!field || !hasFieldContent(values)) {
         return;
       }
       // special case data - which has separate schema - needs to be checked first since data prop
