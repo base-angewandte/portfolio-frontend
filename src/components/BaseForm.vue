@@ -35,14 +35,17 @@
             @fetch-autocomplete="fetchAutocomplete"
             @subform-input="setFieldValue($event, element.name, valueIndex)" />
           <div
-            v-if="valueListInt[element.name].length > 1"
+            v-if="checkFieldContent(valueList[element.name])
+              || valueListInt[element.name].length > 1"
             :key="index + '-button' + valueIndex"
             class="group-add">
             <button
               class="field-group-button"
               type="button"
               @click.prevent="removeField(element, valueIndex)">
-              <span>{{ $t('form.removeField', { fieldType: getFieldName(element) }) }}</span>
+              <span>{{ valueListInt[element.name].length === 1
+                ? $t('form.clearField')
+                : $t('form.removeField', { fieldType: getFieldName(element) }) }}</span>
               <span>
                 <RemoveIcon
                   class="field-group-icon" />
@@ -97,7 +100,7 @@ import axios from 'axios';
 import FormFieldCreator from './FormFieldCreator';
 import RemoveIcon from '../assets/icons/remove.svg';
 import PlusIcon from '../assets/icons/plus.svg';
-import { getApiUrl, getLangLabel } from '../utils/commonUtils';
+import { getApiUrl, getLangLabel, hasFieldContent } from '../utils/commonUtils';
 
 const { CancelToken } = axios;
 let cancel;
@@ -341,8 +344,12 @@ export default {
         .push(this.getInitialFieldValue(field.items));
     },
     removeField(field, index) {
-      this.valueListInt[field.name].splice(index, index + 1);
-      this.$emit('values-changed', this.valueListInt);
+      if (index) {
+        this.valueListInt[field.name].splice(index, index + 1);
+        this.$emit('values-changed', this.valueListInt);
+      } else {
+        this.$set(this.valueList, field.name, this.getInitialFieldValue(field.items));
+      }
     },
     isHalfField(field) {
       const index = this.formFieldsHalf.indexOf(field);
@@ -399,6 +406,9 @@ export default {
         modifiedList = inputMatches.concat(modifiedList);
       }
       return modifiedList;
+    },
+    checkFieldContent(val) {
+      return hasFieldContent(val);
     },
   },
 };

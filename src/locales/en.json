@@ -45,6 +45,7 @@
     "published_in": "Published In",
     "addGroup": "Add \"{fieldType}\" field",
     "removeField": "Remove \"{fieldType}\" field",
+    "clearField": "Clear field contents",
     "year": "Year",
     "myself": "This is myself!",
     "textTabsLegend": "language",

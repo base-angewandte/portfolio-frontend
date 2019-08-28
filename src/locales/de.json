@@ -43,6 +43,7 @@
     "published_in": "Erschienen In",
     "addGroup": "Weiteres \"{fieldType}\" Feld hinzufügen",
     "removeField": "\"{fieldType}\" Feld entfernen",
+    "clearField": "Alle Inhalte löschen",
     "year": "Jahr",
     "myself": "Das bin ich!",
     "textTabsLegend": "Sprache",
