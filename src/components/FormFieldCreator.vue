@@ -33,7 +33,7 @@
         :id="fieldKey"
         :key="fieldKey + 'time'"
         v-model="fieldValueInt"
-        :label="$t('form.time')"
+        :label="field.properties.time_from.title"
         :placeholder="placeholder"
         :range-separator="$t('form.until')"
         :type="'timerange'"
