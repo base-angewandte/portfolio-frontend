@@ -43,7 +43,7 @@
     <Sidebar
       ref="sidebar"
       :class="['sidebar', { 'sidebar-full': !showForm, 'sidebar-hidden-mobile': showForm }]"
-      @new-form="createNewForm"
+      @new-form="checkUnsavedChanges"
       @show-entry="checkUnsavedChanges"
       @update-publish-state="updateFormData" />
     <div
@@ -106,6 +106,7 @@ export default {
       this.$router.push('/new');
     },
     checkUnsavedChanges(id) {
+      const followUpAction = id ? () => this.routeToEntry(id) : () => this.createNewForm();
       if (this.$refs.view && this.$refs.view.unsavedChanges) {
         this.$store.commit('data/setPopUp', {
           show: true,
@@ -119,17 +120,17 @@ export default {
             try {
               const saveSuccess = await this.$refs.view.saveForm();
               if (saveSuccess) {
-                this.routeToEntry(id);
+                followUpAction();
               }
             } catch (e) {
               console.error(e);
             }
             this.$store.commit('data/hidePopUp');
           },
-          actionLeft: () => { this.routeToEntry(id); },
+          actionLeft: () => { followUpAction(); },
         });
       } else {
-        this.routeToEntry(id);
+        followUpAction();
       }
     },
     routeToEntry(id) {
