@@ -11,20 +11,31 @@ function transformTextData(data) {
   const textData = [];
   if (data && data.length) {
     data.forEach((textItem) => {
-      const textObj = {
-        type: textItem.type,
-      };
+      const textObj = {};
+      // check if type is present
+      if (textItem.type && textItem.type.source) {
+        Vue.set(textObj, 'type', textItem.type);
+      }
       const text = Object.keys(textItem)
         .filter(props => !['type', 'text', 'data'].includes(props))
-        .map(lang => Object.assign({}, {
-          language: {
-            source: `${process.env.LANG_URL}${lang}`,
-          },
-          text: textItem[lang],
-        }));
-      Vue.set(textObj, 'data', text);
+        .map((lang) => {
+          if (textItem[lang]) {
+            return Object.assign({}, {
+              language: {
+                source: `${process.env.LANG_URL}${lang}`,
+              },
+              text: textItem[lang],
+            });
+          }
+          return null;
+        }).filter(Boolean);
+      // check if there are texts in any language in the array
+      if (text.length) {
+        Vue.set(textObj, 'data', text);
+      }
       // check if textObj has any content at all
-      if (textObj.data.some(textObjData => !!textObjData.text) || textObj.type.source) {
+      if (textObj.data
+        || (textObj.type && textObj.type.source)) {
         textData.push(textObj);
       }
     });
@@ -195,6 +206,14 @@ const mutations = {
 };
 
 const actions = {
+  /**
+   * fetch the schema of the general fields (first form part) to be able to generate
+   * a form. Fetched from actual swagger.json
+   *
+   * @param commit
+   * @param dispatch
+   * @returns {Promise<*>}
+   */
   async fetchGeneralFields({ commit, dispatch }) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -220,10 +239,23 @@ const actions = {
       }
     });
   },
+  /**
+   * prefetch dropdowns where there is static content (to only need to fetch once) or that
+   * have a certain pre-selection (keywords)
+   *
+   * @param state
+   * @param commit
+   * @param getters
+   * @param schema: provide the schema (form fields) to know for which fields to prefetch
+   * @returns {Promise<void>}
+   */
   async getStaticDropDowns({ state, commit, getters }, schema) {
+    // get the necessary info for prefetching stored in a variable
     const prefetchFields = Object.keys(schema)
       .map((field) => {
+        // store all the x-attrs in a variable
         const attrs = schema[field] ? schema[field]['x-attrs'] : null;
+        // check if prefetch properties are set in the x-attrs
         if (attrs && attrs.prefetch && attrs.prefetch.length) {
           return {
             [field]: attrs.prefetch.map(source => ({
@@ -243,10 +275,12 @@ const actions = {
         }],
       });
     }
+    // now use the variable to acutally fetch the information
     await Promise.all(prefetchFields.map(field => new Promise(async (resolve, reject) => {
       const [fieldName, sources] = Object.entries(field)[0];
       await Promise.all(sources.map(source => new Promise(async () => {
         const { path, sourceAttribute } = source;
+        // check if data are already there, if not fetch info
         if (!getters.getPrefetchedTypes(fieldName, sourceAttribute)) {
           const url = getApiUrl(path);
           try {
@@ -267,6 +301,12 @@ const actions = {
       })));
     })));
   },
+  /**
+   * function just for fetching the entry types needed for filtering the sidebar
+   *
+   * @param commit
+   * @returns {Promise<void>}
+   */
   async fetchEntryTypes({ commit }) {
     // TODO: replace with C. store module!
     try {
@@ -288,6 +328,14 @@ const actions = {
       // TODO: inform user?
     }
   },
+  /**
+   * fetch all data (incl. linked entries) for a specific entry (by id)
+   *
+   * @param commit
+   * @param dispatch
+   * @param id: id of the entry
+   * @returns {Promise<*>}
+   */
   async fetchEntryData({ commit, dispatch }, id) {
     return new Promise(async (resolve, reject) => {
       let entryData = {};
@@ -316,7 +364,9 @@ const actions = {
             texts: textData,
           });
           commit('setCurrentItem', adjustedEntry);
+          // use linked entry info already provided with response data
           commit('setLinked', { list: entryData.relations || [], replace: true });
+          // and also fetch media data
           try {
             dispatch('fetchMediaData', entryData.id);
             resolve(adjustedEntry);
@@ -517,8 +567,9 @@ const actions = {
       const field = fields[key];
       let values = data[key];
       // if the field does not exist in schema = this is not an allowed property -
-      // or field does not contain any values return
-      if (!field || !hasFieldContent(values)) {
+      // or field (but only json fields not main schema ones!
+      // (distinguishable by x-nullable property!)) does not contain any values return
+      if (!field || (!field['x-nullable'] && !hasFieldContent(values))) {
         return;
       }
       // special case data - which has separate schema - needs to be checked first since data prop
@@ -531,6 +582,8 @@ const actions = {
         Vue.set(newData, key, values);
         // handle special case texts - needs to be mapped to database schema
       } else if (key === 'texts') {
+        // check if transformation is still necessary by checking for data property (only there
+        // if data from db (on clone entries)
         const texts = values && values.length
         && (!values[0].data || !values[0].data.length)
           ? transformTextData(values) : [].concat(values);
@@ -538,20 +591,20 @@ const actions = {
         // special case single choice chips (saved as object in backend)
       } else if (field['x-attrs'] && field['x-attrs'].field_type && field['x-attrs'].field_type.includes('chips')
         && field.type === 'object') {
-        Vue.set(newData, key, values[0]);
+        Vue.set(newData, key, values[0] || {});
       } else if (field.type === 'integer') {
         const number = parseInt(values, 10);
         Vue.set(newData, key, !Number.isNaN(number) ? number : 0);
         // check if field is array and values are array values
         // (was neccessary because of published_in)
-      } else if (field.type === 'array' && typeof values === 'object' && values.length) {
+      } else if (field.type === 'array' && typeof values === 'object') {
         // a check if a group field actually has content - otherwise it is removed
         if (field['x-attrs'] && field['x-attrs'].field_type === 'group') {
           values = values.filter(value => hasFieldContent(value));
         }
         const arrayValues = await Promise.all(values
           .map(value => dispatch('removeUnknownProps', { data: value, fields: field.items.properties })));
-        Vue.set(newData, key, arrayValues);
+        Vue.set(newData, key, arrayValues || []);
       // check if field is object
       } else if (field.type === 'object' && typeof values === 'object' && !values.length) {
         const validProperties = {};

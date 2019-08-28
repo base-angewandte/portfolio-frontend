@@ -56,7 +56,7 @@
       <template
         v-if="field.items && field.items.properties && field.items.properties.type">
         <BaseDropDown
-          :selected-option="fieldValueInt && fieldValueInt.type.source
+          :selected-option="fieldValueInt && fieldValueInt.type && fieldValueInt.type.source
             ? fieldValueInt.type : textTypeDefault"
           :options="textTypeOptions"
           :label="$t('form.texttype')"
