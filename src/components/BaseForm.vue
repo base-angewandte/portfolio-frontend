@@ -345,7 +345,7 @@ export default {
     },
     removeField(field, index) {
       if (index) {
-        this.valueListInt[field.name].splice(index, index + 1);
+        this.valueListInt[field.name].splice(index, 1);
         this.$emit('values-changed', this.valueListInt);
       } else {
         this.$set(this.valueList, field.name, this.getInitialFieldValue(field.items));
