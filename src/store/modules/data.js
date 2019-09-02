@@ -565,6 +565,7 @@ const actions = {
     const newData = {};
     Object.keys(data).forEach(async (key) => {
       const field = fields[key];
+      const xAttrs = field ? field['x-attrs'] : {};
       let values = data[key];
       // if the field does not exist in schema = this is not an allowed property -
       // or field (but only json fields not main schema ones!
@@ -578,7 +579,7 @@ const actions = {
         const extensionData = await dispatch('removeUnknownProps', { data: values, fields: state.extensionSchema });
         Vue.set(newData, key, extensionData);
         // ignore props that are hidden (except data - see above)
-      } else if (field['x-attrs'] && field['x-attrs'].hidden) {
+      } else if (xAttrs && xAttrs.hidden) {
         Vue.set(newData, key, values);
         // handle special case texts - needs to be mapped to database schema
       } else if (key === 'texts') {
@@ -589,7 +590,7 @@ const actions = {
           ? transformTextData(values) : [].concat(values);
         Vue.set(newData, key, texts);
         // special case single choice chips (saved as object in backend)
-      } else if (field['x-attrs'] && field['x-attrs'].field_type && field['x-attrs'].field_type.includes('chips')
+      } else if (xAttrs && xAttrs.field_type && xAttrs.field_type.includes('chips')
         && field.type === 'object') {
         Vue.set(newData, key, values[0] || {});
       } else if (field.type === 'integer') {
@@ -599,8 +600,29 @@ const actions = {
         // (was neccessary because of published_in)
       } else if (field.type === 'array' && typeof values === 'object') {
         // a check if a group field actually has content - otherwise it is removed
-        if (field['x-attrs'] && field['x-attrs'].field_type === 'group') {
+        if (xAttrs && xAttrs.field_type === 'group') {
           values = values.filter(value => hasFieldContent(value));
+        }
+        // special case chips with unknown entries allowed - we want label set in all languages
+        if (field.items.properties.label && field.items.properties.label.type === 'object'
+          && xAttrs && xAttrs.allow_unknown_entries) {
+          // check for each chip if all languages are set
+          values = values.map((value) => {
+            const valueLocales = Object.keys(value.label);
+            // for some weird reason i can not use env variable directly
+            const languages = process.env.LOCALES;
+            if (!value.source && valueLocales !== languages) {
+              const fieldValue = value.label[valueLocales.find(lang => !!value.label[lang])];
+              const newLabelObject = {};
+
+              // add language specific label for all languages if not set from external
+              languages.forEach((lang) => {
+                Vue.set(newLabelObject, lang, fieldValue);
+              });
+              Vue.set(value, 'label', newLabelObject);
+            }
+            return value;
+          });
         }
         const arrayValues = await Promise.all(values
           .map(value => dispatch('removeUnknownProps', { data: value, fields: field.items.properties })));
