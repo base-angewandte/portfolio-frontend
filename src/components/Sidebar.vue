@@ -453,9 +453,10 @@ export default {
             type: 'error',
           });
         }
+      } finally {
+        await this.$store.dispatch('data/fetchEntryTypes');
+        this.isLoading = false;
       }
-      await this.$store.dispatch('data/fetchEntryTypes');
-      this.isLoading = false;
     },
     async dataRequest(offset) {
       const response = await this.$store.dispatch('PortfolioAPI/get', {
