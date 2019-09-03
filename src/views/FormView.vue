@@ -498,8 +498,7 @@ export default {
     },
     createHumanReadableData(val) {
       const date = new Date(val);
-      const { locale } = this.$i18n;
-      return `${date.toLocaleDateString(locale)} ${this.$t('form-view.at')} ${date.toLocaleTimeString(locale)}`;
+      return `${date.toLocaleDateString('de')} ${this.$t('form-view.at')} ${date.toLocaleTimeString('de')}`;
     },
   },
 };
