@@ -11,7 +11,7 @@ const $config = {
 const axiosInstance = axios.create();
 
 const { CancelToken } = axios;
-let cancel;
+const cancel = {};
 
 const axiosMaxRetries = 3;
 let axiosTries = 0;
@@ -86,20 +86,20 @@ export default {
       });
     });
   },
-  get({ state, commit }, {
+  async get({ state, commit }, {
     /* eslint-disable-next-line camelcase */
     kind, type, id, sort, offset, limit, q, link_selection_for,
   }) {
     // special case jsonschema where previous request should be cancelled if new one is started
-    if (kind === 'jsonschema') {
+    if (kind === 'jsonschema' || (kind === 'entry' && !id)) {
       // cancel previous request if there is any
-      if (cancel) {
-        cancel('new jsonschema request started');
+      if (cancel && cancel[kind]) {
+        cancel[kind](`new ${kind} request started`);
       }
       /* eslint-disable-next-line */
       $config.cancelToken = new CancelToken(function executor(c) {
         // An executor function receives a cancel function as a parameter
-        cancel = c.bind(this);
+        cancel[kind] = c.bind(this);
       });
     }
     let p = {};
@@ -121,7 +121,7 @@ export default {
         commit('setLoadingFinished', `Error while fetching ${kind}`);
         reject(error);
       }).finally(() => {
-        cancel = null;
+        cancel[kind] = null;
       });
     });
   },
