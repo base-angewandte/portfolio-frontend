@@ -52,7 +52,7 @@
       <router-view
         ref="view"
         @show-preview="loadPreview"
-        @data-changed="updateSidebarData()" />
+        @data-changed="updateSidebarData" />
     </div>
   </div>
 </template>
@@ -184,6 +184,7 @@ export default {
       // TODO: image zoom?
     },
     updateSidebarData(alwaysUpdate) {
+      debugger;
       if (!this.$refs.sidebar.entriesExist) {
         this.$refs.sidebar.resetFilters();
       }
