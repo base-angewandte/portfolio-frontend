@@ -443,6 +443,7 @@ export default {
           this.entriesExist = !!this.entryNumber;
         }
         this.$emit('sidebar-data-changed');
+        await this.$store.dispatch('data/fetchEntryTypes');
       } catch (e) {
         if (!axios.isCancel(e)) {
           console.error(e);
@@ -454,7 +455,6 @@ export default {
           });
         }
       } finally {
-        await this.$store.dispatch('data/fetchEntryTypes');
         this.isLoading = false;
       }
     },
