@@ -184,25 +184,27 @@ export default {
       // TODO: image zoom?
     },
     updateSidebarData(alwaysUpdate) {
-      debugger;
+      console.log(alwaysUpdate);
       if (!this.$refs.sidebar.entriesExist) {
         this.$refs.sidebar.resetFilters();
       }
       const activeSidebarEntryIndex = this.$refs.sidebar.activeEntry;
       const activeSidebarEntry = this.$refs.sidebar.listInt[activeSidebarEntryIndex];
       // only fetching entries if
-      // a) title or type have changed
-      // b) sorting is last modified and entry is not the first one
-      // c) entry is new entry
-      if ((this.$refs.sidebar.sortParam.value === 'date_modified' && this.$refs.sidebar.activeEntry !== 0)
+      // a) parameter is set (for updating publish state and media)
+      // b) entry is new entry
+      // c) sorting is last modified and entry is not the first one
+      // d) title or type have changed
+      if (alwaysUpdate
         || !this.$refs.view.currentItemId
-        || alwaysUpdate
+        || (this.$refs.sidebar.sortParam.value === 'date_modified' && this.$refs.sidebar.activeEntry !== 0)
         || (activeSidebarEntry
           && (activeSidebarEntry.title !== this.$refs.view.title
             || ((!activeSidebarEntry.type && this.$refs.view.type)
               || (activeSidebarEntry.type
                 && getLangLabel(activeSidebarEntry.type.label, this.$i18n.locale)
                 !== this.$refs.view.type))))) {
+        console.log('update');
         this.$refs.sidebar.fetchSidebarData();
       }
     },
