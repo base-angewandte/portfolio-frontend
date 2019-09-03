@@ -183,7 +183,7 @@ export default {
       evt.preventDefault();
       // TODO: image zoom?
     },
-    updateSidebarData() {
+    updateSidebarData(alwaysUpdate) {
       if (!this.$refs.sidebar.entriesExist) {
         this.$refs.sidebar.resetFilters();
       }
@@ -195,6 +195,7 @@ export default {
       // c) entry is new entry
       if ((this.$refs.sidebar.sortParam.value === 'date_modified' && this.$refs.sidebar.activeEntry !== 0)
         || !this.$refs.view.currentItemId
+        || alwaysUpdate
         || (activeSidebarEntry
           && (activeSidebarEntry.title !== this.$refs.view.title
             || ((!activeSidebarEntry.type && this.$refs.view.type)

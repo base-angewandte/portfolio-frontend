@@ -237,7 +237,7 @@ export default {
     attachmentsCount(curr, prev) {
       // formisloading as indicator if route was changed to reduce requests
       if (!this.formIsLoading && Boolean(curr) !== Boolean(prev)) {
-        this.$emit('data-changed');
+        this.$emit('data-changed', true);
       }
     },
   },
@@ -474,8 +474,6 @@ export default {
     },
     async actionEntry(action) {
       if (!this.isNewForm) {
-        // TODO: remove unnecessary properties here before action???
-        // need to improve removeProperties function first though...
         this.confirmAction({ action, entries: [].concat(this.valueList) });
       } else {
         this.$notify({
@@ -496,7 +494,7 @@ export default {
       } else if (action === 'offline') {
         this.valueList.published = false;
       }
-      this.$emit('data-changed');
+      this.$emit('data-changed', true);
     },
     createHumanReadableData(val) {
       const date = new Date(val);
