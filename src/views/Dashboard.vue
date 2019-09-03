@@ -32,11 +32,11 @@
       :media-url="previewUrl"
       :download-url="originalUrl"
       :display-size="previewSize"
+      :previews="imagePreviews"
       :info-texts="{
         download: $t('form-view.download'),
         view: $t('form-view.view'),
       }"
-      :orientation="imageOrientation"
       @hide-preview="showPreview = false"
       @download="downloadFile" />
 
@@ -59,7 +59,6 @@
 
 <script>
 import { BasePopUp, BaseMediaPreview } from 'base-ui-components';
-// import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import { capitalizeString, getApiUrl, getLangLabel } from '../utils/commonUtils';
 
@@ -75,7 +74,7 @@ export default {
       previewUrl: '',
       previewSize: {},
       originalUrl: '',
-      imageOrientation: 0,
+      imagePreviews: [],
     };
   },
   computed: {
@@ -146,12 +145,14 @@ export default {
     loadPreview(fileData) {
       // reset media variables on new image load
       this.previewSize = null;
-      this.imageOrientation = 0;
+      this.imagePreviews = [];
 
       this.originalUrl = getApiUrl(fileData.original);
       const filePath = fileData.playlist || fileData.mp3
         || fileData.pdf || fileData.original;
       this.previewUrl = getApiUrl(filePath);
+      this.imagePreviews = fileData.previews;
+
       if (filePath) {
         this.showPreview = !!this.previewUrl;
         // previewSize not required for audio (and pdf)
@@ -163,9 +164,6 @@ export default {
             width: `${fileData.metadata.ImageWidth ? fileData.metadata.ImageWidth.val
               : fileData.metadata.SourceImageWidth.val}px`,
           };
-        }
-        if (fileData.metadata.Orientation) {
-          this.imageOrientation = fileData.metadata.Orientation.num;
         }
         // landing here if file is not fully converted yet
       } else {
