@@ -128,6 +128,7 @@ import {
   BasePagination,
   BaseLoader,
 } from 'base-ui-components';
+import axios from 'axios';
 import BaseOptions from './BaseOptions';
 import { entryHandlingMixin } from '../mixins/entryHandling';
 import { userInfo } from '../mixins/userInfo';
@@ -443,13 +444,15 @@ export default {
         }
         this.$emit('sidebar-data-changed');
       } catch (e) {
-        console.error(e);
-        this.$notify({
-          group: 'request-notifications',
-          title: this.$t('notify.entryFetchFail'),
-          text: this.$t('notify.entryFetchFailSub'),
-          type: 'error',
-        });
+        if (!axios.isCancel(e)) {
+          console.error(e);
+          this.$notify({
+            group: 'request-notifications',
+            title: this.$t('notify.entryFetchFail'),
+            text: this.$t('notify.entryFetchFailSub'),
+            type: 'error',
+          });
+        }
       }
       await this.$store.dispatch('data/fetchEntryTypes');
       this.isLoading = false;
