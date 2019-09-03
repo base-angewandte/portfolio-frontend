@@ -184,7 +184,6 @@ export default {
       // TODO: image zoom?
     },
     updateSidebarData(alwaysUpdate) {
-      console.log(alwaysUpdate);
       if (!this.$refs.sidebar.entriesExist) {
         this.$refs.sidebar.resetFilters();
       }
@@ -204,7 +203,6 @@ export default {
               || (activeSidebarEntry.type
                 && getLangLabel(activeSidebarEntry.type.label, this.$i18n.locale)
                 !== this.$refs.view.type))))) {
-        console.log('update');
         this.$refs.sidebar.fetchSidebarData();
       }
     },
