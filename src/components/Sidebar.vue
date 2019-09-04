@@ -23,13 +23,17 @@
           @input-change="filterEntries($event, 'title')" />
       </div>
       <BaseOptions
+        ref="baseOptions"
         :always-show-options-button="true"
         :show-options="showCheckbox"
         :options-hidden="optionsDisabled"
+        :show-after-options-inline="showDropDownsInline"
         align-options="left"
         @options-toggle="toggleSidebarOptions">
         <template slot="afterOptions">
-          <div class="sidebar-drop-downs">
+          <div
+            ref="afterOptions"
+            class="sidebar-drop-downs">
             <BaseDropDown
               v-model="sortParam"
               :placeholder="$t('dropdown.sortBy')"
@@ -225,6 +229,7 @@ export default {
       entriesExist: false,
       noEntriesTitle: '',
       noEntriesSubtext: '',
+      showDropDownsInline: true,
     };
   },
   computed: {
@@ -298,6 +303,7 @@ export default {
       this.setInfoText();
       if (from.name === 'Dashboard') {
         // refetch sidebar data when switching from overview to form view
+        this.calculateDropDownsInline();
         this.calculateSidebarHeight();
         this.fetchSidebarData();
       }
@@ -312,6 +318,9 @@ export default {
     this.listInt = this.list;
     this.calculateSidebarHeight();
     this.fetchSidebarData();
+  },
+  updated() {
+    this.calculateDropDownsInline();
   },
   destroyed() {
     window.removeEventListener('resize', this.setResizeTimeout);
@@ -519,6 +528,13 @@ export default {
         this.calculateSidebarHeight();
         this.fetchSidebarData();
       }, 500);
+    },
+    calculateDropDownsInline() {
+      const childElementsWidth = this.$refs.baseOptions.$children
+        .filter(child => child.$el.className.includes('base-options-button') || child.$el.className.includes('sidebar-dropdown'))
+        .reduce((prev, curr) => prev + curr.$el.clientWidth, 0);
+      this.showDropDownsInline = this.$refs.baseOptions.$el.clientWidth
+        >= childElementsWidth;
     },
   },
 };

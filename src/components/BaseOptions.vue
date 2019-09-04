@@ -21,6 +21,11 @@
         class="base-options-inline">
         <slot name="options" />
       </div>
+      <div
+        v-if="showAfterOptionsInline && afterSlotHasData"
+        class="base-options-after">
+        <slot name="afterOptions" />
+      </div>
     </div>
     <transition name="slide-fade-options">
       <div
@@ -31,7 +36,7 @@
       <slot name="animations" />
     </transition>
     <div
-      v-if="afterSlotHasData"
+      v-if="!showAfterOptionsInline && afterSlotHasData"
       class="base-options-after">
       <slot name="afterOptions" />
     </div>
@@ -64,6 +69,10 @@ export default {
     optionsHidden: {
       type: Boolean,
       default: false,
+    },
+    showAfterOptionsInline: {
+      type: Boolean,
+      default: true,
     },
   },
   data() {
