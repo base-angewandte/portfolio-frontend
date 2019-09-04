@@ -1,6 +1,8 @@
 <template>
   <div id="app-container">
-    <h1 class="hide">{{ $t('myPortfolio') }}</h1>
+    <h1 class="hide">
+      {{ $t('myPortfolio') }}
+    </h1>
     <BasePopUp
       :show="$store.state.data.popUp.show"
       :title="capitalizeFirstLetter($store.state.data.popUp.header)"
@@ -53,7 +55,9 @@
     <main
       v-else
       :class="['sidebar', { 'sidebar-full': !showForm, 'sidebar-hidden-mobile': showForm }]">
-      <h2 class="hide">{{ $t('entryOverview') }}</h2>
+      <h2 class="hide">
+        {{ $t('entryOverview') }}
+      </h2>
       <Sidebar
         ref="sidebar"
         @new-form="checkUnsavedChanges"

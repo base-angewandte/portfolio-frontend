@@ -352,10 +352,12 @@ const actions = {
                 const textObj = {};
                 const { type } = entry;
                 // TODO: temporary hack - probably should fetch label for lang as well
-                entry.data.forEach((language) => {
-                  const langInternal = language.language.source.split('/').pop();
-                  Vue.set(textObj, langInternal.toLowerCase(), language.text);
-                });
+                if (entry.data) {
+                  entry.data.forEach((language) => {
+                    const langInternal = language.language.source.split('/').pop();
+                    Vue.set(textObj, langInternal.toLowerCase(), language.text);
+                  });
+                }
                 res(Object.assign({}, { type }, textObj));
               }))) : [];
 
