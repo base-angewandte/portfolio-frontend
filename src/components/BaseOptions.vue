@@ -21,11 +21,6 @@
         class="base-options-inline">
         <slot name="options" />
       </div>
-      <div
-        v-if="afterSlotHasData"
-        class="base-options-after">
-        <slot name="afterOptions" />
-      </div>
     </div>
     <transition name="slide-fade-options">
       <div
@@ -35,6 +30,11 @@
       </div>
       <slot name="animations" />
     </transition>
+    <div
+      v-if="afterSlotHasData"
+      class="base-options-after">
+      <slot name="afterOptions" />
+    </div>
   </div>
 </template>
 
@@ -136,6 +136,7 @@ export default {
       .base-options-after {
         flex: 1 1 auto;
         align-self: center;
+        max-width: 100%;
       }
     }
 

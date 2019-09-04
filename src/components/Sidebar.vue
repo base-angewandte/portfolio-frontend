@@ -35,13 +35,17 @@
               :placeholder="$t('dropdown.sortBy')"
               :label="$t('dropdown.sortBy')"
               :options="sortOptions"
+              :with-spacing="false"
+              class="sidebar-dropdown"
               @value-selected="fetchSidebarData" />
             <BaseDropDown
               v-model="filterType"
               :label="$t('dropdown.filterByType')"
               :options="entryTypes"
               :language="$i18n.locale"
+              :with-spacing="false"
               value-prop="source"
+              class="sidebar-dropdown"
               @value-selected="filterEntries($event, 'type')" />
           </div>
         </template>
@@ -585,6 +589,14 @@ export default {
     }
   }
 
+  .sidebar-dropdown {
+    max-width: 50%;
+
+    &:not(:first-of-type) {
+      margin-left: $spacing;
+    }
+  }
+
   @media screen and (max-width: $tablet) {
     .menu-sidebar {
       height: calc(100vh - #{$header-height} - #{$row-height-small} - 130px);
@@ -592,6 +604,10 @@ export default {
       .sidebar-head {
         & .sidebar-drop-downs {
           flex-wrap: wrap;
+
+          .sidebar-dropdown {
+            max-width: 100%;
+          }
         }
 
         .base-row-with-form {
