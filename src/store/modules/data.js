@@ -592,7 +592,7 @@ const actions = {
         // special case single choice chips (saved as object in backend)
       } else if (xAttrs && xAttrs.field_type && xAttrs.field_type.includes('chips')
         && field.type === 'object') {
-        Vue.set(newData, key, values[0] || {});
+        Vue.set(newData, key, values[0] || null);
       } else if (field.type === 'integer') {
         const number = parseInt(values, 10);
         Vue.set(newData, key, !Number.isNaN(number) ? number : 0);
