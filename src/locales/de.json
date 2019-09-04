@@ -31,6 +31,9 @@
   "returnHome": "Zur Start Seite",
   "returnToDashboard": "Zurück zur Übersicht",
   "refresh": "Nochmal versuchen",
+  "myPortfolio": "Mein Portfolio",
+  "entryOverview": "Übersicht Portfolio Einträge",
+  "newEntry": "Neuen Eintrag anlegen",
   "form": {
     "select": "Wähle",
     "write": "Schreibe eine",

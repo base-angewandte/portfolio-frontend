@@ -33,6 +33,9 @@
   "returnHome": "Return to Start Page",
   "returnToDashboard": "Return to entry list",
   "refresh": "Try Again",
+  "myPortfolio": "Mein Portfolio",
+  "entryOverview": "Overview Portfolio Entries",
+  "newEntry": "Create New Entry",
   "form": {
     "select": "Select",
     "write": "Write (a)",

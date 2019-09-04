@@ -1,6 +1,6 @@
-
 <template>
   <div class="form-component">
+    <h2 class="hide">{{ `${$tc('notify.entry', 1)}: ${title}` }}</h2>
     <div class="form-head">
       <!-- PARENT HEADER -->
       <div

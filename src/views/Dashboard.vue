@@ -1,5 +1,6 @@
 <template>
   <div id="app-container">
+    <h1 class="hide">{{ $t('myPortfolio') }}</h1>
     <BasePopUp
       :show="$store.state.data.popUp.show"
       :title="capitalizeFirstLetter($store.state.data.popUp.header)"
@@ -40,20 +41,33 @@
       @hide-preview="showPreview = false"
       @download="downloadFile" />
 
-    <Sidebar
-      ref="sidebar"
-      :class="['sidebar', { 'sidebar-full': !showForm, 'sidebar-hidden-mobile': showForm }]"
-      @new-form="checkUnsavedChanges"
-      @show-entry="checkUnsavedChanges"
-      @update-publish-state="updateFormData" />
-    <div
+    <aside
+      v-if="showForm"
+      :class="['sidebar', { 'sidebar-full': !showForm, 'sidebar-hidden-mobile': showForm }]">
+      <Sidebar
+        ref="sidebar"
+        @new-form="checkUnsavedChanges"
+        @show-entry="checkUnsavedChanges"
+        @update-publish-state="updateFormData" />
+    </aside>
+    <main
+      v-else
+      :class="['sidebar', { 'sidebar-full': !showForm, 'sidebar-hidden-mobile': showForm }]">
+      <h2 class="hide">{{ $t('entryOverview') }}</h2>
+      <Sidebar
+        ref="sidebar"
+        @new-form="checkUnsavedChanges"
+        @show-entry="checkUnsavedChanges"
+        @update-publish-state="updateFormData" />
+    </main>
+    <main
       v-if="showForm"
       class="form-view">
       <router-view
         ref="view"
         @show-preview="loadPreview"
         @data-changed="updateSidebarData" />
-    </div>
+    </main>
   </div>
 </template>
 
