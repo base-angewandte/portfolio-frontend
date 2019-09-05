@@ -12,7 +12,7 @@
         :subtext="$t('form-view.clickordrag')"
         icon="camera"
         drop-type="elements"
-        drag-item-class="base-menu-entry"
+        drag-item-class="base-menu-list__list-entry"
         drop-element-name="menuEntry"
         class="file-box file-boxes-margin"
         @dropped-element="droppedEntries"
