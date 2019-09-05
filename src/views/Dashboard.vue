@@ -173,8 +173,14 @@ export default {
 
       if (filePath) {
         this.showPreview = !!this.previewUrl;
-        // previewSize not required for audio (and pdf)
-        if (fileData.metadata && (fileData.metadata.ImageHeight
+        // if previws are available use the last converted size in array to set image size
+        if (fileData.previews && fileData.previews.length) {
+          this.previewSize = {
+            width: `${Object.keys(fileData.previews[fileData.previews.length - 1])[0].replace('w', '')}px`,
+          };
+          // else get size from metadata
+          // previewSize not required for audio (and pdf)
+        } else if (fileData.metadata && (fileData.metadata.ImageHeight
           || fileData.metadata.SourceImageHeight)) {
           this.previewSize = {
             height: `${fileData.metadata.ImageHeight ? fileData.metadata.ImageHeight.val

@@ -49,6 +49,7 @@
               :language="$i18n.locale"
               :with-spacing="false"
               value-prop="source"
+              align-drop-down="right"
               class="sidebar-dropdown"
               @value-selected="filterEntries($event, 'type')" />
           </div>
