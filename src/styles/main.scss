@@ -9,6 +9,10 @@ html {
   -webkit-font-smoothing: antialiased;
   box-sizing: border-box;
 
+  &:root {
+    font-size: $font-root-regular;
+  }
+
   button {
     font-family: $font;
   }
@@ -49,6 +53,8 @@ html {
 
 @media screen and (max-width: $mobile) {
   html {
-    font-size: $font-size-mobile;
+    &:root {
+      font-size: $font-root-mobile;
+    }
   }
 }
