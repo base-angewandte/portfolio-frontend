@@ -530,11 +530,17 @@ export default {
       }, 500);
     },
     calculateDropDownsInline() {
-      const childElementsWidth = this.$refs.baseOptions.$children
+      const children = this.$refs.baseOptions.$children;
+      // get all child elements that are not options (= should be inline with options button)
+      // and calculate sum of width
+      const childElementsWidth = children
         .filter(child => child.$el.className.includes('base-options-button') || child.$el.className.includes('sidebar-dropdown'))
         .reduce((prev, curr) => prev + curr.$el.clientWidth, 0);
+      // need to know margin of drop down element as well since not included in width
+      const margin = parseFloat(getComputedStyle(children[children.length - 1].$el).marginLeft.replace('px', ''));
+      // check if all elements fit in one row - else set inline false
       this.showDropDownsInline = this.$refs.baseOptions.$el.clientWidth
-        >= childElementsWidth;
+        > childElementsWidth + margin;
     },
   },
 };
