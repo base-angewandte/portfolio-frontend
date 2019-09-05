@@ -43,27 +43,17 @@
       @hide-preview="showPreview = false"
       @download="downloadFile" />
 
-    <aside
-      v-if="showForm"
-      :class="['sidebar', { 'sidebar-full': !showForm, 'sidebar-hidden-mobile': showForm }]">
-      <Sidebar
-        ref="sidebar"
-        @new-form="checkUnsavedChanges"
-        @show-entry="checkUnsavedChanges"
-        @update-publish-state="updateFormData" />
-    </aside>
-    <main
-      v-else
-      :class="['sidebar', { 'sidebar-full': !showForm, 'sidebar-hidden-mobile': showForm }]">
-      <h2 class="hide">
-        {{ $t('entryOverview') }}
-      </h2>
-      <Sidebar
-        ref="sidebar"
-        @new-form="checkUnsavedChanges"
-        @show-entry="checkUnsavedChanges"
-        @update-publish-state="updateFormData" />
-    </main>
+    <h2
+      v-if="!showForm"
+      class="hide">
+      {{ $t('entryOverview') }}
+    </h2>
+    <Sidebar
+      ref="sidebar"
+      :class="['sidebar', { 'sidebar-full': !showForm, 'sidebar-hidden-mobile': showForm }]"
+      @new-form="checkUnsavedChanges"
+      @show-entry="checkUnsavedChanges"
+      @update-publish-state="updateFormData" />
     <main
       v-if="showForm"
       class="form-view">
