@@ -23,6 +23,20 @@ module.exports= {
     {
       label: "Wien, Österreich",
       source: "https://api.geocode.earth/v1/place?ids=whosonfirst:locality:101748073",
+      "house_number":null,
+      "street":null,
+      "postcode":null,
+      "locality":"Vienna",
+      "region":"Wien",
+      "country":"Austria",
+      "geometry":{
+        "type":"Point",
+        "coordinates":[
+          16.348388,
+          48.198674
+        ]
+      },
+      source_name:"geocode.earth",
     },
     {
       source:"https://api.geocode.earth/v1/place?ids=openstreetmap:venue:way/25427674",

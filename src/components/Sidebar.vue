@@ -16,31 +16,41 @@
           button-style="row"
           @clicked="getNewForm" />
         <BaseSearch
+          v-model="filterString"
           :show-image="true"
           :placeholder="$t('search')"
           class="search-bar"
-          @input="filterEntries($event, 'title')" />
+          @input-change="filterEntries($event, 'title')" />
       </div>
       <BaseOptions
+        ref="baseOptions"
         :always-show-options-button="true"
         :show-options="showCheckbox"
         :options-hidden="optionsDisabled"
+        :show-after-options-inline="showDropDownsInline"
         align-options="left"
         @options-toggle="toggleSidebarOptions">
         <template slot="afterOptions">
-          <div class="sidebar-drop-downs">
+          <div
+            ref="afterOptions"
+            class="sidebar-drop-downs">
             <BaseDropDown
               v-model="sortParam"
               :placeholder="$t('dropdown.sortBy')"
               :label="$t('dropdown.sortBy')"
               :options="sortOptions"
+              :with-spacing="false"
+              class="sidebar-dropdown"
               @value-selected="fetchSidebarData" />
             <BaseDropDown
               v-model="filterType"
               :label="$t('dropdown.filterByType')"
               :options="entryTypes"
               :language="$i18n.locale"
+              :with-spacing="false"
               value-prop="source"
+              align-drop-down="right"
+              class="sidebar-dropdown"
               @value-selected="filterEntries($event, 'type')" />
           </div>
         </template>
@@ -98,30 +108,20 @@
         @clicked="showEntry"
         @selected="selectEntry" />
       <div
-        v-else-if="!entriesExist && !isLoading"
+        v-else-if="!isLoading"
         class="no-entries">
         <p class="no-entries-title">
-          {{ isNewForm ? $t('noEntriesTitle', { action: $t('actionSave') })
-            : $t('noEntriesTitle', { action: $t('actionCreate') }) }}
+          {{ noEntriesTitle }}
         </p>
         <p class="no-entries-subtext">
-          {{ isNewForm ? $t('noEntriesFormSubtext') : $t('noEntriesMainSubtext') }}
-        </p>
-      </div>
-      <div
-        v-else-if="entriesExist && !isLoading"
-        class="no-entries">
-        <p class="no-entries-title">
-          {{ $t('noMatchingEntriesTitle') }}
-        </p>
-        <p class="no-entries-subtext">
-          {{ $t('noMatchingEntriesSubtext') }}
+          {{ noEntriesSubtext }}
         </p>
       </div>
     </div>
 
     <BasePagination
       v-if="pageTotal > 1"
+      ref="pagination"
       :total="pageTotal"
       :current="pageNumber"
       @set-page="setPage" />
@@ -137,6 +137,7 @@ import {
   BasePagination,
   BaseLoader,
 } from 'base-ui-components';
+import axios from 'axios';
 import BaseOptions from './BaseOptions';
 import { entryHandlingMixin } from '../mixins/entryHandling';
 import { userInfo } from '../mixins/userInfo';
@@ -216,12 +217,20 @@ export default {
       entryNumber: null,
       isLoading: false,
       timeout: null,
+      resizeTimeout: null,
+      filterString: '',
       filterType: {
         label: this.$t('dropdown.allTypes'),
         source: '',
       },
-      sortParam: {},
+      sortParam: {
+        label: this.$t('dropdown.date_modified'),
+        value: 'date_modified',
+      },
       entriesExist: false,
+      noEntriesTitle: '',
+      noEntriesSubtext: '',
+      showDropDownsInline: true,
     };
   },
   computed: {
@@ -268,6 +277,10 @@ export default {
           label: this.$t('dropdown.date_created'),
           value: 'date_created',
         },
+        {
+          label: this.$t('dropdown.date_modified'),
+          value: 'date_modified',
+        },
       ];
     },
     entryTypes() {
@@ -288,8 +301,10 @@ export default {
       }
     },
     $route(from) {
+      this.setInfoText();
       if (from.name === 'Dashboard') {
         // refetch sidebar data when switching from overview to form view
+        this.calculateDropDownsInline();
         this.calculateSidebarHeight();
         this.fetchSidebarData();
       }
@@ -297,11 +312,19 @@ export default {
   },
   created() {
     this.$store.dispatch('data/fetchEntryTypes');
+    // add event listener for full responsiveness
+    window.addEventListener('resize', this.setResizeTimeout);
   },
   mounted() {
     this.listInt = this.list;
     this.calculateSidebarHeight();
     this.fetchSidebarData();
+  },
+  updated() {
+    this.calculateDropDownsInline();
+  },
+  destroyed() {
+    window.removeEventListener('resize', this.setResizeTimeout);
   },
   methods: {
     showEntry(index) {
@@ -332,10 +355,7 @@ export default {
         }
         this.timeout = setTimeout(() => {
           if (val.length === 0 || val.length > 3) {
-            this.filterString = val;
             this.fetchSidebarData();
-          } else {
-            this.filterString = '';
           }
         }, 600);
       }
@@ -418,7 +438,7 @@ export default {
         let response = await this.dataRequest(offset);
         // should there be not enough entries to give results with the current offset
         // try again with a offset 0
-        if (offset >= response.count) {
+        if (offset && offset >= response.count) {
           offset = 0;
           this.pageNumber = 1;
           response = await this.dataRequest(offset);
@@ -428,23 +448,29 @@ export default {
             description: entry.type && entry.type.label ? capitalizeString(entry.type.label[this.$i18n.locale]) : '',
           }));
         this.entryNumber = response.count;
+        if (!this.entryNumber) {
+          this.setInfoText();
+        }
         // check if this was a general data request (no filters etc)
         // to determine if entries exist at all
-        if (!(this.filterType.source || this.filterString || this.excludeLinked)) {
+        if (!(this.filterType.source || this.filterString)) {
           this.entriesExist = !!this.entryNumber;
         }
         this.$emit('sidebar-data-changed');
+        await this.$store.dispatch('data/fetchEntryTypes');
       } catch (e) {
-        console.error(e);
-        this.$notify({
-          group: 'request-notifications',
-          title: this.$t('notify.entryFetchFail'),
-          text: this.$t('notify.entryFetchFailSub'),
-          type: 'error',
-        });
+        if (!axios.isCancel(e)) {
+          console.error(e);
+          this.$notify({
+            group: 'request-notifications',
+            title: this.$t('notify.entryFetchFail'),
+            text: this.$t('notify.entryFetchFailSub'),
+            type: 'error',
+          });
+        }
+      } finally {
+        this.isLoading = false;
       }
-      await this.$store.dispatch('data/fetchEntryTypes');
-      this.isLoading = false;
     },
     async dataRequest(offset) {
       const response = await this.$store.dispatch('PortfolioAPI/get', {
@@ -459,10 +485,63 @@ export default {
       return response;
     },
     calculateSidebarHeight() {
-      const sidebarHeight = this.$refs.menuContainer.clientHeight - 32 - 16;
+      let sidebarHeight = this.$refs.menuContainer.clientHeight;
+      // if pagination element is not present yet (on initial render) deduct height and spacing
+      // from sidebar height
+      if (!this.$refs.pagination) {
+        sidebarHeight = sidebarHeight - 32 - 16;
+      }
       // hardcoded because unfortunately no other possibility found
       const entryHeight = window.innerWidth >= 640 ? 56 : 48;
-      this.entriesPerPage = Math.floor(sidebarHeight / entryHeight);
+      const numberOfEntries = Math.floor(sidebarHeight / entryHeight);
+      this.entriesPerPage = numberOfEntries > 4 ? numberOfEntries : 4;
+    },
+    setInfoText() {
+      if (this.entriesExist && (this.filterString || this.filterType.source)) {
+        this.noEntriesTitle = this.$t('noMatchingEntriesTitle');
+        this.noEntriesSubtext = this.$t('noMatchingEntriesSubtext');
+      } else if (this.excludeLinked) {
+        this.noEntriesTitle = this.$t('noLinkEntriesTitle');
+        this.noEntriesSubtext = this.$t('noLinkEntriesSubtext');
+      } else if (this.isNewForm) {
+        this.noEntriesTitle = this.$t('noEntriesTitle', { action: this.$t('actionSave') });
+        this.noEntriesSubtext = this.$t('noEntriesFormSubtext');
+      } else {
+        this.noEntriesTitle = this.$t('noEntriesTitle', { action: this.$t('actionCreate') });
+        this.noEntriesSubtext = this.$t('noEntriesMainSubtext');
+      }
+    },
+    resetFilters() {
+      this.filterString = '';
+      this.filterType = {
+        label: this.$t('dropdown.allTypes'),
+        source: '',
+      };
+    },
+    setResizeTimeout() {
+      // check if there is a timeout already set and clear it if yes
+      if (this.resizeTimeout) {
+        clearTimeout(this.resizeTimeout);
+        this.resizeTimeout = null;
+      }
+      // then set time out new
+      this.resizeTimeout = setTimeout(() => {
+        this.calculateSidebarHeight();
+        this.fetchSidebarData();
+      }, 500);
+    },
+    calculateDropDownsInline() {
+      const children = this.$refs.baseOptions.$children;
+      // get all child elements that are not options (= should be inline with options button)
+      // and calculate sum of width
+      const childElementsWidth = children
+        .filter(child => child.$el.className.includes('base-options-button') || child.$el.className.includes('sidebar-dropdown'))
+        .reduce((prev, curr) => prev + curr.$el.clientWidth, 0);
+      // need to know margin of drop down element as well since not included in width
+      const margin = parseFloat(getComputedStyle(children[children.length - 1].$el).marginLeft.replace('px', ''));
+      // check if all elements fit in one row - else set inline false
+      this.showDropDownsInline = this.$refs.baseOptions.$el.clientWidth
+        > childElementsWidth + margin;
     },
   },
 };
@@ -501,6 +580,7 @@ export default {
     flex: 1 1 auto;
     overflow-y: auto;
     overflow-x: hidden;
+    min-height: $row-height-large;
 
     #menu-list {
       height: 100%;
@@ -524,10 +604,19 @@ export default {
       text-align: center;
       color: $font-color-second;
       margin-bottom: $spacing;
+      padding: 0 $spacing-large;
     }
 
     .no-entries-title {
       font-size: $font-size-large;
+    }
+  }
+
+  .sidebar-dropdown {
+    max-width: 50%;
+
+    &:not(:first-of-type) {
+      margin-left: $spacing;
     }
   }
 
@@ -538,6 +627,10 @@ export default {
       .sidebar-head {
         & .sidebar-drop-downs {
           flex-wrap: wrap;
+
+          .sidebar-dropdown {
+            max-width: 100%;
+          }
         }
 
         .base-row-with-form {

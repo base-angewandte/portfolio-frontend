@@ -57,6 +57,8 @@ export default new Router({
                 localStorage.setItem('lang', lang);
                 store.commit('PortfolioAPI/setLang', lang);
                 i18n.locale = lang;
+                // need to fetch schemas in correct language again
+                store.dispatch('PortfolioAPI/fetchSchemas');
                 return next(path);
               });
             }

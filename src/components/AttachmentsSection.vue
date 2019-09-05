@@ -43,7 +43,7 @@
                 icon-size="large"
                 icon="remove"
                 button-style="single"
-                @clicked="actionInt = ''" />
+                @clicked="cancelAction" />
               <BaseButton
                 :text="actionButtonText"
                 icon-size="large"
@@ -216,6 +216,10 @@ export default {
     submitAction() {
       this.$emit('submit-action', this.actionInt);
     },
+    cancelAction() {
+      this.actionInt = '';
+      this.$emit('cancel-action');
+    },
   },
 };
 </script>
@@ -305,6 +309,32 @@ export default {
         margin: auto;
         transition: opacity 0.15s ease, transform 0.3s ease;
       }
+    }
+  }
+
+  .linked-base-box:nth-of-type(n + 5) {
+    margin-top: $spacing;
+  }
+
+  .linked-base-box:not(:nth-child(4n)) {
+    margin-right: $spacing;
+  }
+
+  @media screen and (max-width: $tablet) {
+    .linked-base-box {
+      flex: 0 0 calc(50% - #{$spacing-small});
+    }
+
+    .linked-base-box:nth-of-type(n + 3) {
+      margin-top: $spacing;
+    }
+
+    .linked-base-box:not(:nth-child(4n)) {
+      margin-right: 0;
+    }
+
+    .linked-base-box:not(:nth-child(2n)) {
+      margin-right: $spacing;
     }
   }
 </style>

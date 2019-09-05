@@ -72,7 +72,7 @@ export const getApiUrl = (requestUrl = '') => {
  */
 export const hasFieldContent = (fieldValues) => {
   let hasContent = false;
-  if (typeof fieldValues === 'object') {
+  if (fieldValues && typeof fieldValues === 'object') {
     if (fieldValues.length >= 0) {
       fieldValues.forEach((values) => { hasContent = hasFieldContent(values) || hasContent; });
     } else {

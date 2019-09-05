@@ -13,7 +13,8 @@
       :action="entryAction"
       :is-loading="entriesLoading"
       @set-action="entryAction = 'delete'"
-      @submit-action="deleteLinked">
+      @submit-action="deleteLinked"
+      @cancel-action="resetSelected">
       <template
         slot="attached-box"
         slot-scope="props">
@@ -44,7 +45,8 @@
       :action="action"
       :is-loading="filesLoading"
       @set-action="setAction"
-      @submit-action="saveFileMeta">
+      @submit-action="saveFileMeta"
+      @cancel-action="resetSelected">
       <template
         slot="option-buttons"
         slot-scope="scope">
@@ -242,8 +244,8 @@ export default {
         this.action = '';
         this.selectedFiles = [];
         this.licenseSelected = {};
-        this.filesLoading = false;
       }
+      this.filesLoading = false;
     },
     async deleteLinked() {
       this.entriesLoading = true;
@@ -388,6 +390,10 @@ export default {
         this.selectedFiles = [];
       }
     },
+    resetSelected() {
+      this.selectedEntries = [];
+      this.selectedFiles = [];
+    },
   },
 };
 </script>
@@ -435,27 +441,6 @@ export default {
   }
 
   @media screen and (max-width: $tablet) {
-    .attachment-area {
-
-      .linked-base-box {
-        flex: 0 0 calc(50% - #{$spacing-small});
-      }
-
-      .linked-base-box:nth-of-type(n + 3) {
-        margin-top: $spacing;
-      }
-
-      .linked-base-box:not(:nth-child(4n)) {
-        margin-right: 0;
-      }
-
-      .linked-base-box:not(:nth-child(2n)) {
-        margin-right: $spacing;
-      }
-    }
-  }
-
-  @media screen and (max-width: $mobile) {
     .attachment-area {
 
       .linked-base-box {

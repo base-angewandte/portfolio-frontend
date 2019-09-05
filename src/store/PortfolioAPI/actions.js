@@ -10,6 +10,9 @@ const $config = {
 
 const axiosInstance = axios.create();
 
+const { CancelToken } = axios;
+const cancel = {};
+
 const axiosMaxRetries = 3;
 let axiosTries = 0;
 
@@ -17,19 +20,25 @@ axiosInstance.interceptors.response.use((response) => {
   axiosTries = 0;
   return response;
 }, (error) => {
-  if (error.response && error.response.status === 403) {
-    window.location.href = `${process.env.HEADER_URLS.LOGIN}`;
+  if (axiosTries >= axiosMaxRetries) {
+    axiosTries = 0;
+    window.location.href = '/404';
+    return Promise.reject(error);
   }
-  if (((error.config && error.response && error.response.status >= 404)
-    || !error.response) && axiosTries < axiosMaxRetries) {
+  // if there is an error config to draw from and max tries are not reached try again
+  if (((error.response && error.response.status >= 404)
+    || !error.response) && error.config && axiosTries < axiosMaxRetries) {
     axiosTries += 1;
     return axios.request(error.config);
+  }
+  if (error.response && error.response.status === 403) {
+    sessionStorage.clear();
+    window.location.href = `${process.env.HEADER_URLS.LOGIN}`;
   }
   return Promise.reject(error);
 });
 
 Api.setAxiosInstance(axiosInstance);
-
 
 export default {
   init({ commit, dispatch }, config) {
@@ -77,10 +86,22 @@ export default {
       });
     });
   },
-  get({ state, commit }, {
+  async get({ state, commit }, {
     /* eslint-disable-next-line camelcase */
     kind, type, id, sort, offset, limit, q, link_selection_for,
   }) {
+    // special case jsonschema where previous request should be cancelled if new one is started
+    if (kind === 'jsonschema' || (kind === 'entry' && !id)) {
+      // cancel previous request if there is any
+      if (cancel && cancel[kind]) {
+        cancel[kind](`new ${kind} request started`);
+      }
+      /* eslint-disable-next-line */
+      $config.cancelToken = new CancelToken(function executor(c) {
+        // An executor function receives a cancel function as a parameter
+        cancel[kind] = c.bind(this);
+      });
+    }
     let p = {};
     return new Promise((resolve, reject) => {
       $config.headers = { 'Accept-Language': i18n.locale };
@@ -99,6 +120,8 @@ export default {
       }).catch((error) => {
         commit('setLoadingFinished', `Error while fetching ${kind}`);
         reject(error);
+      }).finally(() => {
+        cancel[kind] = null;
       });
     });
   },

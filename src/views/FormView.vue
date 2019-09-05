@@ -1,6 +1,8 @@
-
 <template>
   <div class="form-component">
+    <h2 class="hide">
+      {{ `${$tc('notify.entry', 1)}: ${title}` }}
+    </h2>
     <div class="form-head">
       <!-- PARENT HEADER -->
       <div
@@ -99,8 +101,8 @@
       v-if="valueList.date_created && valueList.date_changed"
       class="last-modified">
       {{
-        `${$t('form-view.created')} ${createHumanReadableData(valueList.date_created)};
-      ${$t('form-view.lastModified')} ${createHumanReadableData(valueList.date_changed)}`
+        `${$t('form-view.created')} ${createHumanReadableData(valueList.date_created)}` }} <br>
+      {{ `${$t('form-view.lastModified')} ${createHumanReadableData(valueList.date_changed)}`
       }}
     </div>
   </div>
@@ -108,6 +110,7 @@
 
 <script>
 import { BaseMenuEntry, BaseLoader } from 'base-ui-components';
+import axios from 'axios';
 import BaseRow from '../components/BaseRow';
 import BaseFormOptions from '../components/BaseFormOptions';
 import BaseForm from '../components/BaseForm';
@@ -139,7 +142,6 @@ export default {
       showOverlay: false,
       formIsLoading: false,
       extensionIsLoading: false,
-      reloadSidebarData: false,
       prefetchedRoles: [],
     };
   },
@@ -181,6 +183,8 @@ export default {
   watch: {
     async currentItemId(val) {
       window.scrollTo(0, 0);
+      sessionStorage.removeItem('valueList');
+      sessionStorage.removeItem('parent');
       if (val) {
         this.resetForm();
         await this.updateForm();
@@ -211,16 +215,19 @@ export default {
           this.prefetchedRoles = this.$store.state.data.prefetchedTypes.contributors_role
             .filter(role => !contributorFields.includes(role.source));
         } catch (e) {
-          this.$notify({
-            group: 'request-notifications',
-            title: this.$t('notify.somethingWrong'),
-            text: this.$t('notify.entryTypeNotFound', { type: val }),
-            type: 'error',
-          });
-          // reset type
-          this.valueList.type = [];
-          // empty extension
-          this.$store.commit('data/setExtensionSchema', {});
+          // check if request was cancelled and ignore if yes - otherwise notify user
+          if (!axios.isCancel(e)) {
+            this.$notify({
+              group: 'request-notifications',
+              title: this.$t('notify.somethingWrong'),
+              text: this.$t('notify.entryTypeNotFound', { type: val }),
+              type: 'error',
+            });
+            // reset type
+            this.valueList.type = [];
+            // empty extension
+            this.$store.commit('data/setExtensionSchema', {});
+          }
         }
         this.extensionIsLoading = false;
       } else {
@@ -232,19 +239,47 @@ export default {
     attachmentsCount(curr, prev) {
       // formisloading as indicator if route was changed to reduce requests
       if (!this.formIsLoading && Boolean(curr) !== Boolean(prev)) {
-        this.$emit('data-changed');
+        this.$emit('data-changed', true);
       }
     },
   },
   async created() {
     this.formIsLoading = true;
+    // check if a parent was stored in session storage
+    const storedParentString = sessionStorage.getItem('parent');
+    if (storedParentString) {
+      this.$store.commit('data/setParentItem', JSON.parse(storedParentString));
+    }
     await this.fetchGeneralFormFields();
     // this.$store.dispatch('data/getStaticDropDowns');
     if (this.currentItemId) {
-      this.updateForm();
+      await this.updateForm();
     } else {
       this.formIsLoading = false;
     }
+    // check if previously unsaved changes were stored in session storage
+    const storedValueList = JSON.parse(sessionStorage.getItem('valueList'));
+    // if it matches the current entry id, merge it with db fetched data
+    if (storedValueList && storedValueList.id === this.currentItemId) {
+      this.valueList = Object.assign({}, this.valueList, storedValueList);
+      this.unsavedChanges = true;
+    }
+    // add event listener triggered before unload
+    window.addEventListener('beforeunload', () => {
+      // if there are unsaved changes store them in session storage,
+      // otherwise clear storage
+      if (this.unsavedChanges && Object.keys(this.valueList).length) {
+        sessionStorage.setItem('valueList', JSON.stringify(this.valueList));
+      } else {
+        sessionStorage.removeItem('valueList');
+      }
+      // check if there is a parent item, otherwise clear storage item
+      if (this.parent) {
+        sessionStorage.setItem('parent', JSON.stringify(this.parent));
+      } else {
+        sessionStorage.removeItem('parent');
+      }
+    });
   },
   methods: {
     async fetchGeneralFormFields() {
@@ -275,7 +310,6 @@ export default {
         this.extensionIsLoading = !!this.type;
         this.$set(this.valueList, 'data', Object.assign({}, data.data));
       } catch (e) {
-        console.error(e);
         if (e.message.includes('404')) {
           this.$router.push(`/notFound?id=${this.currentItemId}`);
         } else {
@@ -291,11 +325,6 @@ export default {
       this.formIsLoading = false;
     },
     handleInput(data, type) {
-      if ((!!data.type && !!this.valueList.type
-        && JSON.stringify(this.valueList.type[0]) !== JSON.stringify(data.type[0]))
-        || (!!data.title && this.valueList.title !== data.title)) {
-        this.reloadSidebarData = true;
-      }
       this.unsavedChanges = true;
       // check if type is set (= this event is coming from a subform)
       if (type) {
@@ -322,7 +351,6 @@ export default {
             const list = this.$store.getters['data/getLinkedIds'];
             if (list.length) {
               this.actionLinked({ list, action: 'save' });
-              // TODO: also do this for attached media??
             }
             // link entry to parent if parent items are present
             const parent = this.$store.getters['data/getLatestParentItem'];
@@ -348,10 +376,12 @@ export default {
                 this.$store.commit('data/deleteParentItems');
               }
             }
+            this.$emit('data-changed');
             this.$router.push(`/entry/${this.$store.state.data.currentItemId}`);
             // if id present just update the entry
           } else {
             await this.$store.dispatch('data/addOrUpdateEntry', validData);
+            this.$emit('data-changed');
           }
           this.$notify({
             group: 'request-notifications',
@@ -359,11 +389,9 @@ export default {
             text: this.$t('notify.saveSuccessSubtext', { title: this.valueList.title }),
             type: 'success',
           });
-          if (this.reloadSidebarData) {
-            this.$emit('data-changed');
-            this.reloadSidebarData = false;
-          }
           this.unsavedChanges = false;
+          this.dataSaving = false;
+          return true;
         } catch (e) {
           this.$notify({
             group: 'request-notifications',
@@ -371,8 +399,9 @@ export default {
             text: e.message,
             type: 'error',
           });
+          this.dataSaving = false;
+          return false;
         }
-        this.dataSaving = false;
       } else {
         this.$notify({
           group: 'request-notifications',
@@ -380,6 +409,7 @@ export default {
           text: this.$t('notify.addTitle'),
           type: 'error',
         });
+        return false;
       }
     },
     returnFromForm() {
@@ -403,7 +433,8 @@ export default {
           this.$store.commit('data/setPopUp', {
             show: true,
             header: this.$t('notify.unsavedChangesTitle'),
-            text: this.$t('notify.unsavedChangesText'),
+            textTitle: this.$t('notify.unsavedChangesText'),
+            textList: [],
             icon: 'save-file',
             buttonTextRight: this.$t('notify.saveChanges'),
             buttonTextLeft: this.$t('notify.dismissChanges'),
@@ -445,8 +476,6 @@ export default {
     },
     async actionEntry(action) {
       if (!this.isNewForm) {
-        // TODO: remove unnecessary properties here before action???
-        // need to improve removeProperties function first though...
         this.confirmAction({ action, entries: [].concat(this.valueList) });
       } else {
         this.$notify({
@@ -467,12 +496,11 @@ export default {
       } else if (action === 'offline') {
         this.valueList.published = false;
       }
-      this.$emit('data-changed');
+      this.$emit('data-changed', true);
     },
     createHumanReadableData(val) {
       const date = new Date(val);
-      const { locale } = this.$i18n;
-      return `${date.toLocaleDateString(locale)} ${this.$t('form-view.at')} ${date.toLocaleTimeString(locale)}`;
+      return `${date.toLocaleDateString('de')} ${this.$t('form-view.at')} ${date.toLocaleTimeString('de')}`;
     },
   },
 };
@@ -541,7 +569,7 @@ export default {
       }
 
       .slide-in-form {
-        top: 0;
+        top: $spacing-small + $row-height-small;
         position: absolute;
       }
     }
@@ -553,9 +581,10 @@ export default {
   }
 
   .last-modified {
-    margin: $spacing;
+    margin: $spacing 0;
     color: $font-color-second;
     font-size: $font-size-small;
+    line-height: $line-height;
   }
 
   .slide-fade-form-enter-active, .slide-fade-form-move {

@@ -1,5 +1,8 @@
 <template>
   <div id="app-container">
+    <h1 class="hide">
+      {{ $t('myPortfolio') }}
+    </h1>
     <BasePopUp
       :show="$store.state.data.popUp.show"
       :title="capitalizeFirstLetter($store.state.data.popUp.header)"
@@ -13,9 +16,17 @@
       @button-right="$store.state.data.popUp.actionRight()">
       <div class="sidebar-pop-up">
         <div class="pop-up-text-container">
-          <p
-            class="sidebar-pop-up-text"
-            v-html="popUpText" />
+          <p class="sidebar-pop-up-title">
+            {{ $store.state.data.popUp.textTitle }}
+          </p>
+          <ul
+            class="sidebar-pop-up-text">
+            <li
+              v-for="(title, index) in $store.state.data.popUp.textList"
+              :key="index">
+              {{ title + '\n' }}
+            </li>
+          </ul>
         </div>
       </div>
     </BasePopUp>
@@ -24,36 +35,40 @@
       :media-url="previewUrl"
       :download-url="originalUrl"
       :display-size="previewSize"
+      :previews="imagePreviews"
       :info-texts="{
         download: $t('form-view.download'),
         view: $t('form-view.view'),
       }"
-      :orientation="imageOrientation"
       @hide-preview="showPreview = false"
       @download="downloadFile" />
 
+    <h2
+      v-if="!showForm"
+      class="hide">
+      {{ $t('entryOverview') }}
+    </h2>
     <Sidebar
       ref="sidebar"
       :class="['sidebar', { 'sidebar-full': !showForm, 'sidebar-hidden-mobile': showForm }]"
-      @new-form="createNewForm"
-      @show-entry="routeToEntry"
+      @new-form="checkUnsavedChanges"
+      @show-entry="checkUnsavedChanges"
       @update-publish-state="updateFormData" />
-    <div
+    <main
       v-if="showForm"
       class="form-view">
       <router-view
         ref="view"
         @show-preview="loadPreview"
-        @data-changed="updateSidebarData()" />
-    </div>
+        @data-changed="updateSidebarData" />
+    </main>
   </div>
 </template>
 
 <script>
 import { BasePopUp, BaseMediaPreview } from 'base-ui-components';
-// import axios from 'axios';
 import Sidebar from '../components/Sidebar';
-import { capitalizeString, getApiUrl } from '../utils/commonUtils';
+import { capitalizeString, getApiUrl, getLangLabel } from '../utils/commonUtils';
 
 export default {
   components: {
@@ -67,7 +82,7 @@ export default {
       previewUrl: '',
       previewSize: {},
       originalUrl: '',
-      imageOrientation: 0,
+      imagePreviews: [],
     };
   },
   computed: {
@@ -75,7 +90,7 @@ export default {
       return this.$route.name !== 'Dashboard';
     },
     popUpText() {
-      return this.$store.state.data.popUp.text;
+      return this.$store.state.data.popUp.textList;
     },
   },
   watch: {
@@ -97,6 +112,34 @@ export default {
       }
       this.$router.push('/new');
     },
+    checkUnsavedChanges(id) {
+      const followUpAction = id ? () => this.routeToEntry(id) : () => this.createNewForm();
+      if (this.$refs.view && this.$refs.view.unsavedChanges) {
+        this.$store.commit('data/setPopUp', {
+          show: true,
+          header: this.$t('notify.unsavedChangesTitle'),
+          textTitle: this.$t('notify.unsavedChangesText'),
+          textList: [],
+          icon: 'save-file',
+          buttonTextRight: this.$t('notify.saveChanges'),
+          buttonTextLeft: this.$t('notify.dismissChanges'),
+          actionRight: async () => {
+            try {
+              const saveSuccess = await this.$refs.view.saveForm();
+              if (saveSuccess) {
+                followUpAction();
+              }
+            } catch (e) {
+              console.error(e);
+            }
+            this.$store.commit('data/hidePopUp');
+          },
+          actionLeft: () => { followUpAction(); },
+        });
+      } else {
+        followUpAction();
+      }
+    },
     routeToEntry(id) {
       this.$store.commit('data/deleteParentItems');
       this.$router.push(`/entry/${id}`);
@@ -108,14 +151,26 @@ export default {
       this.$store.commit('data/hidePopUp');
     },
     loadPreview(fileData) {
+      // reset media variables on new image load
+      this.previewSize = null;
+      this.imagePreviews = [];
+
       this.originalUrl = getApiUrl(fileData.original);
       const filePath = fileData.playlist || fileData.mp3
         || fileData.pdf || fileData.original;
       this.previewUrl = getApiUrl(filePath);
+      this.imagePreviews = fileData.previews;
+
       if (filePath) {
         this.showPreview = !!this.previewUrl;
-        // previewSize not required for audio (and pdf)
-        if (fileData.metadata && (fileData.metadata.ImageHeight
+        // if previws are available use the last converted size in array to set image size
+        if (fileData.previews && fileData.previews.length) {
+          this.previewSize = {
+            width: `${Object.keys(fileData.previews[fileData.previews.length - 1])[0].replace('w', '')}px`,
+          };
+          // else get size from metadata
+          // previewSize not required for audio (and pdf)
+        } else if (fileData.metadata && (fileData.metadata.ImageHeight
           || fileData.metadata.SourceImageHeight)) {
           this.previewSize = {
             height: `${fileData.metadata.ImageHeight ? fileData.metadata.ImageHeight.val
@@ -123,9 +178,6 @@ export default {
             width: `${fileData.metadata.ImageWidth ? fileData.metadata.ImageWidth.val
               : fileData.metadata.SourceImageWidth.val}px`,
           };
-        }
-        if (fileData.metadata.Orientation) {
-          this.imageOrientation = fileData.metadata.Orientation.num;
         }
         // landing here if file is not fully converted yet
       } else {
@@ -143,8 +195,28 @@ export default {
       evt.preventDefault();
       // TODO: image zoom?
     },
-    updateSidebarData() {
-      this.$refs.sidebar.fetchSidebarData();
+    updateSidebarData(alwaysUpdate) {
+      if (!this.$refs.sidebar.entriesExist) {
+        this.$refs.sidebar.resetFilters();
+      }
+      const activeSidebarEntryIndex = this.$refs.sidebar.activeEntry;
+      const activeSidebarEntry = this.$refs.sidebar.listInt[activeSidebarEntryIndex];
+      // only fetching entries if
+      // a) parameter is set (for updating publish state and media)
+      // b) entry is new entry
+      // c) sorting is last modified and entry is not the first one
+      // d) title or type have changed
+      if (alwaysUpdate
+        || !this.$refs.view.currentItemId
+        || (this.$refs.sidebar.sortParam.value === 'date_modified' && this.$refs.sidebar.activeEntry !== 0)
+        || (activeSidebarEntry
+          && (activeSidebarEntry.title !== this.$refs.view.title
+            || ((!activeSidebarEntry.type && this.$refs.view.type)
+              || (activeSidebarEntry.type
+                && getLangLabel(activeSidebarEntry.type.label, this.$i18n.locale)
+                !== this.$refs.view.type))))) {
+        this.$refs.sidebar.fetchSidebarData();
+      }
     },
     updateFormData(published) {
       const formView = this.$refs.view;
@@ -184,21 +256,31 @@ export default {
     text-align: center;
     font-size: $font-size-large;
     min-height: 150px;
-    max-width: 80%;
     display: flex;
     justify-content: center;
     align-items: center;
     margin: auto;
 
     .pop-up-text-container {
-      max-width: 100%;
+      width: 100%;
+
+      .sidebar-pop-up-title {
+        margin: $spacing;
+      }
 
       .sidebar-pop-up-text {
-        margin: auto;
         text-align: center;
         overflow-wrap: break-word;
         word-wrap: break-word;
         hyphens: auto;
+        max-height: calc(49vh - #{$spacing});
+        overflow-y: auto;
+        padding: 0 $spacing-large;
+
+        li {
+          // necessary otherwise scrollbar always shown...
+          height: $line-height;
+        }
       }
     }
   }

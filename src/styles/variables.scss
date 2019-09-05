@@ -1,21 +1,22 @@
 /* fonts */
 $font: 'Source Sans Pro', serif;
-$font-size-regular: 14pt;
-$font-size-mobile: 12pt;
-$font-size-small: 0.85em;
-$font-size-large: 1.25em;
-$line-height: 1.25em;
+$font-root-regular: 19px;
+$font-root-mobile: 16px;
+$font-size-regular: 1rem; // 14pt on desktop and tablet,
+$font-size-small: 16rem/19;
+$font-size-large: 24rem/19;
+$line-height: 24rem/19;
 
 /* height and spacing */
-$spacing: .86em;
-$spacing-small: 0.43em;
-$spacing-large: 1.72em;
+$spacing: 16rem/19;
+$spacing-small: 8rem/19;
+$spacing-large: 32rem/19;
 /* new styleguide: font size + relative spacing! */
-$row-height-large: 1em +  2*1em;
-$row-height-small: 1em +  2*$spacing-small;
+$row-height-large: 1rem +  2*$spacing;
+$row-height-small: 1rem +  2*$spacing-small;
 $header-height: 55px;
-$chips-spacing: 0.05em;
-$chips-list-height: 1em + 2*$spacing;
+$chips-spacing: 0.05rem;
+$chips-list-height: 1rem + 2*$spacing;
 
 /* colors */
 $app-color: #FF9800 !default;

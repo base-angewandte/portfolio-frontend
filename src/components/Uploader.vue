@@ -41,6 +41,7 @@
         :show-label="true"
         :header-background-color="'rgb(240, 240, 240)'"
         :language="$i18n.locale"
+        :is-disabled="!isInitial"
         value-prop="source"
         class="upload-dropdown" />
       <BaseDropDown
@@ -51,6 +52,7 @@
         :header-background-color="'rgb(240, 240, 240)'"
         :label="$t('upload.publish_images')"
         :show-label="true"
+        :is-disabled="!isInitial"
         class="upload-dropdown" />
     </div>
     <template
@@ -132,6 +134,7 @@ export default {
         value: 'no license',
       },
       license: this.defaultLicense,
+      disabled: true,
     };
   },
   computed: {
@@ -215,7 +218,6 @@ export default {
                       },
                     });
                   this.uploadedFiles.push(file.name);
-                  this.currentStatus = STATUS_SUCCESS;
                   resolve();
                 } catch (err) {
                   this.uploadPercentage[index] = 0;
@@ -227,6 +229,7 @@ export default {
               }
               resolve();
             })));
+          this.currentStatus = STATUS_SUCCESS;
         } catch (e) {
           if (e.message.includes('422')) {
             console.error(e);

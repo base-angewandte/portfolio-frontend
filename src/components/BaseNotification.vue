@@ -21,9 +21,10 @@
               v-else-if="props.item.type === 'success'"
               class="icon notification-status-icon" />
             <div class="notification-text">
-              <div
-                class="notification-title"
-                v-html="notificationTitle(props.item.title)" />
+              <h5
+                class="notification-title">
+                {{ notificationTitle(props.item.title) }}
+              </h5>
               <div class="notification-message">
                 {{ props.item.text }}
               </div>
@@ -57,6 +58,7 @@ export default {
     FailIcon,
   },
   methods: {
+    // capitalize first letter of title
     notificationTitle(val) {
       return val.slice(0, 1).toUpperCase() + val.slice(1);
     },
@@ -84,13 +86,13 @@ export default {
 
     .notifications {
       position: absolute;
-      background-color: white;
     }
   }
 
   .notification {
     position: relative;
     padding: $spacing;
+    background-color: white;
 
     font-size: $font-size-small;
 
@@ -102,11 +104,8 @@ export default {
       flex-grow: 1;
 
       .notification-title {
+        font-size: inherit;
         font-weight: 600;
-      }
-
-      .notification-message {
-        white-space: pre-line;
       }
     }
 

@@ -35,14 +35,17 @@
             @fetch-autocomplete="fetchAutocomplete"
             @subform-input="setFieldValue($event, element.name, valueIndex)" />
           <div
-            v-if="valueListInt[element.name].length > 1"
+            v-if="checkFieldContent(valueList[element.name])
+              || valueListInt[element.name].length > 1"
             :key="index + '-button' + valueIndex"
             class="group-add">
             <button
               class="field-group-button"
               type="button"
               @click.prevent="removeField(element, valueIndex)">
-              <span>{{ $t('form.removeField', { fieldType: getFieldName(element) }) }}</span>
+              <span>{{ valueListInt[element.name].length === 1
+                ? $t('form.clearField')
+                : $t('form.removeField', { fieldType: getFieldName(element) }) }}</span>
               <span>
                 <RemoveIcon
                   class="field-group-icon" />
@@ -97,7 +100,7 @@ import axios from 'axios';
 import FormFieldCreator from './FormFieldCreator';
 import RemoveIcon from '../assets/icons/remove.svg';
 import PlusIcon from '../assets/icons/plus.svg';
-import { getApiUrl, getLangLabel } from '../utils/commonUtils';
+import { getApiUrl, getLangLabel, hasFieldContent } from '../utils/commonUtils';
 
 const { CancelToken } = axios;
 let cancel;
@@ -134,6 +137,7 @@ export default {
       fieldProperties: [],
       dropdownLists: {},
       timeout: null,
+      // variable to specify a field that is currently loading autocomplete data
       fieldIsLoading: '',
     };
   },
@@ -177,6 +181,7 @@ export default {
   methods: {
     initializeValueObject() {
       this.formFieldListInt = Object.keys(this.formFieldJson)
+        // filter out hidden properties and $ref property from JSON
         .filter(key => !this.formFieldJson[key].$ref
           && !(this.formFieldJson[key]['x-attrs'] && this.formFieldJson[key]['x-attrs'].hidden))
         .map(key => Object.assign({}, { name: key }, this.formFieldJson[key]));
@@ -214,7 +219,7 @@ export default {
       // check if field is array
       if (field.type === 'array') {
         // check if values are already present and set those if yes
-        if (value && value.length) {
+        if (typeof value === 'object' && value && value.length) {
           return [].concat(value);
         }
         if (field['x-attrs'] && !field['x-attrs'].field_type.includes('chips')
@@ -233,7 +238,7 @@ export default {
         return Object.assign({}, initObj, value);
       }
       // if it is not a array or object simply return value from list or empty string
-      return value || '';
+      return (typeof value === 'string' ? value : '');
     },
     initializeDropDownLists() {
       this.formFieldListInt.forEach((field) => {
@@ -274,6 +279,12 @@ export default {
         // reset the dropdownlist for dynamic autosuggest
         if (fieldAttrs.dynamic_autosuggest) {
           this.setDropDown([], '', fieldAttrs.equivalent, fieldName);
+        }
+        // if the field has contributors as equivalent set the role!
+        if (fieldAttrs.equivalent === 'contributors') {
+          const fieldRole = this.$store.state.data.prefetchedTypes.contributors_role
+            .find(role => role.source === fieldAttrs.default_role);
+          value.forEach(entry => this.$set(entry, 'roles', [fieldRole]));
         }
       }
       if (index >= 0) {
@@ -333,15 +344,30 @@ export default {
         .push(this.getInitialFieldValue(field.items));
     },
     removeField(field, index) {
-      this.valueListInt[field.name].splice(index, index + 1);
-      this.$emit('values-changed', this.valueListInt);
+      if (index) {
+        this.valueListInt[field.name].splice(index, 1);
+        this.$emit('values-changed', this.valueListInt);
+      } else {
+        this.$set(this.valueList, field.name, this.getInitialFieldValue(field.items));
+      }
     },
     isHalfField(field) {
       const index = this.formFieldsHalf.indexOf(field);
       return index > 0 && !!(index % 2);
     },
     setDropDown(data, value, equivalent, name) {
-      let dropDownList = [].concat(data);
+      const modifiedData = data.map((entry) => {
+        if (!['GND', 'VIAF'].includes(entry.source_name)) return entry;
+        // regex to filter additional info from GND and VIAF
+        const pattern = /^(([^0-9,|]*?,[^0-9,|]*|[^0-9|,]*)$|([^0-9,|]*?, [^0-9,|]*|[^0-9|,]*)(, | \| | )(.*)$)/;
+        const match = pattern.exec(entry.label);
+        if (match && match[1]) {
+          return Object.assign({}, entry, match[3] && match[5]
+            ? { label: match[3], additional: match[5] } : { label: match[1], additional: '' });
+        }
+        return entry;
+      });
+      let dropDownList = [].concat(modifiedData);
       const user = this.$store.getters['PortfolioAPI/user'];
       // add defaults to fields that have defaults or whos equivalent has defaults
       const defaults = equivalent ? process.env[`${equivalent.toUpperCase()}_DEFAULTS`]
@@ -380,6 +406,9 @@ export default {
         modifiedList = inputMatches.concat(modifiedList);
       }
       return modifiedList;
+    },
+    checkFieldContent(val) {
+      return hasFieldContent(val);
     },
   },
 };

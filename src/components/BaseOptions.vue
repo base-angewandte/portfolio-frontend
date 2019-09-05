@@ -22,7 +22,7 @@
         <slot name="options" />
       </div>
       <div
-        v-if="afterSlotHasData"
+        v-if="showAfterOptionsInline && afterSlotHasData"
         class="base-options-after">
         <slot name="afterOptions" />
       </div>
@@ -35,6 +35,11 @@
       </div>
       <slot name="animations" />
     </transition>
+    <div
+      v-if="!showAfterOptionsInline && afterSlotHasData"
+      class="base-options-after">
+      <slot name="afterOptions" />
+    </div>
   </div>
 </template>
 
@@ -64,6 +69,10 @@ export default {
     optionsHidden: {
       type: Boolean,
       default: false,
+    },
+    showAfterOptionsInline: {
+      type: Boolean,
+      default: true,
     },
   },
   data() {
@@ -136,6 +145,7 @@ export default {
       .base-options-after {
         flex: 1 1 auto;
         align-self: center;
+        max-width: 100%;
       }
     }
 
@@ -156,17 +166,5 @@ export default {
   .slide-fade-options-enter {
     opacity: 0;
     transform: translateY(-#{2*$spacing});
-  }
-
-  .slide-fade-options-leave-to {
-    opacity: 0;
-    transform: translateY(-#{$spacing});
-  }
-
-  .slide-fade-options-leave-active {
-    position: absolute;
-    width: 100%;
-    margin: auto;
-    transition: opacity 0.15s ease, transform 0.3s ease;
   }
 </style>
