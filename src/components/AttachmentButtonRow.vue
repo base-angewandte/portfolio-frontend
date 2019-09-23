@@ -51,28 +51,37 @@
       v-else
       key="mobile-file-area"
       class="file-list">
-      <BaseMenuEntry
+      <BaseButton
         key="mobile-addFile"
-        :title="$t('form-view.addExistingEntry')"
-        entry-id="addFile"
+        :text="$t('form-view.addExistingEntry')"
+        icon-size="large"
+        button-style="row"
         icon="sheet-plus"
+        align-text="left"
+        class="file-list-button"
         @clicked="openEntrySelect" />
-      <BaseMenuEntry
+      <BaseButton
         key="mobile-addNew"
-        entry-id="addNew"
+        :text="$t('form-view.addNewEntry')"
+        icon-size="large"
+        button-style="row"
+        align-text="left"
+        class="file-list-button mobile-file-list-attach"
         icon="sheet-plus"
-        :title="$t('form-view.addNewEntry')"
-        class="mobile-file-list-attach"
         @clicked="$emit('open-new-form')" />
       <label class="file-select">
-        <BaseMenuEntry
+        <BaseButton
           key="mobile-addExisting"
-          entry-id="addExisting"
+          :text="$t('form-view.attachFile')"
           icon="sheet-plus"
-          :title="$t('form-view.attachFile')"
-          class="mobile-file-list-attach" />
+          icon-size="large"
+          align-text="left"
+          button-style="row"
+          class="file-list-button mobile-file-list-attach"
+          @clicked="openFileDialogue"/>
         <input
           ref="fileInputMobile"
+          :disabled="!currentId"
           type="file"
           multiple
           class="hide"
@@ -115,7 +124,7 @@
 <script>
 import {
   BaseDropBox,
-  BaseMenuEntry,
+  BaseButton,
   BaseBoxButton,
   BasePopUp,
 } from 'base-ui-components';
@@ -127,7 +136,7 @@ export default {
   components: {
     BaseBoxButton,
     BaseDropBox,
-    BaseMenuEntry,
+    BaseButton,
     BasePopUp,
     Sidebar,
     Uploader,
@@ -258,6 +267,11 @@ export default {
       this.filesToUpload = [];
       this.$emit('upload-done');
     },
+    openFileDialogue() {
+      // trigger input click event manually since not triggered for base menu entry
+      // otherwise
+      this.$refs.fileInputMobile.dispatchEvent(new MouseEvent('click'));
+    },
   },
 };
 </script>
@@ -279,6 +293,10 @@ export default {
 
   .file-list {
     margin-top: $spacing;
+
+    .file-list-button {
+      width: 100%;
+    }
 
     .mobile-file-list-attach {
       border-top: $separation-line;
