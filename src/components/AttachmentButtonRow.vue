@@ -53,22 +53,23 @@
       class="file-list">
       <BaseMenuEntry
         key="mobile-addFile"
+        :title="$t('form-view.addExistingEntry')"
         entry-id="addFile"
         icon="sheet-plus"
-        title="Vorhandenen Eintrag hinzufügen"
         @clicked="openEntrySelect" />
       <BaseMenuEntry
         key="mobile-addNew"
         entry-id="addNew"
         icon="sheet-plus"
-        title="Neuen Eintrag anhängen"
+        :title="$t('form-view.addNewEntry')"
+        class="mobile-file-list-attach"
         @clicked="$emit('open-new-form')" />
       <label class="file-select">
         <BaseMenuEntry
           key="mobile-addExisting"
           entry-id="addExisting"
           icon="sheet-plus"
-          title="Datei anhängen"
+          :title="$t('form-view.attachFile')"
           class="mobile-file-list-attach" />
         <input
           ref="fileInputMobile"
