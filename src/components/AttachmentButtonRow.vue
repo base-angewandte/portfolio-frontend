@@ -1,22 +1,25 @@
 <template>
   <div>
+    <!-- if not mobile use large box buttons -->
     <div
       v-if="!isMobile"
       key="file-area"
       class="file-boxes">
+      <!-- LINK EXÌSTING ENTRIES -->
       <BaseDropBox
         key="addEntry"
-        :show-plus="true"
         :box-size="{ width: 'calc(25% - 8px)' }"
         :text="$t('form-view.addExistingEntry')"
         :subtext="$t('form-view.clickordrag')"
-        icon="camera"
+        icon="sheet-empty"
         drop-type="elements"
         drag-item-class="base-menu-list__list-entry"
         drop-element-name="menuEntry"
         class="file-box file-boxes-margin"
         @dropped-element="droppedEntries"
         @clicked="openEntrySelect" />
+
+      <!-- LINK A NEW ENTRY -->
       <BaseBoxButton
         key="addNew"
         :show-plus="true"
@@ -25,18 +28,19 @@
         icon="sheet-empty"
         class="file-box file-boxes-margin"
         @clicked="$emit('open-new-form')" />
+
+      <!-- ADD FILES -->
       <label
         class="file-select">
         <BaseDropBox
           key="addFile"
-          :show-plus="true"
           :box-size="{ width: 'calc(100%)' }"
           :box-ratio="'50'"
           :text="$t('form-view.attachFile')"
           :subtext="$t('form-view.clickordrag')"
           icon="camera"
           @dropped-file="handleFileSelect($event)"
-          @clicked="fileBoxClick" />
+          @clicked="checkEntrySaved" />
         <input
           ref="fileInput"
           :disabled="!currentId"
@@ -47,32 +51,48 @@
           @change="handleFileSelect">
       </label>
     </div>
+
+    <!-- else just use buttons -->
     <div
       v-else
       key="mobile-file-area"
       class="file-list">
-      <BaseMenuEntry
+      <!-- LINK EXÌSTING ENTRIES -->
+      <BaseButton
         key="mobile-addFile"
-        :title="$t('form-view.addExistingEntry')"
-        entry-id="addFile"
+        :text="$t('form-view.addExistingEntry')"
+        icon-size="large"
+        button-style="row"
         icon="sheet-plus"
+        align-text="left"
+        class="file-list-button"
         @clicked="openEntrySelect" />
-      <BaseMenuEntry
+
+      <!-- LINK A NEW ENTRY -->
+      <BaseButton
         key="mobile-addNew"
-        entry-id="addNew"
+        :text="$t('form-view.addNewEntry')"
+        icon-size="large"
+        button-style="row"
+        align-text="left"
+        class="file-list-button mobile-file-list-attach"
         icon="sheet-plus"
-        :title="$t('form-view.addNewEntry')"
-        class="mobile-file-list-attach"
         @clicked="$emit('open-new-form')" />
+
+      <!-- ADD FILES -->
       <label class="file-select">
-        <BaseMenuEntry
+        <BaseButton
           key="mobile-addExisting"
-          entry-id="addExisting"
+          :text="$t('form-view.attachFile')"
           icon="sheet-plus"
-          :title="$t('form-view.attachFile')"
-          class="mobile-file-list-attach" />
+          icon-size="large"
+          align-text="left"
+          button-style="row"
+          class="file-list-button mobile-file-list-attach"
+          @clicked="openFileDialogue" />
         <input
           ref="fileInputMobile"
+          :disabled="!currentId"
           type="file"
           multiple
           class="hide"
@@ -115,7 +135,7 @@
 <script>
 import {
   BaseDropBox,
-  BaseMenuEntry,
+  BaseButton,
   BaseBoxButton,
   BasePopUp,
 } from 'base-ui-components';
@@ -127,7 +147,7 @@ export default {
   components: {
     BaseBoxButton,
     BaseDropBox,
-    BaseMenuEntry,
+    BaseButton,
     BasePopUp,
     Sidebar,
     Uploader,
@@ -141,27 +161,31 @@ export default {
   },
   data() {
     return {
+      // to handle the pop up for linking existing entries
       showEntryPopUp: false,
+      // entries shown in the pop up
       selectableEntries: [],
+      // entries selected from the pop up
       selectedEntries: [],
+      // files that were selected for upload
       filesToUpload: [],
-      sortBy: '-date_created',
-      filterString: '',
-      filterType: '',
+      // total number of available entries to link
       totalEntries: null,
     };
   },
   computed: {
+    // get currently linked entries
     linkedList() {
       return this.$store.getters['data/getCurrentLinked'];
     },
+    // check if browser is mobile to switch between box and list display
     isMobile() {
-      return window.innerWidth <= 640;
+      return this.$store.state.data.isMobile <= 640;
     },
   },
   methods: {
-    fileBoxClick() {
-      // check if entry was already saved
+    checkEntrySaved() {
+      // check if entry was already saved and display error message if not
       if (!this.currentId) {
         this.$notify({
           group: 'request-notifications',
@@ -171,10 +195,13 @@ export default {
         });
       }
     },
+    // reset file input values everytime the file dialogue is opened
     resetInput() {
+      // check if file box or button is active
       const inputRef = this.$refs.fileInput || this.$refs.fileInputMobile;
       inputRef.value = '';
     },
+    // function called when elements were dropped into the link entries drop box
     droppedEntries(elementId) {
       // check if the dragged item was actually the one already open
       if (elementId !== this.currentId) {
@@ -190,6 +217,7 @@ export default {
         });
       }
     },
+    // function called on dropping files into box or on file input change event
     handleFileSelect(e) {
       // get files - depending if dragged or selected from file browse different event prop
       const files = e.dataTransfer ? e.dataTransfer.files : e.target.files;
@@ -200,18 +228,22 @@ export default {
         }
       }
     },
+    // function triggered upon click on link entries drop box
     openEntrySelect() {
       this.showEntryPopUp = true;
     },
     getSelectedIdsAndLink(objList) {
+      // get only a list of ids from entries that should be linked
       const idList = objList.map(entry => entry.id);
       this.linkEntries(idList);
     },
     async linkEntries(val) {
       const list = [];
       val.forEach((entryId) => {
+        // if entry is not linked already - add it to the list that will be linked
         if (!this.linkedList.map(e => e.to.id).includes(entryId)) {
           list.push(entryId);
+          // otherwise inform user about it
         } else {
           this.$notify({
             group: 'request-notifications',
@@ -252,11 +284,21 @@ export default {
           type: 'entry',
         });
       }
+      // close the pop up again
       this.showEntryPopUp = false;
     },
+    // when upload of files complete reset the variable and inform parent
     resetFiles() {
       this.filesToUpload = [];
       this.$emit('upload-done');
+    },
+    // trigger file select dialogue manually
+    openFileDialogue() {
+      // check first if entry was saved already
+      this.checkEntrySaved();
+      // trigger input click event manually since not triggered for base menu entry
+      // otherwise
+      this.$refs.fileInputMobile.dispatchEvent(new MouseEvent('click'));
     },
   },
 };
@@ -279,6 +321,10 @@ export default {
 
   .file-list {
     margin-top: $spacing;
+
+    .file-list-button {
+      width: 100%;
+    }
 
     .mobile-file-list-attach {
       border-top: $separation-line;

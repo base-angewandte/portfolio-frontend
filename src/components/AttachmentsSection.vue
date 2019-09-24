@@ -1,10 +1,13 @@
 <template>
   <div class="base-attachments-section">
+    <!-- LOADER -->
     <div
       v-if="attachedList.length && isLoading"
       class="base-attachments-section__loading">
       <BaseLoader class="base-attachments-section__loader" />
     </div>
+
+    <!-- ATTACHMENTS AREA -->
     <div
       v-if="attachedList.length"
       class="base-attachments-section__area">
@@ -118,10 +121,16 @@ export default {
     BaseBoxButton,
   },
   props: {
+    /**
+     * title of section
+     */
     headerText: {
       type: String,
       default: '',
     },
+    /**
+     * actual entries list
+     */
     attachedList: {
       type: Array,
       default() {
@@ -189,7 +198,9 @@ export default {
   },
   data() {
     return {
+      // internal show actions toggle variable
       showActions: false,
+      // internally saved action
       actionInt: '',
     };
   },
@@ -199,14 +210,15 @@ export default {
     },
   },
   watch: {
-    action(val) {
-      if (val !== this.actionInt) {
-        this.actionInt = val;
-      }
+    action: {
+      handler(val) {
+        // update action if changed from outside and if not equal
+        if (val !== this.actionInt) {
+          this.actionInt = val;
+        }
+      },
+      immediate: true,
     },
-  },
-  created() {
-    this.actionInt = this.action;
   },
   methods: {
     setAction(act) {
