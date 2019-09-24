@@ -33,7 +33,7 @@
   "returnHome": "Return to Start Page",
   "returnToDashboard": "Return to entry list",
   "refresh": "Try Again",
-  "myPortfolio": "Mein Portfolio",
+  "myPortfolio": "My Portfolio",
   "entryOverview": "Overview Portfolio Entries",
   "newEntry": "Create New Entry",
   "form": {
@@ -68,7 +68,7 @@
     "attachedEntries": "Linked Entries",
     "attachedFiles": "Attached Files",
     "addExistingEntry": "Link an Existing Entry",
-    "addNewEntry":  "Link a new Entry",
+    "addNewEntry":  "Link a New Entry",
     "attachFile": "Attach Files",
     "clickordrag": "Click or Drag'n Drop",
     "changeLicense": "Change License",

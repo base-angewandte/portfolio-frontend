@@ -6,11 +6,10 @@
       class="file-boxes">
       <BaseDropBox
         key="addEntry"
-        :show-plus="true"
         :box-size="{ width: 'calc(25% - 8px)' }"
         :text="$t('form-view.addExistingEntry')"
         :subtext="$t('form-view.clickordrag')"
-        icon="camera"
+        icon="sheet-empty"
         drop-type="elements"
         drag-item-class="base-menu-list__list-entry"
         drop-element-name="menuEntry"
@@ -29,7 +28,6 @@
         class="file-select">
         <BaseDropBox
           key="addFile"
-          :show-plus="true"
           :box-size="{ width: 'calc(100%)' }"
           :box-ratio="'50'"
           :text="$t('form-view.attachFile')"
@@ -78,7 +76,7 @@
           align-text="left"
           button-style="row"
           class="file-list-button mobile-file-list-attach"
-          @clicked="openFileDialogue"/>
+          @clicked="openFileDialogue" />
         <input
           ref="fileInputMobile"
           :disabled="!currentId"
