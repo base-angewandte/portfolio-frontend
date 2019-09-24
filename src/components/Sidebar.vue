@@ -217,7 +217,6 @@ export default {
       entryNumber: null,
       isLoading: false,
       timeout: null,
-      resizeTimeout: null,
       filterString: '',
       filterType: {
         label: this.$t('dropdown.allTypes'),
@@ -289,6 +288,9 @@ export default {
     selectedList() {
       return this.selectedMenuEntries.map(entry => entry.id);
     },
+    isMobile() {
+      return this.$store.state.data.isMobile;
+    },
   },
   watch: {
     list(val) {
@@ -309,11 +311,13 @@ export default {
         this.fetchSidebarData();
       }
     },
+    isMobile() {
+      this.calculateSidebarHeight();
+      this.fetchSidebarData();
+    },
   },
   created() {
     this.$store.dispatch('data/fetchEntryTypes');
-    // add event listener for full responsiveness
-    window.addEventListener('resize', this.setResizeTimeout);
   },
   mounted() {
     this.listInt = this.list;
@@ -322,9 +326,6 @@ export default {
   },
   updated() {
     this.calculateDropDownsInline();
-  },
-  destroyed() {
-    window.removeEventListener('resize', this.setResizeTimeout);
   },
   methods: {
     showEntry(index) {
@@ -517,18 +518,6 @@ export default {
         label: this.$t('dropdown.allTypes'),
         source: '',
       };
-    },
-    setResizeTimeout() {
-      // check if there is a timeout already set and clear it if yes
-      if (this.resizeTimeout) {
-        clearTimeout(this.resizeTimeout);
-        this.resizeTimeout = null;
-      }
-      // then set time out new
-      this.resizeTimeout = setTimeout(() => {
-        this.calculateSidebarHeight();
-        this.fetchSidebarData();
-      }, 500);
     },
     calculateDropDownsInline() {
       const children = this.$refs.baseOptions.$children;

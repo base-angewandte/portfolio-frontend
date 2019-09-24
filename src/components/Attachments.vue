@@ -47,6 +47,7 @@
       @set-action="setAction"
       @submit-action="saveFileMeta"
       @cancel-action="resetSelected">
+      <!-- SLOT FOR ADDITIONAL OPTIONS NEEDED FOR FILES -->
       <template
         slot="option-buttons"
         slot-scope="scope">
@@ -156,24 +157,37 @@ export default {
   },
   data() {
     return {
+      // text for message area of files (differs per action)
       fileText: '',
+      // subtext for message area of files (differs per action)
       fileSubtext: '',
+      // button text for files (differs per action)
       buttonText: '',
+      // current action active for entries section
       entryAction: '',
+      // entries selected
       selectedEntries: [],
+      // files selected
       selectedFiles: [],
+      // current action for files
       action: '',
+      // variable specific for license action to store selected license
       licenseSelected: {},
+      // to switch url during hover save hover state in this array
       imageHover: [],
+      // timeout for requesting media again if there are still unconverted
       timeout: null,
+      // toggle loader display, displayed during db requests
       entriesLoading: false,
       filesLoading: false,
     };
   },
   computed: {
+    // variable for checking if there are still unconverted files
     isConverting() {
       return this.attachedList.some(file => !file.metadata);
     },
+    // supplement license options with 'no license' option
     licenses() {
       return ([{
         label: setLangLabels('nolicense', this.$i18n.availableLocales),
@@ -182,23 +196,27 @@ export default {
     },
   },
   watch: {
-    attachedList() {
-      this.checkConverting();
+    // if attached media list changes trigger function to re-fetch media from time to time
+    attachedList: {
+      handler() {
+        this.checkConverting();
+      },
+      immediate: true,
     },
   },
-  mounted() {
-    this.checkConverting();
-  },
   destroyed() {
+    // if timeout was set (for refetching media), remove it
     if (this.timeout) {
       clearTimeout(this.timeout);
       this.timeout = null;
     }
   },
   methods: {
+    // save hover state on mouse enter / leave to get correct video url
     changeVideoHoverState(event, index, value) {
       this.$set(this.imageHover, index, value);
     },
+    // function for using options (delete, change license, publish state) for files
     async saveFileMeta(act) {
       this.filesLoading = true;
       // special case publish since publish / offline in one
@@ -225,11 +243,13 @@ export default {
           type: 'error',
         });
       } else {
+        // if all error checks pass actually do the action
         const [successIds, failIds] = await this.$store.dispatch('data/actionFiles', {
           list: this.selectedFiles,
           action: this.action,
           value: this.licenseSelected,
         });
+        // and inform user of the fail / success
         this.informUser({
           successArr: successIds, failedArr: failIds, action, type: 'media',
         });
@@ -247,12 +267,14 @@ export default {
       }
       this.filesLoading = false;
     },
+    // action for linked entries
     async deleteLinked() {
       this.entriesLoading = true;
       // check if user has selected entries
       if (this.selectedEntries.length) {
-        this.$refs.linkedSection.attachmentsLoading = true;
+        // use parent function to action entries
         await this.$parent.actionLinked({ list: this.selectedEntries, action: 'delete' });
+        // reset all involved variables
         this.entryAction = '';
         this.selectedEntries = [];
       } else {
@@ -269,6 +291,7 @@ export default {
       }
       this.entriesLoading = false;
     },
+    // function triggered upon entry selection updating selectedEntries accordingly
     entrySelected(objId, sel) {
       if (sel) {
         this.selectedEntries.push(objId);
@@ -276,7 +299,9 @@ export default {
         this.selectedEntries = this.selectedEntries.filter(entryId => entryId !== objId);
       }
     },
+    // function triggered if medium selected
     filesSelected(objId, sel, published) {
+      // special case publish, for all others just update selectedFiles accordingly
       if (this.action !== 'publish') {
         if (sel) {
           this.selectedFiles.push(objId);
@@ -294,12 +319,15 @@ export default {
         }
       }
     },
+    // get file name from url
     getFileName(file) {
       if (file) {
+        // split into array by slash and then just get last entry
         return file.split('/').pop();
       }
       return '';
     },
+    // function to get file type from metadata type information (for box display)
     getFileType(file) {
       const { type } = file;
       if (file.metadata && type) {
@@ -316,24 +344,25 @@ export default {
       }
       return this.$t('form-view.fileConverting');
     },
+    // get the correct media url
     getImagePath(iconName, hover) {
+      // check if a gif is available in metadata
       if (iconName && iconName.gif) {
+        // use it if hover state is true else use still image
         return getApiUrl(hover ? iconName.gif : iconName.jpg);
       }
+      // check if there is url provided
       if (iconName) {
-        // for local images
-        // TODO: remove for production!
-        if (iconName.includes('images')) {
-          const match = /\/assets\/images\/(\w+\.\w+)$/.exec(iconName);
-          /* eslint-disable-next-line */
-          return require(`@/assets/images/${match[1]}`);
-        } if (iconName.includes('http')) {
+        // check if url is complete - if yes just use it
+        if (iconName.includes('http')) {
           return iconName;
         }
+        // else add base url
         return getApiUrl(iconName);
       }
       return '';
     },
+    // if no image is available some metadata are used to create box text
     generateBoxText(metadata) {
       const wantedAttributes = ['FileSize', 'ImageSize', 'Title', 'Artist', 'Year'];
       if (metadata) {

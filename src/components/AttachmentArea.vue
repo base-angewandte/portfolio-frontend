@@ -1,9 +1,11 @@
 <template>
   <div>
+    <!-- BUTTON ROW FOR ADDING ENTRIES AND FILES -->
     <AttachmentButtonRow
       :current-id="entryId"
       @upload-done="updateUserQuota"
       @open-new-form="$emit('open-new-form')" />
+    <!-- ACTUAL LINKED ENTRIES AND FILES -->
     <Attachments
       ref="attachmentArea"
       :key="'attachmentArea'"
@@ -23,17 +25,22 @@ export default {
   components: { AttachmentButtonRow, Attachments },
   mixins: [attachmentHandlingMixin],
   computed: {
+    // get linked entries from store
     linkedList() {
       return this.$store.getters['data/getCurrentLinked'];
     },
+    // get file list from store
     mediaList() {
       return this.$store.getters['data/getCurrentMedia'];
     },
+    // current entry id
     entryId() {
       return this.$route.params.id;
     },
   },
   methods: {
+    // this is used for checking the available user quota for file upload, needs to be refetched
+    // after uploading / deleting files
     updateUserQuota() {
       try {
         this.$store.dispatch('PortfolioAPI/fetchUser');

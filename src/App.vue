@@ -27,6 +27,11 @@ export default {
   components: {
     BaseNotification: () => import('./components/BaseNotification'),
   },
+  data() {
+    return {
+      resizeTimeout: null,
+    };
+  },
   computed: {
     lang() {
       return this.$store.state.PortfolioAPI.lang;
@@ -50,12 +55,6 @@ export default {
     headerName() {
       return process.env.HEADER_JSON.match(/\/([a-z-]+)-header\.json$/)[1];
     },
-    headerComponent() {
-      return 'portfolio-showroom-header';
-    },
-    footerComponent() {
-      return 'portfolio-showroom-footer';
-    },
   },
   beforeCreate() {
     // initializing stores before app instance is created
@@ -72,6 +71,24 @@ export default {
     // prevent app from displaying dropped files
     window.addEventListener('dragover', e => e.preventDefault());
     window.addEventListener('drop', e => e.preventDefault());
+    // to have fully responsive app listen for window size once and save in store
+    window.addEventListener('resize', this.setResizeTimeout);
+  },
+  destroyed() {
+    window.removeEventListener('resize', this.setResizeTimeout);
+  },
+  methods: {
+    setResizeTimeout() {
+      // check if there is a timeout already set and clear it if yes
+      if (this.resizeTimeout) {
+        clearTimeout(this.resizeTimeout);
+        this.resizeTimeout = null;
+      }
+      // then set time out new
+      this.resizeTimeout = setTimeout(() => {
+        this.$store.commit('data/setIsMobile', window.innerWidth);
+      }, 500);
+    },
   },
 };
 </script>
