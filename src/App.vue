@@ -74,6 +74,9 @@ export default {
     // to have fully responsive app listen for window size once and save in store
     window.addEventListener('resize', this.setResizeTimeout);
   },
+  mounted() {
+    this.setResizeTimeout();
+  },
   destroyed() {
     window.removeEventListener('resize', this.setResizeTimeout);
   },
