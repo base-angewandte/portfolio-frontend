@@ -3,7 +3,9 @@
     id="menu-sidebar"
     :style="calcStyle"
     class="menu-sidebar">
-    <div class="sidebar-head">
+    <div
+      ref="sidebarHead"
+      :class="['sidebar-head', { 'sidebar-head-shadow': sidebarBelow }]">
       <div :class="['base-row', { 'base-row-with-form': isNewForm || !!activeEntryId }]">
         <BaseButton
           v-if="newEnabled"
@@ -230,6 +232,8 @@ export default {
       noEntriesTitle: '',
       noEntriesSubtext: '',
       showDropDownsInline: true,
+      // to have shadow when sidebar list below sidebar head
+      sidebarBelow: false,
     };
   },
   computed: {
@@ -323,6 +327,12 @@ export default {
     this.listInt = this.list;
     this.calculateSidebarHeight();
     this.fetchSidebarData();
+    this.$refs.menuContainer.addEventListener('scroll', () => {
+      this.checkContainerPosition();
+    });
+    window.addEventListener('scroll', () => {
+      this.checkContainerPosition();
+    });
   },
   updated() {
     this.calculateDropDownsInline();
@@ -532,6 +542,12 @@ export default {
       this.showDropDownsInline = this.$refs.baseOptions.$el.clientWidth
         > childElementsWidth + margin;
     },
+    checkContainerPosition() {
+      if (this.listInt.length && this.$refs.sidebarHead) {
+        this.sidebarBelow = this.$refs.sidebarHead.offsetTop > 0
+          || this.$refs.menuContainer.scrollTop > 0;
+      }
+    },
   },
 };
 </script>
@@ -556,6 +572,10 @@ export default {
       padding-bottom: $spacing-small;
       background-color: $background-color;
       flex: 0 0 auto;
+
+      &.sidebar-head-shadow {
+        box-shadow: 0 8px 8px -8px rgba(0,0,0,0.25);
+      }
 
       .sidebar-drop-downs {
         display: flex;
