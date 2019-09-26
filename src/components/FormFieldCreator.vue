@@ -7,7 +7,7 @@
       :key="fieldKey"
       v-model="fieldValueInt"
       :label="label"
-      :placeholder="placeholder"
+      :placeholder="placeholderInt"
       :class="['base-form-field']" />
 
     <!-- DATE FIELD -->
@@ -19,14 +19,14 @@
         :key="fieldKey + 'date'"
         v-model="fieldValueInt"
         :label="label"
-        :placeholder="placeholder"
+        :placeholder="placeholderInt"
         :range-separator="$t('form.until')"
         :format="field['x-attrs'].date_format"
         :type="dateType.includes('timerange') ? dateType.includes('daterange')
           ? 'daterange' : 'single' : dateType"
         :date-format-labels="{date: $t('form.date'), year: $t('form.year') }"
         :format-tabs-legend="$t('form.dateTabsLegend')"
-        :language="$i18n.locale"
+        :language="language"
         :class="['base-form-field']" />
       <BaseDateInput
         v-if="dateType.includes('timerange')"
@@ -35,7 +35,7 @@
         v-model="fieldValueInt"
         :label="field.properties.time_from.title"
         :show-label="false"
-        :placeholder="placeholder"
+        :placeholder="placeholderInt"
         :range-separator="$t('form.until')"
         :type="'timerange'"
         :class="['base-form-field']" />
@@ -48,7 +48,7 @@
       :tabs="tabs"
       :tab-labels="tabs.map(tab => $t(tab))"
       :label="label"
-      :placeholder="placeholder"
+      :placeholder="placeholderInt"
       :input="fieldValueInt"
       :tabs-legend="$t('form.textTabsLegend')"
       :active-tab="activeTab"
@@ -61,7 +61,7 @@
             ? fieldValueInt.type : textTypeDefault"
           :options="textTypeOptions"
           :label="$t('form.texttype')"
-          :language="$i18n.locale"
+          :language="language"
           value-prop="source"
           class="multiline-dropdown"
           @value-selected="$set(fieldValueInt, 'type', $event)" />
@@ -74,7 +74,7 @@
       :key="fieldKey"
       v-model="fieldValueInt"
       :label="label"
-      :placeholder="placeholder"
+      :placeholder="placeholderInt"
       :list="dropDownList"
       :object-prop="'label'"
       :is-loading="autocompleteLoading"
@@ -90,7 +90,7 @@
       v-else-if="fieldType === 'chips'"
       :key="fieldKey"
       v-model="fieldValueInt"
-      :placeholder="placeholder"
+      :placeholder="placeholderInt"
       :label="label"
       :list="dropDownList"
       :allow-dynamic-drop-down-entries="field['x-attrs'] && field['x-attrs'].dynamic_autosuggest"
@@ -102,9 +102,9 @@
       :hoverbox-content="hoverBoxData"
       :sortable="field.name === 'keywords' || (field['x-attrs'] && field['x-attrs'].sortable)"
       :is-loading="autocompleteLoading"
-      :sort-text="$t('form.sort')"
+      :sort-text="sortText"
       :sort-name="isContributorOrEquivalent"
-      :language="field['x-attrs'] && field['x-attrs'].set_label_language ? $i18n.locale : ''"
+      :language="field['x-attrs'] && field['x-attrs'].set_label_language ? language : ''"
       identifier="source"
       object-prop="label"
       @fetch-dropdown-entries="fetchAutocomplete"
@@ -141,7 +141,7 @@
       :key="fieldKey"
       v-model="fieldValueInt"
       :label="label"
-      :placeholder="placeholder"
+      :placeholder="placeholderInt"
       :list="dropDownList"
       :allow-unknown-entries="true"
       :allow-dynamic-drop-down-entries="true"
@@ -150,11 +150,11 @@
       :object-prop="'label'"
       :role-options="secondaryDropdown"
       :is-loading="autocompleteLoading"
-      :sort-text="$t('form.sort')"
+      :sort-text="sortText"
       :sort-name="true"
       :chips-editable="true"
       :roles-placeholder="$t('form.selectRoles')"
-      :language="$i18n.locale"
+      :language="language"
       class="base-form-field base-form-field-full"
       @fetch-dropdown-entries="fetchAutocomplete"
       @hoverbox-active="$emit('fetch-info-data')">
@@ -213,6 +213,9 @@ import {
 } from 'base-ui-components';
 import { setLangLabels, getLangLabel } from '../utils/commonUtils';
 
+/**
+ * A component for easy form creation
+ */
 export default {
   name: 'FormFieldCreator',
   components: {
@@ -226,68 +229,122 @@ export default {
     BaseForm: () => import('./BaseForm'),
   },
   props: {
+    /**
+     * a key to uniquely identify the field
+     */
     fieldKey: {
       type: [Number, String],
       required: true,
     },
+    /**
+     * field information as provided by swagger
+     */
     field: {
       type: Object,
       required: true,
     },
+    /**
+     * the field value
+     */
     fieldValue: {
       type: [Object, String, Array, Date, Number],
       required: true,
     },
-    fieldType: {
-      type: String,
-      default: 'text',
-    },
+    /**
+     * a label for the field
+     */
     label: {
       type: String,
       default: '',
     },
+    /**
+     * a placeholder for the field if not provided in swagger x-attributes
+     * (however if available x-attribute placeholder will be preferred)
+     */
     placeholder: {
       type: [String, Object],
       default: '',
     },
+    /**
+     * provide tabs for multiline text field
+     */
     tabs: {
       type: Array,
       default() {
         return [];
       },
     },
+    /**
+     * provide a options list for autocomplete, chips or chips-below fields
+     */
     dropDownList: {
       type: Array,
       default() {
         return [];
       },
     },
+    /**
+     * provide a second options list (needed e.g. for texts field (text type) or
+     * contributors field (roles)
+     */
     secondaryDropdown: {
       type: Array,
       default() {
         return [];
       },
     },
+    /**
+     * provide data for elements that have a hover box (chips)
+     */
     hoverBoxData: {
       type: Object,
       default() {
         return {};
       },
     },
+    /**
+     * possibility to steer field loading (chips, autocomplete) from outside
+     */
     autocompleteLoading: {
       type: Boolean,
       default: false,
     },
+    /**
+     * set the current language
+     */
+    language: {
+      type: String,
+      default: 'en',
+    },
+    /**
+     * provide available locales
+     */
+    availableLocales: {
+      type: Array,
+      default: () => [],
+    },
+    /**
+     * set a sorting text
+     */
+    sortText: {
+      type: String,
+      default: 'Sort A - Z',
+    },
   },
   data() {
     return {
+      // internal representation of field value
       fieldValueInt: JSON.parse(JSON.stringify(this.fieldValue)),
+      // variable for current text input in chips fields
       textInput: '',
+      // internal loading indicator
       fetchingData: false,
+      // internal active tab for multiline text field
       activeTab: '',
     };
   },
   computed: {
+    // check which date field type was provided and set type accordingly
     dateType() {
       // check if date is an Object with properties or just string (= single date)
       if (!this.field.properties) {
@@ -309,6 +366,7 @@ export default {
       }
       return 'single';
     },
+    // get field properties from swagger info
     groupFormFields() {
       // check if field group is a list (=multiplyable) or not
       if (this.field.type === 'array') {
@@ -319,7 +377,7 @@ export default {
     textTypeDefault() {
       return {
         // map the language specific labels for no value selected to the default
-        label: setLangLabels('form.noTextType', this.$i18n.availableLocales),
+        label: setLangLabels('form.noTextType', this.availableLocales),
         source: '',
       };
     },
@@ -338,6 +396,13 @@ export default {
       return (this.field['x-attrs'] && this.field['x-attrs'].field_type
         && this.field['x-attrs'].field_type.includes('chips')
         && this.field.type === 'object');
+    },
+    placeholderInt() {
+      const xAttrs = this.field['x-attrs'];
+      return xAttrs && xAttrs.placeholder ? xAttrs.placeholder : this.placeholder;
+    },
+    fieldType() {
+      return this.field['x-attrs'] && this.field['x-attrs'].field_type ? this.field['x-attrs'].field_type : 'text';
     },
   },
   watch: {
@@ -398,16 +463,15 @@ export default {
       });
     },
     getLabel(value) {
-      return getLangLabel(value, this.$i18n.locale, true);
+      return getLangLabel(value, this.language, true);
     },
     setActiveTab() {
-      const currentLocale = this.$i18n.locale;
       // check which locales have content
-      const localesWithContent = process.env.LOCALES.filter(lang => !!this.fieldValueInt[lang]);
+      const localesWithContent = this.availableLocales.filter(lang => !!this.fieldValueInt[lang]);
       // if none of the locales has content or the current locale has content
       // - return current locale - else first alternative
-      return !localesWithContent.length || this.fieldValueInt[currentLocale]
-        ? currentLocale : localesWithContent[0];
+      return !localesWithContent.length || this.fieldValueInt[this.language]
+        ? this.language : localesWithContent[0];
     },
   },
 };

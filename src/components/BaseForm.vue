@@ -19,14 +19,14 @@
             :field-key="index + '-' + valueIndex"
             :field="element"
             :field-value="value"
-            :field-type="element['x-attrs'] ? element['x-attrs'].field_type : 'text'"
             :label="getFieldName(element)"
-            :placeholder="element['x-attrs'] && element['x-attrs'].placeholder
-              ? element['x-attrs'].placeholder : $t('form.select') + ' '
-                + getFieldName(element)"
+            :placeholder="$t('form.select') + ' ' + getFieldName(element)"
             :tabs="['en', 'de']"
             :drop-down-list="dropdownLists[element.name]"
             :secondary-dropdown="dropdownLists[element.name + '_secondary']"
+            :language="$i18n.locale"
+            :available-locales="$i18n.availableLocales"
+            :sort-text="$t('form.sort')"
             @field-value-changed="setFieldValue(
               $event,
               element.name,
@@ -74,14 +74,14 @@
           :field-key="index"
           :field="element"
           :field-value="valueListInt[element.name]"
-          :field-type="element['x-attrs'] ? element['x-attrs'].field_type : 'text'"
           :label="getFieldName(element)"
-          :placeholder="element['x-attrs'] && element['x-attrs'].placeholder
-            ? element['x-attrs'].placeholder : $t('form.select') + ' '
-              + getFieldName(element)"
+          :placeholder="$t('form.select') + ' ' + getFieldName(element)"
           :drop-down-list="dropdownLists[element.name]"
           :secondary-dropdown="dropdownLists[element.name + '_secondary']"
           :autocomplete-loading="fieldIsLoading === element.name"
+          :language="$i18n.locale"
+          :available-locales="$i18n.availableLocales"
+          :sort-text="$t('form.sort')"
           :class="[
             'base-form-field',
             element['x-attrs'] && element['x-attrs'].field_format === 'half'
