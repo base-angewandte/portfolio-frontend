@@ -511,7 +511,6 @@ const actions = {
     return [successArr, failArr, noActionArr];
   },
   fetchInfoBoxData(context, entry) {
-    console.log(entry);
     // TODO: fetch info data - from where???
     return { title: 'title' };
   },
