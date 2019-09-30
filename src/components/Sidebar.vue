@@ -544,7 +544,10 @@ export default {
     },
     checkContainerPosition() {
       if (this.listInt.length && this.$refs.sidebarHead) {
-        this.sidebarBelow = this.$refs.sidebarHead.offsetTop > 0
+        // check sidebar head position for whole page scroll and menuContainer position
+        // for container scrolling
+        this.sidebarBelow = (this.isMobile && this.optionsVisible
+          && this.$refs.sidebarHead.offsetTop > 0)
           || this.$refs.menuContainer.scrollTop > 0;
       }
     },
@@ -629,9 +632,16 @@ export default {
     }
   }
 
+  // special width dictated by header / footer component
+  @media screen and (max-width: 1083px) {
+    .menu-sidebar {
+      height: calc(100vh - #{$header-height} - #{$row-height-small} - 131px);
+    }
+  }
+
   @media screen and (max-width: $tablet) {
     .menu-sidebar {
-      height: calc(100vh - #{$header-height} - #{$row-height-small} - 130px);
+      height: calc(100vh - #{$header-height} - #{$row-height-small} - 131px);
 
       .sidebar-head {
         & .sidebar-drop-downs {
