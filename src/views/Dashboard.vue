@@ -159,14 +159,17 @@ export default {
       const filePath = fileData.playlist || fileData.mp3
         || fileData.pdf || fileData.original;
       this.previewUrl = getApiUrl(filePath);
-      this.imagePreviews = fileData.previews;
-
+      this.imagePreviews = fileData.previews ? fileData.previews.map((size) => {
+        const [width, url] = Object.entries(size)[0];
+        return Object.assign({}, { [width]: getApiUrl(url) });
+      }) : [];
       if (filePath) {
         this.showPreview = !!this.previewUrl;
         // if previws are available use the last converted size in array to set image size
+        // size only width - set maxWidth instead of width to prevent strange effects
         if (fileData.previews && fileData.previews.length) {
           this.previewSize = {
-            width: `${Object.keys(fileData.previews[fileData.previews.length - 1])[0].replace('w', '')}px`,
+            maxWidth: '100%',
           };
           // else get size from metadata
           // previewSize not required for audio (and pdf)
