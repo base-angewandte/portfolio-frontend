@@ -510,7 +510,7 @@ const actions = {
     })));
     return [successArr, failArr, noActionArr];
   },
-  fetchInfoBoxData(context, entry) {
+  fetchInfoBoxData() {
     // TODO: fetch info data - from where???
     return { title: 'title' };
   },
