@@ -3,7 +3,9 @@
     <h2 class="hide">
       {{ `${$tc('notify.entry', 1)}: ${title}` }}
     </h2>
-    <div class="form-head">
+    <div
+      ref="formHead"
+      :class="['form-head', { 'form-head-shadow': formBelow}]">
       <!-- PARENT HEADER -->
       <div
         v-if="parent"
@@ -31,6 +33,7 @@
 
     <!-- FORM -->
     <form
+      ref="formContainer"
       class="form-container">
       <!-- OPTIONS -->
       <BaseFormOptions
@@ -143,6 +146,8 @@ export default {
       formIsLoading: false,
       extensionIsLoading: false,
       prefetchedRoles: [],
+      // to have shadow effect when form is scrolled down
+      formBelow: false,
     };
   },
   computed: {
@@ -264,6 +269,8 @@ export default {
       this.valueList = Object.assign({}, this.valueList, storedValueList);
       this.unsavedChanges = true;
     }
+  },
+  mounted() {
     // add event listener triggered before unload
     window.addEventListener('beforeunload', () => {
       // if there are unsaved changes store them in session storage,
@@ -278,6 +285,12 @@ export default {
         sessionStorage.setItem('parent', JSON.stringify(this.parent));
       } else {
         sessionStorage.removeItem('parent');
+      }
+    });
+    // to add below shadow to form
+    window.addEventListener('scroll', () => {
+      if (this.$refs.formHead) {
+        this.formBelow = this.$refs.formHead.offsetTop > 0;
       }
     });
   },
@@ -517,6 +530,10 @@ export default {
       top: $header-height;
       z-index: 5;
       padding: $spacing 0 $spacing-small;
+
+      &.form-head-shadow {
+        box-shadow: 0 8px 8px -8px rgba(0,0,0,0.25);
+      }
 
       .base-row-parent {
         border-bottom: $separation-line;

@@ -120,7 +120,7 @@
           :select-active="true"
           :options-visible="false"
           :new-enabled="false"
-          :height="isMobile ? '50vh' : '60vh'"
+          :height="`calc(${isMobile ? '50vh' : '60vh'} - 32px)`"
           :hide-active="true"
           :entry-number="totalEntries"
           :exclude-linked="true"

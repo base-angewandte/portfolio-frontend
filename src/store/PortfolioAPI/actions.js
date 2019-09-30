@@ -164,6 +164,7 @@ export default {
   errorHandler({ state }, error) {
     // TODO: how do we want to handle error notifications?
     // it's probably better to let the component decide what to do with an error
+    /* eslint-disable-next-line */
     console.log(state, error);
   },
 };
