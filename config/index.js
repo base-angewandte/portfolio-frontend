@@ -2,19 +2,30 @@
 // Template version: 1.3.1
 // see http://vuejs-templates.github.io/webpack for documentation.
 
-const path = require('path')
+const path = require('path');
+const devEnv = require('./dev.env');
+const prodEnv = require('./prod.env');
 
 module.exports = {
   dev: {
-
     // Paths
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
-    proxyTable: {},
+    proxyTable: {
+      // proxy all requests starting with /api to jsonplaceholder
+      '/data-api': {
+        target: 'http://localhost:9900',
+        changeOrigin: true,
+        pathRewrite: {
+          '^/data-api': ''
+        }
+      }
+    },
 
     // Various Dev Server settings
-    host: 'localhost', // can be overwritten by process.env.HOST
-    port: 8080, // can be overwritten by process.env.PORT, if port is in use, a free one will be determined
+    host: devEnv.HOST, // can be overwritten by process.env.HOST
+    port: devEnv.PORT, // can be overwritten by process.env.PORT, if port is in use, a free one will be determined
+    https: devEnv.HTTPS,
     autoOpenBrowser: false,
     errorOverlay: true,
     notifyOnErrors: true,
@@ -50,7 +61,7 @@ module.exports = {
     // Paths
     assetsRoot: path.resolve(__dirname, '../dist'),
     assetsSubDirectory: 'static',
-    assetsPublicPath: './',
+    assetsPublicPath: prodEnv.APP_PREFIX + '/',
 
     /**
      * Source Maps
