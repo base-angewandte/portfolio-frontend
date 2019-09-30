@@ -150,7 +150,6 @@ export default {
     }
 
     .base-options-below {
-      background-color: $background-color;
       display: flex;
       flex-wrap: wrap;
       height: auto;
