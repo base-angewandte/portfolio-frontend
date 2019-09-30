@@ -48,7 +48,6 @@
     "babel-plugin-istanbul": "^5.1.4",
     "babel-plugin-syntax-jsx": "^6.18.0",
     "babel-plugin-transform-vue-jsx": "^3.5.0",
-    "base-ui-components": "file:../base-components/",
     "body-parser": "^1.19.0",
     "chai": "^4.1.2",
     "chalk": "^2.0.1",
