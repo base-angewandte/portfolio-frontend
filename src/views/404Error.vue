@@ -9,6 +9,7 @@
         <div class="info-buttons">
           <BaseButton
             :text="$t('returnHome')"
+            background-color="rgb(240, 240, 240)"
             class="info-button"
             @clicked="returnToBase">
             <template
@@ -19,6 +20,7 @@
           </BaseButton>
           <BaseButton
             :text="$t('refresh')"
+            background-color="rgb(240, 240, 240)"
             class="info-button"
             @clicked="refreshPage">
             <template
