@@ -13,7 +13,7 @@ module.exports= {
   HEADER_JSON: 'specify the header json that will have the latest header version https://portfolio-dev.uni-ak.ac.at/bs/portfolio-showroom-header.json',
   HEADER: 'no need to modify - this will be updated upon build from HEADER_JSON or by running "gulp set-header" https://portfolio-dev.uni-ak.ac.at/bs/js/portfolio-showroom-header.b8e7639f5fb0f610212c.js',
   APP_PREFIX: 'specify a route prefix for the frontend e.g. /portfolio',
-  LANG_URL: 'the skosmos url (no need to modify) http://base.uni-ak.ac.at/portfolio/languages/',
+  LANG_URL: 'the skosmos url (no need to modify, unless you have a own skosmos project, but of course delete this string) http://base.uni-ak.ac.at/portfolio/languages/',
   LOCALES: ['de', 'en'],
   DEFAULT_LOCALE: 'de',
   CONTRIBUTORS_DEFAULTS: [
@@ -23,15 +23,15 @@ module.exports= {
     {
       label: "Wien, Österreich",
       source: "https://api.geocode.earth/v1/place?ids=whosonfirst:locality:101748073",
-      "house_number":null,
-      "street":null,
-      "postcode":null,
-      "locality":"Vienna",
-      "region":"Wien",
-      "country":"Austria",
-      "geometry":{
-        "type":"Point",
-        "coordinates":[
+      house_number:null,
+      street:null,
+      postcode:null,
+      locality:"Vienna",
+      region:"Wien",
+      country:"Austria",
+      geometry:{
+        type:"Point",
+        coordinates:[
           16.348388,
           48.198674
         ]
@@ -54,7 +54,7 @@ module.exports= {
           48.208126,
         ]
       },
-      source_name:"",
+      source_name:"geocode.earth",
     }
   ],
 };

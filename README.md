@@ -72,7 +72,7 @@ in folder /config the following variables can be set for development (dev.env) a
 | HEADER_JSON           | json file url where the latest header version is specified                                                                                                                                  |
 | HEADER                | the complete header url, no need to set manually (will be overwritten!), can be set via `gulp set-header` or `make set-header` (in production)                                                         |
 | APP_PREFIX            | the desired prefix of the appication                                                                                                                        |
-| LANG_URL              | the skosmos uri of the languages project                                                                                                                    |
+| LANG_URL              | the skosmos uri of the languages project (unless you have a separate skosmos project no need to modify from default )                                                                                                                    |
 | LOCALES               | available locales                                                                                                                                           |
 | DEFAULT_LOCALE        | a default language if one should be set (else the browser language will be used)                                                                            |
 | CONTRIBUTORS_DEFAULT*  | a default displayed for all contributor fields (Contributors and Roles (e.g. authors, architects), required attributes: label, optional: source, additional |
