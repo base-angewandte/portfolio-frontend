@@ -6,6 +6,7 @@
       <BaseButton
         :disabled="isNewForm"
         :text="isPublished ? $tc('offline') : $tc('publish')"
+        :has-background-color="false"
         icon-size="large"
         icon="eye"
         button-style="single"
@@ -13,6 +14,7 @@
       <BaseButton
         :disabled="isNewForm"
         :text="$tc('delete')"
+        :has-background-color="false"
         icon-size="large"
         icon="waste-bin"
         button-style="single"
