@@ -109,8 +109,9 @@
 
     <BasePopUp
       :show="showEntryPopUp"
-      title="Select Entries to Link"
-      button-right-text="Link Selected"
+      :title="$t('form-view.selectentries')"
+      :button-right-text="$t('form-view.linkselected')"
+      :button-left-text="$t('cancel')"
       @button-left="showEntryPopUp = false"
       @button-right="getSelectedIdsAndLink(selectedEntries)"
       @close="showEntryPopUp = false">
