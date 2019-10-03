@@ -63,7 +63,7 @@ export default {
       lang: this.$i18n.locale,
     }).catch((e) => {
       if ((e.response && e.response.status === '404') || e.message === 'Network Error') {
-        this.$router.push('/404');
+        this.$router.push('/Error');
       }
     });
   },
