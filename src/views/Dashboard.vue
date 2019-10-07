@@ -282,7 +282,7 @@ export default {
 
         li {
           // necessary otherwise scrollbar always shown...
-          height: $line-height;
+          height: $font-size-large + $spacing-small;
         }
       }
     }
