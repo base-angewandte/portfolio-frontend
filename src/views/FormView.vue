@@ -324,7 +324,7 @@ export default {
         this.$set(this.valueList, 'data', Object.assign({}, data.data));
       } catch (e) {
         if (e.message.includes('404')) {
-          this.$router.push(`/notFound?id=${this.currentItemId}`);
+          this.$router.push(`/not-found?id=${this.currentItemId}`);
         } else {
           this.$notify({
             group: 'request-notifications',
