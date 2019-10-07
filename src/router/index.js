@@ -18,7 +18,7 @@ export default new Router({
       component: NotFoundComponent,
     },
     {
-      path: '/Error',
+      path: '/error',
       component: NetworkError,
     },
     {
@@ -28,7 +28,7 @@ export default new Router({
       meta: { requiresAuth: true },
       children: [
         {
-          path: 'notFound',
+          path: 'not-found',
           name: 'EntryNotFound',
           component: NotFoundComponent,
         },
@@ -66,7 +66,7 @@ export default new Router({
           },
           children: [
             {
-              path: 'notFound',
+              path: 'not-found',
               name: 'EntryNotFoundLang',
               component: NotFoundComponent,
             },
