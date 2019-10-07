@@ -12,11 +12,13 @@ $spacing: 16rem/19;
 $spacing-small: 8rem/19;
 $spacing-large: 32rem/19;
 /* new styleguide: font size + relative spacing! */
-$row-height-large: 1rem +  2*$spacing;
-$row-height-small: 1rem +  2*$spacing-small;
+$row-height-large: 1rem +  2*1rem;
+$row-height-small: 1.1rem +  2*$spacing-small;
 $header-height: 55px;
 $chips-spacing: 0.05rem;
 $chips-list-height: 1rem + 2*$spacing;
+$input-field-line-height: 27rem/19;
+$fade-out-width: 30px;
 
 /* colors */
 $app-color: #FF9800 !default;
