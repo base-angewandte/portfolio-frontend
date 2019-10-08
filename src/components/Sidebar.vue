@@ -61,6 +61,7 @@
           <BaseButton
             :text="$tc('publish', 2)"
             :disabled="isLoading"
+            :has-background-color="false"
             icon-size="large"
             icon="eye"
             button-style="single"
@@ -68,6 +69,7 @@
           <BaseButton
             :text="$tc('offline', 2)"
             :disabled="isLoading"
+            :has-background-color="false"
             icon-size="large"
             icon="forbidden"
             button-style="single"
@@ -75,6 +77,7 @@
           <BaseButton
             :text="$tc('duplicate', 2)"
             :disabled="isLoading"
+            :has-background-color="false"
             icon-size="large"
             icon="duplicate"
             button-style="single"
@@ -82,6 +85,7 @@
           <BaseButton
             :text="$tc('delete', 2)"
             :disabled="isLoading"
+            :has-background-color="false"
             icon-size="large"
             icon="waste-bin"
             button-style="single"

@@ -52,7 +52,7 @@ export default {
       window.location.href = `${process.env.APP_PREFIX}/`;
     },
     returnToBase() {
-      window.location.href = process.env.HEADER_HOST;
+      window.location.href = process.env.PORTFOLIO_BACKEND_BASE_URL;
     },
   },
 };

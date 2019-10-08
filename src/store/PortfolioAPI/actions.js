@@ -22,7 +22,7 @@ axiosInstance.interceptors.response.use((response) => {
 }, (error) => {
   if (axiosTries >= axiosMaxRetries) {
     axiosTries = 0;
-    window.location.href = '/404';
+    window.location.href = `${process.env.APP_PREFIX}/Error`;
     return Promise.reject(error);
   }
   // if there is an error config to draw from and max tries are not reached try again
