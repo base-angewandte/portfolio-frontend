@@ -137,9 +137,10 @@ export default {
   ],
   data() {
     return {
-      unsavedChanges: false,
       dataSaving: false,
       valueList: {},
+      // original data object to compare (unsaved changes) or reset
+      valueListOriginal: {},
       // variable for steering the overlay animation for linking
       // a new entry
       showOverlay: false,
@@ -183,6 +184,9 @@ export default {
     },
     attachmentsCount() {
       return this.$store.getters['data/getCurrentMedia'].length;
+    },
+    unsavedChanges() {
+      return JSON.stringify(this.valueList) !== JSON.stringify(this.valueListOriginal);
     },
   },
   watch: {
@@ -267,7 +271,6 @@ export default {
     // if it matches the current entry id, merge it with db fetched data
     if (storedValueList && storedValueList.id === this.currentItemId) {
       this.valueList = Object.assign({}, this.valueList, storedValueList);
-      this.unsavedChanges = true;
     }
   },
   mounted() {
@@ -310,9 +313,9 @@ export default {
       }
     },
     resetForm() {
-      this.unsavedChanges = false;
       this.valueList = {};
       this.valueList.data = {};
+      this.valueListOriginal = { ...this.valueList };
       this.$refs.baseForm.initializeValueObject();
     },
     async updateForm() {
@@ -321,7 +324,9 @@ export default {
         const data = await this.$store.dispatch('data/fetchEntryData', this.currentItemId);
         this.valueList = Object.assign({}, data);
         this.extensionIsLoading = !!this.type;
-        this.$set(this.valueList, 'data', Object.assign({}, data.data));
+        this.$set(this.valueList, 'data', { ...data.data });
+        // copy the original object to check for unsaved changes later
+        this.valueListOriginal = { ...this.valueList };
       } catch (e) {
         if (e.message.includes('404')) {
           this.$router.push(`/not-found?id=${this.currentItemId}`);
@@ -338,7 +343,6 @@ export default {
       this.formIsLoading = false;
     },
     handleInput(data, type) {
-      this.unsavedChanges = true;
       // check if type is set (= this event is coming from a subform)
       if (type) {
         this.$set(this.valueList, type, Object.assign({}, this.valueList[type],
@@ -402,7 +406,7 @@ export default {
             text: this.$t('notify.saveSuccessSubtext', { title: this.valueList.title }),
             type: 'success',
           });
-          this.unsavedChanges = false;
+          this.valueListOriginal = { ...this.valueList };
           this.dataSaving = false;
           return true;
         } catch (e) {
@@ -460,7 +464,7 @@ export default {
               }
               this.$store.commit('data/hidePopUp');
             },
-            actionLeft: () => { this.unsavedChanges = false; this.openNewForm(); },
+            actionLeft: () => this.openNewForm(),
           });
         } else {
           this.showOverlay = true;

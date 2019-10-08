@@ -142,7 +142,14 @@ export default {
     },
     routeToEntry(id) {
       this.$store.commit('data/deleteParentItems');
-      this.$router.push(`/entry/${id}`);
+      // navigation to currently active route seems not allowed (error message DuplicationError)
+      // but not necessary anyways --> just delete unsaved changes
+      if (this.$route.params.id === id) {
+        const formComponent = this.$refs.view;
+        formComponent.valueList = { ...formComponent.valueListOriginal };
+      } else {
+        this.$router.push(`/entry/${id}`);
+      }
     },
     cancelAction(action) {
       if (action) {
