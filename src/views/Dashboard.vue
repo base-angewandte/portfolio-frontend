@@ -111,10 +111,7 @@ export default {
   updated() {
     // if pop up was opened switch focus to pop up buttons for accessibility reasons
     if (this.showPopUp) {
-      const buttons = this.$refs.sidebarPopUp.$el.getElementsByTagName('button');
-      if (buttons.length) {
-        buttons[1].focus();
-      }
+      document.getElementById('popup-right-button').focus();
     }
   },
   methods: {
