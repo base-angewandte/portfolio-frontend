@@ -85,6 +85,17 @@
             @values-changed="handleInput($event, 'data')" />
         </div>
 
+        <!-- SAVE ROW (only on mobile) -->
+        <BaseRow
+          v-if="!formIsLoading && formDataPresent"
+          key="mobile-save-row"
+          :unsaved-changes="unsavedChanges"
+          :is-saving="dataSaving"
+          :show-title="false"
+          class="mobile-save-row"
+          @save="saveForm"
+          @return="returnFromForm" />
+
         <!-- ATTACHMENTS -->
         <AttachmentArea
           v-if="!formIsLoading && formDataPresent"
@@ -608,6 +619,12 @@ export default {
     line-height: $line-height;
   }
 
+  .mobile-save-row {
+    margin-top: $spacing;
+    display: none;
+    transition: none;
+  }
+
   .slide-fade-form-enter-active, .slide-fade-form-move {
     transition: all 0.5s ease;
   }
@@ -652,6 +669,10 @@ export default {
           }
         }
       }
+    }
+
+    .mobile-save-row {
+      display: flex;
     }
   }
 </style>

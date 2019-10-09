@@ -1,6 +1,7 @@
 <template>
   <div class="base-row">
     <div
+      v-if="showTitle"
       class="base-row-header">
       <BaseMenuEntry
         :entry-id="'asingleentry'"
@@ -84,6 +85,10 @@ export default {
     isSaving: {
       type: Boolean,
       default: false,
+    },
+    showTitle: {
+      type: Boolean,
+      default: true,
     },
   },
   data() {
