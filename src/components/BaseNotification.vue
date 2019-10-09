@@ -12,6 +12,7 @@
           slot="body"
           slot-scope="props">
           <div
+            role="alert"
             :class="[props.item.type, 'notification']"
             @click="props.close">
             <FailIcon
