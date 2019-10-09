@@ -4,19 +4,23 @@
       {{ $t('myPortfolio') }}
     </h1>
     <BasePopUp
-      :show="$store.state.data.popUp.show"
+      ref="sidebarPopUp"
+      :show="showPopUp"
       :title="capitalizeFirstLetter($store.state.data.popUp.header)"
       :button-left-text="capitalizeFirstLetter($store.state.data.popUp.buttonTextLeft)
         || $t('cancel')"
       :button-right-text="capitalizeFirstLetter($store.state.data.popUp.buttonTextRight)"
       :button-right-icon="$store.state.data.popUp.icon"
       :is-loading="$store.state.data.popUp.isLoading"
+      description-element-id="sidebar-pop-up-title"
       @close="cancelAction"
       @button-left="cancelAction($store.state.data.popUp.actionLeft)"
       @button-right="$store.state.data.popUp.actionRight()">
       <div class="sidebar-pop-up">
         <div class="pop-up-text-container">
-          <p class="sidebar-pop-up-title">
+          <p
+            id="sidebar-pop-up-title"
+            class="sidebar-pop-up-title">
             {{ $store.state.data.popUp.textTitle }}
           </p>
           <ul
@@ -89,8 +93,8 @@ export default {
     showForm() {
       return this.$route.name !== 'Dashboard';
     },
-    popUpText() {
-      return this.$store.state.data.popUp.textList;
+    showPopUp() {
+      return this.$store.state.data.popUp.show;
     },
   },
   watch: {
@@ -103,6 +107,15 @@ export default {
   },
   mounted() {
     this.$store.commit('data/setNewForm', this.$route.name === 'newEntry');
+  },
+  updated() {
+    // if pop up was opened switch focus to pop up buttons for accessibility reasons
+    if (this.showPopUp) {
+      const buttons = this.$refs.sidebarPopUp.$el.getElementsByTagName('button');
+      if (buttons.length) {
+        buttons[1].focus();
+      }
+    }
   },
   methods: {
     createNewForm() {
