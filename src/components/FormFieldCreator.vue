@@ -452,8 +452,7 @@ export default {
       margin-left: $spacing;
       color: $font-color-second;
       font-size: $font-size-small;
-      margin-top: auto;
-      white-space: nowrap;
+      margin-top: 1px;
       flex-grow: 2;
     }
 
