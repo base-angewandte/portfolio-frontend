@@ -126,6 +126,7 @@
           :entry-number="totalEntries"
           :exclude-linked="true"
           :options-disabled="true"
+          :set-pagination-as-links="false"
           class="menu"
           @selected-changed="selectedEntries = [].concat($event)" />
       </div>
