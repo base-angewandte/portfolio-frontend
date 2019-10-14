@@ -4,5 +4,4 @@ module.exports = {
   f: s => name => s.apilib[name],
   schema: s => id => s.schemas[id],
   user: s => s.user,
-  isAuthenticated: s => Boolean(s.user.email),
 };

@@ -573,7 +573,6 @@ export default {
 
     .sidebar-head {
       position: sticky;
-      top: $header-height;
       z-index: 5;
       padding-top: $spacing;
       padding-bottom: $spacing-small;
