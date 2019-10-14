@@ -13,7 +13,7 @@
         :is="`${headerName}-footer`"
         ref="baseFooter"
         :lang="lang"
-        :logged-in="isAuthenticated"
+        :logged-in="true"
         :urls.prop="urls" />
     </div>
   </div>
@@ -48,9 +48,6 @@ export default {
         terms: process.env.HEADER_URLS.TERMS,
         siteNotice: process.env.HEADER_URLS.NOTICE,
       };
-    },
-    isAuthenticated() {
-      return this.$store.getters['PortfolioAPI/isAuthenticated'];
     },
     headerName() {
       return process.env.HEADER_JSON.match(/\/([a-z-]+)-header\.json$/)[1];
