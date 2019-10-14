@@ -117,10 +117,10 @@ export default {
       p.then((res) => {
         commit('setLoadingFinished', `Fetching ${kind} finished.`);
         resolve(res.data);
+        cancel[kind] = null;
       }).catch((error) => {
         commit('setLoadingFinished', `Error while fetching ${kind}`);
         reject(error);
-      }).finally(() => {
         cancel[kind] = null;
       });
     });
