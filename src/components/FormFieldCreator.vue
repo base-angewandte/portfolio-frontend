@@ -8,7 +8,8 @@
       v-model="fieldValueInt"
       :label="label"
       :placeholder="placeholder"
-      :class="['base-form-field']" />
+      :class="['base-form-field']"
+      @keydown.enter.prevent="" />
 
     <!-- DATE FIELD -->
     <div
