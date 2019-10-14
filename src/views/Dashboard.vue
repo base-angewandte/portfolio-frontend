@@ -120,7 +120,10 @@ export default {
       if (formView && formView.resetForm) {
         formView.resetForm();
       }
-      this.$router.push('/new');
+      // only push route when it is not the same as previous
+      if (this.$route.name !== 'newEntry') {
+        this.$router.push('/new');
+      }
     },
     checkUnsavedChanges(id) {
       const followUpAction = id ? () => this.routeToEntry(id) : () => this.createNewForm();
