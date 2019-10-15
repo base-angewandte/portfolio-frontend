@@ -188,6 +188,19 @@ export default {
           this.previewSize = {
             maxWidth: '100%',
           };
+          const imageHeight = fileData.metadata && fileData.metadata.ImageHeight
+            ? fileData.metadata.ImageHeight.val : null;
+          const imageWidth = fileData.metadata && fileData.metadata.ImageWidth
+            ? fileData.metadata.ImageWidth.val : null;
+          if (imageWidth && imageWidth > imageHeight && imageWidth < window.innerWidth) {
+            this.previewSize = Object.assign({}, this.previewSize, {
+              maxWidth: `${fileData.metadata.ImageWidth.val}px`,
+            });
+          } else if (imageHeight && imageHeight > imageWidth && imageHeight < window.innerHeight) {
+            this.previewSize = Object.assign({}, this.previewSize, {
+              maxHeight: `${fileData.metadata.ImageHeight.val}px`,
+            });
+          }
           // else get size from metadata
           // previewSize not required for audio (and pdf)
         } else if (fileData.metadata && (fileData.metadata.ImageHeight
