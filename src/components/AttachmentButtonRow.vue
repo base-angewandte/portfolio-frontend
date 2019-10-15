@@ -109,8 +109,9 @@
 
     <BasePopUp
       :show="showEntryPopUp"
-      title="Select Entries to Link"
-      button-right-text="Link Selected"
+      :title="$t('form-view.selectentries')"
+      :button-right-text="$t('form-view.linkselected')"
+      :button-left-text="$t('cancel')"
       @button-left="showEntryPopUp = false"
       @button-right="getSelectedIdsAndLink(selectedEntries)"
       @close="showEntryPopUp = false">
@@ -120,11 +121,12 @@
           :select-active="true"
           :options-visible="false"
           :new-enabled="false"
-          :height="isMobile ? '50vh' : '60vh'"
+          :height="`calc(${isMobile ? '50vh' : '60vh'} - 32px)`"
           :hide-active="true"
           :entry-number="totalEntries"
           :exclude-linked="true"
           :options-disabled="true"
+          :set-pagination-as-links="false"
           class="menu"
           @selected-changed="selectedEntries = [].concat($event)" />
       </div>

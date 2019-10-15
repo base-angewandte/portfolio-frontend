@@ -22,7 +22,7 @@ axiosInstance.interceptors.response.use((response) => {
 }, (error) => {
   if (axiosTries >= axiosMaxRetries) {
     axiosTries = 0;
-    window.location.href = '/404';
+    window.location.href = `${process.env.APP_PREFIX}/Error`;
     return Promise.reject(error);
   }
   // if there is an error config to draw from and max tries are not reached try again
@@ -117,10 +117,10 @@ export default {
       p.then((res) => {
         commit('setLoadingFinished', `Fetching ${kind} finished.`);
         resolve(res.data);
+        cancel[kind] = null;
       }).catch((error) => {
         commit('setLoadingFinished', `Error while fetching ${kind}`);
         reject(error);
-      }).finally(() => {
         cancel[kind] = null;
       });
     });
@@ -164,6 +164,7 @@ export default {
   errorHandler({ state }, error) {
     // TODO: how do we want to handle error notifications?
     // it's probably better to let the component decide what to do with an error
+    /* eslint-disable-next-line */
     console.log(state, error);
   },
 };

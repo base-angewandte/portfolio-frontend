@@ -4,19 +4,23 @@
       {{ $t('myPortfolio') }}
     </h1>
     <BasePopUp
-      :show="$store.state.data.popUp.show"
+      ref="sidebarPopUp"
+      :show="showPopUp"
       :title="capitalizeFirstLetter($store.state.data.popUp.header)"
       :button-left-text="capitalizeFirstLetter($store.state.data.popUp.buttonTextLeft)
         || $t('cancel')"
       :button-right-text="capitalizeFirstLetter($store.state.data.popUp.buttonTextRight)"
       :button-right-icon="$store.state.data.popUp.icon"
       :is-loading="$store.state.data.popUp.isLoading"
+      description-element-id="sidebar-pop-up-title"
       @close="cancelAction"
       @button-left="cancelAction($store.state.data.popUp.actionLeft)"
       @button-right="$store.state.data.popUp.actionRight()">
       <div class="sidebar-pop-up">
         <div class="pop-up-text-container">
-          <p class="sidebar-pop-up-title">
+          <p
+            id="sidebar-pop-up-title"
+            class="sidebar-pop-up-title">
             {{ $store.state.data.popUp.textTitle }}
           </p>
           <ul
@@ -89,8 +93,8 @@ export default {
     showForm() {
       return this.$route.name !== 'Dashboard';
     },
-    popUpText() {
-      return this.$store.state.data.popUp.textList;
+    showPopUp() {
+      return this.$store.state.data.popUp.show;
     },
   },
   watch: {
@@ -104,13 +108,22 @@ export default {
   mounted() {
     this.$store.commit('data/setNewForm', this.$route.name === 'newEntry');
   },
+  updated() {
+    // if pop up was opened switch focus to pop up buttons for accessibility reasons
+    if (this.showPopUp) {
+      document.getElementById('popup-right-button').focus();
+    }
+  },
   methods: {
     createNewForm() {
       const formView = this.$refs.view;
       if (formView && formView.resetForm) {
         formView.resetForm();
       }
-      this.$router.push('/new');
+      // only push route when it is not the same as previous
+      if (this.$route.name !== 'newEntry') {
+        this.$router.push('/new');
+      }
     },
     checkUnsavedChanges(id) {
       const followUpAction = id ? () => this.routeToEntry(id) : () => this.createNewForm();
@@ -142,7 +155,14 @@ export default {
     },
     routeToEntry(id) {
       this.$store.commit('data/deleteParentItems');
-      this.$router.push(`/entry/${id}`);
+      // navigation to currently active route seems not allowed (error message DuplicationError)
+      // but not necessary anyways --> just delete unsaved changes
+      if (this.$route.params.id === id) {
+        const formComponent = this.$refs.view;
+        formComponent.valueList = { ...formComponent.valueListOriginal };
+      } else {
+        this.$router.push(`/entry/${id}`);
+      }
     },
     cancelAction(action) {
       if (action) {
@@ -159,14 +179,17 @@ export default {
       const filePath = fileData.playlist || fileData.mp3
         || fileData.pdf || fileData.original;
       this.previewUrl = getApiUrl(filePath);
-      this.imagePreviews = fileData.previews;
-
+      this.imagePreviews = fileData.previews ? fileData.previews.map((size) => {
+        const [width, url] = Object.entries(size)[0];
+        return Object.assign({}, { [width]: getApiUrl(url) });
+      }) : [];
       if (filePath) {
         this.showPreview = !!this.previewUrl;
         // if previws are available use the last converted size in array to set image size
+        // size only width - set maxWidth instead of width to prevent strange effects
         if (fileData.previews && fileData.previews.length) {
           this.previewSize = {
-            width: `${Object.keys(fileData.previews[fileData.previews.length - 1])[0].replace('w', '')}px`,
+            maxWidth: '100%',
           };
           // else get size from metadata
           // previewSize not required for audio (and pdf)
@@ -279,7 +302,7 @@ export default {
 
         li {
           // necessary otherwise scrollbar always shown...
-          height: $line-height;
+          height: $font-size-large + $spacing-small;
         }
       }
     }

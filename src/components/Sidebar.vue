@@ -61,6 +61,7 @@
           <BaseButton
             :text="$tc('publish', 2)"
             :disabled="isLoading"
+            :has-background-color="false"
             icon-size="large"
             icon="eye"
             button-style="single"
@@ -68,6 +69,7 @@
           <BaseButton
             :text="$tc('offline', 2)"
             :disabled="isLoading"
+            :has-background-color="false"
             icon-size="large"
             icon="forbidden"
             button-style="single"
@@ -75,6 +77,7 @@
           <BaseButton
             :text="$tc('duplicate', 2)"
             :disabled="isLoading"
+            :has-background-color="false"
             icon-size="large"
             icon="duplicate"
             button-style="single"
@@ -82,6 +85,7 @@
           <BaseButton
             :text="$tc('delete', 2)"
             :disabled="isLoading"
+            :has-background-color="false"
             icon-size="large"
             icon="waste-bin"
             button-style="single"
@@ -500,10 +504,10 @@ export default {
       // if pagination element is not present yet (on initial render) deduct height and spacing
       // from sidebar height
       if (!this.$refs.pagination) {
-        sidebarHeight = sidebarHeight - 32 - 16;
+        sidebarHeight = sidebarHeight - 48 - 16;
       }
       // hardcoded because unfortunately no other possibility found
-      const entryHeight = window.innerWidth >= 640 ? 56 : 48;
+      const entryHeight = 57;
       const numberOfEntries = Math.floor(sidebarHeight / entryHeight);
       this.entriesPerPage = numberOfEntries > 4 ? numberOfEntries : 4;
     },
@@ -544,7 +548,10 @@ export default {
     },
     checkContainerPosition() {
       if (this.listInt.length && this.$refs.sidebarHead) {
-        this.sidebarBelow = this.$refs.sidebarHead.offsetTop > 0
+        // check sidebar head position for whole page scroll and menuContainer position
+        // for container scrolling
+        this.sidebarBelow = (this.isMobile && this.optionsVisible
+          && this.$refs.sidebarHead.offsetTop > 0)
           || this.$refs.menuContainer.scrollTop > 0;
       }
     },
@@ -566,7 +573,6 @@ export default {
 
     .sidebar-head {
       position: sticky;
-      top: $header-height;
       z-index: 5;
       padding-top: $spacing;
       padding-bottom: $spacing-small;
@@ -629,9 +635,16 @@ export default {
     }
   }
 
+  // special width dictated by header / footer component
+  @media screen and (max-width: 1083px) {
+    .menu-sidebar {
+      height: calc(100vh - #{$header-height} - #{$row-height-small} - 131px);
+    }
+  }
+
   @media screen and (max-width: $tablet) {
     .menu-sidebar {
-      height: calc(100vh - #{$header-height} - #{$row-height-small} - 130px);
+      height: calc(100vh - #{$header-height} - #{$row-height-small} - 131px);
 
       .sidebar-head {
         & .sidebar-drop-downs {

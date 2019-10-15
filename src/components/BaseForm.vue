@@ -359,11 +359,19 @@ export default {
       const modifiedData = data.map((entry) => {
         if (!['GND', 'VIAF'].includes(entry.source_name)) return entry;
         // regex to filter additional info from GND and VIAF
-        const pattern = /^(([^0-9,|]*?,[^0-9,|]*|[^0-9|,]*)$|([^0-9,|]*?, [^0-9,|]*|[^0-9|,]*)(, | \| | )(.*)$)/;
+        const pattern = new RegExp([
+          '^(',
+          '([^(*)*?[^0-9,|(]*?,[^0-9,|(]*|[^0-9|,(]*)$|',
+          '([^0-9|(]*|[^0-9,|]*?, [^0-9,(|]*|[^0-9|,(]*)',
+          '(, | \\| | )',
+          '(.*)$',
+          ')',
+        ].join(''));
+
         const match = pattern.exec(entry.label);
         if (match && match[1]) {
           return Object.assign({}, entry, match[3] && match[5]
-            ? { label: match[3], additional: match[5] } : { label: match[1], additional: '' });
+            ? { label: match[3], additional: this.removeDoubleEntries(match[5]) } : { label: match[1], additional: '' });
         }
         return entry;
       });
@@ -387,6 +395,19 @@ export default {
         }], value);
       }
       this.$set(this.dropdownLists, name, dropDownList);
+    },
+    removeDoubleEntries(value) {
+      const pattern = /\((.*?)\)(. | \| | )?(.*)/;
+      const match = pattern.exec(value);
+
+      if (match && match[3].includes(match[1])) {
+        return match[3];
+      }
+
+      if (match && !match[3].length) {
+        return match[1];
+      }
+      return value;
     },
     getFieldName(val) {
       return val.title || (this.$te(`form.${val.name}`) ? this.$t(`form.${val.name}`) : val.name);

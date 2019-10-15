@@ -8,7 +8,8 @@
       v-model="fieldValueInt"
       :label="label"
       :placeholder="placeholderInt"
-      :class="['base-form-field']" />
+      :class="['base-form-field']"
+      @keydown.enter.prevent="" />
 
     <!-- DATE FIELD -->
     <div
@@ -516,8 +517,7 @@ export default {
       margin-left: $spacing;
       color: $font-color-second;
       font-size: $font-size-small;
-      margin-top: auto;
-      white-space: nowrap;
+      margin-top: 1px;
       flex-grow: 2;
     }
 

@@ -13,7 +13,7 @@
         :is="`${headerName}-footer`"
         ref="baseFooter"
         :lang="lang"
-        :logged-in="isAuthenticated"
+        :logged-in="true"
         :urls.prop="urls" />
     </div>
   </div>
@@ -49,9 +49,6 @@ export default {
         siteNotice: process.env.HEADER_URLS.NOTICE,
       };
     },
-    isAuthenticated() {
-      return this.$store.getters['PortfolioAPI/isAuthenticated'];
-    },
     headerName() {
       return process.env.HEADER_JSON.match(/\/([a-z-]+)-header\.json$/)[1];
     },
@@ -63,7 +60,7 @@ export default {
       lang: this.$i18n.locale,
     }).catch((e) => {
       if ((e.response && e.response.status === '404') || e.message === 'Network Error') {
-        this.$router.push('/404');
+        this.$router.push('/error');
       }
     });
   },

@@ -97,7 +97,9 @@
     "view": "Anzeigen",
     "created": "Erstellt am",
     "lastModified": "Zuletzt gespeichert am",
-    "at": "um"
+    "at": "um",
+    "selectentries": "Einträge wählen",
+    "linkselected": "Einträge verlinken"
   },
   "notify": {
     "entry": "Einträge | Eintrag | Einträge",

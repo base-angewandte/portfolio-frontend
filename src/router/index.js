@@ -3,7 +3,7 @@ import Router from 'vue-router';
 import Dashboard from '../views/Dashboard';
 import FormView from '../views/FormView';
 import NotFoundComponent from '../views/EntryNotFound';
-import NetworkError from '../views/404Error';
+import NetworkError from '../views/Error';
 import store from '../store';
 import { i18n } from '../plugins/i18n';
 
@@ -18,7 +18,7 @@ export default new Router({
       component: NotFoundComponent,
     },
     {
-      path: '/404',
+      path: '/error',
       component: NetworkError,
     },
     {
@@ -28,7 +28,7 @@ export default new Router({
       meta: { requiresAuth: true },
       children: [
         {
-          path: 'notFound',
+          path: 'not-found',
           name: 'EntryNotFound',
           component: NotFoundComponent,
         },
@@ -66,7 +66,7 @@ export default new Router({
           },
           children: [
             {
-              path: 'notFound',
+              path: 'not-found',
               name: 'EntryNotFoundLang',
               component: NotFoundComponent,
             },

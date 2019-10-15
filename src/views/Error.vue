@@ -9,6 +9,7 @@
         <div class="info-buttons">
           <BaseButton
             :text="$t('returnHome')"
+            background-color="rgb(240, 240, 240)"
             class="info-button"
             @clicked="returnToBase">
             <template
@@ -19,6 +20,7 @@
           </BaseButton>
           <BaseButton
             :text="$t('refresh')"
+            background-color="rgb(240, 240, 240)"
             class="info-button"
             @clicked="refreshPage">
             <template
@@ -50,7 +52,7 @@ export default {
       window.location.href = `${process.env.APP_PREFIX}/`;
     },
     returnToBase() {
-      window.location.href = process.env.HEADER_HOST;
+      window.location.href = process.env.PORTFOLIO_BACKEND_BASE_URL;
     },
   },
 };

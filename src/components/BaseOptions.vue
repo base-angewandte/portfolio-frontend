@@ -13,6 +13,7 @@
         :text="$t('options')"
         :icon="'options-menu'"
         :disabled="optionsHidden"
+        :has-background-color="false"
         :class="['base-options-button', { 'base-options-button-hidden': optionsHidden }]"
         icon-position="left"
         @clicked="showOptionsToggle = !showOptionsToggle" />
@@ -150,7 +151,6 @@ export default {
     }
 
     .base-options-below {
-      background-color: $background-color;
       display: flex;
       flex-wrap: wrap;
       height: auto;

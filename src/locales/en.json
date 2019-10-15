@@ -103,7 +103,9 @@
     "view": "View",
     "created": "Created on",
     "lastModified": "Last modified on",
-    "at": "at"
+    "at": "at",
+    "selectentries": "Select entries to link",
+    "linkselected": "Link selected"
   },
   "notify": {
     "entry": "Entries | Entry | Entries",
