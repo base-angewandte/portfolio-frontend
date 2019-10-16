@@ -142,9 +142,9 @@ import {
   BaseSearch,
   BasePagination,
   BaseLoader,
+  BaseOptions,
 } from 'base-ui-components';
 import axios from 'axios';
-import BaseOptions from './BaseOptions';
 import { entryHandlingMixin } from '../mixins/entryHandling';
 import { userInfo } from '../mixins/userInfo';
 import { capitalizeString } from '../utils/commonUtils';
