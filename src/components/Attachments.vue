@@ -1,7 +1,7 @@
 <template>
   <div class="attachment-area">
     <!-- ATTACHED ENTRIES -->
-    <AttachmentsSection
+    <BaseResultBoxSection
       ref="linkedSection"
       :attached-list="linkedList"
       :message-text="$t('form-view.deleteLinkedText')"
@@ -31,10 +31,10 @@
           @select-triggered="entrySelected(props.item.id, $event)"
           @clicked="goToLinked(props.item.to.id)" />
       </template>
-    </AttachmentsSection>
+    </BaseResultBoxSection>
 
     <!-- ATTACHED FILES -->
-    <AttachmentsSection
+    <BaseResultBoxSection
       ref="fileSection"
       :attached-list="attachedList"
       :message-text="fileText"
@@ -44,6 +44,7 @@
       :action-button-text="buttonText"
       :action="action"
       :is-loading="filesLoading"
+      :max-rows="5"
       @set-action="setAction"
       @submit-action="saveFileMeta"
       @cancel-action="resetSelected">
@@ -119,22 +120,21 @@
           </template>
         </BaseImageBox>
       </template>
-    </AttachmentsSection>
+    </BaseResultBoxSection>
   </div>
 </template>
 
 <script>
 import {
-  BaseImageBox, BaseButton, BaseDropDown,
+  BaseImageBox, BaseButton, BaseDropDown, BaseResultBoxSection,
 } from 'base-ui-components';
 import EyeIcon from '../assets/icons/eye.svg';
 import { userInfo } from '../mixins/userInfo';
 import { setLangLabels, getApiUrl, getLangLabel } from '../utils/commonUtils';
-import AttachmentsSection from './AttachmentsSection';
 
 export default {
   components: {
-    AttachmentsSection,
+    BaseResultBoxSection,
     BaseDropDown,
     BaseImageBox,
     BaseButton,
