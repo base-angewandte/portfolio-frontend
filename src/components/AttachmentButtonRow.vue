@@ -15,6 +15,7 @@
         drop-type="elements"
         drag-item-class="base-menu-list__list-entry"
         drop-element-name="menuEntry"
+        box-type="button"
         class="file-box file-boxes-margin"
         @dropped-element="droppedEntries"
         @clicked="openEntrySelect" />
@@ -27,6 +28,7 @@
         :text="$t('form-view.addNewEntry')"
         icon="sheet-empty"
         class="file-box file-boxes-margin"
+        box-type="button"
         @clicked="$emit('open-new-form')" />
 
       <!-- ADD FILES -->
