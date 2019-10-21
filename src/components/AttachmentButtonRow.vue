@@ -26,6 +26,7 @@
         :show-plus="true"
         :box-size="{ width: 'calc(25% - 8px)'}"
         :text="$t('form-view.addNewEntry')"
+        :disabled="!currentId"
         icon="sheet-empty"
         class="file-box file-boxes-margin"
         box-type="button"
@@ -40,6 +41,7 @@
           :box-ratio="'50'"
           :text="$t('form-view.attachFile')"
           :subtext="$t('form-view.clickordrag')"
+          :disabled="!currentId"
           icon="camera"
           @dropped-file="handleFileSelect($event)"
           @clicked="checkEntrySaved" />
@@ -74,6 +76,7 @@
       <BaseButton
         key="mobile-addNew"
         :text="$t('form-view.addNewEntry')"
+        :disabled="!currentId"
         icon-size="large"
         button-style="row"
         align-text="left"
@@ -86,6 +89,7 @@
         <BaseButton
           key="mobile-addExisting"
           :text="$t('form-view.attachFile')"
+          :disabled="!currentId"
           icon="sheet-plus"
           icon-size="large"
           align-text="left"
@@ -226,7 +230,7 @@ export default {
       // get files - depending if dragged or selected from file browse different event prop
       const files = e.dataTransfer ? e.dataTransfer.files : e.target.files;
       // check if it was actual files that were dragged in
-      if (files && files.length) {
+      if (files && files.length && this.currentId) {
         for (let i = 0; i < files.length; i += 1) {
           this.filesToUpload.push(files[i]);
         }
