@@ -437,6 +437,7 @@ export default {
           text: this.$t('notify.addTitle'),
           type: 'error',
         });
+        this.focusFirstInput();
         return false;
       }
     },
@@ -483,6 +484,8 @@ export default {
           this.$store.commit('data/setNewForm', true);
 
           window.scrollTo(0, 0);
+          this.focusFirstInput();
+
           setTimeout(() => {
             this.$store.commit('data/deleteCurrentItem');
             this.resetForm();
@@ -529,6 +532,11 @@ export default {
     createHumanReadableData(val) {
       const date = new Date(val);
       return `${date.toLocaleDateString('de')} ${this.$t('form-view.at')} ${date.toLocaleTimeString('de')}`;
+    },
+    focusFirstInput() {
+      if (this.$el.querySelector('input')) {
+        this.$el.querySelector('input').focus();
+      }
     },
   },
 };
