@@ -14,7 +14,7 @@
               ? 'base-form-field-half' : 'base-form-field-full',
             { 'base-form-field-left-margin': isHalfField(element) }
           ]">
-          <FormFieldCreator
+          <BaseFormFieldCreator
             :key="index + '-' + valueIndex"
             :field-key="index + '-' + valueIndex"
             :field="element"
@@ -69,7 +69,7 @@
         </div>
       </template>
       <template v-else>
-        <FormFieldCreator
+        <BaseFormFieldCreator
           :key="index"
           :field-key="index"
           :field="element"
@@ -97,7 +97,8 @@
 
 <script>
 import axios from 'axios';
-import FormFieldCreator from './FormFieldCreator';
+import { BaseFormFieldCreator } from 'base-ui-components';
+// import FormFieldCreator from './FormFieldCreator';
 import RemoveIcon from '../assets/icons/remove.svg';
 import PlusIcon from '../assets/icons/plus.svg';
 import { getApiUrl, getLangLabel, hasFieldContent } from '../utils/commonUtils';
@@ -106,9 +107,9 @@ const { CancelToken } = axios;
 let cancel;
 
 export default {
-  name: 'BaseFormNew',
+  name: 'BaseForm',
   components: {
-    FormFieldCreator,
+    BaseFormFieldCreator,
     RemoveIcon,
     PlusIcon,
   },
