@@ -3,33 +3,6 @@
     <h2 class="hide">
       {{ `${$tc('notify.entry', 1)}: ${title}` }}
     </h2>
-    <div
-      ref="formHead"
-      :class="['form-head', { 'form-head-shadow': formBelow}]">
-      <!-- PARENT HEADER -->
-      <div
-        v-if="parent"
-        class="base-row-parent base-row-header"
-        @click="returnToParent(parent.id)">
-        <BaseMenuEntry
-          :title="parent.title"
-          :title-bold="true"
-          :subtext="parent.type && parent.type.label ? parent.type.label[$i18n.locale] : ''"
-          :show-thumbnails="false"
-          entry-id="parentheader"
-          icon="sheet-empty" />
-      </div>
-
-      <!-- HEADER ROW -->
-      <BaseRow
-        :title="title"
-        :type="type"
-        :show-back-button="!!parent"
-        :unsaved-changes="unsavedChanges"
-        :is-saving="dataSaving"
-        @save="saveForm"
-        @return="returnFromForm" />
-    </div>
 
     <!-- FORM -->
     <form
@@ -111,6 +84,35 @@
           class="form slide-in-form" />
       </transition>
     </form>
+
+    <div
+      ref="formHead"
+      :class="['form-head', { 'form-head-shadow': formBelow}]">
+      <!-- PARENT HEADER -->
+      <div
+        v-if="parent"
+        class="base-row-parent base-row-header"
+        @click="returnToParent(parent.id)">
+        <BaseMenuEntry
+          :title="parent.title"
+          :title-bold="true"
+          :subtext="parent.type && parent.type.label ? parent.type.label[$i18n.locale] : ''"
+          :show-thumbnails="false"
+          entry-id="parentheader"
+          icon="sheet-empty" />
+      </div>
+
+      <!-- HEADER ROW -->
+      <BaseRow
+        :title="title"
+        :type="type"
+        :show-back-button="!!parent"
+        :unsaved-changes="unsavedChanges"
+        :is-saving="dataSaving"
+        @save="saveForm"
+        @return="returnFromForm" />
+    </div>
+
     <div
       v-if="valueList.date_created && valueList.date_changed"
       class="last-modified">
@@ -546,6 +548,8 @@ export default {
   .form-component {
     position: relative;
     min-height: 80vh;
+    display: flex;
+    flex-direction: column;
 
     .form-head {
       background-color: $background-color;
@@ -553,6 +557,7 @@ export default {
       top: $header-height;
       z-index: 5;
       padding: $spacing 0 $spacing-small;
+      order: 0;
 
       &.form-head-shadow {
         box-shadow: 0 8px 8px -8px rgba(0,0,0,0.25);
@@ -588,6 +593,7 @@ export default {
     .form-container {
       position: relative;
       margin-top: -$spacing-small;
+      order: 1;
 
       .base-form-options {
         margin-bottom: $spacing-small;
@@ -625,6 +631,7 @@ export default {
     color: $font-color-second;
     font-size: $font-size-small;
     line-height: $line-height;
+    order: 2;
   }
 
   .mobile-save-row {
