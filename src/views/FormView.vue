@@ -441,11 +441,25 @@ export default {
       }
     },
     returnFromForm() {
-      if (this.parent) {
-        this.returnToParent(this.parent.id);
-      } else {
-        this.$router.push('/');
-      }
+      const followUpAction = () => {
+        if (this.parent) {
+          this.returnToParent(this.parent.id);
+        } else {
+          this.$router.push('/');
+        }
+      };
+      this.openUnsavedChangesPopUp({
+        actionRight: async () => {
+          try {
+            await this.saveForm();
+            followUpAction();
+          } catch (e) {
+            console.error(e);
+          }
+          this.$store.commit('data/hidePopUp');
+        },
+        actionLeft: followUpAction,
+      });
     },
     async openNewForm() {
       // check if entry was already saved
@@ -458,14 +472,7 @@ export default {
         });
       } else if (this.valueList.title) {
         if (this.unsavedChanges) {
-          this.$store.commit('data/setPopUp', {
-            show: true,
-            header: this.$t('notify.unsavedChangesTitle'),
-            textTitle: this.$t('notify.unsavedChangesText'),
-            textList: [],
-            icon: 'save-file',
-            buttonTextRight: this.$t('notify.saveChanges'),
-            buttonTextLeft: this.$t('notify.dismissChanges'),
+          this.openUnsavedChangesPopUp({
             actionRight: async () => {
               try {
                 await this.saveForm();
@@ -475,7 +482,7 @@ export default {
               }
               this.$store.commit('data/hidePopUp');
             },
-            actionLeft: () => this.openNewForm(),
+            actionLeft: this.openNewForm,
           });
         } else {
           this.showOverlay = true;
@@ -529,6 +536,26 @@ export default {
     createHumanReadableData(val) {
       const date = new Date(val);
       return `${date.toLocaleDateString('de')} ${this.$t('form-view.at')} ${date.toLocaleTimeString('de')}`;
+    },
+    openUnsavedChangesPopUp({ actionRight, actionLeft }) {
+      console.log(actionLeft);
+      console.log(actionRight);
+      debugger;
+      if (this.unsavedChanges) {
+        this.$store.commit('data/setPopUp', {
+          show: true,
+          header: this.$t('notify.unsavedChangesTitle'),
+          textTitle: this.$t('notify.unsavedChangesText'),
+          textList: [],
+          icon: 'save-file',
+          buttonTextRight: this.$t('notify.saveChanges'),
+          buttonTextLeft: this.$t('notify.dismissChanges'),
+          actionRight,
+          actionLeft,
+        });
+      } else {
+        actionLeft();
+      }
     },
   },
 };
