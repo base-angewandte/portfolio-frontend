@@ -376,23 +376,25 @@ export default {
         return entry;
       });
       let dropDownList = [].concat(modifiedData);
-      const user = this.$store.getters['PortfolioAPI/user'];
-      // add defaults to fields that have defaults or whos equivalent has defaults
-      const defaults = equivalent ? process.env[`${equivalent.toUpperCase()}_DEFAULTS`]
-        : process.env[`${name.toUpperCase()}_DEFAULTS`];
-      dropDownList = this.setDropDownDefaults(
-        dropDownList,
-        defaults,
-        value,
-      );
-      // special case contributors - add user
-      if ((equivalent && equivalent === 'contributors') || name === 'contributors') {
-        // set user
-        dropDownList = this.setDropDownDefaults(dropDownList, [{
-          label: user.name,
-          source: user.uuid,
-          additional: this.$t('form.myself'),
-        }], value);
+      // if input does not trigger search (> 3 char) set defaults
+      if (value <= 3) {
+        const user = this.$store.getters['PortfolioAPI/user'];
+        // add defaults to fields that have defaults or whos equivalent has defaults
+        const defaults = equivalent ? process.env[`${equivalent.toUpperCase()}_DEFAULTS`]
+          : process.env[`${name.toUpperCase()}_DEFAULTS`];
+        dropDownList = this.setDropDownDefaults(
+          defaults,
+          value,
+        );
+        // special case contributors - add user
+        if ((equivalent && equivalent === 'contributors') || name === 'contributors') {
+          // set user
+          dropDownList = this.setDropDownDefaults([{
+            label: user.name,
+            source: user.uuid,
+            additional: this.$t('form.myself'),
+          }], value);
+        }
       }
       this.$set(this.dropdownLists, name, dropDownList);
     },
@@ -412,21 +414,16 @@ export default {
     getFieldName(val) {
       return val.title || (this.$te(`form.${val.name}`) ? this.$t(`form.${val.name}`) : val.name);
     },
-    setDropDownDefaults(list, defaults, input) {
-      let modifiedList = [].concat(list);
+    setDropDownDefaults(defaults, input) {
       if (defaults && defaults.length) {
-        // only use defaults that match the input string
-        const inputMatches = defaults
+        if (!input.length) {
+          return defaults;
+        }
+        return defaults
           .filter(defaultOption => getLangLabel(defaultOption.label, true).toLowerCase()
             .includes(input.toLowerCase()));
-        if (input.length > 3) {
-          // only add defaults that match the input
-          modifiedList = modifiedList.filter(option => (!option.source
-            || !defaults.map(contr => contr.source).includes(option.source)));
-        }
-        modifiedList = inputMatches.concat(modifiedList);
       }
-      return modifiedList;
+      return [];
     },
     checkFieldContent(val) {
       return hasFieldContent(val);
