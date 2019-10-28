@@ -27,8 +27,11 @@
             class="sidebar-pop-up-text">
             <li
               v-for="(title, index) in $store.state.data.popUp.textList"
-              :key="index">
-              {{ title + '\n' }}
+              :key="index"
+              class="sidebar-pop-up-text-row">
+              <span class="sidebar-pop-up-text-row-marks">"</span>
+              <span class="sidebar-pop-up-text-row-text">{{ title + '\n' }}</span>
+              <span class="sidebar-pop-up-text-row-marks">"</span>
             </li>
           </ul>
         </div>
@@ -313,9 +316,25 @@ export default {
         overflow-y: auto;
         padding: 0 $spacing-large;
 
+        .sidebar-pop-up-text-row {
+          display: flex;
+          justify-content: center;
+
+          .sidebar-pop-up-text-row-marks {
+            width: 10px;
+          }
+
+          .sidebar-pop-up-text-row-text {
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+        }
+
         li {
           // necessary otherwise scrollbar always shown...
-          height: $font-size-large + $spacing-small;
+          min-height: $font-size-large + $spacing-small;
         }
       }
     }
