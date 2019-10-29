@@ -8,7 +8,6 @@
       <!-- LINK EXÌSTING ENTRIES -->
       <BaseDropBox
         key="addEntry"
-        :box-size="{ width: 'calc(25% - 8px)' }"
         :text="$t('form-view.addExistingEntry')"
         :subtext="$t('form-view.clickordrag')"
         icon="sheet-empty"
@@ -24,7 +23,6 @@
       <BaseBoxButton
         key="addNew"
         :show-plus="true"
-        :box-size="{ width: 'calc(25% - 8px)'}"
         :text="$t('form-view.addNewEntry')"
         :disabled="!currentId"
         :show-tooltip="!currentId ? true : false"
@@ -353,7 +351,8 @@ export default {
       flex-wrap: wrap;
 
       .file-box {
-        flex: 0 0 calc(50% - #{$spacing}/2);
+        // added 0.01rem thing for edge
+        flex: 0 0 calc(50% - #{$spacing}/2 - 0.01rem);
 
         &:nth-of-type(2n) {
           margin-right: 0;
