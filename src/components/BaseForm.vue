@@ -7,6 +7,7 @@
         v-if="allowMultiply(element)">
         <div
           v-for="(value, valueIndex) in valueListInt[element.name]"
+          :ref="element.name"
           :key="index + '-' + valueIndex"
           :class="[
             'base-form-field',
@@ -139,6 +140,8 @@ export default {
       timeout: null,
       // variable to specify a field that is currently loading autocomplete data
       fieldIsLoading: '',
+      // variable to be able to focus to the field after multipy
+      multiplyParams: null,
     };
   },
   computed: {
@@ -177,6 +180,20 @@ export default {
   mounted() {
     this.initializeValueObject();
     this.initializeDropDownLists();
+  },
+  updated() {
+    if (this.multiplyParams && this.multiplyParams.name) {
+      const elements = this.$refs[this.multiplyParams.name];
+      if (elements.length) {
+        const inputs = elements[this.multiplyParams.index].getElementsByTagName('textarea').length
+          ? elements[this.multiplyParams.index].getElementsByTagName('textarea')
+          : elements[this.multiplyParams.index].getElementsByTagName('input');
+        if (inputs.length) {
+          inputs[0].focus();
+        }
+      }
+      this.multiplyParams = null;
+    }
   },
   methods: {
     initializeValueObject() {
@@ -342,6 +359,7 @@ export default {
     multiplyField(field) {
       this.valueListInt[field.name]
         .push(this.getInitialFieldValue(field.items));
+      this.multiplyParams = { index: this.valueListInt[field.name].length - 1, name: field.name };
     },
     removeField(field, index) {
       if (index) {
