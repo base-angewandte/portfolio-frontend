@@ -512,10 +512,10 @@ export default {
       await this.actionEntries(action);
       if (action === 'delete') {
         this.$router.push('/');
-      } else if (action === 'publish') {
-        this.valueList.published = true;
-      } else if (action === 'offline') {
-        this.valueList.published = false;
+      } else {
+        this.valueList.published = action === 'publish';
+        // also update original value list since this should not trigger unsaved changes
+        this.valueListOriginal.published = action === 'publish';
       }
       this.$emit('data-changed', true);
     },
