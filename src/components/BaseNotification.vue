@@ -120,6 +120,10 @@ export default {
         font-size: inherit;
         font-weight: 600;
       }
+
+      .notification-message {
+        word-break: break-word;
+      }
     }
 
     .notification-close {
