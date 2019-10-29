@@ -377,7 +377,7 @@ export default {
       });
       let dropDownList = [].concat(modifiedData);
       // if input does not trigger search (> 3 char) set defaults
-      if (value.length <= 3) {
+      if (value && value.length <= 3) {
         const user = this.$store.getters['PortfolioAPI/user'];
         // add defaults to fields that have defaults or whos equivalent has defaults
         const defaults = equivalent ? process.env[`${equivalent.toUpperCase()}_DEFAULTS`]
