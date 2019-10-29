@@ -261,6 +261,7 @@ export default {
       const formView = this.$refs.view;
       if (formView && formView.valueList) {
         this.$set(formView.valueList, 'published', published);
+        this.$set(formView.valueListOriginal, 'published', published);
       }
     },
     capitalizeFirstLetter(text) {
