@@ -372,8 +372,7 @@ export default {
       return [];
     },
     goToLinked(id) {
-      this.$store.commit('data/deleteLastParentItem');
-      this.$router.push(`/entry/${id}`);
+      this.$emit('open-linked', id);
     },
     async fetchMedia() {
       // update information in attachement area with new info

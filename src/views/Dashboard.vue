@@ -138,7 +138,7 @@ export default {
           buttonTextLeft: this.$t('notify.dismissChanges'),
           actionRight: async () => {
             try {
-              const saveSuccess = await this.$refs.view.saveForm();
+              const saveSuccess = await this.$refs.view.saveForm(false);
               if (saveSuccess) {
                 followUpAction();
               }

@@ -10,7 +10,7 @@
       <div
         v-if="parent"
         class="base-row-parent base-row-header"
-        @click="returnToParent(parent.id)">
+        @click="returnFromForm()">
         <BaseMenuEntry
           :title="parent.title"
           :title-bold="true"
@@ -101,7 +101,8 @@
           v-if="!formIsLoading && formDataPresent"
           key="attachments"
           @open-new-form="openNewForm"
-          @show-preview="$emit('show-preview', $event)" />
+          @show-preview="$emit('show-preview', $event)"
+          @open-linked="goToLinked" />
       </transition-group>
       <transition name="slide-child-form">
         <BaseForm
@@ -366,7 +367,7 @@ export default {
         this.valueList = Object.assign({}, this.valueList, JSON.parse(JSON.stringify(data)));
       }
     },
-    async saveForm() {
+    async saveForm(routeToNewEntry = true) {
       // check if there is a title (only requirement for saving)
       if (this.valueList.title) {
         this.dataSaving = true;
@@ -405,7 +406,9 @@ export default {
               }
             }
             this.$emit('data-changed');
-            this.$router.push(`/entry/${this.$store.state.data.currentItemId}`);
+            if (routeToNewEntry) {
+              await this.$router.push(`/entry/${this.$store.state.data.currentItemId}`);
+            }
             // if id present just update the entry
           } else {
             await this.$store.dispatch('data/addOrUpdateEntry', validData);
@@ -441,11 +444,14 @@ export default {
       }
     },
     returnFromForm() {
-      if (this.parent) {
-        this.returnToParent(this.parent.id);
-      } else {
-        this.$router.push('/');
-      }
+      const followUpAction = () => {
+        if (this.parent) {
+          this.returnToParent(this.parent.id);
+        } else {
+          this.$router.push('/');
+        }
+      };
+      this.openUnsavedChangesPopUp(followUpAction);
     },
     async openNewForm() {
       // check if entry was already saved
@@ -458,25 +464,7 @@ export default {
         });
       } else if (this.valueList.title) {
         if (this.unsavedChanges) {
-          this.$store.commit('data/setPopUp', {
-            show: true,
-            header: this.$t('notify.unsavedChangesTitle'),
-            textTitle: this.$t('notify.unsavedChangesText'),
-            textList: [],
-            icon: 'save-file',
-            buttonTextRight: this.$t('notify.saveChanges'),
-            buttonTextLeft: this.$t('notify.dismissChanges'),
-            actionRight: async () => {
-              try {
-                await this.saveForm();
-                this.openNewForm();
-              } catch (e) {
-                console.error(e);
-              }
-              this.$store.commit('data/hidePopUp');
-            },
-            actionLeft: () => this.openNewForm(),
-          });
+          this.openUnsavedChangesPopUp(this.openNewForm);
         } else {
           this.showOverlay = true;
           this.$store.commit('data/setParentItem', this.valueList);
@@ -529,6 +517,38 @@ export default {
     createHumanReadableData(val) {
       const date = new Date(val);
       return `${date.toLocaleDateString('de')} ${this.$t('form-view.at')} ${date.toLocaleTimeString('de')}`;
+    },
+    openUnsavedChangesPopUp(followUpAction) {
+      if (this.unsavedChanges) {
+        this.$store.commit('data/setPopUp', {
+          show: true,
+          header: this.$t('notify.unsavedChangesTitle'),
+          textTitle: this.$t('notify.unsavedChangesText'),
+          textList: [],
+          icon: 'save-file',
+          buttonTextRight: this.$t('notify.saveChanges'),
+          buttonTextLeft: this.$t('notify.dismissChanges'),
+          actionRight: async () => {
+            try {
+              await this.saveForm();
+              followUpAction();
+            } catch (e) {
+              console.error(e);
+            }
+            this.$store.commit('data/hidePopUp');
+          },
+          actionLeft: followUpAction,
+        });
+      } else {
+        followUpAction();
+      }
+    },
+    goToLinked(id) {
+      const followUpAction = () => {
+        this.$store.commit('data/setParentItem', this.valueList);
+        this.$router.push(`/entry/${id}`);
+      };
+      this.openUnsavedChangesPopUp(followUpAction);
     },
   },
 };
