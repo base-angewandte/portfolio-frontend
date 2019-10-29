@@ -161,10 +161,7 @@ export default {
   BaseNotification component ... */
   .notification-wrapper {
     box-shadow: 0 3px 3px rgba(0, 0, 0, .05);
-
-    &:not(:last-child) {
-      border-bottom: 2px solid #f0f0f0;
-    }
+    border-top: 2px solid #f0f0f0;
   }
 
   .v-slide-enter-active,
