@@ -8,6 +8,7 @@
       <!-- LINK EXÌSTING ENTRIES -->
       <BaseDropBox
         key="addEntry"
+        :box-size="{ width: 'calc(25% - 16rem / 19 / 2)' }"
         :text="$t('form-view.addExistingEntry')"
         :subtext="$t('form-view.clickordrag')"
         icon="sheet-empty"
@@ -23,6 +24,7 @@
       <BaseBoxButton
         key="addNew"
         :show-plus="true"
+        :box-size="{ width: 'calc(25% - 16rem / 19 / 2)'}"
         :text="$t('form-view.addNewEntry')"
         :disabled="!currentId"
         :show-tooltip="!currentId ? true : false"

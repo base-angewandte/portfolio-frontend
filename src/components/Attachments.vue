@@ -21,7 +21,7 @@
         <BaseImageBox
           :key="props.item.id"
           :selectable="props.selectActive"
-          :box-size="{ width: 'calc(25% - 16rem/19 - (16rem/19/2))' }"
+          :box-size="{ width: 'calc(25% - 8rem/19 - (8rem/19/2))' }"
           :title="props.item.to.title"
           :subtext="props.item.to.subtitle"
           :description="props.item.description"
@@ -95,7 +95,7 @@
           :description="getFileType(props.item)"
           :image-url="getImagePath(props.item.thumbnail
             || props.item.cover, imageHover[props.index])"
-          :box-size="{ width: 'calc(25% - 16rem/19 - (16rem/19/2))' }"
+          :box-size="{ width: 'calc(25% - 8rem/19 - (8rem/19/2))' }"
           :box-ratio="100"
           :box-text="generateBoxText(props.item.metadata)"
           class="linked-base-box"

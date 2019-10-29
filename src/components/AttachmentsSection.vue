@@ -86,7 +86,7 @@
               <BaseImageBox
                 :key="attached.id"
                 :selectable="selectActive"
-                :box-size="{ width: 'calc(25% - 16rem/19 - (16rem/19/2))' }"
+                :box-size="{ width: 'calc(25% - 8rem/19 - (8rem/19/2))' }"
                 :box-ratio="100" />
             </slot>
           </template>
@@ -95,7 +95,7 @@
           <BaseBoxButton
             v-if="showActionButtonBox && actionInt"
             :text="actionButtonText"
-            :box-size="{ width: 'calc(25% - 16rem/19 - (16rem/19/2))' }"
+            :box-size="{ width: 'calc(25% - 8rem/19 - (8rem/19/2))' }"
             icon="save-file"
             box-style="small"
             class="linked-base-box"
