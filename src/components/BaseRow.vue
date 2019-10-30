@@ -13,9 +13,9 @@
         :show-thumbnails="false" />
     </div>
     <div
-      id="form-back-button"
       :class="[
         'form-button',
+        'form-back-button',
         'mobile-elements',
         { 'form-button-child' : showBackButton }
       ]">
@@ -28,8 +28,7 @@
         @clicked="$emit('return')" />
     </div>
     <div
-      id="form-save-button"
-      class="form-button">
+      class="form-button form-save-button">
       <BaseButton
         :active="unsavedChanges"
         :text="$t('save')"
@@ -108,7 +107,7 @@ export default {
 <style lang="scss" scoped>
   @import "../styles/variables.scss";
 
-  #form-save-button {
+  .form-save-button {
     border-left: $separation-line;
   }
 
@@ -125,15 +124,15 @@ export default {
   }
 
   @media screen and (max-width: $mobile) {
-    #form-back-button, #form-save-button {
+    .form-back-button, .form-save-button {
       width: 50%;
     }
 
-    #form-back-button {
+    .form-back-button {
       order: 1;
     }
 
-    #form-save-button {
+    .form-save-button {
       order: 2;
     }
 
