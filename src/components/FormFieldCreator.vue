@@ -45,6 +45,7 @@
     <!--MULTILINE TEXT FIELD -->
     <BaseMultilineTextInput
       v-else-if="fieldType === 'multiline'"
+      :id="fieldKey"
       :key="fieldKey"
       :tabs="tabs"
       :tab-labels="tabs.map(tab => $t(tab))"
