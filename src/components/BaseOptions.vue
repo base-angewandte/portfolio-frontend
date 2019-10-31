@@ -30,7 +30,7 @@
     </div>
     <transition name="slide-fade-options">
       <div
-        v-if="useOptionsButton && showOptionsToggle"
+        v-if="showOptionsToggle && !optionsHidden"
         class="base-options-below">
         <slot name="options" />
       </div>
