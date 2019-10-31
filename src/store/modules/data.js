@@ -154,11 +154,13 @@ const mutations = {
     state.selectedEntries = [].concat(entryArr);
   },
   setParentItem(state, entry) {
-    state.parentItems.push({
-      id: entry.id,
-      title: entry.title,
-      type: entry.type && entry.type.length ? entry.type[0] : '',
-    });
+    // create array of parents so more than one parent can be set
+    const parentArrray = [].concat(entry);
+    state.parentItems.push(parentArrray.map(parent => ({
+      id: parent.id,
+      title: parent.title,
+      type: parent.type && parent.type.length ? parent.type[0] : '',
+    })));
   },
   deleteLastParentItem(state) {
     state.parentItems.pop();
@@ -372,18 +374,24 @@ const actions = {
           commit('setCurrentItem', adjustedEntry);
           // use linked entry info already provided with response data
           commit('setLinked', { list: entryData.relations || [], replace: true });
-          // and also fetch media data
-          try {
-            dispatch('fetchMediaData', entryData.id);
-            resolve(adjustedEntry);
-          } catch (e) {
-            reject(e);
+          // and also fetch media data if flag set true
+          if (entryData.has_media) {
+            try {
+              dispatch('fetchMediaData', entryData.id);
+            } catch (e) {
+              reject(e);
+            }
           }
+          // also set parents if there are any
+          if (entryData.parents.length) {
+            commit('setParentItem', entryData.parents.map(parentLink => parentLink.parent));
+          }
+          resolve(adjustedEntry);
         }
       } catch (e) {
         reject(e);
       }
-      reject();
+      resolve();
     });
   },
   async fetchMediaData({ commit }, id) {

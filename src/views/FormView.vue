@@ -91,13 +91,14 @@
       :class="['form-head', { 'form-head-shadow': formBelow}]">
       <!-- PARENT HEADER -->
       <div
-        v-if="parent"
+        v-if="parents && parents.length"
         class="base-row-parent base-row-header"
-        @click="returnToParent(parent.id)">
+        @click="returnToParent(parents[0].id)">
         <BaseMenuEntry
-          :title="parent.title"
+          :title="parents[0].title"
           :title-bold="true"
-          :subtext="parent.type && parent.type.label ? parent.type.label[$i18n.locale] : ''"
+          :subtext="parents[0].type && parents[0].type.label
+            ? parents[0].type.label[$i18n.locale] : ''"
           :show-thumbnails="false"
           entry-id="parentheader"
           icon="sheet-empty" />
@@ -107,7 +108,7 @@
       <BaseRow
         :title="title"
         :type="type"
-        :show-back-button="!!parent"
+        :show-back-button="!!(parents && parents.length)"
         :unsaved-changes="unsavedChanges"
         :is-saving="dataSaving"
         @save="saveForm"
@@ -176,7 +177,7 @@ export default {
       const { type } = this.valueList;
       return type && type.length && !this.showOverlay ? type[0].label[this.$i18n.locale] : '';
     },
-    parent() {
+    parents() {
       return this.$store.getters['data/getLatestParentItem'];
     },
     formFields() {
@@ -298,8 +299,8 @@ export default {
         sessionStorage.removeItem('valueList');
       }
       // check if there is a parent item, otherwise clear storage item
-      if (this.parent) {
-        sessionStorage.setItem('parent', JSON.stringify(this.parent));
+      if (this.parents && this.parents.length) {
+        sessionStorage.setItem('parent', JSON.stringify(this.parents));
       } else {
         sessionStorage.removeItem('parent');
       }
@@ -342,9 +343,10 @@ export default {
         // copy the original object to check for unsaved changes later
         this.valueListOriginal = { ...this.valueList };
       } catch (e) {
-        if (e.message.includes('404')) {
+        if (e && e.message && e.message.includes('404')) {
           this.$router.push(`/not-found?id=${this.currentItemId}`);
         } else {
+          console.error(e);
           this.$notify({
             group: 'request-notifications',
             title: this.$t('notify.somethingWrong'),
@@ -385,9 +387,11 @@ export default {
             }
             // link entry to parent if parent items are present
             const parent = this.$store.getters['data/getLatestParentItem'];
-            if (parent) {
+            if (parent.length) {
+              // ok to just take first one ([0]) since only scenario for this is
+              // "link new entry" functionality and there can only be one parent
               const relationData = {
-                from_entry: `${parent.id}`,
+                from_entry: `${parent[0].id}`,
                 to_entry: newEntryId,
               };
               try {
@@ -400,7 +404,7 @@ export default {
                 this.$notify({
                   group: 'request-notifications',
                   title: this.$t('notify.actionFailed', { action: this.$t('notify.link') }),
-                  text: this.$t('notify.linkToParentFail', { title: parent.title }),
+                  text: this.$t('notify.linkToParentFail', { title: parent[0].title }),
                   type: 'error',
                 });
                 // to also give user visual feedback that there is actually no link
@@ -448,8 +452,8 @@ export default {
     },
     returnFromForm() {
       const followUpAction = () => {
-        if (this.parent) {
-          this.returnToParent(this.parent.id);
+        if (this.parents && this.parents.length) {
+          this.returnToParent(this.parents[0].id);
         } else {
           this.$router.push('/');
         }
