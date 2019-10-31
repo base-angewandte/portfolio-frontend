@@ -8,13 +8,14 @@
       <!-- LINK EXÌSTING ENTRIES -->
       <BaseDropBox
         key="addEntry"
-        :box-size="{ width: 'calc(25% - 8px)' }"
+        :box-size="{ width: 'calc(25% - 16rem / 19 / 2)' }"
         :text="$t('form-view.addExistingEntry')"
         :subtext="$t('form-view.clickordrag')"
         icon="sheet-empty"
         drop-type="elements"
         drag-item-class="base-menu-list__list-entry"
         drop-element-name="menuEntry"
+        box-type="button"
         class="file-box file-boxes-margin"
         @dropped-element="droppedEntries"
         @clicked="openEntrySelect" />
@@ -23,10 +24,13 @@
       <BaseBoxButton
         key="addNew"
         :show-plus="true"
-        :box-size="{ width: 'calc(25% - 8px)'}"
+        :box-size="{ width: 'calc(25% - 16rem / 19 / 2)'}"
         :text="$t('form-view.addNewEntry')"
+        :disabled="!currentId"
+        :show-tooltip="!currentId ? true : false"
         icon="sheet-empty"
         class="file-box file-boxes-margin"
+        box-type="button"
         @clicked="$emit('open-new-form')" />
 
       <!-- ADD FILES -->
@@ -38,6 +42,8 @@
           :box-ratio="'50'"
           :text="$t('form-view.attachFile')"
           :subtext="$t('form-view.clickordrag')"
+          :disabled="!currentId"
+          :show-tooltip="!currentId ? true : false"
           icon="camera"
           @dropped-file="handleFileSelect($event)"
           @clicked="checkEntrySaved" />
@@ -72,6 +78,8 @@
       <BaseButton
         key="mobile-addNew"
         :text="$t('form-view.addNewEntry')"
+        :disabled="!currentId"
+        :show-tooltip="!currentId ? true : false"
         icon-size="large"
         button-style="row"
         align-text="left"
@@ -84,6 +92,8 @@
         <BaseButton
           key="mobile-addExisting"
           :text="$t('form-view.attachFile')"
+          :disabled="!currentId"
+          :show-tooltip="!currentId ? true : false"
           icon="sheet-plus"
           icon-size="large"
           align-text="left"
@@ -224,7 +234,7 @@ export default {
       // get files - depending if dragged or selected from file browse different event prop
       const files = e.dataTransfer ? e.dataTransfer.files : e.target.files;
       // check if it was actual files that were dragged in
-      if (files && files.length) {
+      if (files && files.length && this.currentId) {
         for (let i = 0; i < files.length; i += 1) {
           this.filesToUpload.push(files[i]);
         }
@@ -343,7 +353,8 @@ export default {
       flex-wrap: wrap;
 
       .file-box {
-        flex: 0 0 calc(50% - #{$spacing}/2);
+        // added 0.01rem thing for edge
+        flex: 0 0 calc(50% - #{$spacing}/2 - 0.01rem);
 
         &:nth-of-type(2n) {
           margin-right: 0;

@@ -12,7 +12,8 @@
       :linked-list="linkedList"
       :attached-list="mediaList"
       @files-deleted="updateUserQuota"
-      @show-preview="$emit('show-preview', $event)" />
+      @show-preview="$emit('show-preview', $event)"
+      @open-linked="$emit('open-linked', $event)" />
   </div>
 </template>
 

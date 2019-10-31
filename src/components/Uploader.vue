@@ -67,6 +67,7 @@
         @clicked="cancelUpload" />
       <!-- @event buttonRight -->
       <BaseButton
+        ref="uploadButton"
         :text="buttonText"
         :icon="!isSaving && !isFailed ? 'check-mark' : ''"
         :icon-position="'right'"
@@ -172,6 +173,11 @@ export default {
   },
   mounted() {
     this.reset();
+  },
+  updated() {
+    if (this.isSuccess) {
+      this.$refs.uploadButton.$el.focus();
+    }
   },
   methods: {
     async startUpload() {

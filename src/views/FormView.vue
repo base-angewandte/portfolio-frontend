@@ -3,33 +3,6 @@
     <h2 class="hide">
       {{ `${$tc('notify.entry', 1)}: ${title}` }}
     </h2>
-    <div
-      ref="formHead"
-      :class="['form-head', { 'form-head-shadow': formBelow}]">
-      <!-- PARENT HEADER -->
-      <div
-        v-if="parent"
-        class="base-row-parent base-row-header"
-        @click="returnToParent(parent.id)">
-        <BaseMenuEntry
-          :title="parent.title"
-          :title-bold="true"
-          :subtext="parent.type && parent.type.label ? parent.type.label[$i18n.locale] : ''"
-          :show-thumbnails="false"
-          entry-id="parentheader"
-          icon="sheet-empty" />
-      </div>
-
-      <!-- HEADER ROW -->
-      <BaseRow
-        :title="title"
-        :type="type"
-        :show-back-button="!!parent"
-        :unsaved-changes="unsavedChanges"
-        :is-saving="dataSaving"
-        @save="saveForm"
-        @return="returnFromForm" />
-    </div>
 
     <!-- FORM -->
     <form
@@ -101,7 +74,8 @@
           v-if="!formIsLoading && formDataPresent"
           key="attachments"
           @open-new-form="openNewForm"
-          @show-preview="$emit('show-preview', $event)" />
+          @show-preview="$emit('show-preview', $event)"
+          @open-linked="goToLinked" />
       </transition-group>
       <transition name="slide-child-form">
         <BaseForm
@@ -111,6 +85,35 @@
           class="form slide-in-form" />
       </transition>
     </form>
+
+    <div
+      ref="formHead"
+      :class="['form-head', { 'form-head-shadow': formBelow}]">
+      <!-- PARENT HEADER -->
+      <div
+        v-if="parent"
+        class="base-row-parent base-row-header"
+        @click="returnToParent(parent.id)">
+        <BaseMenuEntry
+          :title="parent.title"
+          :title-bold="true"
+          :subtext="parent.type && parent.type.label ? parent.type.label[$i18n.locale] : ''"
+          :show-thumbnails="false"
+          entry-id="parentheader"
+          icon="sheet-empty" />
+      </div>
+
+      <!-- HEADER ROW -->
+      <BaseRow
+        :title="title"
+        :type="type"
+        :show-back-button="!!parent"
+        :unsaved-changes="unsavedChanges"
+        :is-saving="dataSaving"
+        @save="saveForm"
+        @return="returnFromForm" />
+    </div>
+
     <div
       v-if="valueList.date_created && valueList.date_changed"
       class="last-modified">
@@ -366,7 +369,7 @@ export default {
         this.valueList = Object.assign({}, this.valueList, JSON.parse(JSON.stringify(data)));
       }
     },
-    async saveForm() {
+    async saveForm(routeToNewEntry = true) {
       // check if there is a title (only requirement for saving)
       if (this.valueList.title) {
         this.dataSaving = true;
@@ -405,7 +408,9 @@ export default {
               }
             }
             this.$emit('data-changed');
-            this.$router.push(`/entry/${this.$store.state.data.currentItemId}`);
+            if (routeToNewEntry) {
+              await this.$router.push(`/entry/${this.$store.state.data.currentItemId}`);
+            }
             // if id present just update the entry
           } else {
             await this.$store.dispatch('data/addOrUpdateEntry', validData);
@@ -437,15 +442,19 @@ export default {
           text: this.$t('notify.addTitle'),
           type: 'error',
         });
+        this.focusFirstInput();
         return false;
       }
     },
     returnFromForm() {
-      if (this.parent) {
-        this.returnToParent(this.parent.id);
-      } else {
-        this.$router.push('/');
-      }
+      const followUpAction = () => {
+        if (this.parent) {
+          this.returnToParent(this.parent.id);
+        } else {
+          this.$router.push('/');
+        }
+      };
+      this.openUnsavedChangesPopUp(followUpAction);
     },
     async openNewForm() {
       // check if entry was already saved
@@ -458,31 +467,15 @@ export default {
         });
       } else if (this.valueList.title) {
         if (this.unsavedChanges) {
-          this.$store.commit('data/setPopUp', {
-            show: true,
-            header: this.$t('notify.unsavedChangesTitle'),
-            textTitle: this.$t('notify.unsavedChangesText'),
-            textList: [],
-            icon: 'save-file',
-            buttonTextRight: this.$t('notify.saveChanges'),
-            buttonTextLeft: this.$t('notify.dismissChanges'),
-            actionRight: async () => {
-              try {
-                await this.saveForm();
-                this.openNewForm();
-              } catch (e) {
-                console.error(e);
-              }
-              this.$store.commit('data/hidePopUp');
-            },
-            actionLeft: () => this.openNewForm(),
-          });
+          this.openUnsavedChangesPopUp(this.openNewForm);
         } else {
           this.showOverlay = true;
           this.$store.commit('data/setParentItem', this.valueList);
           this.$store.commit('data/setNewForm', true);
 
           window.scrollTo(0, 0);
+          this.focusFirstInput();
+
           setTimeout(() => {
             this.$store.commit('data/deleteCurrentItem');
             this.resetForm();
@@ -530,6 +523,43 @@ export default {
       const date = new Date(val);
       return `${date.toLocaleDateString('de')} ${this.$t('form-view.at')} ${date.toLocaleTimeString('de')}`;
     },
+    openUnsavedChangesPopUp(followUpAction) {
+      if (this.unsavedChanges) {
+        this.$store.commit('data/setPopUp', {
+          show: true,
+          header: this.$t('notify.unsavedChangesTitle'),
+          textTitle: this.$t('notify.unsavedChangesText'),
+          textList: [],
+          icon: 'save-file',
+          buttonTextRight: this.$t('notify.saveChanges'),
+          buttonTextLeft: this.$t('notify.dismissChanges'),
+          actionRight: async () => {
+            try {
+              await this.saveForm();
+              followUpAction();
+            } catch (e) {
+              console.error(e);
+            }
+            this.$store.commit('data/hidePopUp');
+          },
+          actionLeft: followUpAction,
+        });
+      } else {
+        followUpAction();
+      }
+    },
+    goToLinked(id) {
+      const followUpAction = () => {
+        this.$store.commit('data/setParentItem', this.valueList);
+        this.$router.push(`/entry/${id}`);
+      };
+      this.openUnsavedChangesPopUp(followUpAction);
+    },
+    focusFirstInput() {
+      if (this.$el.querySelector('input')) {
+        this.$el.querySelector('input').focus();
+      }
+    },
   },
 };
 </script>
@@ -538,6 +568,8 @@ export default {
   .form-component {
     position: relative;
     min-height: 80vh;
+    display: flex;
+    flex-direction: column;
 
     .form-head {
       background-color: $background-color;
@@ -545,6 +577,7 @@ export default {
       top: $header-height;
       z-index: 5;
       padding: $spacing 0 $spacing-small;
+      order: 0;
 
       &.form-head-shadow {
         box-shadow: 0 8px 8px -8px rgba(0,0,0,0.25);
@@ -580,6 +613,7 @@ export default {
     .form-container {
       position: relative;
       margin-top: -$spacing-small;
+      order: 1;
 
       .base-form-options {
         margin-bottom: $spacing-small;
@@ -617,6 +651,7 @@ export default {
     color: $font-color-second;
     font-size: $font-size-small;
     line-height: $line-height;
+    order: 2;
   }
 
   .mobile-save-row {

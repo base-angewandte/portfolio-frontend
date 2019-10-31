@@ -27,8 +27,11 @@
             class="sidebar-pop-up-text">
             <li
               v-for="(title, index) in $store.state.data.popUp.textList"
-              :key="index">
-              {{ title + '\n' }}
+              :key="index"
+              class="sidebar-pop-up-text-row">
+              <span class="sidebar-pop-up-text-row-marks">"</span>
+              <span class="sidebar-pop-up-text-row-text">{{ title + '\n' }}</span>
+              <span class="sidebar-pop-up-text-row-marks">"</span>
             </li>
           </ul>
         </div>
@@ -138,7 +141,7 @@ export default {
           buttonTextLeft: this.$t('notify.dismissChanges'),
           actionRight: async () => {
             try {
-              const saveSuccess = await this.$refs.view.saveForm();
+              const saveSuccess = await this.$refs.view.saveForm(false);
               if (saveSuccess) {
                 followUpAction();
               }
@@ -191,6 +194,19 @@ export default {
           this.previewSize = {
             maxWidth: '100%',
           };
+          const imageHeight = fileData.metadata && fileData.metadata.ImageHeight
+            ? fileData.metadata.ImageHeight.val : null;
+          const imageWidth = fileData.metadata && fileData.metadata.ImageWidth
+            ? fileData.metadata.ImageWidth.val : null;
+          if (imageWidth && imageWidth > imageHeight && imageWidth < window.innerWidth) {
+            this.previewSize = Object.assign({}, this.previewSize, {
+              maxWidth: `${fileData.metadata.ImageWidth.val}px`,
+            });
+          } else if (imageHeight && imageHeight > imageWidth && imageHeight < window.innerHeight) {
+            this.previewSize = Object.assign({}, this.previewSize, {
+              maxHeight: `${fileData.metadata.ImageHeight.val}px`,
+            });
+          }
           // else get size from metadata
           // previewSize not required for audio (and pdf)
         } else if (fileData.metadata && (fileData.metadata.ImageHeight
@@ -300,9 +316,25 @@ export default {
         overflow-y: auto;
         padding: 0 $spacing-large;
 
+        .sidebar-pop-up-text-row {
+          display: flex;
+          justify-content: center;
+
+          .sidebar-pop-up-text-row-marks {
+            width: 10px;
+          }
+
+          .sidebar-pop-up-text-row-text {
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+        }
+
         li {
           // necessary otherwise scrollbar always shown...
-          height: $font-size-large + $spacing-small;
+          min-height: $font-size-large + $spacing-small;
         }
       }
     }
