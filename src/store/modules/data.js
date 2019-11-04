@@ -77,7 +77,7 @@ const getters = {
     return state.currentItemId;
   },
   getLatestParentItem(state) {
-    return state.parentItems[state.parentItems.length - 1];
+    return state.parentItems[0];
   },
   getCurrentLinked(state) {
     return state.linkedEntries;
@@ -153,17 +153,27 @@ const mutations = {
   setSelected(state, entryArr) {
     state.selectedEntries = [].concat(entryArr);
   },
-  setParentItem(state, entry) {
+  setParentItem(state, { valueList, parentId, overwrite = false }) {
     // create array of parents so more than one parent can be set
-    const parentArrray = [].concat(entry);
-    state.parentItems.push(parentArrray.map(parent => ({
+    const parentArrray = [].concat(valueList);
+    const latestParents = parentArrray.map(parent => ({
       id: parent.id,
       title: parent.title,
       type: parent.type && parent.type.length ? parent.type[0] : '',
-    })));
+      parentId,
+    }));
+    if (overwrite && state.parentItems.length) {
+      latestParents.forEach((entry) => {
+        if (!state.parentItems[0].map(ent => ent.id).includes(entry.id)) {
+          state.parentItems[0].push(entry);
+        }
+      });
+    } else {
+      state.parentItems.unshift(latestParents);
+    }
   },
   deleteLastParentItem(state) {
-    state.parentItems.pop();
+    state.parentItems.shift();
   },
   deleteParentItems(state) {
     state.parentItems = [];
@@ -384,7 +394,10 @@ const actions = {
           }
           // also set parents if there are any
           if (entryData.parents.length) {
-            commit('setParentItem', entryData.parents.map(parentLink => parentLink.parent));
+            commit('setParentItem', {
+              valueList: entryData.parents.map(parentLink => parentLink.parent),
+              overwrite: true,
+            });
           }
           resolve(adjustedEntry);
         }

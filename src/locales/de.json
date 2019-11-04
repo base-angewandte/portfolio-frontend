@@ -99,7 +99,10 @@
     "lastModified": "Zuletzt gespeichert am",
     "at": "um",
     "selectentries": "Einträge wählen",
-    "linkselected": "Einträge verlinken"
+    "linkselected": "Einträge verlinken",
+    "showParents": "Weitere Einträge anzeigen",
+    "parentEntries": "Übergeordnete Einträge",
+    "selectParent": "Wählen Sie den übergeordneten Eintrag aus"
   },
   "notify": {
     "entry": "Einträge | Eintrag | Einträge",

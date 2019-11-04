@@ -120,6 +120,39 @@
         </BaseImageBox>
       </template>
     </AttachmentsSection>
+
+    <!-- PARENT ENTRIES -->
+    <AttachmentsSection
+      ref="parentSection"
+      :attached-list="parentList"
+      :message-text="$t('form-view.deleteLinkedText')"
+      :message-subtext="$t('form-view.deleteLinkedSubtext')"
+      :option-button-text="$t('form-view.deleteLinked')"
+      :action-button-text="$t('form-view.deleteButton')"
+      :cancel-text="$t('cancel')"
+      :header-text="$t('form-view.parentEntries')"
+      :action="entryAction"
+      :is-loading="entriesLoading"
+      @set-action="entryAction = 'delete'"
+      @submit-action="deleteLinked"
+      @cancel-action="resetSelected">
+      <template
+        slot="attached-box"
+        slot-scope="props">
+        <BaseImageBox
+          :key="props.item.id"
+          :selectable="props.selectActive"
+          :box-size="{ width: 'calc(25% - 8rem/19 - (8rem/19/2))' }"
+          :title="props.item.title"
+          :subtext="props.item.subtitle"
+          :description="props.item.description"
+          :image-url="props.item.image ? getImagePath(props.item.image) : ''"
+          show-title
+          class="linked-base-box"
+          @select-triggered="entrySelected(props.item.id, $event)"
+          @clicked="goToLinked(props.item.id)" />
+      </template>
+    </AttachmentsSection>
   </div>
 </template>
 
@@ -149,6 +182,12 @@ export default {
       },
     },
     attachedList: {
+      type: Array,
+      default() {
+        return [];
+      },
+    },
+    parentList: {
       type: Array,
       default() {
         return [];
