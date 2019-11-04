@@ -3,7 +3,6 @@
     <!-- TEXT FIELD -->
     <BaseInput
       v-if="fieldType === 'text'"
-      :id="fieldKey"
       :key="fieldKey"
       v-model="fieldValueInt"
       :label="label"
@@ -12,35 +11,37 @@
       @keydown.enter.prevent="" />
 
     <!-- DATE FIELD -->
-    <div
+    <fieldset
       v-else-if="fieldType === 'date'"
-      class="date-field">
-      <BaseDateInput
-        :id="fieldKey"
-        :key="fieldKey + 'date'"
-        v-model="fieldValueInt"
-        :label="label"
-        :placeholder="placeholder"
-        :range-separator="$t('form.until')"
-        :format="field['x-attrs'].date_format"
-        :type="dateType.includes('timerange') ? dateType.includes('daterange')
-          ? 'daterange' : 'single' : dateType"
-        :date-format-labels="{date: $t('form.date'), year: $t('form.year') }"
-        :format-tabs-legend="$t('form.dateTabsLegend')"
-        :language="$i18n.locale"
-        :class="['base-form-field']" />
-      <BaseDateInput
-        v-if="dateType.includes('timerange')"
-        :id="fieldKey"
-        :key="fieldKey + 'time'"
-        v-model="fieldValueInt"
-        :label="field.properties.time_from.title"
-        :show-label="false"
-        :placeholder="placeholder"
-        :range-separator="$t('form.until')"
-        :type="'timerange'"
-        :class="['base-form-field']" />
-    </div>
+      class="date-field-fieldset">
+      <div class="date-field">
+        <BaseDateInput
+          :id="fieldKey"
+          :key="fieldKey + 'date'"
+          v-model="fieldValueInt"
+          :label="label"
+          :placeholder="placeholder"
+          :range-separator="$t('form.until')"
+          :format="field['x-attrs'].date_format"
+          :type="dateType.includes('timerange') ? dateType.includes('daterange')
+            ? 'daterange' : 'single' : dateType"
+          :date-format-labels="{date: $t('form.date'), year: $t('form.year') }"
+          :format-tabs-legend="$t('form.dateTabsLegend')"
+          :language="$i18n.locale"
+          :class="['base-form-field']" />
+        <BaseDateInput
+          v-if="dateType.includes('timerange')"
+          :id="fieldKey"
+          :key="fieldKey + 'time'"
+          v-model="fieldValueInt"
+          :label="field.properties.time_from.title"
+          :placeholder="placeholder"
+          :range-separator="$t('form.until')"
+          :type="'timerange'"
+          :class="['base-form-field']"
+          :show-label="false" />
+      </div>
+    </fieldset>
 
     <!--MULTILINE TEXT FIELD -->
     <BaseMultilineTextInput
@@ -436,6 +437,11 @@ export default {
         width: calc(100% - 6px);
       }
     }
+  }
+
+  .date-field-fieldset-legend {
+    color: $font-color-second;
+    margin-bottom: $spacing-small;
   }
 
   .date-field {
