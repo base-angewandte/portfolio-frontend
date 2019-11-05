@@ -146,7 +146,7 @@
           :title="props.item.parent.title"
           :subtext="props.item.parent.subtitle"
           :description="props.item.description"
-          :image-url="props.item.parent.image ? getImagePath(props.item.to.image) : ''"
+          :image-url="props.item.parent.image ? getImagePath(props.item.parent.image) : ''"
           show-title
           class="linked-base-box"
           @select-triggered="entrySelected(props.item.id, $event)"
