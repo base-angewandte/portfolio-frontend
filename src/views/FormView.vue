@@ -91,14 +91,14 @@
       :class="['form-head', { 'form-head-shadow': formBelow}]">
       <!-- PARENT HEADER -->
       <div
-        v-if="parents && parents.length"
+        v-if="parent"
         class="base-row-parent base-row-header"
-        @click="determineParentAction">
+        @click="returnFromForm">
         <BaseMenuEntry
-          :title="parents[0].title"
+          :title="parent.title"
           :title-bold="true"
-          :subtext="parents[0].type && parents[0].type.label
-            ? parents[0].type.label[$i18n.locale] : ''"
+          :subtext="parent.type && parent.type.label
+            ? parent.type.label[$i18n.locale] : ''"
           :show-thumbnails="false"
           entry-id="parentheader"
           icon="sheet-empty" />
@@ -108,7 +108,7 @@
       <BaseRow
         :title="title"
         :type="type"
-        :show-back-button="!!parentId"
+        :show-back-button="!!parent"
         :unsaved-changes="unsavedChanges"
         :is-saving="dataSaving"
         @save="saveForm"
@@ -123,23 +123,12 @@
       {{ `${$t('form-view.lastModified')} ${createHumanReadableData(valueList.date_changed)}`
       }}
     </div>
-
-    <BasePopUp
-      :show="showParentsPopUp"
-      :show-button-row="false"
-      :title="$t('form-view.selectParent')"
-      @close="showParentsPopUp = false">
-      <BaseMenuList
-        :list="parents"
-        :draggable="false"
-        @clicked="showParentsPopUp = false; returnToParent(parents[$event].id)" />
-    </BasePopUp>
   </div>
 </template>
 
 <script>
 import {
-  BaseMenuEntry, BaseLoader, BasePopUp, BaseMenuList,
+  BaseMenuEntry, BaseLoader,
 } from 'base-ui-components';
 import axios from 'axios';
 import BaseRow from '../components/BaseRow';
@@ -158,8 +147,6 @@ export default {
     BaseRow,
     BaseForm,
     BaseLoader,
-    BasePopUp,
-    BaseMenuList,
   },
   mixins: [
     attachmentHandlingMixin,
@@ -179,8 +166,6 @@ export default {
       prefetchedRoles: [],
       // to have shadow effect when form is scrolled down
       formBelow: false,
-      // handle parents pop up
-      showParentsPopUp: false,
     };
   },
   computed: {
@@ -194,15 +179,8 @@ export default {
       const { type } = this.valueList;
       return type && type.length && !this.showOverlay ? type[0].label[this.$i18n.locale] : '';
     },
-    parents() {
+    parent() {
       return this.$store.getters['data/getLatestParentItem'];
-    },
-    parentId() {
-      if (this.parents && this.parents.length) {
-        const returnParent = this.parents.find(par => par.parentId);
-        return returnParent ? returnParent.parentId : null;
-      }
-      return null;
     },
     formFields() {
       return this.$store.getters['data/getGeneralSchema'];
@@ -296,9 +274,7 @@ export default {
     // check if a parent was stored in session storage
     const storedParentString = sessionStorage.getItem('parent');
     if (storedParentString) {
-      this.$store.commit('data/setParentItem', {
-        valueList: JSON.parse(storedParentString),
-      });
+      this.$store.commit('data/setParentItem', JSON.parse(storedParentString));
     }
     await this.fetchGeneralFormFields();
     // this.$store.dispatch('data/getStaticDropDowns');
@@ -325,8 +301,8 @@ export default {
         sessionStorage.removeItem('valueList');
       }
       // check if there is a parent item, otherwise clear storage item
-      if (this.parents && this.parents.length) {
-        sessionStorage.setItem('parent', JSON.stringify(this.parents));
+      if (this.parent) {
+        sessionStorage.setItem('parent', JSON.stringify(this.parent));
       } else {
         sessionStorage.removeItem('parent');
       }
@@ -479,8 +455,8 @@ export default {
     },
     returnFromForm() {
       const followUpAction = () => {
-        if (this.parentId) {
-          this.returnToParent(this.parentId);
+        if (this.parent) {
+          this.returnToParent(this.parent.id);
         } else {
           this.$router.push('/');
         }
@@ -501,10 +477,7 @@ export default {
           this.openUnsavedChangesPopUp(this.openNewForm);
         } else {
           this.showOverlay = true;
-          this.$store.commit('data/setParentItem', {
-            valueList: this.valueList,
-            parentId: this.currentItemId,
-          });
+          this.$store.commit('data/setParentItem', this.valueList);
           this.$store.commit('data/setNewForm', true);
 
           window.scrollTo(0, 0);
@@ -523,13 +496,6 @@ export default {
           text: this.$t('notify.specifyTitleBeforeLinking'),
           type: 'error',
         });
-      }
-    },
-    determineParentAction() {
-      if (this.parents.length > 1) {
-        this.showParentsPopUp = true;
-      } else {
-        this.returnToParent(this.parents[0].id);
       }
     },
     returnToParent(id) {
@@ -591,10 +557,7 @@ export default {
     },
     goToLinked(id) {
       const followUpAction = () => {
-        this.$store.commit('data/setParentItem', {
-          valueList: this.valueList,
-          parentId: this.currentItemId,
-        });
+        this.$store.commit('data/setParentItem', this.valueList);
         this.$router.push(`/entry/${id}`);
       };
       this.openUnsavedChangesPopUp(followUpAction);

@@ -127,13 +127,13 @@
       :attached-list="parentList"
       :message-text="$t('form-view.deleteLinkedText')"
       :message-subtext="$t('form-view.deleteLinkedSubtext')"
-      :option-button-text="$t('form-view.deleteLinked')"
+      :option-button-text="$t('form-view.deleteParents')"
       :action-button-text="$t('form-view.deleteButton')"
       :cancel-text="$t('cancel')"
       :header-text="$t('form-view.parentEntries')"
-      :action="entryAction"
+      :action="parentEntryAction"
       :is-loading="entriesLoading"
-      @set-action="entryAction = 'delete'"
+      @set-action="parentEntryAction = 'delete'"
       @submit-action="deleteLinked"
       @cancel-action="resetSelected">
       <template
@@ -143,14 +143,14 @@
           :key="props.item.id"
           :selectable="props.selectActive"
           :box-size="{ width: 'calc(25% - 8rem/19 - (8rem/19/2))' }"
-          :title="props.item.title"
-          :subtext="props.item.subtitle"
+          :title="props.item.parent.title"
+          :subtext="props.item.parent.subtitle"
           :description="props.item.description"
-          :image-url="props.item.image ? getImagePath(props.item.image) : ''"
+          :image-url="props.item.parent.image ? getImagePath(props.item.to.image) : ''"
           show-title
           class="linked-base-box"
           @select-triggered="entrySelected(props.item.id, $event)"
-          @clicked="goToLinked(props.item.id)" />
+          @clicked="goToLinked(props.item.parent.id)" />
       </template>
     </AttachmentsSection>
   </div>
@@ -204,6 +204,8 @@ export default {
       buttonText: '',
       // current action active for entries section
       entryAction: '',
+      // current action active for entries section
+      parentEntryAction: '',
       // entries selected
       selectedEntries: [],
       // files selected
@@ -315,6 +317,7 @@ export default {
         await this.$parent.actionLinked({ list: this.selectedEntries, action: 'delete' });
         // reset all involved variables
         this.entryAction = '';
+        this.parentEntryAction = '';
         this.selectedEntries = [];
       } else {
         // notify user to select entries

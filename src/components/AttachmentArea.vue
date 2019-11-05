@@ -37,7 +37,7 @@ export default {
     },
     // get parent list from the store
     parentList() {
-      return this.$store.getters['data/getLatestParentItem'];
+      return this.$store.getters['data/getLinkedParents'];
     },
     // current entry id
     entryId() {
