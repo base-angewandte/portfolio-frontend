@@ -388,28 +388,14 @@ const actions = {
   },
   async fetchMediaData({ commit }, id) {
     // TODO: replace with Portofolio_API
-    const res = await axios.get(`${process.env.DATABASE_API}entry/${id}/media/`,
+    const { data } = await axios.get(`${process.env.DATABASE_API}entry/${id}/media/?detailed=true`,
       {
         withCredentials: true,
         xsrfCookieName: 'csrftoken_portfolio',
         xsrfHeaderName: 'X-CSRFToken',
       });
-    if (res.data.length) {
-      const imageData = await Promise.all(res.data
-        .map(imageId => new Promise(async (resolve, reject) => {
-          try {
-            const result = await axios.get(`${process.env.DATABASE_API}media/${imageId}/`,
-              {
-                withCredentials: true,
-                xsrfCookieName: 'csrftoken_portfolio',
-                xsrfHeaderName: 'X-CSRFToken',
-              });
-            resolve(result.data);
-          } catch (e) {
-            reject();
-          }
-        })));
-      commit('setMedia', { list: imageData, replace: true });
+    if (data.length) {
+      commit('setMedia', { list: data, replace: true });
     } else {
       commit('setMedia', { list: [], replace: true });
     }
