@@ -98,7 +98,7 @@
 
 <script>
 import axios from 'axios';
-import { BaseFormFieldCreator } from 'base-ui-components';
+import { BaseFormFieldCreator, BaseForm } from 'base-ui-components';
 // import FormFieldCreator from './FormFieldCreator';
 import RemoveIcon from '../assets/icons/remove.svg';
 import PlusIcon from '../assets/icons/plus.svg';

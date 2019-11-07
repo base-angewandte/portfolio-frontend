@@ -156,19 +156,17 @@ export default {
           .some(key => JSON.stringify(this.valueListInt[key]) !== JSON.stringify(val[key]));
         if (changedValues) {
           this.initializeValueObject();
+          // this.initializeDropDownLists();
         }
       },
       deep: true,
     },
-    formFieldJson: {
-      handler() {
-        // if new field specifications were set - also reset the properties of the value object
-        this.valueListInt = {};
-        // initialize value object with new properties
-        this.initializeValueObject();
-        this.initializeDropDownLists();
-      },
-      immediate: true,
+    formFieldJson() {
+      // if new field specifications were set - also reset the properties of the value object
+      this.valueListInt = {};
+      // initialize value object with new properties
+      this.initializeValueObject();
+      this.initializeDropDownLists();
     },
     prefetchedDropDownLists(val) {
       Object.keys(val).forEach((dropDown) => {

@@ -204,15 +204,7 @@ export default {
         .filter(key => !this.formFieldJson[key].$ref
           && !(this.formFieldJson[key]['x-attrs'] && this.formFieldJson[key]['x-attrs'].hidden))
         .map(key => Object.assign({}, { name: key }, this.formFieldJson[key]));
-      this.formFieldListInt.sort((a, b) => {
-        if (a['x-attrs'] && b['x-attrs']) {
-          if (a['x-attrs'].order > b['x-attrs'].order) {
-            return 1;
-          }
-          return -1;
-        }
-        return -1;
-      }).forEach((field) => {
+      this.formFieldListInt.forEach((field) => {
         this.$set(
           this.valueListInt,
           field.name,

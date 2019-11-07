@@ -160,7 +160,7 @@ export default {
       },
       deep: true,
     },
-    formFieldJson: {
+        formFieldJson: {
       handler() {
         // if new field specifications were set - also reset the properties of the value object
         this.valueListInt = {};
