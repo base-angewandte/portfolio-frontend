@@ -108,9 +108,11 @@
               v-if="props.item.published"
               class="file-published">
               <EyeIcon
-                aria-labelledby="title"
+                :aria-labelledby="'title_' + props.item.id"
                 class="published-icon">
-                <title>Published</title>
+                <title :id="'title_' + props.item.id">
+                  Published
+                </title>
                 <desc>
                   {{ `file ${getFileName(props.item.original)} is released for publication` }}
                 </desc>
