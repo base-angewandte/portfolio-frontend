@@ -11,6 +11,7 @@
       :key="'attachmentArea'"
       :linked-list="linkedList"
       :attached-list="mediaList"
+      :parent-list="parentList"
       @files-deleted="updateUserQuota"
       @show-preview="$emit('show-preview', $event)"
       @open-linked="$emit('open-linked', $event)" />
@@ -33,6 +34,10 @@ export default {
     // get file list from store
     mediaList() {
       return this.$store.getters['data/getCurrentMedia'];
+    },
+    // get parent list from the store
+    parentList() {
+      return this.$store.getters['data/getLinkedParents'];
     },
     // current entry id
     entryId() {

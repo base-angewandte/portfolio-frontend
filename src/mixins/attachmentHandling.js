@@ -10,9 +10,24 @@ export const attachmentHandlingMixin = {
         attachmentArea.entriesLoading = true;
       }
       const fromId = this.$store.getters['data/getCurrentItemId'];
+      const parentEntries = this.$store.getters['data/getLinkedParents'];
       const failArr = [];
       const successArr = [];
-      await Promise.all(list.map(relationId => new Promise(async (resolve) => {
+      let filteredList = list;
+      // filter out entries that are already parents and inform user about it
+      const alreadyParents = parentEntries.filter(parent => list.includes(parent.parent.id));
+      if (alreadyParents.length) {
+        filteredList = list.filter(linkId => !parentEntries
+          .map(parent => parent.parent.id).includes(linkId));
+        this.$notify({
+          group: 'request-notifications',
+          title: this.$t('notify.linkingNotPossible'),
+          text: `${this.$tc('notify.parentsAlready', alreadyParents.length)}: "${alreadyParents.map(parent => parent.parent.title).join('", "')}"`,
+          type: 'info',
+          duration: 8000,
+        });
+      }
+      await Promise.all(filteredList.map(relationId => new Promise(async (resolve) => {
         try {
           if (action === 'save') {
             const data = { from_entry: fromId, to_entry: relationId };
@@ -38,6 +53,7 @@ export const attachmentHandlingMixin = {
       try {
         const entry = await this.$store.dispatch('PortfolioAPI/get', { kind: 'entry', id: fromId });
         this.$store.commit('data/setLinked', { list: entry.relations || [], replace: true });
+        this.$store.commit('data/setLinkedParents', { list: entry.parents });
       } catch (e) {
         console.error(e);
         this.$notify({

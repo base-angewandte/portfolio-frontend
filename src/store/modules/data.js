@@ -61,6 +61,7 @@ const state = {
   selectedEntries: [],
   // saved here are all the data from linked entries (not just id as in currentItem)
   linkedEntries: [],
+  linkedParents: [],
   linkedMedia: [],
   // the object properties are named after the respective endpoint!
   prefetchedTypes: {},
@@ -88,6 +89,9 @@ const getters = {
   },
   getCurrentMedia(state) {
     return state.linkedMedia;
+  },
+  getLinkedParents(state) {
+    return state.linkedParents;
   },
   getMediaIds(state) {
     return state.linkedMedia.map(entry => entry.id);
@@ -129,6 +133,7 @@ const mutations = {
     state.currentItemId = null;
     state.linkedEntries = [];
     state.linkedMedia = [];
+    state.linkedParents = [];
   },
   setOptions(state, val) {
     state.showOptions = val;
@@ -174,8 +179,24 @@ const mutations = {
         ? capitalizeString(entry.to.type.label[i18n.locale]) : '',
     })), existingEntries);
   },
+  setLinkedParents(state, { list }) {
+    if (list.length) {
+      // add new list of entries and add a description (for type display)
+      state.linkedParents = [].concat(list.map(entry => Object.assign({}, entry, {
+        description: entry.parent && entry.parent.type && entry.parent.type.label
+          ? capitalizeString(entry.parent.type.label[i18n.locale]) : '',
+      })));
+    } else {
+      state.linkedParents = [];
+    }
+  },
   deleteLinked(state, list) {
-    state.linkedEntries = state.linkedEntries.filter(entry => !list.includes(entry.id));
+    state.linkedEntries = state.linkedEntries.filter(entry => !list
+      .map(deleted => deleted.id).includes(entry.id));
+  },
+  deleteLinkedParent(state, list) {
+    state.linkedParents = state.linkedParents.filter(entry => !list
+      .map(deleted => deleted.id).includes(entry.id));
   },
   setMedia(state, { list, replace }) {
     const existingMedia = replace ? [] : state.linkedMedia;
@@ -372,18 +393,22 @@ const actions = {
           commit('setCurrentItem', adjustedEntry);
           // use linked entry info already provided with response data
           commit('setLinked', { list: entryData.relations || [], replace: true });
-          // and also fetch media data
-          try {
-            dispatch('fetchMediaData', entryData.id);
-            resolve(adjustedEntry);
-          } catch (e) {
-            reject(e);
+          // and also fetch media data if flag set true
+          if (entryData.has_media) {
+            try {
+              dispatch('fetchMediaData', entryData.id);
+            } catch (e) {
+              reject(e);
+            }
           }
+          // also set parents if there are any
+          commit('setLinkedParents', { list: entryData.parents });
+          resolve(adjustedEntry);
         }
       } catch (e) {
         reject(e);
       }
-      reject();
+      resolve();
     });
   },
   async fetchMediaData({ commit }, id) {
@@ -432,10 +457,16 @@ const actions = {
     // check if any deleted items are currently displayed in form as linked
     const deletedLinked = state.linkedEntries
       .filter(entry => successArr.includes(entry.to.id));
+    // check if any deleted entries are currenly displayed as parent entries
+    const deletedLinkedParents = state.linkedParents
+      .filter(entry => successArr.includes(entry.parent.id));
     if (deletedLinked.length) {
-      deletedLinked.forEach(deleted => commit('deleteLinked', deleted.id));
+      commit('deleteLinked', deletedLinked);
     }
-    // check if deleted was a parent
+    if (deletedLinkedParents.length) {
+      commit('deleteLinkedParent', deletedLinkedParents);
+    }
+    // check if deleted was a parent (displayed in header row)
     const deletedParents = state.parentItems
       .filter(entry => deletedLinked.includes(entry.id));
     if (deletedParents) {
