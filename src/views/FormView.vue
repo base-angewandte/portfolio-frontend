@@ -93,11 +93,12 @@
       <div
         v-if="parent"
         class="base-row-parent base-row-header"
-        @click="returnToParent(parent.id)">
+        @click="returnFromForm">
         <BaseMenuEntry
           :title="parent.title"
           :title-bold="true"
-          :subtext="parent.type && parent.type.label ? parent.type.label[$i18n.locale] : ''"
+          :subtext="parent.type && parent.type.label
+            ? parent.type.label[$i18n.locale] : ''"
           :show-thumbnails="false"
           entry-id="parentheader"
           icon="sheet-empty" />
@@ -126,7 +127,9 @@
 </template>
 
 <script>
-import { BaseMenuEntry, BaseLoader } from 'base-ui-components';
+import {
+  BaseMenuEntry, BaseLoader,
+} from 'base-ui-components';
 import axios from 'axios';
 import BaseRow from '../components/BaseRow';
 import BaseFormOptions from '../components/BaseFormOptions';
@@ -342,9 +345,10 @@ export default {
         // copy the original object to check for unsaved changes later
         this.valueListOriginal = { ...this.valueList };
       } catch (e) {
-        if (e.message.includes('404')) {
+        if (e && e.message && e.message.includes('404')) {
           this.$router.push(`/not-found?id=${this.currentItemId}`);
         } else {
+          console.error(e);
           this.$notify({
             group: 'request-notifications',
             title: this.$t('notify.somethingWrong'),
@@ -385,9 +389,11 @@ export default {
             }
             // link entry to parent if parent items are present
             const parent = this.$store.getters['data/getLatestParentItem'];
-            if (parent) {
+            if (parent && parent.length) {
+              // ok to just take first one ([0]) since only scenario for this is
+              // "link new entry" functionality and there can only be one parent
               const relationData = {
-                from_entry: `${parent.id}`,
+                from_entry: `${parent[0].id}`,
                 to_entry: newEntryId,
               };
               try {
@@ -400,7 +406,7 @@ export default {
                 this.$notify({
                   group: 'request-notifications',
                   title: this.$t('notify.actionFailed', { action: this.$t('notify.link') }),
-                  text: this.$t('notify.linkToParentFail', { title: parent.title }),
+                  text: this.$t('notify.linkToParentFail', { title: parent[0].title }),
                   type: 'error',
                 });
                 // to also give user visual feedback that there is actually no link
@@ -426,6 +432,7 @@ export default {
           this.dataSaving = false;
           return true;
         } catch (e) {
+          console.error(e);
           this.$notify({
             group: 'request-notifications',
             title: this.$t('notify.saveFail'),

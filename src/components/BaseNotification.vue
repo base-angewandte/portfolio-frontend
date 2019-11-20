@@ -63,18 +63,10 @@ export default {
       duration: 4000,
     };
   },
-  watch: {
-    props() {
-      console.log('Test');
-    },
-  },
   methods: {
     // capitalize first letter of title
     notificationTitle(val) {
       return val.slice(0, 1).toUpperCase() + val.slice(1);
-    },
-    test() {
-      console.log('test');
     },
   },
 };
