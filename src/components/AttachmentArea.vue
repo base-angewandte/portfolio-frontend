@@ -3,7 +3,7 @@
     <!-- BUTTON ROW FOR ADDING ENTRIES AND FILES -->
     <AttachmentButtonRow
       :current-id="entryId"
-      @upload-done="updateUserQuota"
+      @upload-done="postUploadActions"
       @open-new-form="$emit('open-new-form')" />
     <!-- ACTUAL LINKED ENTRIES AND FILES -->
     <Attachments
@@ -26,6 +26,11 @@ import { attachmentHandlingMixin } from '../mixins/attachmentHandling';
 export default {
   components: { AttachmentButtonRow, Attachments },
   mixins: [attachmentHandlingMixin],
+  data() {
+    return {
+      mediaRequestIntervall: null,
+    };
+  },
   computed: {
     // get linked entries from store
     linkedList() {
@@ -44,6 +49,10 @@ export default {
       return this.$route.params.id;
     },
   },
+  beforeDestroy() {
+    // clear request intervall if component is destroyed
+    clearInterval(this.mediaRequestIntervall);
+  },
   methods: {
     // this is used for checking the available user quota for file upload, needs to be refetched
     // after uploading / deleting files
@@ -58,6 +67,16 @@ export default {
           type: 'error',
         });
       }
+    },
+    postUploadActions() {
+      this.updateUserQuota();
+      // after upload request media again every 10s for 40s to fetch converted
+      this.mediaRequestIntervall = setInterval(() => {
+        this.$refs.attachmentArea.fetchMedia();
+      }, 10000);
+      setTimeout(() => {
+        clearInterval(this.mediaRequestIntervall);
+      }, 40000);
     },
   },
 };

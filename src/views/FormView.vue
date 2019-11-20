@@ -291,6 +291,12 @@ export default {
     }
   },
   mounted() {
+    // add event listener for back button to handle parent situation
+    window.addEventListener('popstate', () => {
+      if (this.parent && this.parent.id) {
+        this.$store.commit('data/deleteLastParentItem');
+      }
+    });
     // add event listener triggered before unload
     window.addEventListener('beforeunload', () => {
       // if there are unsaved changes store them in session storage,
