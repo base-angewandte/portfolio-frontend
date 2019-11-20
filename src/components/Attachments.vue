@@ -367,7 +367,7 @@ export default {
     getFileName(file) {
       if (file) {
         // split into array by slash and then just get last entry
-        return file.split('/').pop();
+        return decodeURI(file.split('/').pop());
       }
       return '';
     },
