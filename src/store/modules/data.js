@@ -400,6 +400,8 @@ const actions = {
             } catch (e) {
               reject(e);
             }
+          } else {
+            commit('setMedia', { list: [], replace: true });
           }
           // also set parents if there are any
           commit('setLinkedParents', { list: entryData.parents });
