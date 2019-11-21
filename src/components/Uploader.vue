@@ -97,7 +97,7 @@ import {
 } from 'base-ui-components';
 import axios from 'axios';
 import FailIcon from '../assets/icons/attention.svg';
-import { setLangLabels, convertSpace } from '../utils/commonUtils';
+import { convertSpace } from '../utils/commonUtils';
 // import upload from '../assets/file-upload.fake.service';
 
 const STATUS_INITIAL = 0;
@@ -130,11 +130,7 @@ export default {
       currentStatus: null,
       uploadPercentage: [],
       publish: { label: this.$t('no'), value: 'false' },
-      defaultLicense: {
-        label: setLangLabels('nolicense', this.$i18n.availableLocales),
-        value: 'no license',
-      },
-      license: this.defaultLicense,
+      license: {},
       disabled: true,
     };
   },
@@ -161,7 +157,11 @@ export default {
       return this.$t('upload.done');
     },
     licenses() {
-      return ([this.defaultLicense]).concat(this.$store.getters['data/getPrefetchedTypes']('medialicenses', 'source'));
+      return this.$store.getters['data/getPrefetchedTypes']('medialicenses', 'source');
+    },
+    defaultLicense() {
+      // TODO: set via env variable
+      return this.licenses.find(license => license.source === 'http://base.uni-ak.ac.at/portfolio/licenses/copyright');
     },
     userSpace() {
       return this.$store.state.PortfolioAPI.user.space;
@@ -173,6 +173,7 @@ export default {
   },
   mounted() {
     this.reset();
+    this.license = this.defaultLicense;
   },
   updated() {
     if (this.isSuccess) {

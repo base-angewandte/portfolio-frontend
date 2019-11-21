@@ -164,7 +164,7 @@ import {
 } from 'base-ui-components';
 import EyeIcon from '../assets/icons/eye.svg';
 import { userInfo } from '../mixins/userInfo';
-import { setLangLabels, getApiUrl, getLangLabel } from '../utils/commonUtils';
+import { getApiUrl, getLangLabel } from '../utils/commonUtils';
 import AttachmentsSection from './AttachmentsSection';
 
 export default {
@@ -230,12 +230,8 @@ export default {
     isConverting() {
       return this.attachedList.some(file => !file.metadata);
     },
-    // supplement license options with 'no license' option
     licenses() {
-      return ([{
-        label: setLangLabels('nolicense', this.$i18n.availableLocales),
-        source: '',
-      }]).concat(this.$store.getters['data/getPrefetchedTypes']('medialicenses', 'source'));
+      return this.$store.getters['data/getPrefetchedTypes']('medialicenses', 'source');
     },
   },
   watch: {
