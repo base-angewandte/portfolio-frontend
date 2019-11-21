@@ -506,6 +506,7 @@ export default {
   .license-dropdown {
     margin: $spacing auto 0 auto;
     text-align: left;
+    max-width: 100%;
   }
 
   @media screen and (max-width: $tablet) {

@@ -287,6 +287,7 @@ export default {
         color: $font-color-second;
         backface-visibility: hidden;
         z-index: 1;
+        position: relative;
 
         .base-attachments-section__message-area-text {
           font-size: $font-size-large;
