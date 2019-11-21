@@ -107,7 +107,6 @@ export default {
       if (this.assetObject === null) return [];
       const infoStringArray = [];
       if (this.assetObject.license) {
-        debugger;
         infoStringArray.push(`${this.$t('license')}: ${getLangLabel(this.assetObject.license.label, this.$i18n.locale, true)}`);
       }
       infoStringArray.push(`${this.$t('status')}: ${this.assetObject.published
