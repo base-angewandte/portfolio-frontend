@@ -59,7 +59,7 @@
     "dateTabsLegend": "date format",
     "sort": "Sort A – Z",
     "selectRoles": "Select Roles",
-    "startTyping": "Start typing (min. 4 characters)",
+    "startTyping": "Start typing (min. 3 characters)",
     "noResult": "No results found",
     "noMatch": "No matching option",
     "fetchingResults": "Suggestions are being fetched...",

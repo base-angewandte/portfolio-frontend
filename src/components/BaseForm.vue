@@ -319,7 +319,7 @@ export default {
         this.timeout = null;
       }
       this.timeout = setTimeout(async () => {
-        if (value && value.length > 3) {
+        if (value && value.length > 2) {
           this.fieldIsLoading = name;
           try {
             // TODO: use C. module
@@ -394,8 +394,11 @@ export default {
         return entry;
       });
       let dropDownList = [].concat(modifiedData);
-      // if input does not trigger search (> 3 char) set defaults
-      if (value && value.length <= 3) {
+      if (equivalent) {
+        debugger;
+      }
+      // if input does not trigger search (> 2 char) set defaults
+      if (!value || value.length <= 2) {
         const user = this.$store.getters['PortfolioAPI/user'];
         // add defaults to fields that have defaults or whos equivalent has defaults
         const defaults = equivalent ? process.env[`${equivalent.toUpperCase()}_DEFAULTS`]
@@ -411,7 +414,7 @@ export default {
             label: user.name,
             source: user.uuid,
             additional: this.$t('form.myself'),
-          }], value);
+          }].concat(defaults), value);
         }
       }
       this.$set(this.dropdownLists, name, dropDownList);
