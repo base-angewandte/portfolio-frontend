@@ -369,12 +369,16 @@ export default {
       this.multiplyParams = { index: this.valueListInt[field.name].length - 1, name: field.name };
     },
     removeField(field, index) {
-      if (index) {
-        this.valueListInt[field.name].splice(index, 1);
-        this.$emit('values-changed', this.valueListInt);
+      const fieldGroupValues = this.valueListInt[field.name];
+      // only splice off group if more than one field visible
+      if (fieldGroupValues && fieldGroupValues.length > 1) {
+        fieldGroupValues.splice(index, 1);
+        // else just clear the fields
       } else {
-        this.$set(this.valueList, field.name, this.getInitialFieldValue(field.items));
+        this.$set(fieldGroupValues, index, this.getInitialFieldValue(field.items));
       }
+      // inform parent of changes
+      this.$emit('values-changed', this.valueListInt);
     },
     isHalfField(field) {
       const index = this.formFieldsHalf.indexOf(field);
