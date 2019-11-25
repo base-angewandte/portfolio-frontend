@@ -103,11 +103,10 @@
           @mouseleave.native="changeVideoHoverState($event, props.index, false)"
           @select-triggered="filesSelected(props.item.id, $event, props.item.published)"
           @clicked="$emit('show-preview', props.item)">
-          <template
-            v-if="props.item.published"
-            slot="top">
-            <div
-              class="file-published">
+          <div
+            slot="top"
+            class="file-published">
+            <template v-if="props.item.published">
               <EyeIcon
                 :aria-labelledby="'title_' + props.item.id"
                 class="published-icon">
@@ -118,8 +117,8 @@
                   {{ `file ${getFileName(props.item.original)} is released for publication` }}
                 </desc>
               </EyeIcon>
-            </div>
-          </template>
+            </template>
+          </div>
         </BaseImageBox>
       </template>
     </AttachmentsSection>
