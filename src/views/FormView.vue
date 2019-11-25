@@ -395,11 +395,11 @@ export default {
             }
             // link entry to parent if parent items are present
             const parent = this.$store.getters['data/getLatestParentItem'];
-            if (parent && parent.length) {
+            if (parent) {
               // ok to just take first one ([0]) since only scenario for this is
               // "link new entry" functionality and there can only be one parent
               const relationData = {
-                from_entry: `${parent[0].id}`,
+                from_entry: parent.id,
                 to_entry: newEntryId,
               };
               try {
