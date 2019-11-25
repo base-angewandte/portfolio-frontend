@@ -394,9 +394,6 @@ export default {
         return entry;
       });
       let dropDownList = [].concat(modifiedData);
-      if (equivalent) {
-        debugger;
-      }
       // if input does not trigger search (> 2 char) set defaults
       if (!value || value.length <= 2) {
         const user = this.$store.getters['PortfolioAPI/user'];
