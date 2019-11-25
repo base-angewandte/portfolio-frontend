@@ -370,7 +370,7 @@ export default {
           this.timeout = null;
         }
         this.timeout = setTimeout(() => {
-          if (val.length === 0 || val.length > 3) {
+          if (val.length === 0 || val.length > 2) {
             this.fetchSidebarData();
           }
         }, 600);

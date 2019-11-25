@@ -335,7 +335,7 @@ export default {
     },
     // to determine text display for chips input
     fieldInput() {
-      return this.textInput && this.textInput.length > 3;
+      return this.textInput && this.textInput.length > 2;
     },
     isChipsSingleSelect() {
       return (this.field['x-attrs'] && this.field['x-attrs'].field_type
