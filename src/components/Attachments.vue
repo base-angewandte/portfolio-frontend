@@ -444,8 +444,6 @@ export default {
       // request media data again in a minute if media are still converting
       if (this.isConverting) {
         this.timeout = setTimeout(() => {
-          console.log(this);
-          console.log('fetch after converting');
           this.fetchMedia();
         }, 60000);
       }

@@ -70,20 +70,21 @@ export default {
       }
     },
     postUploadActions() {
-      clearInterval(this.mediaRequestIntervall);
+      this.updateUserQuota();
+      // cancel previously set intervals and timeouts
+      if (this.mediaRequestIntervall) {
+        clearInterval(this.mediaRequestIntervall);
+        this.mediaRequestIntervall = null;
+      }
       if (this.mediaRequestTimeout) {
         clearTimeout(this.mediaRequestTimeout);
         this.mediaRequestTimeout = null;
       }
-      this.updateUserQuota();
       // after upload request media again every 10s for 40s to fetch converted
       this.mediaRequestIntervall = setInterval(() => {
-        console.log(this);
-        console.log('fetch intervall');
         this.$refs.attachmentArea.fetchMedia();
       }, 10000);
       this.mediaRequestTimeout = setTimeout(() => {
-        console.log('stop intervall');
         clearInterval(this.mediaRequestIntervall);
       }, 40000);
     },
