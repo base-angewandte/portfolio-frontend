@@ -385,7 +385,6 @@ export default {
         this.dataSaving = true;
         const validData = await this.$store.dispatch('data/removeUnknownProps', { data: this.valueList, fields: this.formFields });
         try {
-          debugger;
           // check if the route indicates an already saved entry or a new entry
           if (!this.currentItemId) {
             const newEntryId = await this.$store.dispatch('data/addOrUpdateEntry', validData);
