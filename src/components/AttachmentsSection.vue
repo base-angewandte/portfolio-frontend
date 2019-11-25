@@ -98,6 +98,7 @@
             :box-size="{ width: 'calc(25% - 8rem/19 - (8rem/19/2))' }"
             icon="save-file"
             box-style="small"
+            box-type="button"
             class="linked-base-box"
             @clicked="submitAction" />
         </div>
