@@ -285,6 +285,7 @@ export default {
         && !['chips', 'chips-below'].includes(el['x-attrs'].field_type);
     },
     setFieldValue(value, fieldName, index) {
+      let newValue = value;
       if (this.dropdownLists[fieldName]) {
         // cancel a potentially still ongoing autocomplete search as soon as
         // a value was selected
@@ -301,13 +302,19 @@ export default {
         if (fieldAttrs.equivalent === 'contributors') {
           const fieldRole = this.$store.state.data.prefetchedTypes.contributors_role
             .find(role => role.source === fieldAttrs.default_role);
-          value.forEach(entry => this.$set(entry, 'roles', [fieldRole]));
+          newValue = value.map((entry) => {
+            if (typeof entry === 'string') {
+              return Object.assign({}, { label: entry, roles: [fieldRole] });
+            }
+            return Object.assign({}, entry, { roles: [fieldRole] });
+          });
         }
       }
       if (index >= 0) {
-        this.$set(this.valueListInt[fieldName], index, JSON.parse(JSON.stringify(value)));
+        this.$set(this.valueListInt[fieldName], index, JSON.parse(JSON.stringify(newValue)));
       } else {
-        this.$set(this.valueListInt, fieldName, value ? JSON.parse(JSON.stringify(value)) : value);
+        this.$set(this.valueListInt, fieldName, newValue
+          ? JSON.parse(JSON.stringify(newValue)) : newValue);
       }
       this.$emit('values-changed', this.valueListInt);
     },
