@@ -366,12 +366,12 @@ export default {
       // only splice off group if more than one field visible
       if (fieldGroupValues && fieldGroupValues.length > 1) {
         fieldGroupValues.splice(index, 1);
-        this.$emit('values-changed', this.valueListInt);
         // else just clear the fields
       } else {
         this.$set(fieldGroupValues, index, this.getInitialFieldValue(field.items));
-        this.$emit('values-changed', this.valueListInt);
       }
+      // inform parent of changes
+      this.$emit('values-changed', this.valueListInt);
     },
     isHalfField(field) {
       const index = this.formFieldsHalf.indexOf(field);
