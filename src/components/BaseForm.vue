@@ -414,7 +414,7 @@ export default {
         dropDownList = this.setDropDownDefaults(
           defaults,
           value,
-        );
+        ).concat(dropDownList);
         // special case contributors - add user
         if ((equivalent && equivalent === 'contributors') || name === 'contributors') {
           // set user
