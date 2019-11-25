@@ -310,13 +310,14 @@ export default {
         this.selectedMenuEntries = [];
       }
     },
-    $route(from) {
+    $route(to, from) {
       this.setInfoText();
       if (from.name === 'Dashboard') {
         // refetch sidebar data when switching from overview to form view
         this.calculateDropDownsInline();
         this.calculateSidebarHeight();
         this.fetchSidebarData();
+        this.$refs.pagination.setStartEnd();
       }
     },
     isMobile() {
