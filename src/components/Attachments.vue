@@ -103,9 +103,10 @@
           @mouseleave.native="changeVideoHoverState($event, props.index, false)"
           @select-triggered="filesSelected(props.item.id, $event, props.item.published)"
           @clicked="$emit('show-preview', props.item)">
-          <template slot="top">
+          <template
+            v-if="props.item.published"
+            slot="top">
             <div
-              v-if="props.item.published"
               class="file-published">
               <EyeIcon
                 :aria-labelledby="'title_' + props.item.id"
