@@ -104,19 +104,20 @@
           @select-triggered="filesSelected(props.item.id, $event, props.item.published)"
           @clicked="$emit('show-preview', props.item)">
           <div
-            slot="top"
-            class="file-published">
+            slot="top">
             <template v-if="props.item.published">
-              <EyeIcon
-                :aria-labelledby="'title_' + props.item.id"
-                class="published-icon">
-                <title :id="'title_' + props.item.id">
-                  Published
-                </title>
-                <desc>
-                  {{ `file ${getFileName(props.item.original)} is released for publication` }}
-                </desc>
-              </EyeIcon>
+              <div class="file-published">
+                <EyeIcon
+                  :aria-labelledby="'title_' + props.item.id"
+                  class="published-icon">
+                  <title :id="'title_' + props.item.id">
+                    Published
+                  </title>
+                  <desc>
+                    {{ `file ${getFileName(props.item.original)} is released for publication` }}
+                  </desc>
+                </EyeIcon>
+              </div>
             </template>
           </div>
         </BaseImageBox>
