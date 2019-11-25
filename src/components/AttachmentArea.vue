@@ -29,6 +29,7 @@ export default {
   data() {
     return {
       mediaRequestIntervall: null,
+      mediaRequestTimeout: null,
     };
   },
   computed: {
@@ -69,12 +70,20 @@ export default {
       }
     },
     postUploadActions() {
+      clearInterval(this.mediaRequestIntervall);
+      if (this.mediaRequestTimeout) {
+        clearTimeout(this.mediaRequestTimeout);
+        this.mediaRequestTimeout = null;
+      }
       this.updateUserQuota();
       // after upload request media again every 10s for 40s to fetch converted
       this.mediaRequestIntervall = setInterval(() => {
+        console.log(this);
+        console.log('fetch intervall');
         this.$refs.attachmentArea.fetchMedia();
       }, 10000);
-      setTimeout(() => {
+      this.mediaRequestTimeout = setTimeout(() => {
+        console.log('stop intervall');
         clearInterval(this.mediaRequestIntervall);
       }, 40000);
     },
