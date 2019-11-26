@@ -495,7 +495,7 @@ export default {
       }
     }
 
-    .linked-base-box:nth-of-type(n + 5) {
+    .linked-base-box:nth-child(n + 5) {
       margin-top: $spacing;
     }
 
@@ -518,7 +518,7 @@ export default {
         flex: 0 0 calc(50% - #{$spacing-small} - 0.01rem);
       }
 
-      .linked-base-box:nth-of-type(n + 3) {
+      .linked-base-box:nth-child(n + 3) {
         margin-top: $spacing;
       }
 
