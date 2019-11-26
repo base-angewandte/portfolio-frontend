@@ -317,7 +317,9 @@ export default {
         this.calculateDropDownsInline();
         this.calculateSidebarHeight();
         this.fetchSidebarData();
-        this.$refs.pagination.setStartEnd();
+        if (this.$refs.pagination) {
+          this.$refs.pagination.setStartEnd();
+        }
       }
     },
     isMobile() {
