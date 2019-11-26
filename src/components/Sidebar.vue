@@ -296,8 +296,11 @@ export default {
     selectedList() {
       return this.selectedMenuEntries.map(entry => entry.id);
     },
+    windowSize() {
+      return this.$store.state.data.windowSize;
+    },
     isMobile() {
-      return this.$store.state.data.isMobile;
+      return this.windowSize && this.windowSize.width <= 640;
     },
   },
   watch: {
@@ -312,8 +315,8 @@ export default {
     },
     $route(to, from) {
       this.setInfoText();
-      if (from.name === 'Dashboard') {
-        // refetch sidebar data when switching from overview to form view
+      if (from.name !== to.name) {
+        // refetch sidebar data when switching from overview to form view and vice versa
         this.calculateDropDownsInline();
         this.calculateSidebarHeight();
         this.fetchSidebarData();
@@ -322,7 +325,7 @@ export default {
         }
       }
     },
-    isMobile() {
+    windowSize() {
       this.calculateSidebarHeight();
       this.fetchSidebarData();
     },
@@ -510,7 +513,7 @@ export default {
         sidebarHeight = sidebarHeight - 48 - 16;
       }
       // hardcoded because unfortunately no other possibility found
-      const entryHeight = 57;
+      const entryHeight = this.isMobile ? 48 : 57;
       const numberOfEntries = Math.floor(sidebarHeight / entryHeight);
       this.entriesPerPage = numberOfEntries > 4 ? numberOfEntries : 4;
     },

@@ -70,7 +70,7 @@ const state = {
   entryTypes: [],
   generalSchema: {},
   extensionSchema: {},
-  isMobile: null,
+  windowSize: null,
 };
 
 const getters = {
@@ -225,8 +225,8 @@ const mutations = {
   setPopUpLoading(state, val) {
     Vue.set(state.popUp, 'isLoading', val);
   },
-  setIsMobile(state, val) {
-    state.isMobile = val;
+  setWindowSize(state, val) {
+    state.windowSize = Object.assign({}, val);
   },
 };
 

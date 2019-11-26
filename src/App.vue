@@ -86,7 +86,7 @@ export default {
       }
       // then set time out new
       this.resizeTimeout = setTimeout(() => {
-        this.$store.commit('data/setIsMobile', window.innerWidth);
+        this.$store.commit('data/setWindowSize', { width: window.innerWidth, height: window.innerHeight });
       }, 500);
     },
   },
