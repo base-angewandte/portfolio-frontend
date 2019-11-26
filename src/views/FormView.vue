@@ -509,13 +509,14 @@ export default {
       this.$router.push(`/entry/${id}`);
     },
     async actionEntry(action) {
-      if (!this.isNewForm) {
+      debugger;
+      if (!(action === 'publish' && this.unsavedChanges)) {
         this.confirmAction({ action, entries: [].concat(this.valueList) });
       } else {
         this.$notify({
           group: 'request-notifications',
-          title: 'Unsaved Changes',
-          text: `Please save your ${this.isNewForm ? 'new Form' : 'Changes'} first!`,
+          title: this.$t('notify.saveBeforePublish'),
+          text: this.$t('notify.saveBeforePublishText'),
           type: 'error',
         });
       }

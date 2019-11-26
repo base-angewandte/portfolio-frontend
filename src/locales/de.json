@@ -176,7 +176,9 @@
     "notSupported": "Die Anzeige dieses Dateityps wird im Moment leider nicht unterstützt",
     "notConverted": "Bitte haben Sie noch etwas Geduld bis die Datei vollständig konvertiert ist.",
     "userQuotaUpdate": "Der verfügbare Speicherplatz konnte nicht aktualisiert werden und wird möglicherweise inkorrekt angezeigt.",
-    "parentsAlready": "Der folgende Eintrag konnte nicht angeheftet werden, da er bereits übergeordnet ist | Die folgenden Einträge konnten nicht angeheftet werden, da sie bereits übergeordnet sind"
+    "parentsAlready": "Der folgende Eintrag konnte nicht angeheftet werden, da er bereits übergeordnet ist | Die folgenden Einträge konnten nicht angeheftet werden, da sie bereits übergeordnet sind",
+    "saveBeforePublish": "Publizieren nicht möglich",
+    "saveBeforePublishText": "Sie haben ungesicherte Änderungen. Bitte speichern Sie vor dem Publizieren."
   },
   "dropdown": {
     "type": "Nach Typ",

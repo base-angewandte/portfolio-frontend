@@ -182,8 +182,9 @@
     "notSupported": "Unfortunately display of this file type is currently not supported.",
     "notConverted": "Please wait until the file was converted.",
     "userQuotaUpdate": "The available user space could not be updated and might be displayed incorrectly.",
-    "parentsAlready": "The following entry could not be attached, because it is already a parent of the current entry | The following entries could not be attached, because they are already parents of the current entry"
-
+    "parentsAlready": "The following entry could not be attached, because it is already a parent of the current entry | The following entries could not be attached, because they are already parents of the current entry",
+    "saveBeforePublish": "Publishing not possible",
+    "saveBeforePublishText": "You have unsaved changes. Please save before publishing."
   },
   "dropdown": {
     "type": "By Type",
