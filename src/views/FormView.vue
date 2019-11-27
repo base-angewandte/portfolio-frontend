@@ -487,12 +487,12 @@ export default {
           this.$store.commit('data/setNewForm', true);
 
           window.scrollTo(0, 0);
-          this.focusFirstInput();
 
           setTimeout(() => {
             this.$store.commit('data/deleteCurrentItem');
             this.resetForm();
             this.$router.push('/new');
+            this.focusFirstInput();
           }, 700);
         }
       } else {
