@@ -128,6 +128,10 @@ export default {
       width: 50%;
     }
 
+    .form-button-child {
+      border-left: none;
+    }
+
     .form-back-button {
       order: 1;
     }
