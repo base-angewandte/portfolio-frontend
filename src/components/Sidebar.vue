@@ -296,11 +296,11 @@ export default {
     selectedList() {
       return this.selectedMenuEntries.map(entry => entry.id);
     },
-    windowSize() {
-      return this.$store.state.data.windowSize;
+    windowWidth() {
+      return this.$store.state.data.windowWidth;
     },
     isMobile() {
-      return this.windowSize && this.windowSize.width <= 640;
+      return this.windowWidth && this.windowWidth <= 640;
     },
   },
   watch: {
@@ -325,7 +325,7 @@ export default {
         }
       }
     },
-    windowSize() {
+    windowWidth() {
       this.calculateSidebarHeight();
       this.fetchSidebarData();
     },

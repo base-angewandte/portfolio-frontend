@@ -86,7 +86,7 @@ export default {
       }
       // then set time out new
       this.resizeTimeout = setTimeout(() => {
-        this.$store.commit('data/setWindowSize', { width: window.innerWidth, height: window.innerHeight });
+        this.$store.commit('data/setWindowWidth', window.innerWidth);
       }, 500);
     },
   },
