@@ -192,7 +192,7 @@ export default {
     },
     // check if browser is mobile to switch between box and list display
     isMobile() {
-      return this.$store.state.data.isMobile <= 640;
+      return this.$store.state.data.windowWidth <= 640;
     },
   },
   methods: {
