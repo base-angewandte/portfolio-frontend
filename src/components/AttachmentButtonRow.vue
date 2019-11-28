@@ -118,6 +118,7 @@
       @success="resetFiles" />
 
     <BasePopUp
+      is-open-focus=".base-menu-list__list-entry input"
       :show="showEntryPopUp"
       :title="$t('form-view.selectentries')"
       :button-right-text="$t('form-view.linkselected')"
