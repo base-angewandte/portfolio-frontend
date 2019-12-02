@@ -509,7 +509,6 @@ export default {
       this.$router.push(`/entry/${id}`);
     },
     async actionEntry(action) {
-      debugger;
       if (!(action === 'publish' && this.unsavedChanges)) {
         this.confirmAction({ action, entries: [].concat(this.valueList) });
       } else {
