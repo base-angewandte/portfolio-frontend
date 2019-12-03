@@ -31,7 +31,8 @@
         icon="sheet-empty"
         class="file-box file-boxes-margin"
         box-type="button"
-        @clicked="$emit('open-new-form')" />
+        @clicked="$emit('open-new-form')"
+        @onTooltip="$emit('open-new-form')" />
 
       <!-- ADD FILES -->
       <label
