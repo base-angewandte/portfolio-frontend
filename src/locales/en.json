@@ -41,6 +41,7 @@
   "entryOverview": "Overview Portfolio Entries",
   "newEntry": "Create New Entry",
   "form": {
+    "Add": "Add {value}",
     "select": "Select",
     "write": "Write (a)",
     "texttype": "Type of Text",

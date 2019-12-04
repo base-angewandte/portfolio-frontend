@@ -101,7 +101,7 @@
       :allow-unknown-entries="field['x-attrs'] && field['x-attrs'].allow_unknown_entries"
       :chips-editable="field['x-attrs'] && field['x-attrs'].allow_unknown_entries"
       :class="['base-form-field']"
-      :draggable="true"
+      :draggable="!isChipsSingleSelect"
       :hoverbox-content="hoverBoxData"
       :sortable="field.name === 'keywords' || (field['x-attrs'] && field['x-attrs'].sortable)"
       :is-loading="autocompleteLoading"
@@ -158,6 +158,7 @@
       :chips-editable="true"
       :roles-placeholder="$t('form.selectRoles')"
       :language="$i18n.locale"
+      :drop-down-no-options-info="$t('form.noMatch')"
       class="base-form-field base-form-field-full"
       @fetch-dropdown-entries="fetchAutocomplete"
       @hoverbox-active="$emit('fetch-info-data')">

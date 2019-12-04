@@ -39,6 +39,7 @@
   "entryOverview": "Übersicht Portfolio Einträge",
   "newEntry": "Neuen Eintrag anlegen",
   "form": {
+    "Add": "{value} hinzufügen",
     "select": "Wähle",
     "write": "Schreibe eine",
     "noTextType": "Kein Text Typ",
