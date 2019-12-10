@@ -5,6 +5,8 @@
       v-if="fieldType === 'text'"
       :key="fieldKey"
       v-model="fieldValueInt"
+      :field-type="field['x-attrs'] && field['x-attrs'].text_field_type
+        ? field['x-attrs'].text_field_type : 'text'"
       :label="label"
       :placeholder="placeholder"
       :class="['base-form-field']"
