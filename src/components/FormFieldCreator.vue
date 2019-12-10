@@ -99,7 +99,6 @@
       :allow-dynamic-drop-down-entries="field['x-attrs'] && field['x-attrs'].dynamic_autosuggest"
       :allow-multiple-entries="!isChipsSingleSelect"
       :allow-unknown-entries="field['x-attrs'] && field['x-attrs'].allow_unknown_entries"
-      :chips-editable="field['x-attrs'] && field['x-attrs'].allow_unknown_entries"
       :class="['base-form-field']"
       :draggable="!isChipsSingleSelect"
       :hoverbox-content="hoverBoxData"
