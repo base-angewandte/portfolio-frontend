@@ -330,12 +330,10 @@ export default {
       this.fetchSidebarData();
     },
   },
-  created() {
-    this.$store.dispatch('data/fetchEntryTypes');
-  },
   mounted() {
     this.listInt = this.list;
     this.calculateSidebarHeight();
+    this.$store.dispatch('data/fetchEntryTypes');
     this.fetchSidebarData();
     this.$refs.menuContainer.addEventListener('scroll', () => {
       this.checkContainerPosition();
@@ -480,7 +478,7 @@ export default {
         this.$emit('sidebar-data-changed');
         await this.$store.dispatch('data/fetchEntryTypes');
       } catch (e) {
-        if (!axios.isCancel(e)) {
+        if (!axios.isCancel(e) && (e.response && e.response.status !== 403)) {
           console.error(e);
           this.$notify({
             group: 'request-notifications',
