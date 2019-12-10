@@ -431,7 +431,7 @@ export default {
           this.$notify({
             group: 'request-notifications',
             title: this.$t('notify.saveSuccess'),
-            text: this.$t('notify.saveSuccessSubtext', { title: this.valueList.title }),
+            text: this.$t('notify.saveSuccessSubtext', { title: validData.title }),
             type: 'success',
           });
           this.valueListOriginal = { ...this.valueList };
