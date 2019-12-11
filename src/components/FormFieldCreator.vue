@@ -69,7 +69,7 @@
           :language="$i18n.locale"
           value-prop="source"
           class="multiline-dropdown"
-          @value-selected="$set(fieldValueInt, 'type', $event)" />
+          @value-selected="setMultilineDropDown" />
       </template>
     </BaseMultilineTextInput>
 
@@ -391,6 +391,10 @@ export default {
       } else {
         this.fieldValueInt = Object.assign({}, this.fieldValueInt, JSON.parse(JSON.stringify(val)));
       }
+    },
+    setMultilineDropDown(val) {
+      // set texts type value if present - otherwise set empty
+      this.$set(this.fieldValueInt, 'type', val.source ? val : null);
     },
     fetchAutocomplete(event) {
       this.fetchingData = true;
