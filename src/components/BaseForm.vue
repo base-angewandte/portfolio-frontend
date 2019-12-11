@@ -555,3 +555,41 @@ export default {
     }
   }
 </style>
+
+<style lang="scss">
+  .base-chips-below-chips-input {
+    .base-chips-drop-down {
+      right: $spacing-small;
+    }
+  }
+
+  @media screen and (min-width: $mobile) {
+    .base-chips-drop-down {
+      max-width: calc(100% - #{$spacing} * 2);
+    }
+
+    .base-form-field-left-margin {
+      .base-chips-drop-down {
+        right: $spacing;
+      }
+    }
+
+    .base-form-subform-wrapper {
+      .base-chips-drop-down {
+        max-width: calc(100% - #{$spacing} * 4.5 - 3px);
+      }
+
+      .base-form-field-left-margin {
+        .base-chips-drop-down {
+          right: calc(#{$spacing} * 2.5 - 3px);
+        }
+      }
+    }
+
+    .base-chips-below-chips-input {
+      .base-chips-drop-down {
+        right: calc(#{$spacing} + #{$spacing-small} / 2);
+      }
+    }
+  }
+</style>
