@@ -259,7 +259,6 @@ const actions = {
         dispatch('getStaticDropDowns', formFields);
         resolve(formFields);
       } catch (e) {
-        console.error(e);
         reject(e);
       }
     });
@@ -349,8 +348,10 @@ const actions = {
       });
       commit('setEntryTypes', entryTypes);
     } catch (e) {
-      console.error(e);
-      // TODO: inform user?
+      if (!e || !e.response || e.response.status !== 403) {
+        console.error(e);
+        // TODO: inform user?
+      }
     }
   },
   /**

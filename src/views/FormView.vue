@@ -325,14 +325,18 @@ export default {
       try {
         await this.$store.dispatch('data/fetchGeneralFields');
       } catch (e) {
-        // TODO: if form fields can not be fetched this should probably
-        //  abort all further entry data / extension loadings (redirect to dashboard?)
-        this.$notify({
-          group: 'request-notifications',
-          title: this.$t('notify.somethingWrong'),
-          text: this.$t('notify.formDataNotFound'),
-          type: 'error',
-        });
+        // only send error message if user is authenticated
+        if (!e || !e.response || e.response.status !== 403) {
+          console.error(e);
+          // TODO: if form fields can not be fetched this should probably
+          //  abort all further entry data / extension loadings (redirect to dashboard?)
+          this.$notify({
+            group: 'request-notifications',
+            title: this.$t('notify.somethingWrong'),
+            text: this.$t('notify.formDataNotFound'),
+            type: 'error',
+          });
+        }
       }
     },
     resetForm() {
@@ -351,9 +355,10 @@ export default {
         // copy the original object to check for unsaved changes later
         this.valueListOriginal = { ...this.valueList };
       } catch (e) {
-        if (e && e.message && e.message.includes('404')) {
+        if (e && e.response && e.response.status === 404) {
           this.$router.push(`/not-found?id=${this.currentItemId}`);
-        } else {
+          // only notify if user was already authenticated
+        } else if (!e || !e.response || e.response.status !== 403) {
           console.error(e);
           this.$notify({
             group: 'request-notifications',
