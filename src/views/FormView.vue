@@ -640,14 +640,14 @@ export default {
       .form-loading-area {
         position: absolute;
         width: 100%;
-        height: 100vh;
+        height: 100%;
         z-index: 2;
         background-color: rgba(255,255,255, 0.50);
 
         .loader {
           position: fixed;
           top:33%;
-          left: 66%;
+          left: calc((#{$page-max-width}/3*2) + ((100% - 1440px)/2));
           transform: translateX(-50%);
         }
       }
@@ -704,6 +704,19 @@ export default {
     transform: translateY(400px);
     opacity: 0;
     box-shadow: $pop-up-shadow;
+  }
+
+  @media screen and (max-width: $page-max-width) {
+    .form-component {
+      .form-container {
+        .form-loading-area {
+          .loader {
+            left: 66%;
+            transform: translateX(-50%);
+          }
+        }
+      }
+    }
   }
 
   @media screen and (max-width: $mobile) {
