@@ -8,7 +8,7 @@
         <div
           v-for="(value, valueIndex) in valueListInt[element.name]"
           :ref="element.name"
-          :key="index + '-' + valueIndex"
+          :key="index + '-' + valueIndex + '-' + formId"
           :class="[
             'base-form-field',
             element['x-attrs'] && element['x-attrs'].field_format === 'half'
@@ -16,8 +16,8 @@
             { 'base-form-field-left-margin': isHalfField(element) }
           ]">
           <FormFieldCreator
-            :key="index + '-' + valueIndex"
-            :field-key="index + '-' + valueIndex"
+            :key="index + '-' + valueIndex + '-' + formId"
+            :field-key="index + '-' + valueIndex + '-' + formId"
             :field="element"
             :field-value="value"
             :field-type="element['x-attrs'] ? element['x-attrs'].field_type : 'text'"
@@ -38,7 +38,7 @@
           <div
             v-if="checkFieldContent(valueList[element.name])
               || valueListInt[element.name].length > 1"
-            :key="index + '-button' + valueIndex"
+            :key="index + '-button' + valueIndex + '-' + formId"
             class="group-add">
             <button
               class="field-group-button"
@@ -71,8 +71,8 @@
       </template>
       <template v-else>
         <FormFieldCreator
-          :key="index"
-          :field-key="index"
+          :key="index + '-' + formId"
+          :field-key="index + '-' + formId"
           :field="element"
           :field-value="valueListInt[element.name]"
           :field-type="element['x-attrs'] ? element['x-attrs'].field_type : 'text'"
@@ -129,6 +129,13 @@ export default {
       default() {
         return {};
       },
+    },
+    /**
+     * an id for field groups to still have unique field ids
+     */
+    formId: {
+      type: String,
+      default: '',
     },
   },
   data() {

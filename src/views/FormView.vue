@@ -23,6 +23,7 @@
       <BaseForm
         v-if="Object.keys(formFields).length"
         ref="baseForm"
+        :form-id="'main'"
         :form-field-json="formFields"
         :value-list="valueList"
         :prefetched-drop-down-lists="{
@@ -45,6 +46,7 @@
           <BaseForm
             key="extended-form"
             ref="formExtension"
+            :form-id="'extended'"
             :form-field-json="formFieldsExtension"
             :value-list="valueList.data"
             :prefetched-drop-down-lists="{

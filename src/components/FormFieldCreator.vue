@@ -3,6 +3,7 @@
     <!-- TEXT FIELD -->
     <BaseInput
       v-if="fieldType === 'text'"
+      :id="fieldKey"
       :key="fieldKey"
       v-model="fieldValueInt"
       :field-type="field.type === 'integer'
@@ -62,6 +63,7 @@
       <template
         v-if="field.items && field.items.properties && field.items.properties.type">
         <BaseDropDown
+          :id="fieldKey"
           :selected-option="fieldValueInt && fieldValueInt.type && fieldValueInt.type.source
             ? fieldValueInt.type : textTypeDefault"
           :options="textTypeOptions"
@@ -76,6 +78,7 @@
     <!-- AUTOCOMPLETE -->
     <BaseAutocompleteInput
       v-else-if="fieldType === 'autocomplete'"
+      :id="fieldKey"
       :key="fieldKey"
       v-model="fieldValueInt"
       :label="label"
@@ -93,6 +96,7 @@
     <!-- CHIPS INPUT -->
     <BaseChipsInput
       v-else-if="fieldType === 'chips'"
+      :id="fieldKey"
       :key="fieldKey"
       v-model="fieldValueInt"
       :placeholder="placeholder"
@@ -199,6 +203,7 @@
         <BaseForm
           :form-field-json="groupFormFields"
           :value-list="fieldValueInt"
+          :form-id="fieldKey + '_' + field.name"
           class="base-form-subform"
           @values-changed="$emit('subform-input', $event)" />
       </div>
