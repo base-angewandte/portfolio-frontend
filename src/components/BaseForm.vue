@@ -499,7 +499,9 @@ export default {
     .field-group-button {
       color: $font-color-second;
       cursor: pointer;
-      display: inline;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       padding: 0;
       background-color: inherit;
       border: none;
@@ -510,6 +512,7 @@ export default {
       }
 
       .field-group-icon {
+        flex: 0 0 auto;
         margin-left: $spacing;
         height: $icon-small;
         width: $icon-small;
