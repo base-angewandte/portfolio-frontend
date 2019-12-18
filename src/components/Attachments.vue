@@ -21,6 +21,7 @@
         <BaseImageBox
           :key="props.item.id"
           :selectable="props.selectActive"
+          :selected="selectedEntries.map(entry => entry.id || entry).includes(props.item.id)"
           :box-size="{ width: 'calc(25% - 8rem/19 - (8rem/19/2))' }"
           :title="props.item.to.title"
           :subtext="props.item.to.subtitle"
