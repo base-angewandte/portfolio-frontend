@@ -3,7 +3,7 @@
     class="notification-container">
     <div class="notification-box">
       <notifications
-        :duration="8000"
+        :duration="4000"
         :width="'100%'"
         group="request-notifications"
         position="top right"
@@ -58,6 +58,11 @@ export default {
     SuccessIcon,
     FailIcon,
   },
+  data() {
+    return {
+      duration: 4000,
+    };
+  },
   methods: {
     // capitalize first letter of title
     notificationTitle(val) {
@@ -71,9 +76,8 @@ export default {
   .notification-container{
     position: sticky;
     top: $header-height;
-    z-index: 10;
-    max-width: 450px;
-    margin-left: auto;
+    z-index: 1030;
+    max-width: 100%;
     margin-top: $header-height;
 
     &.fixed {
@@ -108,6 +112,10 @@ export default {
         font-size: inherit;
         font-weight: 600;
       }
+
+      .notification-message {
+        word-break: break-word;
+      }
     }
 
     .notification-close {
@@ -132,17 +140,15 @@ export default {
     }
   }
 
+  /* this is not working here - please check App.vue */
   .notification-wrapper {
     box-shadow: 0 3px 3px rgba(0, 0, 0, .05);
-
-    &:not(:first-child) {
-      border-top: $separation-line;
-    }
+    border-top: $separation-line;
   }
 
-  @media screen and (max-width: $mobile) {
+  @media screen and (min-width: $mobile-min-width) {
     .notification-container {
-      max-width: 100%;
+      max-width: 450px;
     }
   }
 </style>

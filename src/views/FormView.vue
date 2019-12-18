@@ -3,33 +3,6 @@
     <h2 class="hide">
       {{ `${$tc('notify.entry', 1)}: ${title}` }}
     </h2>
-    <div
-      ref="formHead"
-      :class="['form-head', { 'form-head-shadow': formBelow}]">
-      <!-- PARENT HEADER -->
-      <div
-        v-if="parent"
-        class="base-row-parent base-row-header"
-        @click="returnToParent(parent.id)">
-        <BaseMenuEntry
-          :title="parent.title"
-          :title-bold="true"
-          :subtext="parent.type && parent.type.label ? parent.type.label[$i18n.locale] : ''"
-          :show-thumbnails="false"
-          entry-id="parentheader"
-          icon="sheet-empty" />
-      </div>
-
-      <!-- HEADER ROW -->
-      <BaseRow
-        :title="title"
-        :type="type"
-        :show-back-button="!!parent"
-        :unsaved-changes="unsavedChanges"
-        :is-saving="dataSaving"
-        @save="saveForm"
-        @return="returnFromForm" />
-    </div>
 
     <!-- FORM -->
     <form
@@ -50,6 +23,7 @@
       <BaseForm
         v-if="Object.keys(formFields).length"
         ref="baseForm"
+        :form-id="'main'"
         :form-field-json="formFields"
         :value-list="valueList"
         :prefetched-drop-down-lists="{
@@ -72,6 +46,7 @@
           <BaseForm
             key="extended-form"
             ref="formExtension"
+            :form-id="'extended'"
             :form-field-json="formFieldsExtension"
             :value-list="valueList.data"
             :prefetched-drop-down-lists="{
@@ -101,7 +76,8 @@
           v-if="!formIsLoading && formDataPresent"
           key="attachments"
           @open-new-form="openNewForm"
-          @show-preview="$emit('show-preview', $event)" />
+          @show-preview="$emit('show-preview', $event)"
+          @open-linked="goToLinked" />
       </transition-group>
       <transition name="slide-child-form">
         <BaseForm
@@ -111,6 +87,36 @@
           class="form slide-in-form" />
       </transition>
     </form>
+
+    <div
+      ref="formHead"
+      :class="['form-head', { 'form-head-shadow': formBelow}]">
+      <!-- PARENT HEADER -->
+      <div
+        v-if="parent"
+        class="base-row-parent base-row-header"
+        @click="returnFromForm">
+        <BaseMenuEntry
+          :title="parent.title"
+          :title-bold="true"
+          :subtext="parent.type && parent.type.label
+            ? parent.type.label[$i18n.locale] : ''"
+          :show-thumbnails="false"
+          entry-id="parentheader"
+          icon="sheet-empty" />
+      </div>
+
+      <!-- HEADER ROW -->
+      <BaseRow
+        :title="title"
+        :type="type"
+        :show-back-button="!!parent"
+        :unsaved-changes="unsavedChanges"
+        :is-saving="dataSaving"
+        @save="saveForm"
+        @return="returnFromForm" />
+    </div>
+
     <div
       v-if="valueList.date_created && valueList.date_changed"
       class="last-modified">
@@ -123,7 +129,9 @@
 </template>
 
 <script>
-import { BaseMenuEntry, BaseLoader } from 'base-ui-components';
+import {
+  BaseMenuEntry, BaseLoader,
+} from 'base-ui-components';
 import axios from 'axios';
 import BaseRow from '../components/BaseRow';
 import BaseFormOptions from '../components/BaseFormOptions';
@@ -285,6 +293,12 @@ export default {
     }
   },
   mounted() {
+    // add event listener for back button to handle parent situation
+    window.addEventListener('popstate', () => {
+      if (this.parent && this.parent.id) {
+        this.$store.commit('data/deleteLastParentItem');
+      }
+    });
     // add event listener triggered before unload
     window.addEventListener('beforeunload', () => {
       // if there are unsaved changes store them in session storage,
@@ -313,14 +327,18 @@ export default {
       try {
         await this.$store.dispatch('data/fetchGeneralFields');
       } catch (e) {
-        // TODO: if form fields can not be fetched this should probably
-        //  abort all further entry data / extension loadings (redirect to dashboard?)
-        this.$notify({
-          group: 'request-notifications',
-          title: this.$t('notify.somethingWrong'),
-          text: this.$t('notify.formDataNotFound'),
-          type: 'error',
-        });
+        // only send error message if user is authenticated
+        if (!e || !e.response || e.response.status !== 403) {
+          console.error(e);
+          // TODO: if form fields can not be fetched this should probably
+          //  abort all further entry data / extension loadings (redirect to dashboard?)
+          this.$notify({
+            group: 'request-notifications',
+            title: this.$t('notify.somethingWrong'),
+            text: this.$t('notify.formDataNotFound'),
+            type: 'error',
+          });
+        }
       }
     },
     resetForm() {
@@ -339,9 +357,11 @@ export default {
         // copy the original object to check for unsaved changes later
         this.valueListOriginal = { ...this.valueList };
       } catch (e) {
-        if (e.message.includes('404')) {
+        if (e && e.response && e.response.status === 404) {
           this.$router.push(`/not-found?id=${this.currentItemId}`);
-        } else {
+          // only notify if user was already authenticated
+        } else if (!e || !e.response || e.response.status !== 403) {
+          console.error(e);
           this.$notify({
             group: 'request-notifications',
             title: this.$t('notify.somethingWrong'),
@@ -366,7 +386,7 @@ export default {
         this.valueList = Object.assign({}, this.valueList, JSON.parse(JSON.stringify(data)));
       }
     },
-    async saveForm() {
+    async saveForm(routeToNewEntry = true) {
       // check if there is a title (only requirement for saving)
       if (this.valueList.title) {
         this.dataSaving = true;
@@ -383,8 +403,10 @@ export default {
             // link entry to parent if parent items are present
             const parent = this.$store.getters['data/getLatestParentItem'];
             if (parent) {
+              // ok to just take first one ([0]) since only scenario for this is
+              // "link new entry" functionality and there can only be one parent
               const relationData = {
-                from_entry: `${parent.id}`,
+                from_entry: parent.id,
                 to_entry: newEntryId,
               };
               try {
@@ -397,7 +419,7 @@ export default {
                 this.$notify({
                   group: 'request-notifications',
                   title: this.$t('notify.actionFailed', { action: this.$t('notify.link') }),
-                  text: this.$t('notify.linkToParentFail', { title: parent.title }),
+                  text: this.$t('notify.linkToParentFail', { title: parent[0].title }),
                   type: 'error',
                 });
                 // to also give user visual feedback that there is actually no link
@@ -405,7 +427,9 @@ export default {
               }
             }
             this.$emit('data-changed');
-            this.$router.push(`/entry/${this.$store.state.data.currentItemId}`);
+            if (routeToNewEntry) {
+              await this.$router.push(`/entry/${this.$store.state.data.currentItemId}`);
+            }
             // if id present just update the entry
           } else {
             await this.$store.dispatch('data/addOrUpdateEntry', validData);
@@ -414,13 +438,14 @@ export default {
           this.$notify({
             group: 'request-notifications',
             title: this.$t('notify.saveSuccess'),
-            text: this.$t('notify.saveSuccessSubtext', { title: this.valueList.title }),
+            text: this.$t('notify.saveSuccessSubtext', { title: validData.title }),
             type: 'success',
           });
           this.valueListOriginal = { ...this.valueList };
           this.dataSaving = false;
           return true;
         } catch (e) {
+          console.error(e);
           this.$notify({
             group: 'request-notifications',
             title: this.$t('notify.saveFail'),
@@ -437,15 +462,19 @@ export default {
           text: this.$t('notify.addTitle'),
           type: 'error',
         });
+        this.focusFirstInput();
         return false;
       }
     },
     returnFromForm() {
-      if (this.parent) {
-        this.returnToParent(this.parent.id);
-      } else {
-        this.$router.push('/');
-      }
+      const followUpAction = () => {
+        if (this.parent) {
+          this.returnToParent(this.parent.id);
+        } else {
+          this.$router.push('/');
+        }
+      };
+      this.openUnsavedChangesPopUp(followUpAction);
     },
     async openNewForm() {
       // check if entry was already saved
@@ -458,35 +487,19 @@ export default {
         });
       } else if (this.valueList.title) {
         if (this.unsavedChanges) {
-          this.$store.commit('data/setPopUp', {
-            show: true,
-            header: this.$t('notify.unsavedChangesTitle'),
-            textTitle: this.$t('notify.unsavedChangesText'),
-            textList: [],
-            icon: 'save-file',
-            buttonTextRight: this.$t('notify.saveChanges'),
-            buttonTextLeft: this.$t('notify.dismissChanges'),
-            actionRight: async () => {
-              try {
-                await this.saveForm();
-                this.openNewForm();
-              } catch (e) {
-                console.error(e);
-              }
-              this.$store.commit('data/hidePopUp');
-            },
-            actionLeft: () => this.openNewForm(),
-          });
+          this.openUnsavedChangesPopUp(this.openNewForm);
         } else {
           this.showOverlay = true;
           this.$store.commit('data/setParentItem', this.valueList);
           this.$store.commit('data/setNewForm', true);
 
           window.scrollTo(0, 0);
+
           setTimeout(() => {
             this.$store.commit('data/deleteCurrentItem');
             this.resetForm();
             this.$router.push('/new');
+            this.focusFirstInput();
           }, 700);
         }
       } else {
@@ -503,13 +516,13 @@ export default {
       this.$router.push(`/entry/${id}`);
     },
     async actionEntry(action) {
-      if (!this.isNewForm) {
+      if (!(action === 'publish' && this.unsavedChanges)) {
         this.confirmAction({ action, entries: [].concat(this.valueList) });
       } else {
         this.$notify({
           group: 'request-notifications',
-          title: 'Unsaved Changes',
-          text: `Please save your ${this.isNewForm ? 'new Form' : 'Changes'} first!`,
+          title: this.$t('notify.saveBeforePublish'),
+          text: this.$t('notify.saveBeforePublishText'),
           type: 'error',
         });
       }
@@ -518,17 +531,60 @@ export default {
       // mixin method actionEntries
       await this.actionEntries(action);
       if (action === 'delete') {
+        try {
+          // update user quota in case any of the deleted entries had files attached
+          this.$store.dispatch('PortfolioAPI/fetchUser');
+        } catch (e) {
+          console.error(e);
+        }
         this.$router.push('/');
-      } else if (action === 'publish') {
-        this.valueList.published = true;
-      } else if (action === 'offline') {
-        this.valueList.published = false;
+      } else {
+        this.valueList.published = action === 'publish';
+        // also update original value list since this should not trigger unsaved changes
+        this.valueListOriginal.published = action === 'publish';
       }
       this.$emit('data-changed', true);
     },
     createHumanReadableData(val) {
       const date = new Date(val);
       return `${date.toLocaleDateString('de')} ${this.$t('form-view.at')} ${date.toLocaleTimeString('de')}`;
+    },
+    openUnsavedChangesPopUp(followUpAction) {
+      if (this.unsavedChanges) {
+        this.$store.commit('data/setPopUp', {
+          show: true,
+          header: this.$t('notify.unsavedChangesTitle'),
+          textTitle: this.$t('notify.unsavedChangesText'),
+          textList: [],
+          icon: 'save-file',
+          buttonTextRight: this.$t('notify.saveChanges'),
+          buttonTextLeft: this.$t('notify.dismissChanges'),
+          actionRight: async () => {
+            try {
+              await this.saveForm();
+              followUpAction();
+            } catch (e) {
+              console.error(e);
+            }
+            this.$store.commit('data/hidePopUp');
+          },
+          actionLeft: followUpAction,
+        });
+      } else {
+        followUpAction();
+      }
+    },
+    goToLinked(id) {
+      const followUpAction = () => {
+        this.$store.commit('data/setParentItem', this.valueList);
+        this.$router.push(`/entry/${id}`);
+      };
+      this.openUnsavedChangesPopUp(followUpAction);
+    },
+    focusFirstInput() {
+      if (this.$el.querySelector('input')) {
+        this.$el.querySelector('input').focus();
+      }
     },
   },
 };
@@ -538,6 +594,8 @@ export default {
   .form-component {
     position: relative;
     min-height: 80vh;
+    display: flex;
+    flex-direction: column;
 
     .form-head {
       background-color: $background-color;
@@ -545,6 +603,7 @@ export default {
       top: $header-height;
       z-index: 5;
       padding: $spacing 0 $spacing-small;
+      order: 0;
 
       &.form-head-shadow {
         box-shadow: 0 8px 8px -8px rgba(0,0,0,0.25);
@@ -580,6 +639,7 @@ export default {
     .form-container {
       position: relative;
       margin-top: -$spacing-small;
+      order: 1;
 
       .base-form-options {
         margin-bottom: $spacing-small;
@@ -588,14 +648,15 @@ export default {
       .form-loading-area {
         position: absolute;
         width: 100%;
-        height: 100vh;
+        height: 100%;
+        min-height: 100vh;
         z-index: 2;
         background-color: rgba(255,255,255, 0.50);
 
         .loader {
           position: fixed;
           top:33%;
-          left: 66%;
+          left: calc((#{$page-max-width}/3*2) + ((100% - 1440px)/2));
           transform: translateX(-50%);
         }
       }
@@ -617,6 +678,7 @@ export default {
     color: $font-color-second;
     font-size: $font-size-small;
     line-height: $line-height;
+    order: 2;
   }
 
   .mobile-save-row {
@@ -651,6 +713,19 @@ export default {
     transform: translateY(400px);
     opacity: 0;
     box-shadow: $pop-up-shadow;
+  }
+
+  @media screen and (max-width: $page-max-width) {
+    .form-component {
+      .form-container {
+        .form-loading-area {
+          .loader {
+            left: 66%;
+            transform: translateX(-50%);
+          }
+        }
+      }
+    }
   }
 
   @media screen and (max-width: $mobile) {

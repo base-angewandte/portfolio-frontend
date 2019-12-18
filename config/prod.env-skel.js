@@ -6,7 +6,7 @@ module.exports= {
   BACKEND_PREFIX: 'if backend route has a prefix insert it here e.g. /portfolio else leave as empty string',
   HEADER_URLS: {
     LOGIN: 'insert your cas server login route here e.g. https://basedev.uni-ak.ac.at/portfolio/accounts/login/',
-    LOGOUT: 'insert your cas server logout route here e.g. https://basedev.uni-ak.ac.at/portfolio/accounts/logout/',
+    LOGOUT: 'insert your cas server logout route (next parameter specifies the redirect route) here e.g. https://basedev.uni-ak.ac.at/portfolio/accounts/logout/?next=/',
     TERMS: 'insert a url to a terms and conditions page here e.g. https://basedev.uni-ak.ac.at/terms',
     NOTICE: 'insert a url to a site notice https://basedev.uni-ak.ac.at/site-notice',
   },

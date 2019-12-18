@@ -86,7 +86,7 @@
               <BaseImageBox
                 :key="attached.id"
                 :selectable="selectActive"
-                :box-size="{ width: 'calc(25% - 0.43em - (0.43em/2))' }"
+                :box-size="{ width: 'calc(25% - 8rem/19 - (8rem/19/2))' }"
                 :box-ratio="100" />
             </slot>
           </template>
@@ -95,9 +95,10 @@
           <BaseBoxButton
             v-if="showActionButtonBox && actionInt"
             :text="actionButtonText"
-            :box-size="{ width: 'calc(25% - 0.43em - (0.43em/2))' }"
+            :box-size="{ width: 'calc(25% - 8rem/19 - (8rem/19/2))' }"
             icon="save-file"
             box-style="small"
+            box-type="button"
             class="linked-base-box"
             @clicked="submitAction" />
         </div>
@@ -287,6 +288,7 @@ export default {
         color: $font-color-second;
         backface-visibility: hidden;
         z-index: 1;
+        position: relative;
 
         .base-attachments-section__message-area-text {
           font-size: $font-size-large;
@@ -324,7 +326,7 @@ export default {
     }
   }
 
-  .linked-base-box:nth-of-type(n + 5) {
+  .linked-base-box:nth-child(n + 5) {
     margin-top: $spacing;
   }
 
@@ -334,10 +336,10 @@ export default {
 
   @media screen and (max-width: $tablet) {
     .linked-base-box {
-      flex: 0 0 calc(50% - #{$spacing-small});
+      flex: 0 0 calc(50% - #{$spacing-small} - 0.01rem);
     }
 
-    .linked-base-box:nth-of-type(n + 3) {
+    .linked-base-box:nth-child(n + 3) {
       margin-top: $spacing;
     }
 

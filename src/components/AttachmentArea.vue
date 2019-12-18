@@ -3,7 +3,7 @@
     <!-- BUTTON ROW FOR ADDING ENTRIES AND FILES -->
     <AttachmentButtonRow
       :current-id="entryId"
-      @upload-done="updateUserQuota"
+      @upload-done="postUploadActions"
       @open-new-form="$emit('open-new-form')" />
     <!-- ACTUAL LINKED ENTRIES AND FILES -->
     <Attachments
@@ -11,8 +11,10 @@
       :key="'attachmentArea'"
       :linked-list="linkedList"
       :attached-list="mediaList"
+      :parent-list="parentList"
       @files-deleted="updateUserQuota"
-      @show-preview="$emit('show-preview', $event)" />
+      @show-preview="$emit('show-preview', $event)"
+      @open-linked="$emit('open-linked', $event)" />
   </div>
 </template>
 
@@ -24,6 +26,12 @@ import { attachmentHandlingMixin } from '../mixins/attachmentHandling';
 export default {
   components: { AttachmentButtonRow, Attachments },
   mixins: [attachmentHandlingMixin],
+  data() {
+    return {
+      mediaRequestIntervall: null,
+      mediaRequestTimeout: null,
+    };
+  },
   computed: {
     // get linked entries from store
     linkedList() {
@@ -33,10 +41,18 @@ export default {
     mediaList() {
       return this.$store.getters['data/getCurrentMedia'];
     },
+    // get parent list from the store
+    parentList() {
+      return this.$store.getters['data/getLinkedParents'];
+    },
     // current entry id
     entryId() {
       return this.$route.params.id;
     },
+  },
+  beforeDestroy() {
+    // clear request intervall if component is destroyed
+    clearInterval(this.mediaRequestIntervall);
   },
   methods: {
     // this is used for checking the available user quota for file upload, needs to be refetched
@@ -52,6 +68,25 @@ export default {
           type: 'error',
         });
       }
+    },
+    postUploadActions() {
+      this.updateUserQuota();
+      // cancel previously set intervals and timeouts
+      if (this.mediaRequestIntervall) {
+        clearInterval(this.mediaRequestIntervall);
+        this.mediaRequestIntervall = null;
+      }
+      if (this.mediaRequestTimeout) {
+        clearTimeout(this.mediaRequestTimeout);
+        this.mediaRequestTimeout = null;
+      }
+      // after upload request media again every 10s for 40s to fetch converted
+      this.mediaRequestIntervall = setInterval(() => {
+        this.$refs.attachmentArea.fetchMedia();
+      }, 10000);
+      this.mediaRequestTimeout = setTimeout(() => {
+        clearInterval(this.mediaRequestIntervall);
+      }, 40000);
     },
   },
 };

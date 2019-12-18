@@ -7,7 +7,8 @@
         v-if="allowMultiply(element)">
         <div
           v-for="(value, valueIndex) in valueListInt[element.name]"
-          :key="index + '-' + valueIndex"
+          :ref="element.name"
+          :key="index + '-' + valueIndex + '-' + formId"
           :class="[
             'base-form-field',
             element['x-attrs'] && element['x-attrs'].field_format === 'half'
@@ -15,8 +16,8 @@
             { 'base-form-field-left-margin': isHalfField(element) }
           ]">
           <FormFieldCreator
-            :key="index + '-' + valueIndex"
-            :field-key="index + '-' + valueIndex"
+            :key="index + '-' + valueIndex + '-' + formId"
+            :field-key="index + '-' + valueIndex + '-' + formId"
             :field="element"
             :field-value="value"
             :field-type="element['x-attrs'] ? element['x-attrs'].field_type : 'text'"
@@ -37,7 +38,7 @@
           <div
             v-if="checkFieldContent(valueList[element.name])
               || valueListInt[element.name].length > 1"
-            :key="index + '-button' + valueIndex"
+            :key="index + '-button' + valueIndex + '-' + formId"
             class="group-add">
             <button
               class="field-group-button"
@@ -70,8 +71,8 @@
       </template>
       <template v-else>
         <FormFieldCreator
-          :key="index"
-          :field-key="index"
+          :key="index + '-' + formId"
+          :field-key="index + '-' + formId"
           :field="element"
           :field-value="valueListInt[element.name]"
           :field-type="element['x-attrs'] ? element['x-attrs'].field_type : 'text'"
@@ -129,6 +130,13 @@ export default {
         return {};
       },
     },
+    /**
+     * an id for field groups to still have unique field ids
+     */
+    formId: {
+      type: String,
+      default: '',
+    },
   },
   data() {
     return {
@@ -139,6 +147,8 @@ export default {
       timeout: null,
       // variable to specify a field that is currently loading autocomplete data
       fieldIsLoading: '',
+      // variable to be able to focus to the field after multipy
+      multiplyParams: null,
     };
   },
   computed: {
@@ -177,6 +187,20 @@ export default {
   mounted() {
     this.initializeValueObject();
     this.initializeDropDownLists();
+  },
+  updated() {
+    if (this.multiplyParams && this.multiplyParams.name) {
+      const elements = this.$refs[this.multiplyParams.name];
+      if (elements.length) {
+        const inputs = elements[this.multiplyParams.index].getElementsByTagName('textarea').length
+          ? elements[this.multiplyParams.index].getElementsByTagName('textarea')
+          : elements[this.multiplyParams.index].getElementsByTagName('input');
+        if (inputs.length) {
+          inputs[0].focus();
+        }
+      }
+      this.multiplyParams = null;
+    }
   },
   methods: {
     initializeValueObject() {
@@ -268,6 +292,7 @@ export default {
         && !['chips', 'chips-below'].includes(el['x-attrs'].field_type);
     },
     setFieldValue(value, fieldName, index) {
+      let newValue = value;
       if (this.dropdownLists[fieldName]) {
         // cancel a potentially still ongoing autocomplete search as soon as
         // a value was selected
@@ -284,13 +309,19 @@ export default {
         if (fieldAttrs.equivalent === 'contributors') {
           const fieldRole = this.$store.state.data.prefetchedTypes.contributors_role
             .find(role => role.source === fieldAttrs.default_role);
-          value.forEach(entry => this.$set(entry, 'roles', [fieldRole]));
+          newValue = value.map((entry) => {
+            if (typeof entry === 'string') {
+              return Object.assign({}, { label: entry, roles: [fieldRole] });
+            }
+            return Object.assign({}, entry, { roles: [fieldRole] });
+          });
         }
       }
       if (index >= 0) {
-        this.$set(this.valueListInt[fieldName], index, JSON.parse(JSON.stringify(value)));
+        this.$set(this.valueListInt[fieldName], index, JSON.parse(JSON.stringify(newValue)));
       } else {
-        this.$set(this.valueListInt, fieldName, value ? JSON.parse(JSON.stringify(value)) : value);
+        this.$set(this.valueListInt, fieldName, newValue
+          ? JSON.parse(JSON.stringify(newValue)) : newValue);
       }
       this.$emit('values-changed', this.valueListInt);
     },
@@ -302,7 +333,7 @@ export default {
         this.timeout = null;
       }
       this.timeout = setTimeout(async () => {
-        if (value && value.length > 3) {
+        if (value && value.length > 2) {
           this.fieldIsLoading = name;
           try {
             // TODO: use C. module
@@ -342,14 +373,19 @@ export default {
     multiplyField(field) {
       this.valueListInt[field.name]
         .push(this.getInitialFieldValue(field.items));
+      this.multiplyParams = { index: this.valueListInt[field.name].length - 1, name: field.name };
     },
     removeField(field, index) {
-      if (index) {
-        this.valueListInt[field.name].splice(index, 1);
-        this.$emit('values-changed', this.valueListInt);
+      const fieldGroupValues = this.valueListInt[field.name];
+      // only splice off group if more than one field visible
+      if (fieldGroupValues && fieldGroupValues.length > 1) {
+        fieldGroupValues.splice(index, 1);
+        // else just clear the fields
       } else {
-        this.$set(this.valueList, field.name, this.getInitialFieldValue(field.items));
+        this.$set(fieldGroupValues, index, this.getInitialFieldValue(field.items));
       }
+      // inform parent of changes
+      this.$emit('values-changed', this.valueListInt);
     },
     isHalfField(field) {
       const index = this.formFieldsHalf.indexOf(field);
@@ -376,23 +412,25 @@ export default {
         return entry;
       });
       let dropDownList = [].concat(modifiedData);
-      const user = this.$store.getters['PortfolioAPI/user'];
-      // add defaults to fields that have defaults or whos equivalent has defaults
-      const defaults = equivalent ? process.env[`${equivalent.toUpperCase()}_DEFAULTS`]
-        : process.env[`${name.toUpperCase()}_DEFAULTS`];
-      dropDownList = this.setDropDownDefaults(
-        dropDownList,
-        defaults,
-        value,
-      );
-      // special case contributors - add user
-      if ((equivalent && equivalent === 'contributors') || name === 'contributors') {
-        // set user
-        dropDownList = this.setDropDownDefaults(dropDownList, [{
-          label: user.name,
-          source: user.uuid,
-          additional: this.$t('form.myself'),
-        }], value);
+      // if input does not trigger search (> 2 char) set defaults
+      if (!value || value.length <= 2) {
+        const user = this.$store.getters['PortfolioAPI/user'];
+        // add defaults to fields that have defaults or whos equivalent has defaults
+        const defaults = equivalent ? process.env[`${equivalent.toUpperCase()}_DEFAULTS`]
+          : process.env[`${name.toUpperCase()}_DEFAULTS`];
+        dropDownList = this.setDropDownDefaults(
+          defaults,
+          value,
+        ).concat(dropDownList);
+        // special case contributors - add user
+        if ((equivalent && equivalent === 'contributors') || name === 'contributors') {
+          // set user
+          dropDownList = this.setDropDownDefaults([{
+            label: user.name,
+            source: user.uuid,
+            additional: this.$t('form.myself'),
+          }].concat(defaults), value);
+        }
       }
       this.$set(this.dropdownLists, name, dropDownList);
     },
@@ -412,21 +450,16 @@ export default {
     getFieldName(val) {
       return val.title || (this.$te(`form.${val.name}`) ? this.$t(`form.${val.name}`) : val.name);
     },
-    setDropDownDefaults(list, defaults, input) {
-      let modifiedList = [].concat(list);
+    setDropDownDefaults(defaults, input) {
       if (defaults && defaults.length) {
-        // only use defaults that match the input string
-        const inputMatches = defaults
+        if (!input.length) {
+          return defaults;
+        }
+        return defaults
           .filter(defaultOption => getLangLabel(defaultOption.label, true).toLowerCase()
             .includes(input.toLowerCase()));
-        if (input.length > 3) {
-          // only add defaults that match the input
-          modifiedList = modifiedList.filter(option => (!option.source
-            || !defaults.map(contr => contr.source).includes(option.source)));
-        }
-        modifiedList = inputMatches.concat(modifiedList);
       }
-      return modifiedList;
+      return [];
     },
     checkFieldContent(val) {
       return hasFieldContent(val);
@@ -454,8 +487,8 @@ export default {
     }
 
     .base-form-field-half {
-      flex: 0 0 calc(50% - #{$spacing-small});
-      width: calc(50% - #{$spacing-small});
+      // needed to add the 0.01rem for edge...
+      flex: 0 1 calc(50% - #{$spacing-small} - 0.01rem);
     }
 
     .base-form-field-left-margin {
@@ -473,7 +506,9 @@ export default {
     .field-group-button {
       color: $font-color-second;
       cursor: pointer;
-      display: inline;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       padding: 0;
       background-color: inherit;
       border: none;
@@ -484,6 +519,7 @@ export default {
       }
 
       .field-group-icon {
+        flex: 0 0 auto;
         margin-left: $spacing;
         height: $icon-small;
         width: $icon-small;
@@ -525,6 +561,44 @@ export default {
 
       .group-multiply {
         margin-bottom: $spacing-small + ($spacing-small/2);
+      }
+    }
+  }
+</style>
+
+<style lang="scss">
+  .base-chips-below-chips-input {
+    .base-chips-drop-down {
+      right: $spacing-small;
+    }
+  }
+
+  @media screen and (min-width: $mobile) {
+    .base-chips-drop-down {
+      max-width: calc(100% - #{$spacing} * 2);
+    }
+
+    .base-form-field-left-margin {
+      .base-chips-drop-down {
+        right: $spacing;
+      }
+    }
+
+    .base-form-subform-wrapper {
+      .base-chips-drop-down {
+        max-width: calc(100% - #{$spacing} * 4.5 - 3px);
+      }
+
+      .base-form-field-left-margin {
+        .base-chips-drop-down {
+          right: calc(#{$spacing} * 2.5 - 3px);
+        }
+      }
+    }
+
+    .base-chips-below-chips-input {
+      .base-chips-drop-down {
+        right: calc(#{$spacing} + #{$spacing-small} / 2);
       }
     }
   }

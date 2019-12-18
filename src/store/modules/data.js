@@ -61,6 +61,7 @@ const state = {
   selectedEntries: [],
   // saved here are all the data from linked entries (not just id as in currentItem)
   linkedEntries: [],
+  linkedParents: [],
   linkedMedia: [],
   // the object properties are named after the respective endpoint!
   prefetchedTypes: {},
@@ -69,7 +70,7 @@ const state = {
   entryTypes: [],
   generalSchema: {},
   extensionSchema: {},
-  isMobile: null,
+  windowWidth: null,
 };
 
 const getters = {
@@ -88,6 +89,9 @@ const getters = {
   },
   getCurrentMedia(state) {
     return state.linkedMedia;
+  },
+  getLinkedParents(state) {
+    return state.linkedParents;
   },
   getMediaIds(state) {
     return state.linkedMedia.map(entry => entry.id);
@@ -129,6 +133,7 @@ const mutations = {
     state.currentItemId = null;
     state.linkedEntries = [];
     state.linkedMedia = [];
+    state.linkedParents = [];
   },
   setOptions(state, val) {
     state.showOptions = val;
@@ -174,8 +179,24 @@ const mutations = {
         ? capitalizeString(entry.to.type.label[i18n.locale]) : '',
     })), existingEntries);
   },
+  setLinkedParents(state, { list }) {
+    if (list.length) {
+      // add new list of entries and add a description (for type display)
+      state.linkedParents = [].concat(list.map(entry => Object.assign({}, entry, {
+        description: entry.parent && entry.parent.type && entry.parent.type.label
+          ? capitalizeString(entry.parent.type.label[i18n.locale]) : '',
+      })));
+    } else {
+      state.linkedParents = [];
+    }
+  },
   deleteLinked(state, list) {
-    state.linkedEntries = state.linkedEntries.filter(entry => !list.includes(entry.id));
+    state.linkedEntries = state.linkedEntries.filter(entry => !list
+      .map(deleted => deleted.id).includes(entry.id));
+  },
+  deleteLinkedParent(state, list) {
+    state.linkedParents = state.linkedParents.filter(entry => !list
+      .map(deleted => deleted.id).includes(entry.id));
   },
   setMedia(state, { list, replace }) {
     const existingMedia = replace ? [] : state.linkedMedia;
@@ -204,8 +225,8 @@ const mutations = {
   setPopUpLoading(state, val) {
     Vue.set(state.popUp, 'isLoading', val);
   },
-  setIsMobile(state, val) {
-    state.isMobile = val;
+  setWindowWidth(state, val) {
+    state.windowWidth = val;
   },
 };
 
@@ -238,7 +259,6 @@ const actions = {
         dispatch('getStaticDropDowns', formFields);
         resolve(formFields);
       } catch (e) {
-        console.error(e);
         reject(e);
       }
     });
@@ -328,8 +348,10 @@ const actions = {
       });
       commit('setEntryTypes', entryTypes);
     } catch (e) {
-      console.error(e);
-      // TODO: inform user?
+      if (!e || !e.response || e.response.status !== 403) {
+        console.error(e);
+        // TODO: inform user?
+      }
     }
   },
   /**
@@ -372,44 +394,36 @@ const actions = {
           commit('setCurrentItem', adjustedEntry);
           // use linked entry info already provided with response data
           commit('setLinked', { list: entryData.relations || [], replace: true });
-          // and also fetch media data
-          try {
-            dispatch('fetchMediaData', entryData.id);
-            resolve(adjustedEntry);
-          } catch (e) {
-            reject(e);
+          // and also fetch media data if flag set true
+          if (entryData.has_media) {
+            try {
+              dispatch('fetchMediaData', entryData.id);
+            } catch (e) {
+              reject(e);
+            }
+          } else {
+            commit('setMedia', { list: [], replace: true });
           }
+          // also set parents if there are any
+          commit('setLinkedParents', { list: entryData.parents });
+          resolve(adjustedEntry);
         }
       } catch (e) {
         reject(e);
       }
-      reject();
+      resolve();
     });
   },
   async fetchMediaData({ commit }, id) {
     // TODO: replace with Portofolio_API
-    const res = await axios.get(`${process.env.DATABASE_API}entry/${id}/media/`,
+    const { data } = await axios.get(`${process.env.DATABASE_API}entry/${id}/media/?detailed=true`,
       {
         withCredentials: true,
         xsrfCookieName: 'csrftoken_portfolio',
         xsrfHeaderName: 'X-CSRFToken',
       });
-    if (res.data.length) {
-      const imageData = await Promise.all(res.data
-        .map(imageId => new Promise(async (resolve, reject) => {
-          try {
-            const result = await axios.get(`${process.env.DATABASE_API}media/${imageId}/`,
-              {
-                withCredentials: true,
-                xsrfCookieName: 'csrftoken_portfolio',
-                xsrfHeaderName: 'X-CSRFToken',
-              });
-            resolve(result.data);
-          } catch (e) {
-            reject();
-          }
-        })));
-      commit('setMedia', { list: imageData, replace: true });
+    if (data.length) {
+      commit('setMedia', { list: data, replace: true });
     } else {
       commit('setMedia', { list: [], replace: true });
     }
@@ -446,10 +460,16 @@ const actions = {
     // check if any deleted items are currently displayed in form as linked
     const deletedLinked = state.linkedEntries
       .filter(entry => successArr.includes(entry.to.id));
+    // check if any deleted entries are currenly displayed as parent entries
+    const deletedLinkedParents = state.linkedParents
+      .filter(entry => successArr.includes(entry.parent.id));
     if (deletedLinked.length) {
-      deletedLinked.forEach(deleted => commit('deleteLinked', deleted.id));
+      commit('deleteLinked', deletedLinked);
     }
-    // check if deleted was a parent
+    if (deletedLinkedParents.length) {
+      commit('deleteLinkedParent', deletedLinkedParents);
+    }
+    // check if deleted was a parent (displayed in header row)
     const deletedParents = state.parentItems
       .filter(entry => deletedLinked.includes(entry.id));
     if (deletedParents) {

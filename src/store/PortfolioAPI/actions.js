@@ -32,6 +32,14 @@ axiosInstance.interceptors.response.use((response) => {
     return axios.request(error.config);
   }
   if (error.response && error.response.status === 403) {
+    const openRequests = Object.keys(cancel);
+    if (cancel && openRequests.length) {
+      openRequests.forEach((kind) => {
+        if (cancel[kind]) {
+          cancel[kind]('authorization failed');
+        }
+      });
+    }
     sessionStorage.clear();
     window.location.href = `${process.env.HEADER_URLS.LOGIN}`;
   }
@@ -63,6 +71,14 @@ export default {
     return new Promise((resolve, reject) => {
       $config.headers = { 'Accept-Language': i18n.locale };
       commit('setLoading', 'Fetching available Schemas');
+      if (cancel && cancel.schema) {
+        cancel.schema('new schema request started');
+      }
+      /* eslint-disable-next-line */
+      $config.cancelToken = new CancelToken(function executor(c) {
+        // An executor function receives a cancel function as a parameter
+        cancel.schema = c.bind(this);
+      });
       state.apilib.api_v1_jsonschema_list({ $config }).then((res) => {
         commit('setSchemas', res.data);
         commit('setLoadingFinished', 'Fetching available Schemas finished');
@@ -70,12 +86,22 @@ export default {
       }).catch((error) => {
         commit('setLoadingFinished', 'Error while fetching available Schemas');
         reject(error);
+      }).finally(() => {
+        cancel.schema = null;
       });
     });
   },
   fetchUser({ state, commit }) {
     return new Promise((resolve, reject) => {
       commit('setLoading', 'Fetching User Data');
+      if (cancel && cancel.user) {
+        cancel.user('new user request started');
+      }
+      /* eslint-disable-next-line */
+      $config.cancelToken = new CancelToken(function executor(c) {
+        // An executor function receives a cancel function as a parameter
+        cancel.user = c.bind(this);
+      });
       state.apilib.api_v1_user_read({ $config }).then((res) => {
         commit('setUser', res.data);
         commit('setLoadingFinished', 'Fetching User Data finished');
@@ -83,6 +109,8 @@ export default {
       }).catch((error) => {
         commit('setLoadingFinished', 'Error while fetching User Data');
         reject(error);
+      }).finally(() => {
+        cancel.user = null;
       });
     });
   },
@@ -117,10 +145,10 @@ export default {
       p.then((res) => {
         commit('setLoadingFinished', `Fetching ${kind} finished.`);
         resolve(res.data);
-        cancel[kind] = null;
       }).catch((error) => {
         commit('setLoadingFinished', `Error while fetching ${kind}`);
         reject(error);
+      }).finally(() => {
         cancel[kind] = null;
       });
     });
