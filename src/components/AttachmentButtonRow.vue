@@ -308,11 +308,13 @@ export default {
     },
     // trigger file select dialogue manually
     openFileDialogue() {
-      // check first if entry was saved already
+      // check first if entry was saved already to display notification
       this.checkEntrySaved();
       // trigger input click event manually since not triggered for base menu entry
       // otherwise
-      this.$refs.fileInputMobile.dispatchEvent(new MouseEvent('click'));
+      if (this.currentId) {
+        this.$refs.fileInputMobile.dispatchEvent(new MouseEvent('click'));
+      }
     },
   },
 };
