@@ -531,6 +531,12 @@ export default {
       // mixin method actionEntries
       await this.actionEntries(action);
       if (action === 'delete') {
+        try {
+          // update user quota in case any of the deleted entries had files attached
+          this.$store.dispatch('PortfolioAPI/fetchUser');
+        } catch (e) {
+          console.error(e);
+        }
         this.$router.push('/');
       } else {
         this.valueList.published = action === 'publish';

@@ -437,8 +437,16 @@ export default {
       this.$store.commit('data/setOptions', false);
       // if the form was open and the item was selected for deletion a redirect to dashboard
       // will be done
-      if (action === 'delete' && currentSelected) {
-        this.$router.push('/');
+      if (action === 'delete') {
+        try {
+          // update user quota in case any of the deleted entries had files attached
+          this.$store.dispatch('PortfolioAPI/fetchUser');
+        } catch (e) {
+          console.error(e);
+        }
+        if (currentSelected) {
+          this.$router.push('/');
+        }
       } else if ((action === 'publish' || action === 'offline') && currentSelected) {
         this.$emit('update-publish-state', action === 'publish');
       }
