@@ -21,6 +21,7 @@
         <BaseImageBox
           :key="props.item.id"
           :selectable="props.selectActive"
+          :selected="selectedEntries.map(entry => entry.id || entry).includes(props.item.id)"
           :box-size="{ width: 'calc(25% - 8rem/19 - (8rem/19/2))' }"
           :title="props.item.to.title"
           :subtext="props.item.to.subtitle"
@@ -104,21 +105,58 @@
           @mouseleave.native="changeVideoHoverState($event, props.index, false)"
           @select-triggered="filesSelected(props.item.id, $event, props.item.published)"
           @clicked="$emit('show-preview', props.item)">
-          <template slot="top">
-            <div
-              v-if="props.item.published"
-              class="file-published">
-              <EyeIcon
-                aria-labelledby="title"
-                class="published-icon">
-                <title>Published</title>
-                <desc>
-                  {{ `file ${getFileName(props.item.original)} is released for publication` }}
-                </desc>
-              </EyeIcon>
-            </div>
-          </template>
+          <div
+            slot="top">
+            <template v-if="props.item.published">
+              <div class="file-published">
+                <EyeIcon
+                  :aria-labelledby="'title_' + props.item.id"
+                  class="published-icon">
+                  <title :id="'title_' + props.item.id">
+                    Published
+                  </title>
+                  <desc>
+                    {{ `file ${getFileName(props.item.original)} is released for publication` }}
+                  </desc>
+                </EyeIcon>
+              </div>
+            </template>
+          </div>
         </BaseImageBox>
+      </template>
+    </BaseResultBoxSection>
+
+    <!-- PARENT ENTRIES -->
+    <BaseResultBoxSection
+      ref="parentSection"
+      :attached-list="parentList"
+      :message-text="$t('form-view.deleteLinkedText')"
+      :message-subtext="$t('form-view.deleteLinkedSubtext')"
+      :option-button-text="$t('form-view.deleteParents')"
+      :action-button-text="$t('form-view.deleteButton')"
+      :cancel-text="$t('cancel')"
+      :header-text="$t('form-view.parentEntries')"
+      :action="parentEntryAction"
+      :is-loading="entriesLoading"
+      @set-action="parentEntryAction = 'delete'"
+      @submit-action="deleteLinked"
+      @cancel-action="resetSelected">
+      <template
+        slot="attached-box"
+        slot-scope="props">
+        <BaseImageBox
+          :key="props.item.id"
+          :selectable="props.selectActive"
+          :selected="selectedEntries.map(entry => entry.id || entry).includes(props.item.id)"
+          :box-size="{ width: 'calc(25% - 8rem/19 - (8rem/19/2))' }"
+          :title="props.item.parent.title"
+          :subtext="props.item.parent.subtitle"
+          :description="props.item.description"
+          :image-url="props.item.parent.image ? getImagePath(props.item.parent.image) : ''"
+          show-title
+          class="linked-base-box"
+          @select-triggered="entrySelected(props.item.id, $event)"
+          @clicked="goToLinked(props.item.parent.id)" />
       </template>
     </BaseResultBoxSection>
   </div>
@@ -130,7 +168,7 @@ import {
 } from 'base-ui-components';
 import EyeIcon from '../assets/icons/eye.svg';
 import { userInfo } from '../mixins/userInfo';
-import { setLangLabels, getApiUrl, getLangLabel } from '../utils/commonUtils';
+import { getApiUrl, getLangLabel } from '../utils/commonUtils';
 
 export default {
   components: {
@@ -154,6 +192,12 @@ export default {
         return [];
       },
     },
+    parentList: {
+      type: Array,
+      default() {
+        return [];
+      },
+    },
   },
   data() {
     return {
@@ -165,6 +209,8 @@ export default {
       buttonText: '',
       // current action active for entries section
       entryAction: '',
+      // current action active for entries section
+      parentEntryAction: '',
       // entries selected
       selectedEntries: [],
       // files selected
@@ -187,12 +233,8 @@ export default {
     isConverting() {
       return this.attachedList.some(file => !file.metadata);
     },
-    // supplement license options with 'no license' option
     licenses() {
-      return ([{
-        label: setLangLabels('nolicense', this.$i18n.availableLocales),
-        source: '',
-      }]).concat(this.$store.getters['data/getPrefetchedTypes']('medialicenses', 'source'));
+      return this.$store.getters['data/getPrefetchedTypes']('medialicenses', 'source');
     },
   },
   watch: {
@@ -276,6 +318,7 @@ export default {
         await this.$parent.actionLinked({ list: this.selectedEntries, action: 'delete' });
         // reset all involved variables
         this.entryAction = '';
+        this.parentEntryAction = '';
         this.selectedEntries = [];
       } else {
         // notify user to select entries
@@ -323,7 +366,7 @@ export default {
     getFileName(file) {
       if (file) {
         // split into array by slash and then just get last entry
-        return file.split('/').pop();
+        return decodeURI(file.split('/').pop());
       }
       return '';
     },
@@ -454,7 +497,7 @@ export default {
       }
     }
 
-    .linked-base-box:nth-of-type(n + 5) {
+    .linked-base-box:nth-child(n + 5) {
       margin-top: $spacing;
     }
 
@@ -466,6 +509,7 @@ export default {
   .license-dropdown {
     margin: $spacing auto 0 auto;
     text-align: left;
+    max-width: 100%;
   }
 
   @media screen and (max-width: $tablet) {
@@ -476,7 +520,7 @@ export default {
         flex: 0 0 calc(50% - #{$spacing-small} - 0.01rem);
       }
 
-      .linked-base-box:nth-of-type(n + 3) {
+      .linked-base-box:nth-child(n + 3) {
         margin-top: $spacing;
       }
 

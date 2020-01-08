@@ -63,18 +63,10 @@ export default {
       duration: 4000,
     };
   },
-  watch: {
-    props() {
-      console.log('Test');
-    },
-  },
   methods: {
     // capitalize first letter of title
     notificationTitle(val) {
       return val.slice(0, 1).toUpperCase() + val.slice(1);
-    },
-    test() {
-      console.log('test');
     },
   },
 };
@@ -84,7 +76,7 @@ export default {
   .notification-container{
     position: sticky;
     top: $header-height;
-    z-index: 10;
+    z-index: 1030;
     max-width: 100%;
     margin-top: $header-height;
 

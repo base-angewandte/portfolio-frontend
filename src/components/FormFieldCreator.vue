@@ -6,45 +6,50 @@
       :id="fieldKey"
       :key="fieldKey"
       v-model="fieldValueInt"
+      :field-type="field.type === 'integer'
+        ? 'number' : 'text'"
       :label="label"
       :placeholder="placeholderInt"
       :class="['base-form-field']"
       @keydown.enter.prevent="" />
 
     <!-- DATE FIELD -->
-    <div
+    <fieldset
       v-else-if="fieldType === 'date'"
-      class="date-field">
-      <BaseDateInput
-        :id="fieldKey"
-        :key="fieldKey + 'date'"
-        v-model="fieldValueInt"
-        :label="label"
-        :placeholder="placeholderInt"
-        :range-separator="$t('form.until')"
-        :format="field['x-attrs'].date_format"
-        :type="dateType.includes('timerange') ? dateType.includes('daterange')
+      class="date-field-fieldset">
+      <div class="date-field">
+        <BaseDateInput
+          :id="fieldKey"
+          :key="fieldKey + 'date'"
+          v-model="fieldValueInt"
+          :label="label"
+          :placeholder="placeholderInt"
+          :range-separator="$t('form.until')"
+          :format="field['x-attrs'].date_format"
+          :type="dateType.includes('timerange') ? dateType.includes('daterange')
           ? 'daterange' : 'single' : dateType"
-        :date-format-labels="{date: $t('form.date'), year: $t('form.year') }"
-        :format-tabs-legend="$t('form.dateTabsLegend')"
-        :language="language"
-        :class="['base-form-field']" />
-      <BaseDateInput
-        v-if="dateType.includes('timerange')"
-        :id="fieldKey"
-        :key="fieldKey + 'time'"
-        v-model="fieldValueInt"
-        :label="field.properties.time_from.title"
-        :show-label="false"
-        :placeholder="placeholderInt"
-        :range-separator="$t('form.until')"
-        :type="'timerange'"
-        :class="['base-form-field']" />
-    </div>
+          :date-format-labels="{date: $t('form.date'), year: $t('form.year') }"
+          :format-tabs-legend="$t('form.dateTabsLegend')"
+          :language="language"
+          :class="['base-form-field']" />
+        <BaseDateInput
+          v-if="dateType.includes('timerange')"
+          :id="fieldKey"
+          :key="fieldKey + 'time'"
+          v-model="fieldValueInt"
+          :label="field.properties.time_from.title"
+          :show-label="false"
+          :placeholder="placeholderInt"
+          :range-separator="$t('form.until')"
+          :type="'timerange'"
+          :class="['base-form-field']" />
+      </div>
+    </fieldset>
 
     <!--MULTILINE TEXT FIELD -->
     <BaseMultilineTextInput
       v-else-if="fieldType === 'multiline'"
+      :id="fieldKey"
       :key="fieldKey"
       :tabs="tabs"
       :tab-labels="tabs.map(tab => $t(tab))"
@@ -58,6 +63,7 @@
       <template
         v-if="field.items && field.items.properties && field.items.properties.type">
         <BaseDropDown
+          :id="fieldKey"
           :selected-option="fieldValueInt && fieldValueInt.type && fieldValueInt.type.source
             ? fieldValueInt.type : textTypeDefault"
           :options="textTypeOptions"
@@ -65,13 +71,14 @@
           :language="language"
           value-prop="source"
           class="multiline-dropdown"
-          @value-selected="$set(fieldValueInt, 'type', $event)" />
+          @value-selected="setMultilineDropDown" />
       </template>
     </BaseMultilineTextInput>
 
     <!-- AUTOCOMPLETE -->
     <BaseAutocompleteInput
       v-else-if="fieldType === 'autocomplete'"
+      :id="fieldKey"
       :key="fieldKey"
       v-model="fieldValueInt"
       :label="label"
@@ -89,6 +96,7 @@
     <!-- CHIPS INPUT -->
     <BaseChipsInput
       v-else-if="fieldType === 'chips'"
+      :id="fieldKey"
       :key="fieldKey"
       v-model="fieldValueInt"
       :placeholder="placeholderInt"
@@ -97,9 +105,8 @@
       :allow-dynamic-drop-down-entries="field['x-attrs'] && field['x-attrs'].dynamic_autosuggest"
       :allow-multiple-entries="!isChipsSingleSelect"
       :allow-unknown-entries="field['x-attrs'] && field['x-attrs'].allow_unknown_entries"
-      :chips-editable="field['x-attrs'] && field['x-attrs'].allow_unknown_entries"
       :class="['base-form-field']"
-      :draggable="true"
+      :draggable="!isChipsSingleSelect"
       :hoverbox-content="hoverBoxData"
       :sortable="field.name === 'keywords' || (field['x-attrs'] && field['x-attrs'].sortable)"
       :is-loading="autocompleteLoading"
@@ -195,6 +202,7 @@
         <BaseForm
           :form-field-json="groupFormFields"
           :value-list="fieldValueInt"
+          :form-id="fieldKey + '_' + field.name"
           class="base-form-subform"
           @values-changed="$emit('subform-input', $event)" />
       </div>
@@ -391,7 +399,7 @@ export default {
     },
     // to determine text display for chips input
     fieldInput() {
-      return this.textInput && this.textInput.length > 3;
+      return this.textInput && this.textInput.length > 2;
     },
     isChipsSingleSelect() {
       return (this.field['x-attrs'] && this.field['x-attrs'].field_type
@@ -453,6 +461,10 @@ export default {
         this.fieldValueInt = Object.assign({}, this.fieldValueInt, JSON.parse(JSON.stringify(val)));
       }
     },
+    setMultilineDropDown(val) {
+      // set texts type value if present - otherwise set empty
+      this.$set(this.fieldValueInt, 'type', val.source ? val : null);
+    },
     fetchAutocomplete(event) {
       this.fetchingData = true;
       this.textInput = event.value;
@@ -499,6 +511,11 @@ export default {
         width: calc(100% - 6px);
       }
     }
+  }
+
+  .date-field-fieldset-legend {
+    color: $font-color-second;
+    margin-bottom: $spacing-small;
   }
 
   .date-field {

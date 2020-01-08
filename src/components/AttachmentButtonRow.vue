@@ -31,7 +31,8 @@
         icon="sheet-empty"
         class="file-box file-boxes-margin"
         box-type="button"
-        @clicked="$emit('open-new-form')" />
+        @clicked="$emit('open-new-form')"
+        @onTooltip="$emit('open-new-form')" />
 
       <!-- ADD FILES -->
       <label
@@ -118,6 +119,7 @@
       @success="resetFiles" />
 
     <BasePopUp
+      is-open-focus=".base-menu-list__list-entry input"
       :show="showEntryPopUp"
       :title="$t('form-view.selectentries')"
       :button-right-text="$t('form-view.linkselected')"
@@ -192,7 +194,7 @@ export default {
     },
     // check if browser is mobile to switch between box and list display
     isMobile() {
-      return this.$store.state.data.isMobile <= 640;
+      return this.$store.state.data.windowWidth <= 640;
     },
   },
   methods: {
@@ -306,11 +308,13 @@ export default {
     },
     // trigger file select dialogue manually
     openFileDialogue() {
-      // check first if entry was saved already
+      // check first if entry was saved already to display notification
       this.checkEntrySaved();
       // trigger input click event manually since not triggered for base menu entry
       // otherwise
-      this.$refs.fileInputMobile.dispatchEvent(new MouseEvent('click'));
+      if (this.currentId) {
+        this.$refs.fileInputMobile.dispatchEvent(new MouseEvent('click'));
+      }
     },
   },
 };

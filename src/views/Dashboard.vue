@@ -39,14 +39,15 @@
     </BasePopUp>
     <BaseMediaPreview
       :show-preview="showPreview"
-      :media-url="previewUrl"
-      :download-url="originalUrl"
+      :media-url="getFilePath(assetFilePath)"
+      :download-url="assetObject !== null ? getFilePath( assetObject.original) : ''"
       :display-size="previewSize"
       :previews="imagePreviews"
       :info-texts="{
         download: $t('form-view.download'),
         view: $t('form-view.view'),
       }"
+      :additional-info="assetInfoText"
       @hide-preview="showPreview = false"
       @download="downloadFile" />
 
@@ -86,10 +87,9 @@ export default {
   data() {
     return {
       showPreview: false,
-      previewUrl: '',
       previewSize: {},
-      originalUrl: '',
       imagePreviews: [],
+      assetObject: null,
     };
   },
   computed: {
@@ -98,6 +98,20 @@ export default {
     },
     showPopUp() {
       return this.$store.state.data.popUp.show;
+    },
+    assetFilePath() {
+      return this.assetObject !== null ? this.assetObject.playlist || this.assetObject.mp3
+        || this.assetObject.pdf || this.assetObject.original : '';
+    },
+    assetInfoText() {
+      if (this.assetObject === null) return [];
+      const infoStringArray = [];
+      if (this.assetObject.license) {
+        infoStringArray.push(`${this.$t('license')}: ${getLangLabel(this.assetObject.license.label, this.$i18n.locale, true)}`);
+      }
+      infoStringArray.push(`${this.$t('status')}: ${this.assetObject.published
+        ? this.$t('public') : this.$t('private')}`);
+      return infoStringArray;
     },
   },
   watch: {
@@ -174,20 +188,18 @@ export default {
       this.$store.commit('data/hidePopUp');
     },
     loadPreview(fileData) {
+      this.assetObject = null;
       // reset media variables on new image load
       this.previewSize = null;
       this.imagePreviews = [];
 
-      this.originalUrl = getApiUrl(fileData.original);
-      const filePath = fileData.playlist || fileData.mp3
-        || fileData.pdf || fileData.original;
-      this.previewUrl = getApiUrl(filePath);
+      this.assetObject = fileData;
       this.imagePreviews = fileData.previews ? fileData.previews.map((size) => {
         const [width, url] = Object.entries(size)[0];
         return Object.assign({}, { [width]: getApiUrl(url) });
       }) : [];
-      if (filePath) {
-        this.showPreview = !!this.previewUrl;
+      if (this.assetFilePath) {
+        this.showPreview = true;
         // if previws are available use the last converted size in array to set image size
         // size only width - set maxWidth instead of width to prevent strange effects
         if (fileData.previews && fileData.previews.length) {
@@ -223,10 +235,9 @@ export default {
         this.$notify({
           group: 'request-notifications',
           title: this.$t('notify.displayImage'),
-          text: filePath ? this.$t('notify.notSupported') : this.$t('notify.notConverted'),
+          text: this.$t('notify.notConverted'),
           type: 'error',
         });
-        this.previewUrl = '';
       }
     },
     scrollAction(evt) {
@@ -261,6 +272,7 @@ export default {
       const formView = this.$refs.view;
       if (formView && formView.valueList) {
         this.$set(formView.valueList, 'published', published);
+        this.$set(formView.valueListOriginal, 'published', published);
       }
     },
     capitalizeFirstLetter(text) {
@@ -285,6 +297,9 @@ export default {
           type: 'error',
         });
       }
+    },
+    getFilePath(path) {
+      return getApiUrl(path);
     },
   },
 };

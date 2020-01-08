@@ -26,6 +26,9 @@ git and npm (node) is required on the system
 # install dependencies
 npm install
 
+#in case you are running the app for the first time you need to set the header component url via
+gulp set-header
+
 # serve with hot reload at localhost:8080
 npm run dev
 

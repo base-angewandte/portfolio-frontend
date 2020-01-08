@@ -296,8 +296,11 @@ export default {
     selectedList() {
       return this.selectedMenuEntries.map(entry => entry.id);
     },
+    windowWidth() {
+      return this.$store.state.data.windowWidth;
+    },
     isMobile() {
-      return this.$store.state.data.isMobile;
+      return this.windowWidth && this.windowWidth <= 640;
     },
   },
   watch: {
@@ -310,26 +313,27 @@ export default {
         this.selectedMenuEntries = [];
       }
     },
-    $route(from) {
+    $route(to, from) {
       this.setInfoText();
-      if (from.name === 'Dashboard') {
-        // refetch sidebar data when switching from overview to form view
+      if (from.name !== to.name) {
+        // refetch sidebar data when switching from overview to form view and vice versa
         this.calculateDropDownsInline();
         this.calculateSidebarHeight();
         this.fetchSidebarData();
+        if (this.$refs.pagination) {
+          this.$refs.pagination.setStartEnd();
+        }
       }
     },
-    isMobile() {
+    windowWidth() {
       this.calculateSidebarHeight();
       this.fetchSidebarData();
     },
   },
-  created() {
-    this.$store.dispatch('data/fetchEntryTypes');
-  },
   mounted() {
     this.listInt = this.list;
     this.calculateSidebarHeight();
+    this.$store.dispatch('data/fetchEntryTypes');
     this.fetchSidebarData();
     this.$refs.menuContainer.addEventListener('scroll', () => {
       this.checkContainerPosition();
@@ -369,7 +373,7 @@ export default {
           this.timeout = null;
         }
         this.timeout = setTimeout(() => {
-          if (val.length === 0 || val.length > 3) {
+          if (val.length === 0 || val.length > 2) {
             this.fetchSidebarData();
           }
         }, 600);
@@ -433,8 +437,16 @@ export default {
       this.$store.commit('data/setOptions', false);
       // if the form was open and the item was selected for deletion a redirect to dashboard
       // will be done
-      if (action === 'delete' && currentSelected) {
-        this.$router.push('/');
+      if (action === 'delete') {
+        try {
+          // update user quota in case any of the deleted entries had files attached
+          this.$store.dispatch('PortfolioAPI/fetchUser');
+        } catch (e) {
+          console.error(e);
+        }
+        if (currentSelected) {
+          this.$router.push('/');
+        }
       } else if ((action === 'publish' || action === 'offline') && currentSelected) {
         this.$emit('update-publish-state', action === 'publish');
       }
@@ -474,7 +486,7 @@ export default {
         this.$emit('sidebar-data-changed');
         await this.$store.dispatch('data/fetchEntryTypes');
       } catch (e) {
-        if (!axios.isCancel(e)) {
+        if (!axios.isCancel(e) && (e.response && e.response.status !== 403)) {
           console.error(e);
           this.$notify({
             group: 'request-notifications',
@@ -507,7 +519,7 @@ export default {
         sidebarHeight = sidebarHeight - 48 - 16;
       }
       // hardcoded because unfortunately no other possibility found
-      const entryHeight = 57;
+      const entryHeight = this.isMobile ? 48 : 57;
       const numberOfEntries = Math.floor(sidebarHeight / entryHeight);
       this.entriesPerPage = numberOfEntries > 4 ? numberOfEntries : 4;
     },

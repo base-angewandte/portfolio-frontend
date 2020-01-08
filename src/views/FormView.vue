@@ -23,6 +23,7 @@
       <BaseForm
         v-if="Object.keys(formFields).length"
         ref="baseForm"
+        :form-id="'main'"
         :form-field-json="formFields"
         :value-list="valueList"
         :prefetched-drop-down-lists="{
@@ -45,6 +46,7 @@
           <BaseForm
             key="extended-form"
             ref="formExtension"
+            :form-id="'extended'"
             :form-field-json="formFieldsExtension"
             :value-list="valueList.data"
             :prefetched-drop-down-lists="{
@@ -93,11 +95,12 @@
       <div
         v-if="parent"
         class="base-row-parent base-row-header"
-        @click="returnToParent(parent.id)">
+        @click="returnFromForm">
         <BaseMenuEntry
           :title="parent.title"
           :title-bold="true"
-          :subtext="parent.type && parent.type.label ? parent.type.label[$i18n.locale] : ''"
+          :subtext="parent.type && parent.type.label
+            ? parent.type.label[$i18n.locale] : ''"
           :show-thumbnails="false"
           entry-id="parentheader"
           icon="sheet-empty" />
@@ -126,7 +129,9 @@
 </template>
 
 <script>
-import { BaseMenuEntry, BaseLoader } from 'base-ui-components';
+import {
+  BaseMenuEntry, BaseLoader,
+} from 'base-ui-components';
 import axios from 'axios';
 import BaseRow from '../components/BaseRow';
 import BaseFormOptions from '../components/BaseFormOptions';
@@ -288,6 +293,12 @@ export default {
     }
   },
   mounted() {
+    // add event listener for back button to handle parent situation
+    window.addEventListener('popstate', () => {
+      if (this.parent && this.parent.id) {
+        this.$store.commit('data/deleteLastParentItem');
+      }
+    });
     // add event listener triggered before unload
     window.addEventListener('beforeunload', () => {
       // if there are unsaved changes store them in session storage,
@@ -316,14 +327,18 @@ export default {
       try {
         await this.$store.dispatch('data/fetchGeneralFields');
       } catch (e) {
-        // TODO: if form fields can not be fetched this should probably
-        //  abort all further entry data / extension loadings (redirect to dashboard?)
-        this.$notify({
-          group: 'request-notifications',
-          title: this.$t('notify.somethingWrong'),
-          text: this.$t('notify.formDataNotFound'),
-          type: 'error',
-        });
+        // only send error message if user is authenticated
+        if (!e || !e.response || e.response.status !== 403) {
+          console.error(e);
+          // TODO: if form fields can not be fetched this should probably
+          //  abort all further entry data / extension loadings (redirect to dashboard?)
+          this.$notify({
+            group: 'request-notifications',
+            title: this.$t('notify.somethingWrong'),
+            text: this.$t('notify.formDataNotFound'),
+            type: 'error',
+          });
+        }
       }
     },
     resetForm() {
@@ -342,9 +357,11 @@ export default {
         // copy the original object to check for unsaved changes later
         this.valueListOriginal = { ...this.valueList };
       } catch (e) {
-        if (e.message.includes('404')) {
+        if (e && e.response && e.response.status === 404) {
           this.$router.push(`/not-found?id=${this.currentItemId}`);
-        } else {
+          // only notify if user was already authenticated
+        } else if (!e || !e.response || e.response.status !== 403) {
+          console.error(e);
           this.$notify({
             group: 'request-notifications',
             title: this.$t('notify.somethingWrong'),
@@ -386,8 +403,10 @@ export default {
             // link entry to parent if parent items are present
             const parent = this.$store.getters['data/getLatestParentItem'];
             if (parent) {
+              // ok to just take first one ([0]) since only scenario for this is
+              // "link new entry" functionality and there can only be one parent
               const relationData = {
-                from_entry: `${parent.id}`,
+                from_entry: parent.id,
                 to_entry: newEntryId,
               };
               try {
@@ -400,7 +419,7 @@ export default {
                 this.$notify({
                   group: 'request-notifications',
                   title: this.$t('notify.actionFailed', { action: this.$t('notify.link') }),
-                  text: this.$t('notify.linkToParentFail', { title: parent.title }),
+                  text: this.$t('notify.linkToParentFail', { title: parent[0].title }),
                   type: 'error',
                 });
                 // to also give user visual feedback that there is actually no link
@@ -419,13 +438,14 @@ export default {
           this.$notify({
             group: 'request-notifications',
             title: this.$t('notify.saveSuccess'),
-            text: this.$t('notify.saveSuccessSubtext', { title: this.valueList.title }),
+            text: this.$t('notify.saveSuccessSubtext', { title: validData.title }),
             type: 'success',
           });
           this.valueListOriginal = { ...this.valueList };
           this.dataSaving = false;
           return true;
         } catch (e) {
+          console.error(e);
           this.$notify({
             group: 'request-notifications',
             title: this.$t('notify.saveFail'),
@@ -474,12 +494,12 @@ export default {
           this.$store.commit('data/setNewForm', true);
 
           window.scrollTo(0, 0);
-          this.focusFirstInput();
 
           setTimeout(() => {
             this.$store.commit('data/deleteCurrentItem');
             this.resetForm();
             this.$router.push('/new');
+            this.focusFirstInput();
           }, 700);
         }
       } else {
@@ -496,13 +516,13 @@ export default {
       this.$router.push(`/entry/${id}`);
     },
     async actionEntry(action) {
-      if (!this.isNewForm) {
+      if (!(action === 'publish' && this.unsavedChanges)) {
         this.confirmAction({ action, entries: [].concat(this.valueList) });
       } else {
         this.$notify({
           group: 'request-notifications',
-          title: 'Unsaved Changes',
-          text: `Please save your ${this.isNewForm ? 'new Form' : 'Changes'} first!`,
+          title: this.$t('notify.saveBeforePublish'),
+          text: this.$t('notify.saveBeforePublishText'),
           type: 'error',
         });
       }
@@ -511,11 +531,17 @@ export default {
       // mixin method actionEntries
       await this.actionEntries(action);
       if (action === 'delete') {
+        try {
+          // update user quota in case any of the deleted entries had files attached
+          this.$store.dispatch('PortfolioAPI/fetchUser');
+        } catch (e) {
+          console.error(e);
+        }
         this.$router.push('/');
-      } else if (action === 'publish') {
-        this.valueList.published = true;
-      } else if (action === 'offline') {
-        this.valueList.published = false;
+      } else {
+        this.valueList.published = action === 'publish';
+        // also update original value list since this should not trigger unsaved changes
+        this.valueListOriginal.published = action === 'publish';
       }
       this.$emit('data-changed', true);
     },
@@ -622,14 +648,15 @@ export default {
       .form-loading-area {
         position: absolute;
         width: 100%;
-        height: 100vh;
+        height: 100%;
+        min-height: 100vh;
         z-index: 2;
         background-color: rgba(255,255,255, 0.50);
 
         .loader {
           position: fixed;
           top:33%;
-          left: 66%;
+          left: calc((#{$page-max-width}/3*2) + ((100% - 1440px)/2));
           transform: translateX(-50%);
         }
       }
@@ -686,6 +713,19 @@ export default {
     transform: translateY(400px);
     opacity: 0;
     box-shadow: $pop-up-shadow;
+  }
+
+  @media screen and (max-width: $page-max-width) {
+    .form-component {
+      .form-container {
+        .form-loading-area {
+          .loader {
+            left: 66%;
+            transform: translateX(-50%);
+          }
+        }
+      }
+    }
   }
 
   @media screen and (max-width: $mobile) {
