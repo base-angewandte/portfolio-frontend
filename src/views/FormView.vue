@@ -20,12 +20,14 @@
         class="form-loading-area">
         <BaseLoader class="loader" />
       </div>
-      <BaseForm
+      <BaseFormNew
         v-if="Object.keys(formFields).length"
         ref="baseForm"
         :form-id="'main'"
         :form-field-json="formFields"
         :value-list="valueList"
+        :available-locales="locales"
+        :language="$i18n.locale"
         :prefetched-drop-down-lists="{
           texts_secondary: preFetchedData.texts_type,
           type: objectTypes,
@@ -43,12 +45,14 @@
             class="subtitle">
             {{ $t('form-view.formExtended') }}
           </div>
-          <BaseForm
+          <BaseFormNew
             key="extended-form"
             ref="formExtension"
             :form-id="'extended'"
             :form-field-json="formFieldsExtension"
             :value-list="valueList.data"
+            :available-locales="locales"
+            :language="$i18n.locale"
             :prefetched-drop-down-lists="{
               contributors_secondary: prefetchedRoles,
               material: preFetchedData.material,
@@ -80,10 +84,12 @@
           @open-linked="goToLinked" />
       </transition-group>
       <transition name="slide-child-form">
-        <BaseForm
+        <BaseFormNew
           v-if="showOverlay"
           ref="overlay"
           :form-field-json="formFields"
+          :available-locales="locales"
+          :language="$i18n.locale"
           class="form slide-in-form" />
       </transition>
     </form>
@@ -130,12 +136,12 @@
 
 <script>
 import {
-  BaseMenuEntry, BaseLoader,
+  BaseMenuEntry, BaseLoader, BaseFormNew,
 } from 'base-ui-components';
 import axios from 'axios';
 import BaseRow from '../components/BaseRow';
 import BaseFormOptions from '../components/BaseFormOptions';
-import BaseForm from '../components/BaseForm';
+// import BaseForm from '../components/BaseForm';
 
 import AttachmentArea from '../components/AttachmentArea';
 import { attachmentHandlingMixin } from '../mixins/attachmentHandling';
@@ -147,7 +153,7 @@ export default {
     AttachmentArea,
     BaseFormOptions,
     BaseRow,
-    BaseForm,
+    BaseFormNew,
     BaseLoader,
   },
   mixins: [
@@ -206,6 +212,10 @@ export default {
     },
     unsavedChanges() {
       return JSON.stringify(this.valueList) !== JSON.stringify(this.valueListOriginal);
+    },
+    locales() {
+      console.log(this.$i18n.availableLocales);
+      return this.$i18n.availableLocales;
     },
   },
   watch: {
