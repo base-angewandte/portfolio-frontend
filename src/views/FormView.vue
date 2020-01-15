@@ -33,7 +33,12 @@
           type: objectTypes,
           keywords: preFetchedData.keywords,
         }"
-        @values-changed="handleInput($event)" />
+        :fields-with-tabs="['texts']"
+        :default-drop-down-values="defaultDropDownValues"
+        :field-is-loading="fieldIsLoading"
+        :dynamic-drop-down-lists="dynamicDropDownLists"
+        @values-changed="handleInput($event)"
+        @fetch-autocomplete="fetchAutocomplete" />
       <transition-group
         name="slide-fade-form">
         <!-- FORM EXTENSION -->
@@ -60,6 +65,7 @@
               language: preFetchedData.language,
               open_source_license: preFetchedData.open_source_license,
             }"
+            :default-drop-down-values="defaultDropDownValues"
             class="form"
             @values-changed="handleInput($event, 'data')" />
         </div>
@@ -146,6 +152,11 @@ import BaseFormOptions from '../components/BaseFormOptions';
 import AttachmentArea from '../components/AttachmentArea';
 import { attachmentHandlingMixin } from '../mixins/attachmentHandling';
 import { entryHandlingMixin } from '../mixins/entryHandling';
+import { getApiUrl } from '../utils/commonUtils';
+// import { getLangLabel } from '../utils/commonUtils';
+
+const { CancelToken } = axios;
+let cancel;
 
 export default {
   components: {
@@ -174,6 +185,10 @@ export default {
       prefetchedRoles: [],
       // to have shadow effect when form is scrolled down
       formBelow: false,
+      // variable for setting fetched autocomplete Results
+      dynamicDropDownLists: {},
+      // set the name of a field that is currently loading
+      fieldIsLoading: '',
     };
   },
   computed: {
@@ -214,8 +229,38 @@ export default {
       return JSON.stringify(this.valueList) !== JSON.stringify(this.valueListOriginal);
     },
     locales() {
-      console.log(this.$i18n.availableLocales);
       return this.$i18n.availableLocales;
+    },
+    defaultDropDownValues() {
+      const defaultDropDownObject = {};
+      // get user data here to not have to fetch multiple times for all contributors
+      const user = this.$store.getters['PortfolioAPI/user'];
+      // get all fields that could possibly have drop downs
+      const fields = { ...this.formFields, ...this.formFieldsExtension };
+      // iterate through all form fields to determine if default drop down values shoudl be set
+      Object.keys(fields).forEach((fieldName) => {
+        const xAttrs = fields[fieldName]['x-attrs'];
+        if (xAttrs && !xAttrs.hidden) {
+          const defaultsName = xAttrs.equivalent ? `${xAttrs.equivalent.toUpperCase()}_DEFAULTS`
+            : `${fieldName.toUpperCase()}_DEFAULTS`;
+          const defaults = process.env[defaultsName];
+          if (defaults && defaults.length) {
+            const dropDownList = defaults;
+            // special case contributors - add user
+            if ((xAttrs.equivalent && xAttrs.equivalent === 'contributors')
+            || fieldName === 'contributors') {
+              // set user
+              dropDownList.unshift({
+                label: user.name,
+                source: user.uuid,
+                additional: this.$t('form.myself'),
+              });
+            }
+            this.$set(defaultDropDownObject, fieldName, dropDownList);
+          }
+        }
+      });
+      return defaultDropDownObject;
     },
   },
   watch: {
@@ -355,7 +400,7 @@ export default {
       this.valueList = {};
       this.valueList.data = {};
       this.valueListOriginal = { ...this.valueList };
-      this.$refs.baseForm.initializeValueObject();
+      // this.$refs.baseForm.initializeValueObject();
     },
     async updateForm() {
       this.formIsLoading = true;
@@ -595,6 +640,49 @@ export default {
       if (this.$el.querySelector('input')) {
         this.$el.querySelector('input').focus();
       }
+    },
+    async fetchAutocomplete({
+      value, name, source,
+    }) {
+      console.log('autocomplete start');
+      if (this.timeout) {
+        clearTimeout(this.timeout);
+        this.timeout = null;
+      }
+      this.timeout = setTimeout(async () => {
+        if (value && value.length > 2) {
+          this.fieldIsLoading = name;
+          try {
+            // TODO: use C. module
+            // cancel previous request if there is any
+            if (cancel) {
+              cancel('new request started');
+            }
+            const result = await axios.get(`${getApiUrl(source)}${value ? `${value}/` : ''}`, {
+              withCredentials: true,
+              headers: {
+                'Accept-Language': this.$i18n.locale,
+              },
+              /* eslint-disable-next-line */
+              cancelToken: new CancelToken((c) => {
+                cancel = c;
+              }),
+            });
+            this.$set(this.dynamicDropDownLists, name, result.data);
+            // TODO: add additional properties if necessary: e.g.
+            //  source name, separated name, dob, profession
+          } catch (e) {
+            console.error(e);
+            if (e instanceof DOMException) {
+              console.error('If you see above error it is likely because the source is missing for a field!');
+            } else {
+              // TODO: inform user?? notification or just info in drop down??
+            }
+          } finally {
+            this.fieldIsLoading = '';
+          }
+        }
+      }, 600);
     },
   },
 };
