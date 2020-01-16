@@ -28,15 +28,9 @@
         :value-list="valueList"
         :available-locales="locales"
         :language="$i18n.locale"
-        :prefetched-drop-down-lists="{
-          texts_secondary: preFetchedData.texts_type,
-          type: objectTypes,
-          keywords: preFetchedData.keywords,
-        }"
         :fields-with-tabs="['texts']"
-        :default-drop-down-values="defaultDropDownValues"
         :field-is-loading="fieldIsLoading"
-        :dynamic-drop-down-lists="dynamicDropDownLists"
+        :drop-down-lists="dropDownListsInt"
         @values-changed="handleInput($event)"
         @fetch-autocomplete="fetchAutocomplete" />
       <transition-group
@@ -65,9 +59,11 @@
               language: preFetchedData.language,
               open_source_license: preFetchedData.open_source_license,
             }"
-            :default-drop-down-values="defaultDropDownValues"
+            :field-is-loading="fieldIsLoading"
+            :drop-down-lists="dropDownListsInt"
             class="form"
-            @values-changed="handleInput($event, 'data')" />
+            @values-changed="handleInput($event, 'data')"
+            @fetch-autocomplete="fetchAutocomplete" />
         </div>
 
         <!-- SAVE ROW (only on mobile) -->
@@ -152,7 +148,7 @@ import BaseFormOptions from '../components/BaseFormOptions';
 import AttachmentArea from '../components/AttachmentArea';
 import { attachmentHandlingMixin } from '../mixins/attachmentHandling';
 import { entryHandlingMixin } from '../mixins/entryHandling';
-import { getApiUrl } from '../utils/commonUtils';
+import { getApiUrl, getLangLabel } from '../utils/commonUtils';
 // import { getLangLabel } from '../utils/commonUtils';
 
 const { CancelToken } = axios;
@@ -189,6 +185,15 @@ export default {
       dynamicDropDownLists: {},
       // set the name of a field that is currently loading
       fieldIsLoading: '',
+      // the drop down lists necessary for form fields with drop downs
+      dropDownListsInt: {},
+      // remember the field for which autocomplete is fetching
+      fetchingAutocompleteFor: '',
+      // variable saving the current field input string during
+      // autocomplete functionality
+      currentInputString: '',
+      defaultDropDownValues: {},
+      prefetchedDropDownLists: {},
     };
   },
   computed: {
@@ -231,39 +236,29 @@ export default {
     locales() {
       return this.$i18n.availableLocales;
     },
-    defaultDropDownValues() {
-      const defaultDropDownObject = {};
-      // get user data here to not have to fetch multiple times for all contributors
-      const user = this.$store.getters['PortfolioAPI/user'];
-      // get all fields that could possibly have drop downs
+    dropDownFieldsList() {
       const fields = { ...this.formFields, ...this.formFieldsExtension };
-      // iterate through all form fields to determine if default drop down values shoudl be set
-      Object.keys(fields).forEach((fieldName) => {
-        const xAttrs = fields[fieldName]['x-attrs'];
-        if (xAttrs && !xAttrs.hidden) {
-          const defaultsName = xAttrs.equivalent ? `${xAttrs.equivalent.toUpperCase()}_DEFAULTS`
-            : `${fieldName.toUpperCase()}_DEFAULTS`;
-          const defaults = process.env[defaultsName];
-          if (defaults && defaults.length) {
-            const dropDownList = defaults;
-            // special case contributors - add user
-            if ((xAttrs.equivalent && xAttrs.equivalent === 'contributors')
-            || fieldName === 'contributors') {
-              // set user
-              dropDownList.unshift({
-                label: user.name,
-                source: user.uuid,
-                additional: this.$t('form.myself'),
-              });
-            }
-            this.$set(defaultDropDownObject, fieldName, dropDownList);
-          }
-        }
-      });
-      return defaultDropDownObject;
+      const list = this.getDropDownFields(fields);
+      console.log('field list');
+      console.log(list);
+      return this.getDropDownFields(fields);
     },
   },
   watch: {
+    formFieldsExtension(val) {
+      console.log('extension changed');
+      console.log(val);
+      this.setDropDownValues();
+    },
+    formFields(val) {
+      console.log('form fields changed');
+      console.log(val);
+      this.setDropDownValues();
+    },
+    prefetchedDropDownLists(val) {
+      console.log('prefetched list changed');
+      console.log(val);
+    },
     async currentItemId(val) {
       window.scrollTo(0, 0);
       sessionStorage.removeItem('valueList');
@@ -376,6 +371,8 @@ export default {
         this.formBelow = this.$refs.formHead.offsetTop > 0;
       }
     });
+    this.setDefaultDropDownLists();
+    this.setDropDownValues();
   },
   methods: {
     async fetchGeneralFormFields() {
@@ -429,6 +426,10 @@ export default {
       this.formIsLoading = false;
     },
     handleInput(data, type) {
+      if (cancel) {
+        this.fieldIsLoading = '';
+        cancel('value already selected');
+      }
       // check if type is set (= this event is coming from a subform)
       if (type) {
         this.$set(this.valueList, type, Object.assign({}, this.valueList[type],
@@ -642,7 +643,7 @@ export default {
       }
     },
     async fetchAutocomplete({
-      value, name, source,
+      value, name, source, equivalent,
     }) {
       console.log('autocomplete start');
       if (this.timeout) {
@@ -668,7 +669,7 @@ export default {
                 cancel = c;
               }),
             });
-            this.$set(this.dynamicDropDownLists, name, result.data);
+            this.$set(this.dropDownListsInt, name, result.data);
             // TODO: add additional properties if necessary: e.g.
             //  source name, separated name, dob, profession
           } catch (e) {
@@ -681,8 +682,145 @@ export default {
           } finally {
             this.fieldIsLoading = '';
           }
+        } else if (this.prefetchedDropDownLists[name]) {
+          // check if there is a preset list for dynamic chips input fields (e.g. keywords)
+          const prefetchedValues = this.prefetchedDropDownLists[name]
+            .filter(option => getLangLabel(option.label, this.$i18n.locale, true).toLowerCase()
+              .includes(value.toLowerCase()));
+          this.setDropDown(prefetchedValues || [], value, equivalent, name);
+        } else {
+          this.setDropDown([], value, equivalent, name);
         }
       }, 600);
+    },
+    setDropDown(data, value, equivalent, name) {
+      if (data) {
+        const modifiedData = data.map((entry) => {
+          if (!['GND', 'VIAF'].includes(entry.source_name)) return entry;
+          // regex to filter additional info from GND and VIAF
+          const pattern = new RegExp([
+            '^(',
+            '([^(*)*?[^0-9,|(]*?,[^0-9,|(]*|[^0-9|,(]*)$|',
+            '([^0-9|(]*|[^0-9,|]*?, [^0-9,(|]*|[^0-9|,(]*)',
+            '(, | \\| | )',
+            '(.*)$',
+            ')',
+          ].join(''));
+
+          const match = pattern.exec(entry.label);
+          if (match && match[1]) {
+            return Object.assign({}, entry, match[3] && match[5]
+              ? { label: match[3], additional: this.removeDoubleEntries(match[5]) } : { label: match[1], additional: '' });
+          }
+          return entry;
+        });
+        let dropDownList = [].concat(modifiedData);
+        // if input does not trigger search (> 2 char) set defaults
+        if (this.defaultDropDownValues && this.defaultDropDownValues[name]
+          && (!value || value.length <= 2)
+          && (!this.currentInputString || this.currentInputString.length <= 2)) {
+          dropDownList = this.setDropDownDefaults(
+            this.defaultDropDownValues[name],
+            value,
+          ).concat(dropDownList);
+        }
+        this.$set(this.dropDownListsInt, name, dropDownList);
+      } else {
+        this.$set(this.dropDownListsInt, name, []);
+      }
+    },
+    setDropDownDefaults(defaults, input) {
+      if (defaults && defaults.length) {
+        if (!input.length) {
+          return defaults;
+        }
+        return defaults
+          .filter(defaultOption => getLangLabel(defaultOption.label, this.$i18n.locale, true)
+            .toLowerCase().includes(input.toLowerCase()));
+      }
+      return [];
+    },
+    removeDoubleEntries(value) {
+      const pattern = /\((.*?)\)(. | \| | )?(.*)/;
+      const match = pattern.exec(value);
+
+      if (match && match[3].includes(match[1])) {
+        return match[3];
+      }
+
+      if (match && !match[3].length) {
+        return match[1];
+      }
+      return value;
+    },
+    setDropDownValues() {
+      // set prefetched drop down values
+      this.prefetchedDropDownLists = {
+        ...this.preFetchedData,
+        type: this.objectTypes,
+        contributors_secondary: this.prefetchedRoles,
+        texts_secondary: this.preFetchedData.texts_type,
+      };
+      console.log('prefetched lists');
+      console.log(this.prefetchedDropDownLists);
+      this.dropDownFieldsList.forEach((field) => {
+        const prefetched = this.prefetchedDropDownLists[field.name];
+        if (prefetched && prefetched.length) {
+          this.setDropDown(prefetched, '', field.equivalent, field.name);
+          // for all others just set to an empty array in the beginning
+        } else {
+          this.setDropDown([], '', field.equivalent, field.name);
+        }
+      });
+      console.log('real lists');
+      console.log(this.dropDownListsInt);
+    },
+    setDefaultDropDownLists() {
+      const defaultDropDownObject = {};
+      const user = this.$store.getters['PortfolioAPI/user'];
+      this.dropDownFieldsList.forEach((field) => {
+        const defaultsName = field.equivalent ? `${field.equivalent.toUpperCase()}_DEFAULTS`
+          : `${field.name.toUpperCase()}_DEFAULTS`;
+        const defaults = process.env[defaultsName];
+        if (defaults && defaults.length) {
+          const dropDownList = defaults;
+          // special case contributors - add user
+          if ((field.equivalent === 'contributors') || field.name === 'contributors') {
+            // set user
+            dropDownList.unshift({
+              label: user.name,
+              source: user.uuid,
+              additional: this.$t('form.myself'),
+            });
+          }
+          this.$set(defaultDropDownObject, field.name, dropDownList);
+        }
+      });
+      console.log('default drop down lists');
+      this.defaultDropDownValues = defaultDropDownObject;
+    },
+    getDropDownFields(fieldObject) {
+      let fieldNameList = [];
+      Object.keys(fieldObject)
+        .forEach((fieldName) => {
+          const fieldXAttrs = fieldObject[fieldName]['x-attrs'];
+          if (fieldXAttrs && fieldXAttrs.field_type === 'group') {
+            fieldNameList = fieldNameList
+              .concat(this.getDropDownFields(fieldObject[fieldName].items.properties));
+          } else if (fieldXAttrs && !fieldXAttrs.hidden) {
+            const sources = Object.keys(fieldXAttrs).filter(key => !!key.includes('source'));
+            if (sources.length) {
+              sources.forEach((sourceAttr) => {
+                fieldNameList.push({
+                  name: sourceAttr.includes('_') ? `${fieldName}_secondary` : fieldName,
+                  source: fieldXAttrs[sourceAttr],
+                  equivalent: fieldXAttrs.equivalent,
+                });
+              });
+            }
+          }
+        });
+      return fieldNameList;
     },
   },
 };
