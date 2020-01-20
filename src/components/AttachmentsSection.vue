@@ -245,7 +245,7 @@ export default {
       position: absolute;
       height: 100%;
       width: 100%;
-      z-index: 2;
+      z-index: map-get($zindex, loader);
       background-color: rgba(255,255,255, 0.50);
 
       .base-attachments-section__loader {
@@ -287,7 +287,7 @@ export default {
         text-align: center;
         color: $font-color-second;
         backface-visibility: hidden;
-        z-index: 1;
+        z-index: map-get($zindex, boxcontent);
         position: relative;
 
         .base-attachments-section__message-area-text {

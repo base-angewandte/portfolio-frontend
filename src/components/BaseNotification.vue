@@ -76,7 +76,7 @@ export default {
   .notification-container{
     position: sticky;
     top: $header-height;
-    z-index: 1030;
+    z-index: map-get($zindex, notification);
     max-width: 100%;
     margin-top: $header-height;
 

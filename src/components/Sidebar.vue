@@ -585,7 +585,7 @@ export default {
 
     .sidebar-head {
       position: sticky;
-      z-index: 5;
+      z-index: map-get($zindex, dropdown);
       padding-top: $spacing;
       padding-bottom: $spacing-small;
       background-color: $background-color;
@@ -617,7 +617,7 @@ export default {
       position: absolute;
       height: 100%;
       width: 100%;
-      z-index: 2;
+      z-index: map-get($zindex, loader);
       background-color: rgba(255,255,255, 0.50);
     }
   }

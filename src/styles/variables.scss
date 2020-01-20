@@ -67,3 +67,22 @@ $icon-min: 8px;
 $mobile: 639px;
 $mobile-min-width: 640px;
 $tablet: 1024px;
+
+/* z-indeces */
+$zindex: (
+  sidebar: 50,
+  boxcontent: 100,
+  fadeout: 100,
+  uploadbar: 100,
+  button-active: 100,
+  dropdown: 200,
+  uploadbar-content: 200,
+  hoverbox: 500,
+  form-header-row: 1000,
+  // just in here for reference
+  header: 1040,
+  notification: 1100,
+  loader: 5000,
+  overlay: 10000,
+  popup: 100000,
+)
