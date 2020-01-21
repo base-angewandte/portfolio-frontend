@@ -435,6 +435,8 @@ export default {
             await this.$store.dispatch('data/addOrUpdateEntry', validData);
             this.$emit('data-changed');
           }
+          // fetch types anew in case entry types were newly created or modified
+          this.$store.dispatch('data/fetchEntryTypes');
           this.$notify({
             group: 'request-notifications',
             title: this.$t('notify.saveSuccess'),

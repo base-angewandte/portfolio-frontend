@@ -484,7 +484,6 @@ export default {
           this.entriesExist = !!this.entryNumber;
         }
         this.$emit('sidebar-data-changed');
-        await this.$store.dispatch('data/fetchEntryTypes');
       } catch (e) {
         if (!axios.isCancel(e) && (e.response && e.response.status !== 403)) {
           console.error(e);
