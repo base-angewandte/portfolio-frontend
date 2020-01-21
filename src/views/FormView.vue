@@ -344,8 +344,8 @@ export default {
     resetForm() {
       this.valueList = {};
       this.valueList.data = {};
-      this.valueListOriginal = { ...this.valueList };
       this.$refs.baseForm.initializeValueObject();
+      this.valueListOriginal = { ...this.valueList };
     },
     async updateForm() {
       this.formIsLoading = true;

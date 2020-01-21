@@ -134,11 +134,13 @@ export default {
   methods: {
     createNewForm() {
       const formView = this.$refs.view;
-      if (formView && formView.resetForm) {
-        formView.resetForm();
-      }
       // only push route when it is not the same as previous
-      if (this.$route.name !== 'newEntry') {
+      // --> form will not be reset - do it here manually
+      if (this.$route.name === 'newEntry') {
+        if (formView && formView.resetForm) {
+          formView.resetForm();
+        }
+      } else {
         this.$router.push('/new');
       }
     },
