@@ -73,7 +73,7 @@ export default {
     top: 0;
     left: 0;
     background: rgba(255, 255, 255, 0.7);
-    z-index: map-get($zindex, overlay);
+    z-index: map-get($zindex, modal_bg);
 
     .info-area {
       position: absolute;
