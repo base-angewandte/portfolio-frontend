@@ -12,7 +12,9 @@
       :header-text="$t('form-view.attachedEntries')"
       :action="entryAction"
       :is-loading="entriesLoading"
-      @set-action="entryAction = 'delete'"
+      :selected-number="selectedEntries.length"
+      @set-action="setEntryAction('entry')"
+      @selected="selectEntries('linked', $event)"
       @submit-action="deleteLinked"
       @cancel-action="resetSelected">
       <template
@@ -45,6 +47,8 @@
       :action-button-text="buttonText"
       :action="action"
       :is-loading="filesLoading"
+      :selected-number="selectedFiles.length"
+      @selected="selectEntries('files', $event)"
       @set-action="setAction"
       @submit-action="saveFileMeta"
       @cancel-action="resetSelected">
@@ -137,7 +141,9 @@
       :header-text="$t('form-view.parentEntries')"
       :action="parentEntryAction"
       :is-loading="entriesLoading"
-      @set-action="parentEntryAction = 'delete'"
+      :selected-number="selectedEntries.length"
+      @set-action="setEntryAction('parentEntry')"
+      @selected="selectEntries('parent', $event)"
       @submit-action="deleteLinked"
       @cancel-action="resetSelected">
       <template
@@ -337,7 +343,10 @@ export default {
     // function triggered upon entry selection updating selectedEntries accordingly
     entrySelected(objId, sel) {
       if (sel) {
-        this.selectedEntries.push(objId);
+        // only add if entry is not there yet
+        if (!this.selectedEntries.includes(objId)) {
+          this.selectedEntries.push(objId);
+        }
       } else {
         this.selectedEntries = this.selectedEntries.filter(entryId => entryId !== objId);
       }
@@ -451,6 +460,9 @@ export default {
       }
     },
     setAction(val) {
+      // close other selects
+      this.entryAction = '';
+      this.parentEntryAction = '';
       if (val) {
         this.action = val;
         this.fileSubtext = this.$t(`form-view.${val}Subtext`);
@@ -461,9 +473,28 @@ export default {
         this.selectedFiles = [];
       }
     },
+    setEntryAction(type) {
+      // close other selects
+      this.action = '';
+      this[`${type === 'entry' ? 'parentEntry' : 'entry'}Action`] = '';
+      // clear entries
+      this.selectedEntries = [];
+      this[`${type}Action`] = 'delete';
+    },
     resetSelected() {
       this.selectedEntries = [];
       this.selectedFiles = [];
+    },
+    selectEntries(listType, selectAll) {
+      if (listType === 'files') {
+        this.selectedFiles = [];
+        if (selectAll) {
+          this.attachedList
+            .forEach(file => this.filesSelected(file.id, selectAll, file.published));
+        }
+      } else {
+        this.selectedEntries = selectAll ? this[`${listType}List`].map(entry => entry.id) : [];
+      }
     },
   },
 };

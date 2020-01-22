@@ -72,7 +72,14 @@
           </div>
           <slot name="options-message-area-after" />
         </div>
-
+        <slot name="below-action-area" />
+        <BaseSelectOptions
+          v-if="selectActive"
+          :key="headerText + '_selectOptions'"
+          :number-selected="selectedNumber"
+          :selected-number-text="$t('entriesSelected')"
+          :select-text="$t('selectAll')"
+          @selected="$emit('selected', $event)" />
         <!-- BOXAREA -->
         <div
           :key="headerText + '_boxArea'"
@@ -109,7 +116,7 @@
 
 <script>
 import {
-  BaseButton, BaseImageBox, BaseBoxButton, BaseLoader,
+  BaseButton, BaseImageBox, BaseBoxButton, BaseLoader, BaseSelectOptions,
 } from 'base-ui-components';
 import BaseOptions from './BaseOptions';
 
@@ -120,6 +127,7 @@ export default {
     BaseOptions,
     BaseImageBox,
     BaseBoxButton,
+    BaseSelectOptions,
   },
   props: {
     /**
@@ -195,6 +203,13 @@ export default {
     isLoading: {
       type: Boolean,
       default: false,
+    },
+    /**
+     * to pass down the number of selected entries
+     */
+    selectedNumber: {
+      type: Number,
+      default: 0,
     },
   },
   data() {
