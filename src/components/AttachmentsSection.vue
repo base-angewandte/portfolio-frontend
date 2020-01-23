@@ -77,7 +77,7 @@
           v-if="selectActive"
           :key="headerText + '_selectOptions'"
           :number-selected="selectedNumber"
-          :selected-number-text="$t('entriesSelected')"
+          :selected-number-text="$tc('entriesSelected', selectedNumber)"
           :select-text="$t('selectAll')"
           :all-selected="allSelected"
           @selected="$emit('selected', $event)" />

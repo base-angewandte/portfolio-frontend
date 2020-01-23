@@ -41,7 +41,7 @@
   "entryOverview": "Overview Portfolio Entries",
   "newEntry": "Create New Entry",
   "selectAll": "All visible",
-  "entriesSelected": "entries selected",
+  "entriesSelected": "entries selected | entry selected | entries selected",
   "form": {
     "Add": "Add {value}",
     "select": "Select",

@@ -98,7 +98,7 @@
       <BaseSelectOptions
         v-if="showCheckbox"
         :number-selected="selectedMenuEntries.length"
-        :selected-number-text="$t('entriesSelected')"
+        :selected-number-text="$tc('entriesSelected', selectedMenuEntries.length)"
         :select-text="$t('selectAll')"
         :all-selected="allSelected"
         @selected="changeAllSelectState" />

@@ -39,7 +39,7 @@
   "entryOverview": "Übersicht Portfolio Einträge",
   "newEntry": "Neuen Eintrag anlegen",
   "selectAll": "Alle sichtbaren",
-  "entriesSelected": "Einträge ausgewählt",
+  "entriesSelected": "Einträge ausgewählt | Eintrag ausgewählt | Einträge ausgewählt",
   "form": {
     "Add": "{value} hinzufügen",
     "select": "Wähle",
