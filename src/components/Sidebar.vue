@@ -100,7 +100,7 @@
         :number-selected="selectedMenuEntries.length"
         :selected-number-text="$t('entriesSelected')"
         :select-text="$t('selectAll')"
-        :selected="selected"
+        :all-selected="allSelected"
         @selected="changeAllSelectState" />
     </div>
 
@@ -251,8 +251,6 @@ export default {
       showDropDownsInline: true,
       // to have shadow when sidebar list below sidebar head
       sidebarBelow: false,
-      // to handle the select all button
-      selected: false,
     };
   },
   computed: {
@@ -317,24 +315,20 @@ export default {
     isMobile() {
       return this.windowWidth && this.windowWidth <= 640;
     },
+    allSelected() {
+      const listIds = this.selectedMenuEntries.map(entry => entry.id);
+      const unselectedLength = this.listInt
+        .filter(entry => !listIds.includes(entry.id)).length;
+      return unselectedLength === 0;
+    },
   },
   watch: {
     list(val) {
       this.listInt = [].concat(val);
     },
-    listInt() {
-      if (this.showCheckbox) {
-        // reset select all
-        const listIds = this.selectedMenuEntries.map(entry => entry.id);
-        const unselectedLength = this.listInt
-          .filter(entry => !listIds.includes(entry.id)).length;
-        this.selected = unselectedLength === 0;
-      }
-    },
     showCheckbox(val) {
       // delete selected when options menu is closed and reset select all
       if (!val) {
-        this.selected = false;
         this.selectedMenuEntries = [];
       }
     },
@@ -385,7 +379,6 @@ export default {
       this.$emit('selected-changed', this.selectedMenuEntries);
     },
     changeAllSelectState(selected) {
-      this.selected = selected;
       if (selected) {
         // add all visible entries to selected list
         this.selectedMenuEntries = this.selectedMenuEntries.concat(this.listInt);

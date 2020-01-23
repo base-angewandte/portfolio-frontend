@@ -13,6 +13,7 @@
       :action="entryAction"
       :is-loading="entriesLoading"
       :selected-number="selectedEntries.length"
+      :all-selected="calcAllSelected(linkedList, selectedEntries)"
       @set-action="setEntryAction('entry')"
       @selected="selectEntries('linked', $event)"
       @submit-action="deleteLinked"
@@ -48,6 +49,7 @@
       :action="action"
       :is-loading="filesLoading"
       :selected-number="selectedFiles.length"
+      :all-selected="calcAllSelected(attachedList, selectedFiles)"
       @selected="selectEntries('files', $event)"
       @set-action="setAction"
       @submit-action="saveFileMeta"
@@ -142,6 +144,7 @@
       :action="parentEntryAction"
       :is-loading="entriesLoading"
       :selected-number="selectedEntries.length"
+      :all-selected="calcAllSelected(parentList, selectedEntries)"
       @set-action="setEntryAction('parentEntry')"
       @selected="selectEntries('parent', $event)"
       @submit-action="deleteLinked"
@@ -495,6 +498,15 @@ export default {
       } else {
         this.selectedEntries = selectAll ? this[`${listType}List`].map(entry => entry.id) : [];
       }
+    },
+    calcAllSelected(list, selectedList) {
+      // currently this is acutally an overkill since all entries on one page
+      // however will be usefull if pagination is introduced
+      const idList = selectedList.length && selectedList[0].id
+        ? selectedList.map(entry => entry.id) : selectedList;
+      const unselectedLength = list
+        .filter(entry => !idList.includes(entry.id)).length;
+      return unselectedLength === 0;
     },
   },
 };

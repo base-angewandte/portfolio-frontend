@@ -79,6 +79,7 @@
           :number-selected="selectedNumber"
           :selected-number-text="$t('entriesSelected')"
           :select-text="$t('selectAll')"
+          :all-selected="allSelected"
           @selected="$emit('selected', $event)" />
         <!-- BOXAREA -->
         <div
@@ -210,6 +211,15 @@ export default {
     selectedNumber: {
       type: Number,
       default: 0,
+    },
+    /**
+     * flag to set from outside if select all button should
+     * select or deselect all<br>
+     * (deselect only when all attachments are selected)
+     */
+    allSelected: {
+      type: Boolean,
+      default: false,
     },
   },
   data() {
