@@ -40,7 +40,8 @@
   "myPortfolio": "My Portfolio",
   "entryOverview": "Overview Portfolio Entries",
   "newEntry": "Create New Entry",
-  "selectAll": "All visible",
+  "selectAll": "Selct all",
+  "selectNone": "Select none",
   "entriesSelected": "entries selected | entry selected | entries selected",
   "form": {
     "Add": "Add {value}",

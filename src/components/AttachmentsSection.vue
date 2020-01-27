@@ -76,10 +76,11 @@
         <BaseSelectOptions
           v-if="selectActive"
           :key="headerText + '_selectOptions'"
-          :number-selected="selectedNumber"
-          :selected-number-text="$tc('entriesSelected', selectedNumber)"
+          :selected-number-text="$tc('entriesSelected', selectedList.length)"
           :select-text="$t('selectAll')"
-          :all-selected="allSelected"
+          :deselect-text="$t('selectNone')"
+          :list="attachedList"
+          :selected-list="selectedList"
           @selected="$emit('selected', $event)" />
         <!-- BOXAREA -->
         <div
@@ -206,20 +207,11 @@ export default {
       default: false,
     },
     /**
-     * to pass down the number of selected entries
+     * provide a list of selected entries for select options
      */
-    selectedNumber: {
-      type: Number,
-      default: 0,
-    },
-    /**
-     * flag to set from outside if select all button should
-     * select or deselect all<br>
-     * (deselect only when all attachments are selected)
-     */
-    allSelected: {
-      type: Boolean,
-      default: false,
+    selectedList: {
+      type: Array,
+      default: () => [],
     },
   },
   data() {

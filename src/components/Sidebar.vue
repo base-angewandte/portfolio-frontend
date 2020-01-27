@@ -97,10 +97,11 @@
 
       <BaseSelectOptions
         v-if="showCheckbox"
-        :number-selected="selectedMenuEntries.length"
         :selected-number-text="$tc('entriesSelected', selectedMenuEntries.length)"
         :select-text="$t('selectAll')"
-        :all-selected="allSelected"
+        :deselect-text="$t('selectNone')"
+        :list="listInt"
+        :selected-list="selectedMenuEntries"
         @selected="changeAllSelectState" />
     </div>
 
@@ -314,12 +315,6 @@ export default {
     },
     isMobile() {
       return this.windowWidth && this.windowWidth <= 640;
-    },
-    allSelected() {
-      const listIds = this.selectedMenuEntries.map(entry => entry.id);
-      const unselectedLength = this.listInt
-        .filter(entry => !listIds.includes(entry.id)).length;
-      return unselectedLength === 0;
     },
   },
   watch: {
