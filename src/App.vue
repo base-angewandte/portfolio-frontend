@@ -125,6 +125,9 @@ export default {
       .form-view {
         flex: 0 1 66%;
         margin-left: $spacing;
+        // TODO: why so many width?
+        max-width: 66%;
+        width: 65%;
       }
     }
   }
@@ -184,6 +187,8 @@ export default {
       #app-container {
         .form-view {
           margin-left: 0;
+          width: 100%;
+          max-width: 100%;
           flex-basis: 100%;
         }
       }
