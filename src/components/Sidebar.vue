@@ -97,7 +97,10 @@
 
       <BaseSelectOptions
         v-if="showCheckbox"
-        :selected-number-text="$tc('entriesSelected', selectedMenuEntries.length)"
+        :selected-number-text="$t(
+          'entriesSelected',
+          { type: $tc('notify.entry', selectedMenuEntries.length) }
+        )"
         :select-text="$t('selectAll')"
         :deselect-text="$t('selectNone')"
         :list="listInt"
