@@ -40,7 +40,7 @@
   "newEntry": "Neuen Eintrag anlegen",
   "selectAll": "Alle auswählen",
   "selectNone": "Keine auswählen",
-  "entriesSelected": "Einträge ausgewählt | Eintrag ausgewählt | Einträge ausgewählt",
+  "entriesSelected": "{type} ausgewählt",
   "form": {
     "Add": "{value} hinzufügen",
     "select": "Wähle",
