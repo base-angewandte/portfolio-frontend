@@ -76,7 +76,10 @@
         <BaseSelectOptions
           v-if="selectActive"
           :key="headerText + '_selectOptions'"
-          :selected-number-text="$tc('entriesSelected', selectedList.length)"
+          :selected-number-text="$t(
+            'entriesSelected',
+            { type: $tc(`notify.${entryType}`, selectedList.length) }
+          )"
           :select-text="$t('selectAll')"
           :deselect-text="$t('selectNone')"
           :list="attachedList"
@@ -212,6 +215,13 @@ export default {
     selectedList: {
       type: Array,
       default: () => [],
+    },
+    /**
+     * define entry type (currently media or entry
+     */
+    entryType: {
+      type: String,
+      default: 'entry',
     },
   },
   data() {

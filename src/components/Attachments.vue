@@ -48,6 +48,7 @@
       :action="action"
       :is-loading="filesLoading"
       :selected-list="selectedFiles"
+      entry-type="media"
       @selected="selectEntries('files', $event)"
       @set-action="setAction"
       @submit-action="saveFileMeta"
