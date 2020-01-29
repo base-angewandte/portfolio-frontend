@@ -145,7 +145,16 @@ export default {
       }
     },
     checkUnsavedChanges(id) {
-      const followUpAction = id ? () => this.routeToEntry(id) : () => this.createNewForm();
+      const followUpAction = () => {
+        // remove leftover stored values before entering new item;
+        sessionStorage.removeItem('valueList');
+        sessionStorage.removeItem('parent');
+        if (id) {
+          this.routeToEntry(id);
+        } else {
+          this.createNewForm();
+        }
+      };
       if (this.$refs.view && this.$refs.view.unsavedChanges) {
         this.$store.commit('data/setPopUp', {
           show: true,

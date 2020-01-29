@@ -570,7 +570,11 @@ export default {
             }
             this.$store.commit('data/hidePopUp');
           },
-          actionLeft: followUpAction,
+          actionLeft: () => {
+            // if changes are discarded reset to original value list
+            this.valueList = { ...this.valueListOriginal };
+            followUpAction();
+          },
         });
       } else {
         followUpAction();
