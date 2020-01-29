@@ -70,7 +70,7 @@
         :text="$t('form-view.addExistingEntry')"
         icon-size="large"
         button-style="row"
-        icon="sheet-plus"
+        icon="sheet-empty"
         align-text="left"
         class="file-list-button"
         @clicked="openEntrySelect" />
@@ -95,7 +95,7 @@
           :text="$t('form-view.attachFile')"
           :disabled="!currentId"
           :show-tooltip="!currentId ? true : false"
-          icon="sheet-plus"
+          icon="camera"
           icon-size="large"
           align-text="left"
           button-style="row"
