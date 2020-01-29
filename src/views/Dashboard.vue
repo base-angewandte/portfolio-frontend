@@ -134,16 +134,27 @@ export default {
   methods: {
     createNewForm() {
       const formView = this.$refs.view;
-      if (formView && formView.resetForm) {
-        formView.resetForm();
-      }
       // only push route when it is not the same as previous
-      if (this.$route.name !== 'newEntry') {
+      // --> form will not be reset - do it here manually
+      if (this.$route.name === 'newEntry') {
+        if (formView && formView.resetForm) {
+          formView.resetForm();
+        }
+      } else {
         this.$router.push('/new');
       }
     },
     checkUnsavedChanges(id) {
-      const followUpAction = id ? () => this.routeToEntry(id) : () => this.createNewForm();
+      const followUpAction = () => {
+        // remove leftover stored values before entering new item;
+        sessionStorage.removeItem('valueList');
+        sessionStorage.removeItem('parent');
+        if (id) {
+          this.routeToEntry(id);
+        } else {
+          this.createNewForm();
+        }
+      };
       if (this.$refs.view && this.$refs.view.unsavedChanges) {
         this.$store.commit('data/setPopUp', {
           show: true,

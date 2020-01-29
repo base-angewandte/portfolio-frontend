@@ -26,7 +26,7 @@ Eye by Heipi from the Noun project
 
 Warning by DewDrops from the Noun project
 
-File by By Skye Selbiger, US from the Noun project 
+File by By Skye Selbiger, US from the Noun project
 
 duplicate by Adrien Coquet from the Noun Project
 
@@ -41,3 +41,9 @@ Home by il Capitano from the Noun Project
 Refresh by Hea Poh Lin from the Noun Project
 
 Attachment by Free Icons from the Noun Project
+
+Download by scott desmond from the Noun Project
+
+text by Bohdan Burmich from the Noun Project
+
+Information by Arfan Khan Kamol from the Noun Project
