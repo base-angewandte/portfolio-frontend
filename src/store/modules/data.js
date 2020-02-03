@@ -442,7 +442,7 @@ const actions = {
       }
     });
   },
-  async deleteEntries({ state, commit }) {
+  async deleteEntries({ state, commit, dispatch }) {
     const successArr = [];
     const failArr = [];
     await Promise.all(state.selectedEntries
@@ -457,6 +457,9 @@ const actions = {
           resolve();
         }
       })));
+    // fetch types list anew in case no entries with contained types are
+    // left after delete
+    dispatch('fetchEntryTypes');
     // check if any deleted items are currently displayed in form as linked
     const deletedLinked = state.linkedEntries
       .filter(entry => successArr.includes(entry.to.id));

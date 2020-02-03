@@ -24,75 +24,90 @@
           class="search-bar"
           @input-change="filterEntries($event, 'title')" />
       </div>
-      <BaseOptions
-        ref="baseOptions"
-        :always-show-options-button="true"
-        :show-options="showCheckbox"
-        :options-hidden="optionsDisabled"
-        :show-after-options-inline="showDropDownsInline"
-        align-options="left"
-        @options-toggle="toggleSidebarOptions">
-        <template slot="afterOptions">
-          <div
-            ref="afterOptions"
-            class="sidebar-drop-downs">
-            <BaseDropDown
-              v-model="sortParam"
-              :placeholder="$t('dropdown.sortBy')"
-              :label="$t('dropdown.sortBy')"
-              :options="sortOptions"
-              :with-spacing="false"
-              class="sidebar-dropdown"
-              @value-selected="fetchSidebarData" />
-            <BaseDropDown
-              v-model="filterType"
-              :label="$t('dropdown.filterByType')"
-              :options="entryTypes"
-              :language="$i18n.locale"
-              :with-spacing="false"
-              value-prop="source"
-              align-drop-down="right"
-              class="sidebar-dropdown"
-              @value-selected="filterEntries($event, 'type')" />
-          </div>
-        </template>
-        <template
-          slot="options">
-          <BaseButton
-            :text="$tc('publish', 2)"
-            :disabled="isLoading"
-            :has-background-color="false"
-            icon-size="large"
-            icon="eye"
-            button-style="single"
-            @clicked="handleAction('publish')" />
-          <BaseButton
-            :text="$tc('offline', 2)"
-            :disabled="isLoading"
-            :has-background-color="false"
-            icon-size="large"
-            icon="forbidden"
-            button-style="single"
-            @clicked="handleAction('offline')" />
-          <BaseButton
-            :text="$tc('duplicate', 2)"
-            :disabled="isLoading"
-            :has-background-color="false"
-            icon-size="large"
-            icon="duplicate"
-            button-style="single"
-            @clicked="duplicateEntries" />
-          <BaseButton
-            :text="$tc('delete', 2)"
-            :disabled="isLoading"
-            :has-background-color="false"
-            icon-size="large"
-            icon="waste-bin"
-            button-style="single"
-            @clicked="handleAction('delete')" />
-        </template>
-      </BaseOptions>
+      <div class="sidebar-options-container">
+        <BaseOptions
+          ref="baseOptions"
+          :always-show-options-button="true"
+          :show-options="showCheckbox"
+          :options-hidden="optionsDisabled"
+          :show-after-options-inline="showDropDownsInline"
+          align-options="left"
+          @options-toggle="toggleSidebarOptions">
+          <template slot="afterOptions">
+            <div
+              ref="afterOptions"
+              class="sidebar-drop-downs">
+              <BaseDropDown
+                v-model="sortParam"
+                :placeholder="$t('dropdown.sortBy')"
+                :label="$t('dropdown.sortBy')"
+                :options="sortOptions"
+                :with-spacing="false"
+                class="sidebar-dropdown"
+                @value-selected="fetchSidebarData" />
+              <BaseDropDown
+                v-model="filterType"
+                :label="$t('dropdown.filterByType')"
+                :options="entryTypes"
+                :language="$i18n.locale"
+                :with-spacing="false"
+                value-prop="source"
+                align-drop-down="right"
+                class="sidebar-dropdown"
+                @value-selected="filterEntries($event, 'type')" />
+            </div>
+          </template>
+          <template
+            slot="options">
+            <BaseButton
+              :text="$tc('publish', 2)"
+              :disabled="isLoading"
+              :has-background-color="false"
+              icon-size="large"
+              icon="eye"
+              button-style="single"
+              @clicked="handleAction('publish')" />
+            <BaseButton
+              :text="$tc('offline', 2)"
+              :disabled="isLoading"
+              :has-background-color="false"
+              icon-size="large"
+              icon="forbidden"
+              button-style="single"
+              @clicked="handleAction('offline')" />
+            <BaseButton
+              :text="$tc('duplicate', 2)"
+              :disabled="isLoading"
+              :has-background-color="false"
+              icon-size="large"
+              icon="duplicate"
+              button-style="single"
+              @clicked="duplicateEntries" />
+            <BaseButton
+              :text="$tc('delete', 2)"
+              :disabled="isLoading"
+              :has-background-color="false"
+              icon-size="large"
+              icon="waste-bin"
+              button-style="single"
+              @clicked="handleAction('delete')" />
+          </template>
+        </BaseOptions>
+      </div>
+
+      <BaseSelectOptions
+        v-if="showCheckbox"
+        :selected-number-text="$t(
+          'entriesSelected',
+          { type: $tc('notify.entry', selectedMenuEntries.length) }
+        )"
+        :select-text="$t('selectAll')"
+        :deselect-text="$t('selectNone')"
+        :list="listInt"
+        :selected-list="selectedMenuEntries"
+        @selected="changeAllSelectState" />
     </div>
+
     <div
       ref="menuContainer"
       class="base-menu-container">
@@ -143,6 +158,7 @@ import {
   BasePagination,
   BaseLoader,
   BaseOptions,
+  BaseSelectOptions,
 } from 'base-ui-components';
 import axios from 'axios';
 import { entryHandlingMixin } from '../mixins/entryHandling';
@@ -158,6 +174,7 @@ export default {
     BasePagination,
     BaseOptions,
     BaseLoader,
+    BaseSelectOptions,
   },
   mixins: [entryHandlingMixin, userInfo],
   props: {
@@ -308,7 +325,7 @@ export default {
       this.listInt = [].concat(val);
     },
     showCheckbox(val) {
-      // delete selected when options menu is closed
+      // delete selected when options menu is closed and reset select all
       if (!val) {
         this.selectedMenuEntries = [];
       }
@@ -358,6 +375,18 @@ export default {
       }
       // TODO: check if selectedEntries should also be handled internally
       this.$emit('selected-changed', this.selectedMenuEntries);
+    },
+    changeAllSelectState(selected) {
+      if (selected) {
+        // add all visible entries to selected list
+        this.selectedMenuEntries = this.selectedMenuEntries.concat(this.listInt);
+        // deduplicate by creating set and convert back to array
+        this.selectedMenuEntries = [...new Set(this.selectedMenuEntries)];
+      } else {
+        const listIntIds = this.listInt.map(entry => entry.id);
+        this.selectedMenuEntries = this.selectedMenuEntries
+          .filter(entry => !listIntIds.includes(entry.id));
+      }
     },
     getNewForm() {
       this.$store.commit('data/deleteCurrentItem');
@@ -484,7 +513,6 @@ export default {
           this.entriesExist = !!this.entryNumber;
         }
         this.$emit('sidebar-data-changed');
-        await this.$store.dispatch('data/fetchEntryTypes');
       } catch (e) {
         if (!axios.isCancel(e) && (e.response && e.response.status !== 403)) {
           console.error(e);
@@ -585,9 +613,8 @@ export default {
 
     .sidebar-head {
       position: sticky;
-      z-index: 5;
+      z-index: map-get($zindex, dropdown);
       padding-top: $spacing;
-      padding-bottom: $spacing-small;
       background-color: $background-color;
       flex: 0 0 auto;
 
@@ -599,6 +626,10 @@ export default {
         display: flex;
         justify-content: flex-end;
       }
+    }
+
+    .sidebar-options-container {
+      padding-bottom: $spacing-small;
     }
   }
 
@@ -617,7 +648,7 @@ export default {
       position: absolute;
       height: 100%;
       width: 100%;
-      z-index: 2;
+      z-index: map-get($zindex, loader);
       background-color: rgba(255,255,255, 0.50);
     }
   }

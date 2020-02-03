@@ -499,7 +499,7 @@ export default {
     .base-form-field-array-label {
       color: $font-color-second;
       margin-bottom: $spacing-small;
-      z-index: 1;
+      z-index: map-get($zindex, boxcontent);
     }
 
     .base-form-subform-wrapper {

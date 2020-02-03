@@ -115,7 +115,7 @@ export default {
         align-self: flex-start;
         position: sticky;
         top: $header-height;
-        z-index: 6;
+        z-index: map-get($zindex, sidebar);
       }
 
       & .sidebar-full {
@@ -124,7 +124,7 @@ export default {
 
       .form-view {
         flex: 0 1 66%;
-        margin-left: 16px;
+        margin-left: $spacing;
         // TODO: why so many width?
         max-width: 66%;
         width: 65%;

@@ -396,8 +396,8 @@ export default {
     resetForm() {
       this.valueList = {};
       this.valueList.data = {};
-      this.valueListOriginal = { ...this.valueList };
       // this.$refs.baseForm.initializeValueObject();
+      this.valueListOriginal = { ...this.valueList };
     },
     async updateForm() {
       this.formIsLoading = true;
@@ -491,6 +491,8 @@ export default {
             await this.$store.dispatch('data/addOrUpdateEntry', validData);
             this.$emit('data-changed');
           }
+          // fetch types anew in case entry types were newly created or modified
+          this.$store.dispatch('data/fetchEntryTypes');
           this.$notify({
             group: 'request-notifications',
             title: this.$t('notify.saveSuccess'),
@@ -624,7 +626,11 @@ export default {
             }
             this.$store.commit('data/hidePopUp');
           },
-          actionLeft: followUpAction,
+          actionLeft: () => {
+            // if changes are discarded reset to original value list
+            this.valueList = { ...this.valueListOriginal };
+            followUpAction();
+          },
         });
       } else {
         followUpAction();
@@ -837,7 +843,7 @@ export default {
       background-color: $background-color;
       position: sticky;
       top: $header-height;
-      z-index: 5;
+      z-index: map-get($zindex, form-header-row);
       padding: $spacing 0 $spacing-small;
       order: 0;
 
@@ -859,7 +865,7 @@ export default {
           position:absolute;
           height: 100%;
           width: 100%;
-          z-index: 10;
+          z-index: map-get($zindex, form-header-row) + 100;
           top: 0;
           left: 0;
           background-color: rgb(240, 240, 240);
@@ -886,7 +892,7 @@ export default {
         width: 100%;
         height: 100%;
         min-height: 100vh;
-        z-index: 2;
+        z-index: map-get($zindex, loader);
         background-color: rgba(255,255,255, 0.50);
 
         .loader {
