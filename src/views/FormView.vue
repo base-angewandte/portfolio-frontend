@@ -20,7 +20,7 @@
         class="form-loading-area">
         <BaseLoader class="loader" />
       </div>
-      <BaseFormNew
+      <BaseForm
         v-if="Object.keys(formFields).length"
         ref="baseForm"
         :form-id="'main'"
@@ -28,11 +28,11 @@
         :value-list="valueList"
         :available-locales="locales"
         :language="$i18n.locale"
-        :fields-with-tabs="['texts']"
         :field-is-loading="fieldIsLoading"
         :drop-down-lists="dropDownListsInt"
         @values-changed="handleInput($event)"
         @fetch-autocomplete="fetchAutocomplete" />
+
       <transition-group
         name="slide-fade-form">
         <!-- FORM EXTENSION -->
@@ -44,7 +44,7 @@
             class="subtitle">
             {{ $t('form-view.formExtended') }}
           </div>
-          <BaseFormNew
+          <BaseForm
             key="extended-form"
             ref="formExtension"
             :form-id="'extended'"
@@ -52,13 +52,6 @@
             :value-list="valueList.data"
             :available-locales="locales"
             :language="$i18n.locale"
-            :prefetched-drop-down-lists="{
-              contributors_secondary: prefetchedRoles,
-              material: preFetchedData.material,
-              format: preFetchedData.format,
-              language: preFetchedData.language,
-              open_source_license: preFetchedData.open_source_license,
-            }"
             :field-is-loading="fieldIsLoading"
             :drop-down-lists="dropDownListsInt"
             class="form"
@@ -86,7 +79,7 @@
           @open-linked="goToLinked" />
       </transition-group>
       <transition name="slide-child-form">
-        <BaseFormNew
+        <BaseForm
           v-if="showOverlay"
           ref="overlay"
           :form-field-json="formFields"
@@ -138,30 +131,31 @@
 
 <script>
 import {
-  BaseMenuEntry, BaseLoader, BaseFormNew,
+  BaseMenuEntry, BaseLoader, BaseForm, BaseFormFieldCreator,
 } from 'base-ui-components';
 import axios from 'axios';
 import BaseRow from '../components/BaseRow';
 import BaseFormOptions from '../components/BaseFormOptions';
-// import BaseForm from '../components/BaseForm';
 
 import AttachmentArea from '../components/AttachmentArea';
 import { attachmentHandlingMixin } from '../mixins/attachmentHandling';
 import { entryHandlingMixin } from '../mixins/entryHandling';
 import { getApiUrl, getLangLabel } from '../utils/commonUtils';
-// import { getLangLabel } from '../utils/commonUtils';
 
 const { CancelToken } = axios;
 let cancel;
 
 export default {
+  name: 'FormView',
   components: {
     BaseMenuEntry,
     AttachmentArea,
     BaseFormOptions,
     BaseRow,
-    BaseFormNew,
+    BaseForm,
     BaseLoader,
+    // eslint-disable-next-line vue/no-unused-components
+    BaseFormFieldCreator,
   },
   mixins: [
     attachmentHandlingMixin,
@@ -187,12 +181,9 @@ export default {
       fieldIsLoading: '',
       // the drop down lists necessary for form fields with drop downs
       dropDownListsInt: {},
-      // remember the field for which autocomplete is fetching
-      fetchingAutocompleteFor: '',
-      // variable saving the current field input string during
-      // autocomplete functionality
-      currentInputString: '',
+      // object with all the default values from process env defaults + user default
       defaultDropDownValues: {},
+      // object with all prefetched drop down options from all fields
       prefetchedDropDownLists: {},
     };
   },
@@ -234,30 +225,25 @@ export default {
       return JSON.stringify(this.valueList) !== JSON.stringify(this.valueListOriginal);
     },
     locales() {
-      return this.$i18n.availableLocales;
+      return process.env.LOCALES;
     },
     dropDownFieldsList() {
       const fields = { ...this.formFields, ...this.formFieldsExtension };
-      const list = this.getDropDownFields(fields);
-      console.log('field list');
-      console.log(list);
       return this.getDropDownFields(fields);
     },
   },
   watch: {
-    formFieldsExtension(val) {
-      console.log('extension changed');
-      console.log(val);
-      this.setDropDownValues();
+    formFields() {
+      this.setDefaultDropDownLists();
     },
-    formFields(val) {
-      console.log('form fields changed');
-      console.log(val);
-      this.setDropDownValues();
+    formFieldsExtension() {
+      this.setDefaultDropDownLists();
     },
-    prefetchedDropDownLists(val) {
-      console.log('prefetched list changed');
-      console.log(val);
+    preFetchedData: {
+      handler() {
+        this.setDropDownValues();
+      },
+      deep: true,
     },
     async currentItemId(val) {
       window.scrollTo(0, 0);
@@ -321,15 +307,34 @@ export default {
       }
     },
   },
-  async created() {
+  async beforeCreate() {
     this.formIsLoading = true;
+    // initializing stores before app instance is created
+    await this.$store.dispatch('data/init', {
+      baseURL: getApiUrl(),
+      lang: this.$i18n.locale,
+    }).catch((e) => {
+      if ((e.response && e.response.status === '404') || e.message === 'Network Error') {
+        this.$router.push('/error');
+      } else if (!e || !e.response || e.response.status !== 403) {
+        console.error(e);
+        // TODO: if form fields can not be fetched this should probably
+        //  abort all further entry data / extension loadings (redirect to dashboard?)
+        this.$notify({
+          group: 'request-notifications',
+          title: this.$t('notify.somethingWrong'),
+          text: this.$t('notify.formDataNotFound'),
+          type: 'error',
+        });
+      }
+    });
+  },
+  async created() {
     // check if a parent was stored in session storage
     const storedParentString = sessionStorage.getItem('parent');
     if (storedParentString) {
       this.$store.commit('data/setParentItem', JSON.parse(storedParentString));
     }
-    await this.fetchGeneralFormFields();
-    // this.$store.dispatch('data/getStaticDropDowns');
     if (this.currentItemId) {
       await this.updateForm();
     } else {
@@ -375,24 +380,6 @@ export default {
     this.setDropDownValues();
   },
   methods: {
-    async fetchGeneralFormFields() {
-      try {
-        await this.$store.dispatch('data/fetchGeneralFields');
-      } catch (e) {
-        // only send error message if user is authenticated
-        if (!e || !e.response || e.response.status !== 403) {
-          console.error(e);
-          // TODO: if form fields can not be fetched this should probably
-          //  abort all further entry data / extension loadings (redirect to dashboard?)
-          this.$notify({
-            group: 'request-notifications',
-            title: this.$t('notify.somethingWrong'),
-            text: this.$t('notify.formDataNotFound'),
-            type: 'error',
-          });
-        }
-      }
-    },
     resetForm() {
       this.valueList = {};
       this.valueList.data = {};
@@ -651,7 +638,6 @@ export default {
     async fetchAutocomplete({
       value, name, source, equivalent,
     }) {
-      console.log('autocomplete start');
       if (this.timeout) {
         clearTimeout(this.timeout);
         this.timeout = null;
@@ -723,8 +709,7 @@ export default {
         let dropDownList = [].concat(modifiedData);
         // if input does not trigger search (> 2 char) set defaults
         if (this.defaultDropDownValues && this.defaultDropDownValues[name]
-          && (!value || value.length <= 2)
-          && (!this.currentInputString || this.currentInputString.length <= 2)) {
+          && (!value || value.length <= 2)) {
           dropDownList = this.setDropDownDefaults(
             this.defaultDropDownValues[name],
             value,
@@ -767,8 +752,6 @@ export default {
         contributors_secondary: this.prefetchedRoles,
         texts_secondary: this.preFetchedData.texts_type,
       };
-      console.log('prefetched lists');
-      console.log(this.prefetchedDropDownLists);
       this.dropDownFieldsList.forEach((field) => {
         const prefetched = this.prefetchedDropDownLists[field.name];
         if (prefetched && prefetched.length) {
@@ -778,32 +761,33 @@ export default {
           this.setDropDown([], '', field.equivalent, field.name);
         }
       });
-      console.log('real lists');
-      console.log(this.dropDownListsInt);
     },
     setDefaultDropDownLists() {
       const defaultDropDownObject = {};
       const user = this.$store.getters['PortfolioAPI/user'];
       this.dropDownFieldsList.forEach((field) => {
-        const defaultsName = field.equivalent ? `${field.equivalent.toUpperCase()}_DEFAULTS`
-          : `${field.name.toUpperCase()}_DEFAULTS`;
-        const defaults = process.env[defaultsName];
-        if (defaults && defaults.length) {
-          const dropDownList = defaults;
-          // special case contributors - add user
-          if ((field.equivalent === 'contributors') || field.name === 'contributors') {
-            // set user
-            dropDownList.unshift({
-              label: user.name,
-              source: user.uuid,
-              additional: this.$t('form.myself'),
-            });
+        // only get new if not already set
+        if (!this.defaultDropDownValues[field.name]
+          || !this.defaultDropDownValues[field.name].length) {
+          const defaultsName = field.equivalent ? `${field.equivalent.toUpperCase()}_DEFAULTS`
+            : `${field.name.toUpperCase()}_DEFAULTS`;
+          const defaults = process.env[defaultsName];
+          if (defaults && defaults.length) {
+            const dropDownList = defaults;
+            // special case contributors - add user
+            if ((field.equivalent === 'contributors') || field.name === 'contributors') {
+              // set user
+              dropDownList.unshift({
+                label: user.name,
+                source: user.uuid,
+                additional: this.$t('form.myself'),
+              });
+            }
+            this.$set(defaultDropDownObject, field.name, dropDownList);
           }
-          this.$set(defaultDropDownObject, field.name, dropDownList);
         }
       });
-      console.log('default drop down lists');
-      this.defaultDropDownValues = defaultDropDownObject;
+      this.defaultDropDownValues = { ...this.defaultDropDownValues, ...defaultDropDownObject };
     },
     getDropDownFields(fieldObject) {
       let fieldNameList = [];

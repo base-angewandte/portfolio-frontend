@@ -231,6 +231,9 @@ const mutations = {
 };
 
 const actions = {
+  async init({ dispatch }) {
+    dispatch('fetchGeneralFields');
+  },
   /**
    * fetch the schema of the general fields (first form part) to be able to generate
    * a form. Fetched from actual swagger.json
