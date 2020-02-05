@@ -175,8 +175,6 @@ export default {
       prefetchedRoles: [],
       // to have shadow effect when form is scrolled down
       formBelow: false,
-      // variable for setting fetched autocomplete Results
-      dynamicDropDownLists: {},
       // set the name of a field that is currently loading
       fieldIsLoading: '',
       // the drop down lists necessary for form fields with drop downs
