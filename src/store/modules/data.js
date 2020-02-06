@@ -594,7 +594,7 @@ const actions = {
   },
   async removeUnknownProps({ state, dispatch }, { data, fields }) {
     const newData = {};
-    Object.keys(data).forEach(async (key) => {
+    Object.keys(data).map(async (key) => {
       const field = fields[key];
       const xAttrs = field ? field['x-attrs'] : {};
       let values = data[key];
@@ -603,6 +603,19 @@ const actions = {
       // (distinguishable by x-nullable property!)) does not contain any values return
       if (!field || (!field['x-nullable'] && !hasFieldContent(values))) {
         return;
+      }
+      // adding of roles is also done here... (probably more performant anyway
+      // to only add ONCE before saving not whenever a value is changed)
+      if (xAttrs && xAttrs.equivalent === 'contributors') {
+        const fieldRole = state.prefetchedTypes.contributors_role
+          .find(role => role.source === xAttrs.default_role);
+        values.forEach((contributor, index) => {
+          if (typeof contributor === 'string') {
+            Vue.set(values, index, { label: contributor, roles: [fieldRole] });
+          } else {
+            Vue.set(values, index, { ...contributor, ...{ roles: [fieldRole] } });
+          }
+        });
       }
       // special case data - which has separate schema - needs to be checked first since data prop
       // also has hidden prop
@@ -666,7 +679,7 @@ const actions = {
         if (i18n.locale in field.properties) {
           Vue.set(newData, key, values);
         } else {
-          Object.keys(values).forEach(async (valueKey) => {
+          Object.keys(values).map(async (valueKey) => {
             // this is needed for Date fields that need to be removed if no value present
             if (!hasFieldContent(values[valueKey])) {
               return;
