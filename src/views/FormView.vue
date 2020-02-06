@@ -119,7 +119,7 @@
     </div>
 
     <div
-      v-if="valueList.date_created && valueList.date_changed"
+      v-if="valueList.date_created && valueList.date_changed && !formIsLoading && formDataPresent"
       class="last-modified">
       {{
         `${$t('form-view.created')} ${createHumanReadableData(valueList.date_created)}` }} <br>
@@ -231,6 +231,9 @@ export default {
     },
   },
   watch: {
+    formFields() {
+      this.formIsLoading = false;
+    },
     preFetchedData: {
       handler() {
         this.setDropDownValues();
@@ -248,6 +251,7 @@ export default {
         this.resetForm();
       }
       this.showOverlay = false;
+      this.formIsLoading = false;
     },
     async type(val) {
       if (val) {
@@ -304,7 +308,6 @@ export default {
     },
   },
   async beforeCreate() {
-    this.formIsLoading = true;
     // initializing stores before app instance is created
     await this.$store.dispatch('data/init', {
       baseURL: getApiUrl(),
@@ -326,6 +329,7 @@ export default {
     });
   },
   async created() {
+    this.formIsLoading = true;
     // check if a parent was stored in session storage
     const storedParentString = sessionStorage.getItem('parent');
     if (storedParentString) {
@@ -333,8 +337,6 @@ export default {
     }
     if (this.currentItemId) {
       await this.updateForm();
-    } else {
-      this.formIsLoading = false;
     }
     // check if previously unsaved changes were stored in session storage
     const storedValueList = JSON.parse(sessionStorage.getItem('valueList'));
@@ -404,7 +406,6 @@ export default {
           this.$router.push('/');
         }
       }
-      this.formIsLoading = false;
     },
     handleInput(data, type) {
       if (cancel) {
@@ -860,7 +861,6 @@ export default {
       position: relative;
       margin-top: -$spacing-small;
       order: 1;
-
       .base-form-options {
         margin-bottom: $spacing-small;
       }
