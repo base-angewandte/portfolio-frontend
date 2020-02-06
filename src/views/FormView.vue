@@ -231,12 +231,6 @@ export default {
     },
   },
   watch: {
-    formFields() {
-      this.setDefaultDropDownLists();
-    },
-    formFieldsExtension() {
-      this.setDefaultDropDownLists();
-    },
     preFetchedData: {
       handler() {
         this.setDropDownValues();
@@ -303,6 +297,10 @@ export default {
       if (!this.formIsLoading && Boolean(curr) !== Boolean(prev)) {
         this.$emit('data-changed', true);
       }
+    },
+    dropDownFieldsList() {
+      this.setDefaultDropDownLists();
+      this.setDropDownValues();
     },
   },
   async beforeCreate() {
@@ -374,8 +372,6 @@ export default {
         this.formBelow = this.$refs.formHead.offsetTop > 0;
       }
     });
-    this.setDefaultDropDownLists();
-    this.setDropDownValues();
   },
   methods: {
     resetForm() {
