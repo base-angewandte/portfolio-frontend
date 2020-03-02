@@ -46,7 +46,6 @@
       :header-text="$t('form-view.attachedFiles')"
       :action-button-text="buttonText"
       :action="action"
-      :max-rows="5"
       :is-loading="filesLoading"
       :selected-list="selectedFiles"
       entry-type="media"
