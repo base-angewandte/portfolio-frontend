@@ -659,15 +659,15 @@ export default {
             this.setDropDown(result.data || [], value, equivalent, name);
             // TODO: add additional properties if necessary: e.g.
             //  source name, separated name, dob, profession
+            this.fieldIsLoading = '';
           } catch (e) {
             console.error(e);
             if (e instanceof DOMException) {
               console.error('If you see above error it is likely because the source is missing for a field!');
+              this.fieldIsLoading = '';
             } else {
               // TODO: inform user?? notification or just info in drop down??
             }
-          } finally {
-            this.fieldIsLoading = '';
           }
         } else if (this.prefetchedDropDownLists[name]) {
           // check if there is a preset list for dynamic chips input fields (e.g. keywords)
@@ -701,7 +701,6 @@ export default {
           }
           return entry;
         });
-        console.log(modifiedData);
         let dropDownList = [].concat(modifiedData);
         // if input does not trigger search (> 2 char) set defaults
         if (this.defaultDropDownValues && this.defaultDropDownValues[name]
