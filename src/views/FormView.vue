@@ -656,7 +656,7 @@ export default {
                 cancel = c;
               }),
             });
-            this.$set(this.dropDownListsInt, name, result.data);
+            this.setDropDown(result.data || [], value, equivalent, name);
             // TODO: add additional properties if necessary: e.g.
             //  source name, separated name, dob, profession
           } catch (e) {
@@ -701,6 +701,7 @@ export default {
           }
           return entry;
         });
+        console.log(modifiedData);
         let dropDownList = [].concat(modifiedData);
         // if input does not trigger search (> 2 char) set defaults
         if (this.defaultDropDownValues && this.defaultDropDownValues[name]
