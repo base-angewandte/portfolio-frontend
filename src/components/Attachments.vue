@@ -3,7 +3,7 @@
     <!-- ATTACHED ENTRIES -->
     <BaseResultBoxSection
       ref="linkedSection"
-      :attached-list="linkedList"
+      :entry-list="linkedList"
       :message-text="$t('form-view.deleteLinkedText')"
       :message-subtext="$t('form-view.deleteLinkedSubtext')"
       :option-button-text="$t('form-view.deleteLinked')"
@@ -14,12 +14,11 @@
       :is-loading="entriesLoading"
       :selected-list="selectedEntries"
       @set-action="setEntryAction('entry')"
-      @selected="selectEntries('linked', $event)"
+      @all-selected="selectEntries('linked', $event)"
       @submit-action="deleteLinked"
       @cancel-action="resetSelected">
       <template
-        slot="attached-box"
-        slot-scope="props">
+        v-slot:result-box="props">
         <BaseImageBox
           :key="props.item.id"
           :selectable="props.selectActive"
@@ -39,7 +38,7 @@
     <!-- ATTACHED FILES -->
     <BaseResultBoxSection
       ref="fileSection"
-      :attached-list="attachedList"
+      :entry-list="attachedList"
       :message-text="fileText"
       :message-subtext="fileSubtext"
       :cancel-text="$t('cancel')"
@@ -49,7 +48,7 @@
       :is-loading="filesLoading"
       :selected-list="selectedFiles"
       entry-type="media"
-      @selected="selectEntries('files', $event)"
+      @all-selected="selectEntries('files', $event)"
       @set-action="setAction"
       @submit-action="saveFileMeta"
       @cancel-action="resetSelected">
@@ -89,8 +88,7 @@
           class="license-dropdown" />
       </template>
       <template
-        slot="attached-box"
-        slot-scope="props">
+        v-slot:result-box="props">
         <BaseImageBox
           :key="props.item.id"
           :show-title="true"
@@ -133,7 +131,7 @@
     <!-- PARENT ENTRIES -->
     <BaseResultBoxSection
       ref="parentSection"
-      :attached-list="parentList"
+      :entry-list="parentList"
       :message-text="$t('form-view.deleteLinkedText')"
       :message-subtext="$t('form-view.deleteLinkedSubtext')"
       :option-button-text="$t('form-view.deleteParents')"
@@ -144,12 +142,11 @@
       :is-loading="entriesLoading"
       :selected-list="selectedEntries"
       @set-action="setEntryAction('parentEntry')"
-      @selected="selectEntries('parent', $event)"
+      @all-selected="selectEntries('parent', $event)"
       @submit-action="deleteLinked"
       @cancel-action="resetSelected">
       <template
-        slot="attached-box"
-        slot-scope="props">
+        v-slot:result-box="props">
         <BaseImageBox
           :key="props.item.id"
           :selectable="props.selectActive"
