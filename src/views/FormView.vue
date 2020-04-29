@@ -234,11 +234,11 @@ export default {
     formFields() {
       this.formIsLoading = false;
     },
-    preFetchedData: {
-      handler() {
-        this.setDropDownValues();
-      },
-      deep: true,
+    preFetchedData() {
+      this.setDropDownValues();
+    },
+    prefetchedRoles() {
+      this.setDropDownValues();
     },
     async currentItemId(val) {
       window.scrollTo(0, 0);
@@ -272,7 +272,7 @@ export default {
             }
             return prev;
           }, []);
-          this.prefetchedRoles = this.$store.state.data.prefetchedTypes.contributors_role
+          this.prefetchedRoles = await this.$store.state.data.prefetchedTypes.contributors_role
             .filter(role => !contributorFields.includes(role.source));
         } catch (e) {
           // check if request was cancelled and ignore if yes - otherwise notify user
