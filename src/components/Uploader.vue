@@ -18,12 +18,12 @@
         <transition-group
           name="bar-move"
           class="transition">
-          <BaseUploadBar
+          <BaseProgressBar
             v-for="(file, index) of fileList"
             :key="file.name"
             :progress="uploadPercentage[index]"
-            :filename="file.name"
-            :filesize="userQuotaExceeded ? convertDiskSpace(file.size) : ''"
+            :file-name="file.name"
+            :file-size="userQuotaExceeded ? convertDiskSpace(file.size) : ''"
             :status="getStatus(file.name)"
             :show-remove="isInitial"
             class="upload-bar"
@@ -91,7 +91,7 @@
 import {
   BasePopUp,
   BaseDropDown,
-  BaseUploadBar,
+  BaseProgressBar,
   BaseButton,
   BaseLoader,
 } from 'base-ui-components';
@@ -110,7 +110,7 @@ export default {
     BaseButton,
     BasePopUp,
     BaseDropDown,
-    BaseUploadBar,
+    BaseProgressBar,
     BaseLoader,
     FailIcon,
   },
@@ -221,7 +221,7 @@ export default {
                       },
                       onUploadProgress: (progressEvent) => {
                         this.$set(this.uploadPercentage, index,
-                          progressEvent.loaded / progressEvent.total);
+                          progressEvent.loaded / progressEvent.total * 100);
                       },
                     });
                   this.uploadedFiles.push(file.name);
