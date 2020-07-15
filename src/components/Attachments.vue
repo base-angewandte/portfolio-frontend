@@ -169,7 +169,7 @@
 import {
   BaseImageBox, BaseButton, BaseDropDown, BaseResultBoxSection,
 } from 'base-ui-components';
-import EyeIcon from '../assets/icons/eye.svg';
+import EyeIcon from '../assets/icons/eye.svg?inline';
 import { userInfo } from '../mixins/userInfo';
 import { getApiUrl, getLangLabel } from '../utils/commonUtils';
 

@@ -38,8 +38,8 @@
 
 <script>
 import { BaseButton } from 'base-ui-components';
-import HomeIcon from '../assets/icons/home.svg';
-import RefreshIcon from '../assets/icons/refresh.svg';
+import HomeIcon from '../assets/icons/home.svg?inline';
+import RefreshIcon from '../assets/icons/refresh.svg?inline';
 
 export default {
   components: {

@@ -28,7 +28,9 @@ module.exports = {
     // don't require .vue extension when importing
     'import/extensions': ['error', 'always', {
       js: 'never',
-      vue: 'never'
+      vue: 'never',
+      // to get rid of ?inline error
+      svg: 'never',
     }],
     // disallow reassignment of function parameters
     // disallow parameter object manipulation except for specific exclusions

@@ -96,9 +96,8 @@ import {
   BaseLoader,
 } from 'base-ui-components';
 import axios from 'axios';
-import FailIcon from '../assets/icons/attention.svg';
+import FailIcon from '../assets/icons/attention.svg?inline';
 import { convertSpace } from '../utils/commonUtils';
-// import upload from '../assets/file-upload.fake.service';
 
 const STATUS_INITIAL = 0;
 const STATUS_SAVING = 1;

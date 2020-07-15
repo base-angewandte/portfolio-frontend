@@ -54,18 +54,36 @@ module.exports = {
       },
       {
         test: /\.svg$/,
-        use: [
+        oneOf: [
           {
-            loader: 'babel-loader',
+            resourceQuery: /inline/,
+            use: [
+              {
+                loader: 'babel-loader',
+              },
+              {
+                loader: 'vue-svg-loader',
+                options: {
+                  // Removes svg title, default is false when not passing any options
+                  removeTitle: true,
+                },
+              },
+            ],
           },
           {
-            loader: 'vue-svg-loader',
+            loader: 'url-loader',
             options: {
-              // Removes svg title, default is false when not passing any options
-              removeTitle: true,
+              limit: 10000,
+              name: utils.assetsPath('img/[name].[hash:7].[ext]')
             }
           },
-          ],
+          {
+            loader: 'file-loader',
+            options: {
+              name: 'assets/[name].[hash:8].[ext]',
+            },
+          },
+        ],
       },
       {
         test: /\.(png|jpe?g|gif)(\?.*)?$/,
