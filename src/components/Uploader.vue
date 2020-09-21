@@ -160,7 +160,7 @@ export default {
     },
     defaultLicense() {
       // TODO: set via env variable
-      return this.licenses.find(license => license.source === 'http://base.uni-ak.ac.at/portfolio/licenses/copyright');
+      return this.licenses.find((license) => license.source === 'http://base.uni-ak.ac.at/portfolio/licenses/copyright');
     },
     userSpace() {
       return this.$store.state.PortfolioAPI.user.space;
@@ -190,7 +190,7 @@ export default {
           // reset rejected files list
           this.rejectedFiles = [];
           await Promise.all(this.fileList
-            .map((file, index) => new Promise(async (resolve, reject) => {
+            .map((file, index) => new Promise((resolve, reject) => {
               // accounting for retrys by only acting on files that have no upload
               // percentage yet
               if (this.uploadPercentage[index] === 0) {
@@ -209,7 +209,7 @@ export default {
                 this.$emit('upload-start');
 
                 try {
-                  await axios.post(`${process.env.DATABASE_API}media/`,
+                  axios.post(`${process.env.VUE_APP_DATABASE_API}media/`,
                     formData,
                     {
                       withCredentials: true,
@@ -220,6 +220,7 @@ export default {
                       },
                       onUploadProgress: (progressEvent) => {
                         this.$set(this.uploadPercentage, index,
+                          // eslint-disable-next-line no-mixed-operators
                           progressEvent.loaded / progressEvent.total * 100);
                       },
                     });

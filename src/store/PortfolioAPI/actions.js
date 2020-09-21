@@ -22,7 +22,7 @@ axiosInstance.interceptors.response.use((response) => {
 }, (error) => {
   if (axiosTries >= axiosMaxRetries) {
     axiosTries = 0;
-    window.location.href = `${process.env.APP_PREFIX}/Error`;
+    window.location.href = `${process.env.VUE_APP_PREFIX}/Error`;
     return Promise.reject(error);
   }
   // if there is an error config to draw from and max tries are not reached try again
@@ -41,7 +41,7 @@ axiosInstance.interceptors.response.use((response) => {
       });
     }
     sessionStorage.clear();
-    window.location.href = `${process.env.HEADER_URLS.LOGIN}`;
+    window.location.href = `${process.env.VUE_APP_HEADER_URLS.LOGIN}`;
   }
   return Promise.reject(error);
 });
@@ -54,7 +54,7 @@ export default {
     return new Promise((resolve, reject) => {
       if (![
         'baseURL',
-      ].every(opt => Boolean(config[opt]))) {
+      ].every((opt) => Boolean(config[opt]))) {
         reject(new Error('The Configuration is incomplete'));
       }
       Api.setDomain(config.baseURL);
@@ -64,7 +64,7 @@ export default {
       p.push(dispatch('fetchUser'));
       Promise.all(p).then((res) => {
         resolve(res);
-      }).catch(err => reject(err));
+      }).catch((err) => reject(err));
     });
   },
   fetchSchemas({ state, commit }) {

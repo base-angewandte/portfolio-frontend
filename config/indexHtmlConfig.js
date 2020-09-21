@@ -62,7 +62,7 @@ module.exports= {
   ],
   scripts: [
     {
-      src: envConfig.HEADER,
+      src: envConfig.VUE_APP_HEADER,
       body: true,
     },
   ],

@@ -6,16 +6,16 @@ const env = require('./config/prod.env');
 
 gulp.task('set-header', async function () {
   try {
-    const res = await axios.get(`${env.HEADER_JSON}`);
-    const baseUrl = env.HEADER_JSON.match(/(^https?:\/\/[a-z-.]+)/)[0];
+    const res = await axios.get(`${env.VUE_APP_HEADER_JSON}`);
+    const baseUrl = env.VUE_APP_HEADER_JSON.match(/(^https?:\/\/[a-z-.]+)/)[0];
     return gulp.src(['config/prod.env.js'], { base: './' })
-      .pipe(replace(/(\s+HEADER: ).*/, function (match, p1) {
+      .pipe(replace(/(\s+VUE_APP_HEADER: ).*/, function (match, p1) {
         return `${p1}'${baseUrl}/${res.data.latest}',`
       }))
       .pipe(gulp.dest('.'))
       .on('end', function () { log('Header file set to: ' + res.data.latest) })
   } catch (e) {
-    log.warn(`WARNING: header file could not be set and default ${process.env.HEADER} (might be outdated) will be used!`)
+    log.warn(`WARNING: header file could not be set and default ${process.env.VUE_APP_HEADER} (might be outdated) will be used!`)
     log.error(e);
   }
 });

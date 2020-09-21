@@ -61,7 +61,7 @@ module.exports = {
     // Paths
     assetsRoot: path.resolve(__dirname, '../dist'),
     assetsSubDirectory: 'static',
-    assetsPublicPath: prodEnv.APP_PREFIX + '/',
+    assetsPublicPath: prodEnv.VUE_APP_PREFIX + '/',
 
     /**
      * Source Maps

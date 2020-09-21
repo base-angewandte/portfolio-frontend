@@ -207,7 +207,7 @@ export default {
       this.assetObject = fileData;
       this.imagePreviews = fileData.previews ? fileData.previews.map((size) => {
         const [width, url] = Object.entries(size)[0];
-        return Object.assign({}, { [width]: getApiUrl(url) });
+        return { [width]: getApiUrl(url) };
       }) : [];
       if (this.assetFilePath) {
         this.showPreview = true;
@@ -222,13 +222,9 @@ export default {
           const imageWidth = fileData.metadata && fileData.metadata.ImageWidth
             ? fileData.metadata.ImageWidth.val : null;
           if (imageWidth && imageWidth > imageHeight && imageWidth < window.innerWidth) {
-            this.previewSize = Object.assign({}, this.previewSize, {
-              maxWidth: `${fileData.metadata.ImageWidth.val}px`,
-            });
+            this.previewSize = { ...this.previewSize, maxWidth: `${fileData.metadata.ImageWidth.val}px` };
           } else if (imageHeight && imageHeight > imageWidth && imageHeight < window.innerHeight) {
-            this.previewSize = Object.assign({}, this.previewSize, {
-              maxHeight: `${fileData.metadata.ImageHeight.val}px`,
-            });
+            this.previewSize = { ...this.previewSize, maxHeight: `${fileData.metadata.ImageHeight.val}px` };
           }
           // else get size from metadata
           // previewSize not required for audio (and pdf)

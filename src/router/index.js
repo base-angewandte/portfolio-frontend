@@ -11,7 +11,7 @@ Vue.use(Router);
 
 export default new Router({
   mode: 'history',
-  base: process.env.APP_PREFIX,
+  base: process.env.VUE_APP_PREFIX,
   routes: [
     {
       path: '*',

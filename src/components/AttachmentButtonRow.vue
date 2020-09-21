@@ -248,14 +248,14 @@ export default {
     },
     getSelectedIdsAndLink(objList) {
       // get only a list of ids from entries that should be linked
-      const idList = objList.map(entry => entry.id);
+      const idList = objList.map((entry) => entry.id);
       this.linkEntries(idList);
     },
     async linkEntries(val) {
       const list = [];
       val.forEach((entryId) => {
         // if entry is not linked already - add it to the list that will be linked
-        if (!this.linkedList.map(e => e.to.id).includes(entryId)) {
+        if (!this.linkedList.map((e) => e.to.id).includes(entryId)) {
           list.push(entryId);
           // otherwise inform user about it
         } else {
@@ -274,10 +274,10 @@ export default {
       } else {
         const failArr = [];
         const fullList = await Promise.all(list
-          .map((entryId, index) => new Promise(async (resolve) => {
+          .map((entryId, index) => new Promise((resolve) => {
             try {
               // get the data of the linked entry
-              const entry = await this.$store.dispatch('PortfolioAPI/get', { kind: 'entry', id: entryId });
+              const entry = this.$store.dispatch('PortfolioAPI/get', { kind: 'entry', id: entryId });
               resolve({
                 id: `tempId${this.$store.getters['data/getCurrentLinked'].length + index}`,
                 to: entry,

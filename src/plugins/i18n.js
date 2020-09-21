@@ -20,14 +20,14 @@ try {
 }
 
 let defaultJson = {};
-if (lang !== prodEnv.DEFAULT_LOCALE) {
+if (lang !== prodEnv.VUE_APP_DEFAULT_LOCALE) {
   // eslint-disable-next-line global-require,import/no-dynamic-require
   defaultJson = require(`../locales/${prodEnv.DEFAULT_LOCALE}.json`);
 }
 
 /* eslint-disable-next-line */
 export const i18n = new VueI18n({
-  locale: prodEnv.LOCALES.includes(lang) ? lang : prodEnv.DEFAULT_LOCALE,
+  locale: prodEnv.VUE_APP_LOCALES.includes(lang) ? lang : prodEnv.DEFAULT_LOCALE,
   fallbackLocale: prodEnv.DEFAULT_LOCALE,
-  messages: Object.assign({}, { [prodEnv.DEFAULT_LOCALE]: defaultJson }, { [lang]: langJson }),
+  messages: { [prodEnv.DEFAULT_LOCALE]: defaultJson, [lang]: langJson },
 });

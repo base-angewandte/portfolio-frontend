@@ -3,9 +3,9 @@ import { i18n } from '../plugins/i18n';
 
 export const capitalizeString = (string) => {
   const newString = string.split('/')
-    .map(partialString => partialString.slice(0, 1).toUpperCase() + partialString.slice(1)).join('/');
+    .map((partialString) => partialString.slice(0, 1).toUpperCase() + partialString.slice(1)).join('/');
   return newString.split(' ')
-    .map(partialString => partialString.slice(0, 1).toUpperCase() + partialString.slice(1)).join(' ');
+    .map((partialString) => partialString.slice(0, 1).toUpperCase() + partialString.slice(1)).join(' ');
 };
 
 export const sorting = (list, property, lang) => list.sort((a, b) => {
@@ -33,7 +33,7 @@ export const getLangLabel = (value, locale, useAny = false) => {
     return value[locale];
   }
   if (value && locale && useAny) {
-    const lang = Object.keys(value).find(key => !!value[key]);
+    const lang = Object.keys(value).find((key) => !!value[key]);
     // return the first one that has content
     return (value[lang] || value[locale]);
   }
@@ -58,10 +58,10 @@ export const convertSpace = (bytes, si) => {
 };
 
 export const getApiUrl = (requestUrl = '') => {
-  if (!requestUrl.includes(process.env.BACKEND_PREFIX)) {
-    return `${process.env.PORTFOLIO_BACKEND_BASE_URL}${process.env.BACKEND_PREFIX}${requestUrl}`;
+  if (!requestUrl.includes(process.env.VUE_APP_BACKEND_PREFIX)) {
+    return `${process.env.VUE_APP_PORTFOLIO_BACKEND_BASE_URL}${process.env.VUE_APP_BACKEND_PREFIX}${requestUrl}`;
   }
-  return `${process.env.PORTFOLIO_BACKEND_BASE_URL}${requestUrl}`;
+  return `${process.env.VUE_APP_PORTFOLIO_BACKEND_BASE_URL}${requestUrl}`;
 };
 
 /**

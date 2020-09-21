@@ -17,15 +17,15 @@ function transformTextData(data) {
         Vue.set(textObj, 'type', textItem.type);
       }
       const text = Object.keys(textItem)
-        .filter(props => !['type', 'text', 'data'].includes(props))
+        .filter((props) => !['type', 'text', 'data'].includes(props))
         .map((lang) => {
           if (textItem[lang]) {
-            return Object.assign({}, {
+            return {
               language: {
-                source: `${process.env.LANG_URL}${lang}`,
+                source: `${process.env.VUE_APP_LANG_URL}${lang}`,
               },
               text: textItem[lang],
-            });
+            };
           }
           return null;
         }).filter(Boolean);
@@ -84,7 +84,7 @@ const getters = {
     return state.linkedEntries;
   },
   getLinkedIds(state) {
-    return state.linkedEntries.length ? state.linkedEntries.map(entry => entry.to.id)
+    return state.linkedEntries.length ? state.linkedEntries.map((entry) => entry.to.id)
       : [];
   },
   getCurrentMedia(state) {
@@ -94,9 +94,9 @@ const getters = {
     return state.linkedParents;
   },
   getMediaIds(state) {
-    return state.linkedMedia.map(entry => entry.id);
+    return state.linkedMedia.map((entry) => entry.id);
   },
-  getPrefetchedTypes: state => (field, source) => {
+  getPrefetchedTypes: (state) => (field, source) => {
     if (source === 'source') {
       return state.prefetchedTypes[field];
     }
@@ -115,7 +115,7 @@ const getters = {
   getObjectTypeLabel(state) {
     return (id) => {
       if (id) {
-        return state.formObjectTypes.find(type => type.value === id);
+        return state.formObjectTypes.find((type) => type.value === id);
       }
       return '';
     };
@@ -139,7 +139,7 @@ const mutations = {
     state.showOptions = val;
   },
   setPopUp(state, data) {
-    state.popUp = Object.assign({}, state.popUp, data);
+    state.popUp = { ...state.popUp, ...data };
   },
   hidePopUp(state) {
     state.popUp = {
@@ -174,7 +174,8 @@ const mutations = {
   setLinked(state, { list, replace }) {
     const existingEntries = replace ? [] : state.linkedEntries;
     // add new list of entries and add a description (for type display)
-    state.linkedEntries = [].concat(list.map(entry => Object.assign({}, entry, {
+    state.linkedEntries = [].concat(list.map((entry) => ({
+      ...entry,
       description: entry.to && entry.to.type && entry.to.type.label
         ? capitalizeString(entry.to.type.label[i18n.locale]) : '',
     })), existingEntries);
@@ -182,7 +183,8 @@ const mutations = {
   setLinkedParents(state, { list }) {
     if (list.length) {
       // add new list of entries and add a description (for type display)
-      state.linkedParents = [].concat(list.map(entry => Object.assign({}, entry, {
+      state.linkedParents = [].concat(list.map((entry) => ({
+        ...entry,
         description: entry.parent && entry.parent.type && entry.parent.type.label
           ? capitalizeString(entry.parent.type.label[i18n.locale]) : '',
       })));
@@ -191,12 +193,12 @@ const mutations = {
     }
   },
   deleteLinked(state, list) {
-    state.linkedEntries = state.linkedEntries.filter(entry => !list
-      .map(deleted => deleted.id).includes(entry.id));
+    state.linkedEntries = state.linkedEntries.filter((entry) => !list
+      .map((deleted) => deleted.id).includes(entry.id));
   },
   deleteLinkedParent(state, list) {
-    state.linkedParents = state.linkedParents.filter(entry => !list
-      .map(deleted => deleted.id).includes(entry.id));
+    state.linkedParents = state.linkedParents.filter((entry) => !list
+      .map((deleted) => deleted.id).includes(entry.id));
   },
   setMedia(state, { list, replace }) {
     const existingMedia = replace ? [] : state.linkedMedia;
@@ -211,10 +213,10 @@ const mutations = {
     }
   },
   setGeneralSchema(state, schema) {
-    state.generalSchema = Object.assign({}, schema);
+    state.generalSchema = { ...schema };
   },
   setExtensionSchema(state, schema) {
-    state.extensionSchema = Object.assign({}, schema);
+    state.extensionSchema = { ...schema };
   },
   setEntryTypes(state, data) {
     state.entryTypes = [].concat(data);
@@ -243,9 +245,9 @@ const actions = {
    * @returns {Promise<*>}
    */
   async fetchGeneralFields({ commit, dispatch }) {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
       try {
-        const jsonSchema = await axios.get(`${process.env.DATABASE_API}swagger.json`,
+        const jsonSchema = axios.get(`${process.env.VUE_APP_VUE_APP_DATABASE_API}swagger.json`,
           {
             withCredentials: true,
             headers: {
@@ -255,7 +257,7 @@ const actions = {
         const formFields = jsonSchema.data.definitions.Entry.properties;
         // information for media license source is also contained in swagger.json --> extract!
         const mediaPath = jsonSchema.data.paths['/api/v1/media/'].post.parameters
-          .find(param => param.name === 'license')['x-attrs'].source;
+          .find((param) => param.name === 'license')['x-attrs'].source;
         commit('setGeneralSchema', formFields);
         commit('setMediaLicensesPath', mediaPath);
         // get fields that should be prefetched
@@ -285,7 +287,7 @@ const actions = {
         // check if prefetch properties are set in the x-attrs
         if (attrs && attrs.prefetch && attrs.prefetch.length) {
           return {
-            [field]: attrs.prefetch.map(source => ({
+            [field]: attrs.prefetch.map((source) => ({
               path: attrs[source],
               sourceAttribute: source,
             })),
@@ -303,15 +305,15 @@ const actions = {
       });
     }
     // now use the variable to acutally fetch the information
-    await Promise.all(prefetchFields.map(field => new Promise(async (resolve, reject) => {
+    await Promise.all(prefetchFields.map((field) => new Promise((resolve, reject) => {
       const [fieldName, sources] = Object.entries(field)[0];
-      await Promise.all(sources.map(source => new Promise(async () => {
+      Promise.all(sources.map((source) => new Promise(() => {
         const { path, sourceAttribute } = source;
         // check if data are already there, if not fetch info
         if (!getters.getPrefetchedTypes(fieldName, sourceAttribute)) {
           const url = getApiUrl(path);
           try {
-            const { data } = await axios
+            const { data } = axios
               .get(url, {
                 withCredentials: true,
                 headers: {
@@ -337,7 +339,7 @@ const actions = {
   async fetchEntryTypes({ commit }) {
     // TODO: replace with C. store module!
     try {
-      const { data } = await axios.get(`${process.env.DATABASE_API}entry/types/`, {
+      const { data } = await axios.get(`${process.env.VUE_APP_DATABASE_API}entry/types/`, {
         withCredentials: true,
         headers: {
           'Accept-Language': i18n.locale,
@@ -366,18 +368,18 @@ const actions = {
    * @returns {Promise<*>}
    */
   async fetchEntryData({ commit, dispatch }, id) {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
       let entryData = {};
       try {
-        entryData = await this.dispatch('PortfolioAPI/get', { kind: 'entry', id });
+        entryData = this.dispatch('PortfolioAPI/get', { kind: 'entry', id });
         if (entryData) {
           // Modifications of data received from backend needed:
           // 1. type needs to be array in logic here!
           const objectType = entryData.type && entryData.type.source ? [entryData.type] : [];
           // 2. Text needs to look different
           const textData = entryData.texts && entryData.texts.length
-            ? await Promise.all(entryData.texts
-              .map(entry => new Promise(async (res) => {
+            ? Promise.all(entryData.texts
+              .map((entry) => new Promise((res) => {
                 const textObj = {};
                 const { type } = entry;
                 // TODO: temporary hack - probably should fetch label for lang as well
@@ -387,13 +389,14 @@ const actions = {
                     Vue.set(textObj, langInternal.toLowerCase(), language.text);
                   });
                 }
-                res(Object.assign({}, { type }, textObj));
+                res({ type, ...textObj });
               }))) : [];
 
-          const adjustedEntry = Object.assign({}, entryData, {
+          const adjustedEntry = {
+            ...entryData,
             type: objectType,
             texts: textData,
-          });
+          };
           commit('setCurrentItem', adjustedEntry);
           // use linked entry info already provided with response data
           commit('setLinked', { list: entryData.relations || [], replace: true });
@@ -419,7 +422,7 @@ const actions = {
   },
   async fetchMediaData({ commit }, id) {
     // TODO: replace with Portofolio_API
-    const { data } = await axios.get(`${process.env.DATABASE_API}entry/${id}/media/?detailed=true`,
+    const { data } = await axios.get(`${process.env.VUE_APP_DATABASE_API}entry/${id}/media/?detailed=true`,
       {
         withCredentials: true,
         xsrfCookieName: 'csrftoken_portfolio',
@@ -432,9 +435,9 @@ const actions = {
     }
   },
   addOrUpdateEntry({ commit }, data) {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
       try {
-        const createdEntry = await this.dispatch('PortfolioAPI/post', { kind: 'entry', id: data.id, data });
+        const createdEntry = this.dispatch('PortfolioAPI/post', { kind: 'entry', id: data.id, data });
         if (createdEntry) {
           commit('setCurrentItem', createdEntry);
         }
@@ -449,9 +452,9 @@ const actions = {
     const successArr = [];
     const failArr = [];
     await Promise.all(state.selectedEntries
-      .map(entry => new Promise(async (resolve) => {
+      .map((entry) => new Promise((resolve) => {
         try {
-          await this.dispatch('PortfolioAPI/delete', { kind: 'entry', id: entry.id });
+          this.dispatch('PortfolioAPI/delete', { kind: 'entry', id: entry.id });
           successArr.push(entry.id);
         } catch (e) {
           console.error(e);
@@ -465,10 +468,10 @@ const actions = {
     dispatch('fetchEntryTypes');
     // check if any deleted items are currently displayed in form as linked
     const deletedLinked = state.linkedEntries
-      .filter(entry => successArr.includes(entry.to.id));
+      .filter((entry) => successArr.includes(entry.to.id));
     // check if any deleted entries are currenly displayed as parent entries
     const deletedLinkedParents = state.linkedParents
-      .filter(entry => successArr.includes(entry.parent.id));
+      .filter((entry) => successArr.includes(entry.parent.id));
     if (deletedLinked.length) {
       commit('deleteLinked', deletedLinked);
     }
@@ -477,7 +480,7 @@ const actions = {
     }
     // check if deleted was a parent (displayed in header row)
     const deletedParents = state.parentItems
-      .filter(entry => deletedLinked.includes(entry.id));
+      .filter((entry) => deletedLinked.includes(entry.id));
     if (deletedParents) {
       commit('deleteParentItems');
     }
@@ -486,12 +489,12 @@ const actions = {
   async duplicateEntries({ commit, dispatch }, entryArr) {
     const errorArr = [];
     const addedArr = [];
-    await Promise.all(entryArr.map(entry => new Promise(async (resolve) => {
+    await Promise.all(entryArr.map((entry) => new Promise((resolve) => {
       const entryTitle = entry.title;
       try {
         // fetch entry fresh from db in case props were not updated before
         // (currently only reloading after save when title or type or publish state change)
-        const newEntry = await this.dispatch('PortfolioAPI/get', { kind: 'entry', id: entry.id });
+        const newEntry = this.dispatch('PortfolioAPI/get', { kind: 'entry', id: entry.id });
         Vue.set(newEntry, 'title', `${newEntry.title} (Copy)`);
         Vue.set(newEntry, 'id', undefined);
         // new entries should not inherit the published state from the duplicate!
@@ -499,7 +502,7 @@ const actions = {
         // Vue.set(newEntry, 'shared', false);
         Vue.set(newEntry, 'published', false);
         Vue.set(newEntry, 'linked', []);
-        const createdEntryId = await dispatch('addOrUpdateEntry', newEntry);
+        const createdEntryId = dispatch('addOrUpdateEntry', newEntry);
         if (createdEntryId) {
           commit('deleteParentItems');
           addedArr.push(createdEntryId);
@@ -517,13 +520,13 @@ const actions = {
     const successArr = [];
     const failArr = [];
     const noActionArr = [];
-    await Promise.all(state.selectedEntries.map(entry => new Promise(async (resolve) => {
+    await Promise.all(state.selectedEntries.map((entry) => new Promise((resolve) => {
       // check if entry needs to be modified or already has requested value
       if (entry[prop] !== value) {
         try {
           // fetch fresh because value list might also contain unsaved changes...
-          const entryToUpdate = await this.dispatch('PortfolioAPI/get', { kind: 'entry', id: entry.id });
-          await dispatch('addOrUpdateEntry', Object.assign({}, entryToUpdate, { [prop]: value }));
+          const entryToUpdate = this.dispatch('PortfolioAPI/get', { kind: 'entry', id: entry.id });
+          dispatch('addOrUpdateEntry', { ...entryToUpdate, [prop]: value });
           successArr.push(entry.id);
         } catch (e) {
           console.error(e);
@@ -553,13 +556,13 @@ const actions = {
     const successArr = [];
     const errorArr = [];
 
-    await Promise.all(list.map(mediaId => new Promise(async (resolve) => {
+    await Promise.all(list.map((mediaId) => new Promise((resolve) => {
       const formData = new FormData();
       const id = mediaId.id || mediaId;
       try {
         if (axiosAction === 'delete') {
           // TODO: replace with Portofolio_API
-          await axios[axiosAction](`${process.env.DATABASE_API}media/${id}/`,
+          axios[axiosAction](`${process.env.VUE_APP_DATABASE_API}media/${id}/`,
             {
               withCredentials: true,
               xsrfCookieName: 'csrftoken_portfolio',
@@ -574,7 +577,7 @@ const actions = {
             console.error('file action unknown');
           }
           // TODO: replace with Portofolio_API
-          await axios[axiosAction](`${process.env.DATABASE_API}media/${id}/`,
+          axios[axiosAction](`${process.env.VUE_APP_DATABASE_API}media/${id}/`,
             formData,
             {
               withCredentials: true,
@@ -608,7 +611,7 @@ const actions = {
       // to only add ONCE before saving not whenever a value is changed)
       if (xAttrs && xAttrs.equivalent === 'contributors') {
         const fieldRole = state.prefetchedTypes.contributors_role
-          .find(role => role.source === xAttrs.default_role);
+          .find((role) => role.source === xAttrs.default_role);
         values.forEach((contributor, index) => {
           if (typeof contributor === 'string') {
             Vue.set(values, index, { label: contributor, roles: [fieldRole] });
@@ -645,7 +648,7 @@ const actions = {
       } else if (field.type === 'array' && typeof values === 'object') {
         // a check if a group field actually has content - otherwise it is removed
         if (xAttrs && xAttrs.field_type === 'group') {
-          values = values.filter(value => hasFieldContent(value));
+          values = values.filter((value) => hasFieldContent(value));
         }
         // special case chips with unknown entries allowed - we want label set in all languages
         if (field.items.properties.label && field.items.properties.label.type === 'object'
@@ -656,7 +659,7 @@ const actions = {
             // for some weird reason i can not use env variable directly
             const languages = process.env.LOCALES;
             if (!value.source && valueLocales !== languages) {
-              const fieldValue = value.label[valueLocales.find(lang => !!value.label[lang])];
+              const fieldValue = value.label[valueLocales.find((lang) => !!value.label[lang])];
               const newLabelObject = {};
 
               // add language specific label for all languages if not set from external
@@ -669,7 +672,7 @@ const actions = {
           });
         }
         const arrayValues = await Promise.all(values
-          .map(value => dispatch('removeUnknownProps', { data: value, fields: field.items.properties })));
+          .map((value) => dispatch('removeUnknownProps', { data: value, fields: field.items.properties })));
         Vue.set(newData, key, arrayValues || []);
       // check if field is object
       } else if (field.type === 'object' && typeof values === 'object' && !values.length) {

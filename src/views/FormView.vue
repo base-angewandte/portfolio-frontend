@@ -273,7 +273,7 @@ export default {
             return prev;
           }, []);
           this.prefetchedRoles = await this.$store.state.data.prefetchedTypes.contributors_role
-            .filter(role => !contributorFields.includes(role.source));
+            .filter((role) => !contributorFields.includes(role.source));
         } catch (e) {
           // check if request was cancelled and ignore if yes - otherwise notify user
           if (!axios.isCancel(e)) {
@@ -342,7 +342,7 @@ export default {
     const storedValueList = JSON.parse(sessionStorage.getItem('valueList'));
     // if it matches the current entry id, merge it with db fetched data
     if (storedValueList && storedValueList.id === this.currentItemId) {
-      this.valueList = Object.assign({}, this.valueList, storedValueList);
+      this.valueList = { ...this.valueList, ...storedValueList };
     }
   },
   mounted() {
@@ -386,7 +386,7 @@ export default {
       this.formIsLoading = true;
       try {
         const data = await this.$store.dispatch('data/fetchEntryData', this.currentItemId);
-        this.valueList = Object.assign({}, data);
+        this.valueList = { ...data };
         this.extensionIsLoading = !!this.type;
         this.$set(this.valueList, 'data', { ...data.data });
         // copy the original object to check for unsaved changes later
@@ -414,14 +414,16 @@ export default {
       }
       // check if type is set (= this event is coming from a subform)
       if (type) {
-        this.$set(this.valueList, type, Object.assign({}, this.valueList[type],
-          JSON.parse(JSON.stringify(data))));
+        this.$set(this.valueList, type, {
+          ...this.valueList[type],
+          ...JSON.parse(JSON.stringify(data)),
+        });
       } else {
         // check if type has changed - if yes - map data to new fields
         if (JSON.stringify(this.valueList.type) !== JSON.stringify(data.type)) {
           // TODO: map data between fields!!
         }
-        this.valueList = Object.assign({}, this.valueList, JSON.parse(JSON.stringify(data)));
+        this.valueList = { ...this.valueList, ...JSON.parse(JSON.stringify(data)) };
       }
     },
     async saveForm(routeToNewEntry = true) {
@@ -672,7 +674,7 @@ export default {
         } else if (this.prefetchedDropDownLists[name]) {
           // check if there is a preset list for dynamic chips input fields (e.g. keywords)
           const prefetchedValues = this.prefetchedDropDownLists[name]
-            .filter(option => getLangLabel(option.label, this.$i18n.locale, true).toLowerCase()
+            .filter((option) => getLangLabel(option.label, this.$i18n.locale, true).toLowerCase()
               .includes(value.toLowerCase()));
           this.setDropDown(prefetchedValues || [], value, equivalent, name);
         } else {
@@ -696,8 +698,11 @@ export default {
 
           const match = pattern.exec(entry.label);
           if (match && match[1]) {
-            return Object.assign({}, entry, match[3] && match[5]
-              ? { label: match[3], additional: this.removeDoubleEntries(match[5]) } : { label: match[1], additional: '' });
+            return {
+              ...entry,
+              ...(match[3] && match[5]
+                ? { label: match[3], additional: this.removeDoubleEntries(match[5]) } : { label: match[1], additional: '' }),
+            };
           }
           return entry;
         });
@@ -721,7 +726,7 @@ export default {
           return defaults;
         }
         return defaults
-          .filter(defaultOption => getLangLabel(defaultOption.label, this.$i18n.locale, true)
+          .filter((defaultOption) => getLangLabel(defaultOption.label, this.$i18n.locale, true)
             .toLowerCase().includes(input.toLowerCase()));
       }
       return [];
@@ -793,7 +798,7 @@ export default {
             fieldNameList = fieldNameList
               .concat(this.getDropDownFields(fieldObject[fieldName].items.properties));
           } else if (fieldXAttrs && !fieldXAttrs.hidden) {
-            const sources = Object.keys(fieldXAttrs).filter(key => !!key.includes('source'));
+            const sources = Object.keys(fieldXAttrs).filter((key) => !!key.includes('source'));
             if (sources.length) {
               sources.forEach((sourceAttr) => {
                 fieldNameList.push({

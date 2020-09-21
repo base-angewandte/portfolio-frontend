@@ -41,16 +41,16 @@ export default {
     },
     urls() {
       return {
-        de: `${process.env.APP_PREFIX}/de${this.$route.path}`,
-        en: `${process.env.APP_PREFIX}/en${this.$route.path}`,
-        login: process.env.HEADER_URLS.LOGIN,
-        logout: process.env.HEADER_URLS.LOGOUT,
-        terms: process.env.HEADER_URLS.TERMS,
-        siteNotice: process.env.HEADER_URLS.NOTICE,
+        de: `${process.env.VUE_APP_PREFIX}/de${this.$route.path}`,
+        en: `${process.env.VUE_APP_PREFIX}/en${this.$route.path}`,
+        login: process.env.VUE_APP_HEADER_URLS.LOGIN,
+        logout: process.env.VUE_APP_HEADER_URLS.LOGOUT,
+        terms: process.env.VUE_APP_HEADER_URLS.TERMS,
+        siteNotice: process.env.VUE_APP_HEADER_URLS.NOTICE,
       };
     },
     headerName() {
-      return process.env.HEADER_JSON.match(/\/([a-z-]+)-header\.json$/)[1];
+      return process.env.VUE_APP_HEADER_JSON.match(/\/([a-z-]+)-header\.json$/)[1];
     },
   },
   beforeCreate() {
@@ -66,8 +66,8 @@ export default {
   },
   created() {
     // prevent app from displaying dropped files
-    window.addEventListener('dragover', e => e.preventDefault());
-    window.addEventListener('drop', e => e.preventDefault());
+    window.addEventListener('dragover', (e) => e.preventDefault());
+    window.addEventListener('drop', (e) => e.preventDefault());
     // to have fully responsive app listen for window size once and save in store
     window.addEventListener('resize', this.setResizeTimeout);
   },

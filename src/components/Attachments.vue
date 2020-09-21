@@ -234,7 +234,7 @@ export default {
   computed: {
     // variable for checking if there are still unconverted files
     isConverting() {
-      return this.attachedList.some(file => !file.metadata);
+      return this.attachedList.some((file) => !file.metadata);
     },
     licenses() {
       return this.$store.getters['data/getPrefetchedTypes']('medialicenses', 'source');
@@ -345,7 +345,7 @@ export default {
           this.selectedEntries.push(objId);
         }
       } else {
-        this.selectedEntries = this.selectedEntries.filter(entryId => entryId !== objId);
+        this.selectedEntries = this.selectedEntries.filter((entryId) => entryId !== objId);
       }
     },
     // function triggered if medium selected
@@ -355,12 +355,12 @@ export default {
         if (sel) {
           this.selectedFiles.push(objId);
         } else {
-          this.selectedFiles = this.selectedFiles.filter(entryId => entryId !== objId);
+          this.selectedFiles = this.selectedFiles.filter((entryId) => entryId !== objId);
         }
       } else {
         // filter item from array in case it was already added previously
         // easier than replacing the selected value for relevant item
-        this.selectedFiles = this.selectedFiles.filter(file => file.id !== objId);
+        this.selectedFiles = this.selectedFiles.filter((file) => file.id !== objId);
         // check if file was selected and add it with opposite value
         /* eslint-disable-next-line */
         if (sel) {
@@ -415,8 +415,8 @@ export default {
     generateBoxText(metadata) {
       const wantedAttributes = ['FileSize', 'ImageSize', 'Title', 'Artist', 'Year'];
       if (metadata) {
-        return Object.keys(metadata).filter(key => wantedAttributes.includes(key))
-          .map(data => `${metadata[data].val}`);
+        return Object.keys(metadata).filter((key) => wantedAttributes.includes(key))
+          .map((data) => `${metadata[data].val}`);
       }
       return [];
     },
@@ -487,10 +487,10 @@ export default {
         this.selectedFiles = [];
         if (selectAll) {
           this.attachedList
-            .forEach(file => this.filesSelected(file.id, selectAll, file.published));
+            .forEach((file) => this.filesSelected(file.id, selectAll, file.published));
         }
       } else {
-        this.selectedEntries = selectAll ? this[`${listType}List`].map(entry => entry.id) : [];
+        this.selectedEntries = selectAll ? this[`${listType}List`].map((entry) => entry.id) : [];
       }
     },
   },

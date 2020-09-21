@@ -35,7 +35,6 @@
   </div>
 </template>
 
-
 <script>
 import { BaseButton } from 'base-ui-components';
 import HomeIcon from '../assets/icons/home.svg?inline';
@@ -49,10 +48,10 @@ export default {
   },
   methods: {
     refreshPage() {
-      window.location.href = `${process.env.APP_PREFIX}/`;
+      window.location.href = `${process.env.VUE_APP_PREFIX}/`;
     },
     returnToBase() {
-      window.location.href = process.env.PORTFOLIO_BACKEND_BASE_URL;
+      window.location.href = process.env.VUE_APP_PORTFOLIO_BACKEND_BASE_URL;
     },
   },
 };

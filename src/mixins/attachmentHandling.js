@@ -15,25 +15,25 @@ export const attachmentHandlingMixin = {
       const successArr = [];
       let filteredList = list;
       // filter out entries that are already parents and inform user about it
-      const alreadyParents = parentEntries.filter(parent => list.includes(parent.parent.id));
+      const alreadyParents = parentEntries.filter((parent) => list.includes(parent.parent.id));
       if (alreadyParents.length) {
-        filteredList = list.filter(linkId => !parentEntries
-          .map(parent => parent.parent.id).includes(linkId));
+        filteredList = list.filter((linkId) => !parentEntries
+          .map((parent) => parent.parent.id).includes(linkId));
         this.$notify({
           group: 'request-notifications',
           title: this.$t('notify.linkingNotPossible'),
-          text: `${this.$tc('notify.parentsAlready', alreadyParents.length)}: "${alreadyParents.map(parent => parent.parent.title).join('", "')}"`,
+          text: `${this.$tc('notify.parentsAlready', alreadyParents.length)}: "${alreadyParents.map((parent) => parent.parent.title).join('", "')}"`,
           type: 'info',
           duration: 8000,
         });
       }
-      await Promise.all(filteredList.map(relationId => new Promise(async (resolve) => {
+      await Promise.all(filteredList.map((relationId) => new Promise((resolve) => {
         try {
           if (action === 'save') {
             const data = { from_entry: fromId, to_entry: relationId };
-            await this.$store.dispatch('PortfolioAPI/post', { kind: 'relation', data });
+            this.$store.dispatch('PortfolioAPI/post', { kind: 'relation', data });
           } else if (action === 'delete') {
-            await this.$store.dispatch('PortfolioAPI/delete', { kind: 'relation', id: relationId });
+            this.$store.dispatch('PortfolioAPI/delete', { kind: 'relation', id: relationId });
           }
           successArr.push(relationId);
         } catch (e) {
