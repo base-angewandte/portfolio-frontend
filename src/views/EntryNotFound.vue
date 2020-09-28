@@ -17,12 +17,7 @@
 </template>
 
 <script>
-import { BaseButton } from 'base-ui-components';
-
 export default {
-  components: {
-    BaseButton,
-  },
   computed: {
     entryId() {
       return this.$route.query.id;

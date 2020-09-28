@@ -147,22 +147,12 @@
 </template>
 
 <script>
-import {
-  BaseDropBox,
-  BaseButton,
-  BaseBoxButton,
-  BasePopUp,
-} from 'base-ui-components';
 import Sidebar from './Sidebar';
 import Uploader from './Uploader';
 import { userInfo } from '../mixins/userInfo';
 
 export default {
   components: {
-    BaseBoxButton,
-    BaseDropBox,
-    BaseButton,
-    BasePopUp,
     Sidebar,
     Uploader,
   },

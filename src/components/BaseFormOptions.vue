@@ -24,13 +24,7 @@
 </template>
 
 <script>
-import { BaseButton, BaseOptions } from 'base-ui-components';
-
 export default {
-  components: {
-    BaseButton,
-    BaseOptions,
-  },
   props: {
     defaultExpanded: {
       type: Boolean,

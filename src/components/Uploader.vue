@@ -88,13 +88,6 @@
 </template>
 
 <script>
-import {
-  BasePopUp,
-  BaseDropDown,
-  BaseProgressBar,
-  BaseButton,
-  BaseLoader,
-} from 'base-ui-components';
 import axios from 'axios';
 import FailIcon from '../assets/icons/attention.svg?inline';
 import { convertSpace } from '../utils/commonUtils';
@@ -106,11 +99,6 @@ const STATUS_FAILED = 3;
 
 export default {
   components: {
-    BaseButton,
-    BasePopUp,
-    BaseDropDown,
-    BaseProgressBar,
-    BaseLoader,
     FailIcon,
   },
   props: {

@@ -6,11 +6,12 @@ import { i18n } from './plugins/i18n';
 import App from './App';
 import router from './router';
 import store from './store';
+import './plugins/base-ui-components';
 
 import 'normalize.css';
 import './styles/app.scss';
 
-import 'base-ui-components/dist/lib/base-ui-components.min.css';
+// import 'base-ui-components/dist/lib/base-ui-components.min.css';
 
 Vue.config.productionTip = false;
 

@@ -150,32 +150,12 @@
 </template>
 
 <script>
-import {
-  BaseMenuList,
-  BaseButton,
-  BaseDropDown,
-  BaseSearch,
-  BasePagination,
-  BaseLoader,
-  BaseOptions,
-  BaseSelectOptions,
-} from 'base-ui-components';
 import axios from 'axios';
 import { entryHandlingMixin } from '../mixins/entryHandling';
 import { userInfo } from '../mixins/userInfo';
 import { capitalizeString } from '../utils/commonUtils';
 
 export default {
-  components: {
-    BaseMenuList,
-    BaseButton,
-    BaseDropDown,
-    BaseSearch,
-    BasePagination,
-    BaseOptions,
-    BaseLoader,
-    BaseSelectOptions,
-  },
   mixins: [entryHandlingMixin, userInfo],
   props: {
     /**

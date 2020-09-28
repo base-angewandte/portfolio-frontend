@@ -74,15 +74,12 @@
 </template>
 
 <script>
-import { BasePopUp, BaseMediaPreview } from 'base-ui-components';
 import Sidebar from '../components/Sidebar';
 import { capitalizeString, getApiUrl, getLangLabel } from '../utils/commonUtils';
 
 export default {
   components: {
-    BaseMediaPreview,
     Sidebar,
-    BasePopUp,
   },
   data() {
     return {

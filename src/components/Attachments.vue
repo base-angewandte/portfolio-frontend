@@ -166,19 +166,12 @@
 </template>
 
 <script>
-import {
-  BaseImageBox, BaseButton, BaseDropDown, BaseResultBoxSection,
-} from 'base-ui-components';
 import EyeIcon from '../assets/icons/eye.svg?inline';
 import { userInfo } from '../mixins/userInfo';
 import { getApiUrl, getLangLabel } from '../utils/commonUtils';
 
 export default {
   components: {
-    BaseResultBoxSection,
-    BaseDropDown,
-    BaseImageBox,
-    BaseButton,
     EyeIcon,
   },
   mixins: [userInfo],

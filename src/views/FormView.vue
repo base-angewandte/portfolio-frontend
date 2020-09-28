@@ -130,9 +130,6 @@
 </template>
 
 <script>
-import {
-  BaseMenuEntry, BaseLoader, BaseForm, BaseFormFieldCreator,
-} from 'base-ui-components';
 import axios from 'axios';
 import BaseRow from '../components/BaseRow';
 import BaseFormOptions from '../components/BaseFormOptions';
@@ -148,14 +145,9 @@ let cancel;
 export default {
   name: 'FormView',
   components: {
-    BaseMenuEntry,
     AttachmentArea,
     BaseFormOptions,
     BaseRow,
-    BaseForm,
-    BaseLoader,
-    // eslint-disable-next-line vue/no-unused-components
-    BaseFormFieldCreator,
   },
   mixins: [
     attachmentHandlingMixin,
