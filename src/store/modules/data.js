@@ -245,25 +245,29 @@ const actions = {
    * @returns {Promise<*>}
    */
   async fetchGeneralFields({ commit, dispatch }) {
-    try {
-      const jsonSchema = await axios.get(`${process.env.VUE_APP_DATABASE_API}swagger.json`,
-        {
-          withCredentials: true,
-          headers: {
-            'Accept-Language': i18n.locale,
-          },
-        });
-      const formFields = jsonSchema.data.definitions.Entry.properties;
-      // information for media license source is also contained in swagger.json --> extract!
-      const mediaPath = jsonSchema.data.paths['/api/v1/media/'].post.parameters
-        .find((param) => param.name === 'license')['x-attrs'].source;
-      commit('setGeneralSchema', formFields);
-      commit('setMediaLicensesPath', mediaPath);
-      // get fields that should be prefetched
-      dispatch('getStaticDropDowns', formFields);
-    } catch (e) {
-      console.error(e);
-    }
+    // eslint-disable-next-line no-async-promise-executor
+    return new Promise(async (resolve, reject) => {
+      try {
+        const jsonSchema = await axios.get(`${process.env.VUE_APP_DATABASE_API}swagger.json`,
+          {
+            withCredentials: true,
+            headers: {
+              'Accept-Language': i18n.locale,
+            },
+          });
+        const formFields = jsonSchema.data.definitions.Entry.properties;
+        // information for media license source is also contained in swagger.json --> extract!
+        const mediaPath = jsonSchema.data.paths['/api/v1/media/'].post.parameters
+          .find((param) => param.name === 'license')['x-attrs'].source;
+        commit('setGeneralSchema', formFields);
+        commit('setMediaLicensesPath', mediaPath);
+        // get fields that should be prefetched
+        dispatch('getStaticDropDowns', formFields);
+        resolve(formFields);
+      } catch (e) {
+        reject(e);
+      }
+    });
   },
   /**
    * prefetch dropdowns where there is static content (to only need to fetch once) or that
@@ -302,15 +306,17 @@ const actions = {
       });
     }
     // now use the variable to acutally fetch the information
-    await Promise.all(prefetchFields.map((field) => new Promise((resolve, reject) => {
+    // eslint-disable-next-line no-async-promise-executor
+    await Promise.all(prefetchFields.map((field) => new Promise(async (resolve, reject) => {
       const [fieldName, sources] = Object.entries(field)[0];
-      Promise.all(sources.map((source) => new Promise(() => {
+      // eslint-disable-next-line no-async-promise-executor
+      await Promise.all(sources.map((source) => new Promise(async () => {
         const { path, sourceAttribute } = source;
         // check if data are already there, if not fetch info
         if (!getters.getPrefetchedTypes(fieldName, sourceAttribute)) {
           const url = getApiUrl(path);
           try {
-            const { data } = axios
+            const { data } = await axios
               .get(url, {
                 withCredentials: true,
                 headers: {
@@ -377,7 +383,8 @@ const actions = {
           // 2. Text needs to look different
           const textData = entryData.texts && entryData.texts.length
             ? await Promise.all(entryData.texts
-              .map((entry) => new Promise((res) => {
+              // eslint-disable-next-line no-async-promise-executor
+              .map((entry) => new Promise(async (res) => {
                 const textObj = {};
                 const { type } = entry;
                 // TODO: temporary hack - probably should fetch label for lang as well
@@ -433,9 +440,10 @@ const actions = {
     }
   },
   addOrUpdateEntry({ commit }, data) {
-    return new Promise((resolve, reject) => {
+    // eslint-disable-next-line no-async-promise-executor
+    return new Promise(async (resolve, reject) => {
       try {
-        const createdEntry = this.dispatch('PortfolioAPI/post', { kind: 'entry', id: data.id, data });
+        const createdEntry = await this.dispatch('PortfolioAPI/post', { kind: 'entry', id: data.id, data });
         if (createdEntry) {
           commit('setCurrentItem', createdEntry);
         }
@@ -450,9 +458,10 @@ const actions = {
     const successArr = [];
     const failArr = [];
     await Promise.all(state.selectedEntries
-      .map((entry) => new Promise((resolve) => {
+      // eslint-disable-next-line no-async-promise-executor
+      .map((entry) => new Promise(async (resolve) => {
         try {
-          this.dispatch('PortfolioAPI/delete', { kind: 'entry', id: entry.id });
+          await this.dispatch('PortfolioAPI/delete', { kind: 'entry', id: entry.id });
           successArr.push(entry.id);
         } catch (e) {
           console.error(e);
@@ -487,12 +496,13 @@ const actions = {
   async duplicateEntries({ commit, dispatch }, entryArr) {
     const errorArr = [];
     const addedArr = [];
-    await Promise.all(entryArr.map((entry) => new Promise((resolve) => {
+    // eslint-disable-next-line no-async-promise-executor
+    await Promise.all(entryArr.map((entry) => new Promise(async (resolve) => {
       const entryTitle = entry.title;
       try {
         // fetch entry fresh from db in case props were not updated before
         // (currently only reloading after save when title or type or publish state change)
-        const newEntry = this.dispatch('PortfolioAPI/get', { kind: 'entry', id: entry.id });
+        const newEntry = await this.dispatch('PortfolioAPI/get', { kind: 'entry', id: entry.id });
         Vue.set(newEntry, 'title', `${newEntry.title} (Copy)`);
         Vue.set(newEntry, 'id', undefined);
         // new entries should not inherit the published state from the duplicate!
@@ -500,7 +510,7 @@ const actions = {
         // Vue.set(newEntry, 'shared', false);
         Vue.set(newEntry, 'published', false);
         Vue.set(newEntry, 'linked', []);
-        const createdEntryId = dispatch('addOrUpdateEntry', newEntry);
+        const createdEntryId = await dispatch('addOrUpdateEntry', newEntry);
         if (createdEntryId) {
           commit('deleteParentItems');
           addedArr.push(createdEntryId);
@@ -518,13 +528,14 @@ const actions = {
     const successArr = [];
     const failArr = [];
     const noActionArr = [];
-    await Promise.all(state.selectedEntries.map((entry) => new Promise((resolve) => {
+    // eslint-disable-next-line no-async-promise-executor
+    await Promise.all(state.selectedEntries.map((entry) => new Promise(async (resolve) => {
       // check if entry needs to be modified or already has requested value
       if (entry[prop] !== value) {
         try {
           // fetch fresh because value list might also contain unsaved changes...
-          const entryToUpdate = this.dispatch('PortfolioAPI/get', { kind: 'entry', id: entry.id });
-          dispatch('addOrUpdateEntry', { ...entryToUpdate, [prop]: value });
+          const entryToUpdate = await this.dispatch('PortfolioAPI/get', { kind: 'entry', id: entry.id });
+          await dispatch('addOrUpdateEntry', { ...entryToUpdate, [prop]: value });
           successArr.push(entry.id);
         } catch (e) {
           console.error(e);
@@ -554,13 +565,14 @@ const actions = {
     const successArr = [];
     const errorArr = [];
 
-    await Promise.all(list.map((mediaId) => new Promise((resolve) => {
+    // eslint-disable-next-line no-async-promise-executor
+    await Promise.all(list.map((mediaId) => new Promise(async (resolve) => {
       const formData = new FormData();
       const id = mediaId.id || mediaId;
       try {
         if (axiosAction === 'delete') {
           // TODO: replace with Portofolio_API
-          axios[axiosAction](`${process.env.VUE_APP_DATABASE_API}media/${id}/`,
+          await axios[axiosAction](`${process.env.VUE_APP_DATABASE_API}media/${id}/`,
             {
               withCredentials: true,
               xsrfCookieName: 'csrftoken_portfolio',

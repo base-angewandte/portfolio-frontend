@@ -2,6 +2,7 @@
 const path = require('path');
 
 module.exports = {
+  publicPath: process.env.VUE_APP_PREFIX,
   configureWebpack: {
     resolve: {
       alias: {
