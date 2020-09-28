@@ -41,7 +41,7 @@ axiosInstance.interceptors.response.use((response) => {
       });
     }
     sessionStorage.clear();
-    window.location.href = `${process.env.VUE_APP_HEADER_URLS.LOGIN}`;
+    window.location.href = `${JSON.parse(process.env.VUE_APP_HEADER_URLS).LOGIN}`;
   }
   return Promise.reject(error);
 });

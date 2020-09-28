@@ -223,7 +223,7 @@ export default {
       return JSON.stringify(this.valueList) !== JSON.stringify(this.valueListOriginal);
     },
     locales() {
-      return process.env.LOCALES;
+      return process.env.VUE_APP_LOCALES.split(', ');
     },
     dropDownFieldsList() {
       const fields = { ...this.formFields, ...this.formFieldsExtension };
@@ -769,8 +769,8 @@ export default {
         // only get new if not already set
         if (!this.defaultDropDownValues[field.name]
           || !this.defaultDropDownValues[field.name].length) {
-          const defaultsName = field.equivalent ? `${field.equivalent.toUpperCase()}_DEFAULTS`
-            : `${field.name.toUpperCase()}_DEFAULTS`;
+          const defaultsName = field.equivalent ? `VUE_APP_${field.equivalent.toUpperCase()}_DEFAULTS`
+            : `VUE_APP_${field.name.toUpperCase()}_DEFAULTS`;
           const defaults = process.env[defaultsName];
           if (defaults && defaults.length) {
             const dropDownList = defaults;

@@ -245,28 +245,25 @@ const actions = {
    * @returns {Promise<*>}
    */
   async fetchGeneralFields({ commit, dispatch }) {
-    return new Promise((resolve, reject) => {
-      try {
-        const jsonSchema = axios.get(`${process.env.VUE_APP_VUE_APP_DATABASE_API}swagger.json`,
-          {
-            withCredentials: true,
-            headers: {
-              'Accept-Language': i18n.locale,
-            },
-          });
-        const formFields = jsonSchema.data.definitions.Entry.properties;
-        // information for media license source is also contained in swagger.json --> extract!
-        const mediaPath = jsonSchema.data.paths['/api/v1/media/'].post.parameters
-          .find((param) => param.name === 'license')['x-attrs'].source;
-        commit('setGeneralSchema', formFields);
-        commit('setMediaLicensesPath', mediaPath);
-        // get fields that should be prefetched
-        dispatch('getStaticDropDowns', formFields);
-        resolve(formFields);
-      } catch (e) {
-        reject(e);
-      }
-    });
+    try {
+      const jsonSchema = await axios.get(`${process.env.VUE_APP_DATABASE_API}swagger.json`,
+        {
+          withCredentials: true,
+          headers: {
+            'Accept-Language': i18n.locale,
+          },
+        });
+      const formFields = jsonSchema.data.definitions.Entry.properties;
+      // information for media license source is also contained in swagger.json --> extract!
+      const mediaPath = jsonSchema.data.paths['/api/v1/media/'].post.parameters
+        .find((param) => param.name === 'license')['x-attrs'].source;
+      commit('setGeneralSchema', formFields);
+      commit('setMediaLicensesPath', mediaPath);
+      // get fields that should be prefetched
+      dispatch('getStaticDropDowns', formFields);
+    } catch (e) {
+      console.error(e);
+    }
   },
   /**
    * prefetch dropdowns where there is static content (to only need to fetch once) or that
@@ -368,17 +365,18 @@ const actions = {
    * @returns {Promise<*>}
    */
   async fetchEntryData({ commit, dispatch }, id) {
-    return new Promise((resolve, reject) => {
+    // eslint-disable-next-line no-async-promise-executor
+    return new Promise(async (resolve, reject) => {
       let entryData = {};
       try {
-        entryData = this.dispatch('PortfolioAPI/get', { kind: 'entry', id });
+        entryData = await this.dispatch('PortfolioAPI/get', { kind: 'entry', id });
         if (entryData) {
           // Modifications of data received from backend needed:
           // 1. type needs to be array in logic here!
           const objectType = entryData.type && entryData.type.source ? [entryData.type] : [];
           // 2. Text needs to look different
           const textData = entryData.texts && entryData.texts.length
-            ? Promise.all(entryData.texts
+            ? await Promise.all(entryData.texts
               .map((entry) => new Promise((res) => {
                 const textObj = {};
                 const { type } = entry;
@@ -657,7 +655,7 @@ const actions = {
           values = values.map((value) => {
             const valueLocales = Object.keys(value.label);
             // for some weird reason i can not use env variable directly
-            const languages = process.env.LOCALES;
+            const languages = process.env.VUE_APP_LOCALES;
             if (!value.source && valueLocales !== languages) {
               const fieldValue = value.label[valueLocales.find((lang) => !!value.label[lang])];
               const newLabelObject = {};

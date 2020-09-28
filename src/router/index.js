@@ -4,8 +4,6 @@ import Dashboard from '../views/Dashboard';
 import FormView from '../views/FormView';
 import NotFoundComponent from '../views/EntryNotFound';
 import NetworkError from '../views/Error';
-import store from '../store';
-import { i18n } from '../plugins/i18n';
 
 Vue.use(Router);
 
@@ -50,18 +48,8 @@ export default new Router({
           async beforeEnter(to, from, next) {
             const { lang } = to.params;
             const path = to.path.replace(/^\/[a-z]{2}/, '');
-            if (!process.env.LOCALES.includes(lang)) return next(process.env.DEFAULT_LOCALE);
-            if (lang) {
-              await import(`@/locales/${lang}.json`).then((msgs) => {
-                i18n.setLocaleMessage(lang, msgs.default || msgs);
-                localStorage.setItem('lang', lang);
-                store.commit('PortfolioAPI/setLang', lang);
-                i18n.locale = lang;
-                // need to fetch schemas in correct language again
-                store.dispatch('PortfolioAPI/fetchSchemas');
-                return next(path);
-              });
-            }
+            if (!process.env.VUE_APP_LOCALES
+              .includes(lang)) return next(process.env.VUE_APP_DEFAULT_LOCALE);
             return next(path);
           },
           children: [

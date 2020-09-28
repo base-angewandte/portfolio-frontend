@@ -2,13 +2,15 @@ const gulp = require('gulp')
 const axios = require('axios')
 const log = require('fancy-log')
 const replace = require('gulp-replace')
-const env = require('./config/prod.env');
+require('dotenv').config({
+  path: './.env.local',
+})
 
 gulp.task('set-header', async function () {
   try {
-    const res = await axios.get(`${env.VUE_APP_HEADER_JSON}`);
-    const baseUrl = env.VUE_APP_HEADER_JSON.match(/(^https?:\/\/[a-z-.]+)/)[0];
-    return gulp.src(['config/prod.env.js'], { base: './' })
+    const res = await axios.get(`${process.env.VUE_APP_HEADER_JSON}`);
+    const baseUrl = process.env.VUE_APP_HEADER_JSON.match(/(^https?:\/\/[a-z-.]+)/)[0];
+    return gulp.src(['.env.local'], { base: './' })
       .pipe(replace(/(\s+VUE_APP_HEADER: ).*/, function (match, p1) {
         return `${p1}'${baseUrl}/${res.data.latest}',`
       }))

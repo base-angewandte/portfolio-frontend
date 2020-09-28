@@ -1,6 +1,8 @@
 'use strict';
 
-const envConfig = require('../config/prod.env');
+require('dotenv').config({
+  path: ('.env.local'),
+});
 
 module.exports= {
   template: require('html-webpack-template'),
@@ -62,7 +64,7 @@ module.exports= {
   ],
   scripts: [
     {
-      src: envConfig.VUE_APP_HEADER,
+      src: process.env.VUE_APP_HEADER,
       body: true,
     },
   ],

@@ -76,8 +76,8 @@ in folder /config the following variables can be set for development (dev.env) a
 | VUE_APP_HEADER                | the complete header url, no need to set manually (will be overwritten!), can be set via `gulp set-header` or `make set-header` (in production)                                                         |
 | VUE_APP_PREFIX            | the desired prefix of the appication                                                                                                                        |
 | VUE_APP_LANG_URL              | the skosmos uri of the languages project (unless you have a separate skosmos project no need to modify from default )                                                                                                                    |
-| LOCALES               | available locales                                                                                                                                           |
-| DEFAULT_LOCALE        | a default language if one should be set (else the browser language will be used)                                                                            |
+| VUE_APP_LOCALES               | available locales                                                                                                                                           |
+| VUE_APP_DEFAULT_LOCALE        | a default language if one should be set (else the browser language will be used)                                                                            |
 | CONTRIBUTORS_DEFAULT*  | a default displayed for all contributor fields (Contributors and Roles (e.g. authors, architects), required attributes: label, optional: source, additional |
 | LOCATION_DEFAULT*      | a default displayed for the location input field                                                                                                            |
 

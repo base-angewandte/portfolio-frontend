@@ -1,0 +1,92 @@
+import Vue from 'vue';
+import {
+  BaseAutocompleteInput,
+  BaseButton,
+  BaseChipsBelow,
+  BaseDatePanel,
+  BaseDropDownList,
+  BaseFormFieldCreator,
+  BaseImageBox,
+  BaseMediaPreview,
+  BaseOptions,
+  BaseResultBoxSection,
+  BaseTextList,
+  BaseBox,
+  BaseCarousel,
+  BaseChipsInput,
+  BaseDetailBox,
+  BaseExpandBox,
+  BaseHlsVideo,
+  BaseInput,
+  BaseMenuEntry,
+  BasePagination,
+  BaseSearch,
+  BaseToggle,
+  BaseBoxButton,
+  BaseCheckmark,
+  BaseChipsInputField,
+  BaseDropBox,
+  BaseExpandRow,
+  BaseHoverBox,
+  BaseLoader,
+  BaseMenuList,
+  BasePopUp,
+  BaseSelectOptions,
+  BaseUploadBar,
+  BaseBoxTooltip,
+  BaseChip,
+  BaseDateInput,
+  BaseDropDown,
+  BaseForm,
+  BaseIcon,
+  BaseMap,
+  BaseMultilineTextInput,
+  BaseProgressBar,
+  BaseSwitchButton,
+} from 'base-ui-components';
+import 'base-ui-components/dist/base-ui-components-common.css';
+import 'base-ui-components/dist/base-ui-components.css';
+
+Vue.use(BaseAutocompleteInput);
+Vue.use(BaseButton);
+Vue.use(BaseChipsBelow);
+Vue.use(BaseDatePanel);
+Vue.use(BaseDropDownList);
+Vue.use(BaseFormFieldCreator);
+Vue.use(BaseImageBox);
+Vue.use(BaseMediaPreview);
+Vue.use(BaseOptions);
+Vue.use(BaseResultBoxSection);
+Vue.use(BaseTextList);
+Vue.use(BaseBox);
+Vue.use(BaseCarousel);
+Vue.use(BaseChipsInput);
+Vue.use(BaseDetailBox);
+Vue.use(BaseExpandBox);
+Vue.use(BaseHlsVideo);
+Vue.use(BaseInput);
+Vue.use(BaseMenuEntry);
+Vue.use(BasePagination);
+Vue.use(BaseSearch);
+Vue.use(BaseToggle);
+Vue.use(BaseBoxButton);
+Vue.use(BaseCheckmark);
+Vue.use(BaseChipsInputField);
+Vue.use(BaseDropBox);
+Vue.use(BaseExpandRow);
+Vue.use(BaseHoverBox);
+Vue.use(BaseLoader);
+Vue.use(BaseMenuList);
+Vue.use(BasePopUp);
+Vue.use(BaseSelectOptions);
+Vue.use(BaseUploadBar);
+Vue.use(BaseBoxTooltip);
+Vue.use(BaseChip);
+Vue.use(BaseDateInput);
+Vue.use(BaseDropDown);
+Vue.use(BaseForm);
+Vue.use(BaseIcon);
+Vue.use(BaseMap);
+Vue.use(BaseMultilineTextInput);
+Vue.use(BaseProgressBar);
+Vue.use(BaseSwitchButton);

@@ -11,7 +11,9 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // parse application/json
 app.use(bodyParser.json());
 
-app.use(`${env.VUE_APP_PREFIX}/`, express.static(path.join(__dirname, '/dist')));
+console.log(env);
+
+app.use('', express.static(path.join(__dirname, '/dist')));
 
 app.listen(5000, function() {
   console.log('Express server listening on port 5000');
