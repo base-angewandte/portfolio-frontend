@@ -668,7 +668,6 @@ const actions = {
             const valueLocales = Object.keys(value.label);
             // for some weird reason i can not use env variable directly
             const languages = process.env.VUE_APP_LOCALES.split(',');
-            console.log(languages);
             if (!value.source && valueLocales !== languages) {
               const fieldValue = value.label[valueLocales.find((lang) => !!value.label[lang])];
               const newLabelObject = {};
