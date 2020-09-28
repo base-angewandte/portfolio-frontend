@@ -6,12 +6,12 @@ import { i18n } from './plugins/i18n';
 import App from './App';
 import router from './router';
 import store from './store';
-import './plugins/base-ui-components';
 
 import 'normalize.css';
 import './styles/app.scss';
 
-// import 'base-ui-components/dist/lib/base-ui-components.min.css';
+// needs do be below css imports so plugin css has higher priority
+import './plugins/base-ui-components';
 
 Vue.config.productionTip = false;
 
