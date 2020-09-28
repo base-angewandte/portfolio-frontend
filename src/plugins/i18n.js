@@ -22,12 +22,11 @@ if (lang !== process.env.VUE_APP_DEFAULT_LOCALE) {
   // eslint-disable-next-line global-require,import/no-dynamic-require
   defaultJson = require(`../locales/${process.env.VUE_APP_DEFAULT_LOCALE}.json`);
 }
-console.log(process.env.VUE_APP_LOCALES.split(','));
+
 /* eslint-disable-next-line */
 export const i18n = new VueI18n({
-  availableLocales: process.env.VUE_APP_LOCALES.split(','),
   locale: process.env.VUE_APP_LOCALES.split(', ')
     .includes(lang) ? lang : process.env.VUE_APP_DEFAULT_LOCALE,
   fallbackLocale: process.env.VUE_APP_DEFAULT_LOCALE,
-  messages: { [process.env.VUE_APP_DEFAULT_LOCALE]: defaultJson, [lang]: langJson },
+  messages: { ...{ [process.env.VUE_APP_DEFAULT_LOCALE]: defaultJson }, ...{ [lang]: langJson } },
 });
