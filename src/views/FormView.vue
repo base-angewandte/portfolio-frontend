@@ -131,13 +131,13 @@
 
 <script>
 import axios from 'axios';
+import { attachmentHandlingMixin } from '@/mixins/attachmentHandling';
+import { entryHandlingMixin } from '@/mixins/entryHandling';
+import { getApiUrl, getLangLabel } from '@/utils/commonUtils';
 import BaseRow from '../components/BaseRow';
 import BaseFormOptions from '../components/BaseFormOptions';
 
 import AttachmentArea from '../components/AttachmentArea';
-import { attachmentHandlingMixin } from '../mixins/attachmentHandling';
-import { entryHandlingMixin } from '../mixins/entryHandling';
-import { getApiUrl, getLangLabel } from '../utils/commonUtils';
 
 const { CancelToken } = axios;
 let cancel;
@@ -757,13 +757,14 @@ export default {
     setDefaultDropDownLists() {
       const defaultDropDownObject = {};
       const user = this.$store.getters['PortfolioAPI/user'];
+      const defaultLists = JSON.parse(process.env.VUE_APP_DEFAULT_LISTS);
       this.dropDownFieldsList.forEach((field) => {
         // only get new if not already set
         if (!this.defaultDropDownValues[field.name]
           || !this.defaultDropDownValues[field.name].length) {
-          const defaultsName = field.equivalent ? `VUE_APP_${field.equivalent.toUpperCase()}_DEFAULTS`
-            : `VUE_APP_${field.name.toUpperCase()}_DEFAULTS`;
-          const defaults = process.env[defaultsName];
+          const defaultsName = field.equivalent ? `${field.equivalent.toUpperCase()}_DEFAULTS`
+            : `${field.name.toUpperCase()}_DEFAULTS`;
+          const defaults = defaultLists[defaultsName];
           if (defaults && defaults.length) {
             const dropDownList = defaults;
             // special case contributors - add user

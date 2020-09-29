@@ -80,7 +80,6 @@ in folder /config the following variables can be set for development (dev.env) a
 | VUE_APP_LANG_URL              | the skosmos uri of the languages project (unless you have a separate skosmos project no need to modify from default )                                                                                                                    |
 | VUE_APP_LOCALES               | available locales                                                                                                                                           |
 | VUE_APP_DEFAULT_LOCALE        | a default language if one should be set (else the browser language will be used)                                                                            |
-| CONTRIBUTORS_DEFAULT*  | a default displayed for all contributor fields (Contributors and Roles (e.g. authors, architects), required attributes: label, optional: source, additional |
-| LOCATION_DEFAULT*      | a default displayed for the location input field                                                                                                            |
+| VUE_DEFAULT_LISTS  | contains all default values for customizable drop down lists - this is set via gulp:set-default-lists and is a stringified version of config/default_lists.json, this json as per default contains:<br><br>CONTRIBUTORS_DEFAULT*: a default displayed for all contributor fields (Contributors and Roles (e.g. authors, architects)<br><br>LOCATION_DEFAULT*: a default displayed for the location input field <br><br>required attributes for each default entry: label, optional: source, additional|
 
 (*if there are any other dynamic autocomplete fields in future, defaults can be added as {backend property name}_DEFAULT as well)
