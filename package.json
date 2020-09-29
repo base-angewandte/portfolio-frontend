@@ -8,8 +8,9 @@
   "scripts": {
     "dev": "vue-cli-service serve",
     "build": "gulp && vue-cli-service build",
-    "lint": "vue-cli-service lint",
-    "build-test": "npm run build && node server.js"
+    "build:test": "npm run build && node server.js",
+    "build:analyze": "vue-cli-service build --report",
+    "lint": "vue-cli-service lint"
   },
   "dependencies": {
     "axios": "^0.19.0",

@@ -12,9 +12,8 @@ git is required on the system
 # clone the git repository
 git clone https://github.com/base-angewandte/portfolio-frontend.git
 
-# copy env skeleton files and adapt settings if necessary
-cp config/dev.env-skel.js config/dev.env.js
-cp config/prod.env-skel.js config/prod.env.js
+# copy env file and adapt settings if necessary
+cp .env .env.local
 
 ```
 
@@ -35,12 +34,15 @@ npm run dev
 # build for production with minification
 npm run build
 
-# the built application available in dist folder can be served from a webserver or to test, run:
-node server.js
+# the built application available in dist folder can be served from a webserver or to test (inkl. build), run:
+npm run build:test
 # and visit your site at http://localhost:5000
 
 # build for production and view the bundle analyzer report
-npm run build --report
+npm run build:analyze
+
+# run linter on project files with autofix enabled
+npm run lint
 
 ```
 

@@ -215,7 +215,7 @@ export default {
       return JSON.stringify(this.valueList) !== JSON.stringify(this.valueListOriginal);
     },
     locales() {
-      return process.env.VUE_APP_LOCALES.split(',');
+      return process.env.VUE_APP_LOCALES.split(',').map((langString) => langString.trim());
     },
     dropDownFieldsList() {
       const fields = { ...this.formFields, ...this.formFieldsExtension };

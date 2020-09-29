@@ -25,7 +25,7 @@ if (lang !== process.env.VUE_APP_DEFAULT_LOCALE) {
 
 /* eslint-disable-next-line */
 export const i18n = new VueI18n({
-  locale: process.env.VUE_APP_LOCALES.split(', ')
+  locale: process.env.VUE_APP_LOCALES.split(',').map((langString) => langString.trim())
     .includes(lang) ? lang : process.env.VUE_APP_DEFAULT_LOCALE,
   fallbackLocale: process.env.VUE_APP_DEFAULT_LOCALE,
   messages: { ...{ [process.env.VUE_APP_DEFAULT_LOCALE]: defaultJson }, ...{ [lang]: langJson } },
