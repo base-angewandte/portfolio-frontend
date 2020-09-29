@@ -16,5 +16,9 @@ module.exports = {
         prependData: `@import "~@/styles/variables.scss";`,
       }
     },
+  },
+  // to be able to use npm link with base-ui-components
+  chainWebpack: (config) => {
+    config.resolve.symlinks(false)
   }
 };
