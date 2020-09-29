@@ -113,8 +113,8 @@
               <div class="file-published">
                 <base-icon
                   name="eye"
-                  :title="capitalizeString($t('notify.publishd'))"
-                  :aria-title="capitalizeString($t('notify.publishd'))"
+                  :title="capitalizeString($t('notify.published'))"
+                  :aria-title="capitalizeString($t('notify.published'))"
                   :aria-description="publishedIconDescription(props.item.original)"
                   class="published-icon" />
               </div>
