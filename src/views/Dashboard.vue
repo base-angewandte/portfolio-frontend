@@ -12,6 +12,7 @@
       :button-right-text="capitalizeFirstLetter($store.state.data.popUp.buttonTextRight)"
       :button-right-icon="$store.state.data.popUp.icon"
       :is-loading="$store.state.data.popUp.isLoading"
+      is-open-focus="#popup-right-button"
       description-element-id="sidebar-pop-up-title"
       @close="cancelAction"
       @button-left="cancelAction($store.state.data.popUp.actionLeft)"
@@ -121,12 +122,6 @@ export default {
   },
   mounted() {
     this.$store.commit('data/setNewForm', this.$route.name === 'newEntry');
-  },
-  updated() {
-    // if pop up was opened switch focus to pop up buttons for accessibility reasons
-    if (this.showPopUp) {
-      document.getElementById('popup-right-button').focus();
-    }
   },
   methods: {
     createNewForm() {
