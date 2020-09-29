@@ -15,11 +15,13 @@
             role="alert"
             :class="[props.item.type, 'notification']"
             @click="props.close">
-            <FailIcon
+            <base-icon
               v-if="props.item.type === 'error'"
+              name="attention"
               class="icon notification-status-icon" />
-            <SuccessIcon
+            <base-icon
               v-else-if="props.item.type === 'success'"
+              name="success"
               class="icon notification-status-icon" />
             <div class="notification-text">
               <h5
@@ -34,11 +36,10 @@
             <div
               class="notification-close"
               @click="props.close">
-              <RemoveIcon
+              <base-icon
+                name="remove"
                 aria-labelledby="title"
-                class="icon notification-icon">
-                <title>Remove message</title>
-              </RemoveIcon>
+                class="icon notification-icon" />
             </div>
           </div>
         </template>
@@ -48,16 +49,8 @@
 </template>
 
 <script>
-import RemoveIcon from '../assets/icons/remove.svg';
-import SuccessIcon from '../assets/icons/success.svg';
-import FailIcon from '../assets/icons/attention.svg';
 
 export default {
-  components: {
-    RemoveIcon,
-    SuccessIcon,
-    FailIcon,
-  },
   data() {
     return {
       duration: 4000,
