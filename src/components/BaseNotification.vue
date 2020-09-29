@@ -82,7 +82,8 @@ export default {
       position: relative;
     }
 
-    .notifications {
+    .notifications,
+    .vue-notification-group {
       position: absolute;
     }
   }
