@@ -102,6 +102,7 @@
     "image": "Bild",
     "document": "Dokument",
     "file": "Datei",
+    "filePublished": "\"{file}\" ist veröffentlicht",
     "download": "Download",
     "view": "Anzeigen",
     "created": "Erstellt am",

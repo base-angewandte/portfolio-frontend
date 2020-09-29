@@ -111,16 +111,12 @@
             slot="top">
             <template v-if="props.item.published">
               <div class="file-published">
-                <EyeIcon
-                  :aria-labelledby="'title_' + props.item.id"
-                  class="published-icon">
-                  <title :id="'title_' + props.item.id">
-                    Published
-                  </title>
-                  <desc>
-                    {{ `file ${getFileName(props.item.original)} is released for publication` }}
-                  </desc>
-                </EyeIcon>
+                <base-icon
+                  name="eye"
+                  :title="capitalizeString($t('notify.publishd'))"
+                  :aria-title="capitalizeString($t('notify.publishd'))"
+                  :aria-description="publishedIconDescription(props.item.original)"
+                  class="published-icon" />
               </div>
             </template>
           </div>
@@ -166,14 +162,10 @@
 </template>
 
 <script>
-import EyeIcon from '../assets/icons/eye.svg?inline';
 import { userInfo } from '../mixins/userInfo';
-import { getApiUrl, getLangLabel } from '../utils/commonUtils';
+import { capitalizeString, getApiUrl, getLangLabel } from '../utils/commonUtils';
 
 export default {
-  components: {
-    EyeIcon,
-  },
   mixins: [userInfo],
   props: {
     linkedList: {
@@ -222,6 +214,7 @@ export default {
       // toggle loader display, displayed during db requests
       entriesLoading: false,
       filesLoading: false,
+      capitalizeString,
     };
   },
   computed: {
@@ -485,6 +478,9 @@ export default {
       } else {
         this.selectedEntries = selectAll ? this[`${listType}List`].map((entry) => entry.id) : [];
       }
+    },
+    publishedIconDescription(item) {
+      return `${this.$t('form-view.file')} ${this.$t('form-view.filePublished', { file: this.getFileName(item) })}`;
     },
   },
 };

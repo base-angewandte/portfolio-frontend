@@ -108,6 +108,7 @@
     "image": "Image",
     "document": "Document",
     "file": "File",
+    "filePublished": "\"{file}\" is released for publication",
     "download": "Download",
     "view": "View",
     "created": "Created on",
