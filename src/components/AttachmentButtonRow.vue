@@ -264,10 +264,11 @@ export default {
       } else {
         const failArr = [];
         const fullList = await Promise.all(list
-          .map((entryId, index) => new Promise((resolve) => {
+          // eslint-disable-next-line no-async-promise-executor
+          .map((entryId, index) => new Promise(async (resolve) => {
             try {
               // get the data of the linked entry
-              const entry = this.$store.dispatch('PortfolioAPI/get', { kind: 'entry', id: entryId });
+              const entry = await this.$store.dispatch('PortfolioAPI/get', { kind: 'entry', id: entryId });
               resolve({
                 id: `tempId${this.$store.getters['data/getCurrentLinked'].length + index}`,
                 to: entry,

@@ -178,7 +178,8 @@ export default {
           // reset rejected files list
           this.rejectedFiles = [];
           await Promise.all(this.fileList
-            .map((file, index) => new Promise((resolve, reject) => {
+            // eslint-disable-next-line no-async-promise-executor
+            .map((file, index) => new Promise(async (resolve, reject) => {
               // accounting for retrys by only acting on files that have no upload
               // percentage yet
               if (this.uploadPercentage[index] === 0) {
@@ -197,7 +198,7 @@ export default {
                 this.$emit('upload-start');
 
                 try {
-                  axios.post(`${process.env.VUE_APP_DATABASE_API}media/`,
+                  await axios.post(`${process.env.VUE_APP_DATABASE_API}media/`,
                     formData,
                     {
                       withCredentials: true,
@@ -215,6 +216,7 @@ export default {
                   this.uploadedFiles.push(file.name);
                   resolve();
                 } catch (err) {
+                  console.log('first error');
                   this.uploadPercentage[index] = 0;
                   this.uploadError = err.response;
                   this.currentStatus = STATUS_FAILED;
@@ -226,6 +228,7 @@ export default {
             })));
           this.currentStatus = STATUS_SUCCESS;
         } catch (e) {
+          console.log('Second error');
           if (e.message.includes('422')) {
             console.error(e);
             this.$notify({
@@ -234,6 +237,8 @@ export default {
               text: this.$t('notify.quotaExceeded'),
               type: 'error',
             });
+          } else {
+            console.error(e);
           }
         }
         if (this.uploadedFiles.length) {

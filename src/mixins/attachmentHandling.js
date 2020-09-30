@@ -27,13 +27,14 @@ export const attachmentHandlingMixin = {
           duration: 8000,
         });
       }
-      await Promise.all(filteredList.map((relationId) => new Promise((resolve) => {
+      // eslint-disable-next-line no-async-promise-executor
+      await Promise.all(filteredList.map((relationId) => new Promise(async (resolve) => {
         try {
           if (action === 'save') {
             const data = { from_entry: fromId, to_entry: relationId };
-            this.$store.dispatch('PortfolioAPI/post', { kind: 'relation', data });
+            await this.$store.dispatch('PortfolioAPI/post', { kind: 'relation', data });
           } else if (action === 'delete') {
-            this.$store.dispatch('PortfolioAPI/delete', { kind: 'relation', id: relationId });
+            await this.$store.dispatch('PortfolioAPI/delete', { kind: 'relation', id: relationId });
           }
           successArr.push(relationId);
         } catch (e) {
