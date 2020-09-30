@@ -766,7 +766,7 @@ export default {
             : `${field.name.toUpperCase()}_DEFAULTS`;
           const defaults = defaultLists[defaultsName];
           if (defaults && defaults.length) {
-            const dropDownList = defaults;
+            const dropDownList = [...defaults];
             // special case contributors - add user
             if ((field.equivalent === 'contributors') || field.name === 'contributors') {
               // set user
