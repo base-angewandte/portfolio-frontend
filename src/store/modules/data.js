@@ -587,7 +587,7 @@ const actions = {
             console.error('file action unknown');
           }
           // TODO: replace with Portofolio_API
-          axios[axiosAction](`${process.env.VUE_APP_DATABASE_API}media/${id}/`,
+          await axios[axiosAction](`${process.env.VUE_APP_DATABASE_API}media/${id}/`,
             formData,
             {
               withCredentials: true,

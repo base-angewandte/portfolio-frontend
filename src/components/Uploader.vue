@@ -216,7 +216,6 @@ export default {
                   this.uploadedFiles.push(file.name);
                   resolve();
                 } catch (err) {
-                  console.log('first error');
                   this.uploadPercentage[index] = 0;
                   this.uploadError = err.response;
                   this.currentStatus = STATUS_FAILED;
@@ -228,7 +227,6 @@ export default {
             })));
           this.currentStatus = STATUS_SUCCESS;
         } catch (e) {
-          console.log('Second error');
           if (e.message.includes('422')) {
             console.error(e);
             this.$notify({
