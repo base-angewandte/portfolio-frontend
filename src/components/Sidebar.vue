@@ -411,8 +411,8 @@ export default {
         // if any entries were sucessfully duplicated route to the new entry
         if (duplicatedNumber) {
           this.selectedMenuEntries = [];
-          this.fetchSidebarData();
-          this.$router.push(`/entry/${routingIds.pop()}`);
+          await this.fetchSidebarData();
+          await this.$router.push(`/entry/${routingIds.pop()}`);
         }
         this.isLoading = false;
       } else {
@@ -441,7 +441,7 @@ export default {
         .some((entry) => entry.id === this.activeEntryId);
       await this.actionEntries(action);
       this.selectedMenuEntries = [];
-      this.fetchSidebarData();
+      await this.fetchSidebarData();
 
       this.$store.commit('data/setOptions', false);
       // if the form was open and the item was selected for deletion a redirect to dashboard
@@ -449,12 +449,12 @@ export default {
       if (action === 'delete') {
         try {
           // update user quota in case any of the deleted entries had files attached
-          this.$store.dispatch('PortfolioAPI/fetchUser');
+          await this.$store.dispatch('PortfolioAPI/fetchUser');
         } catch (e) {
           console.error(e);
         }
         if (currentSelected) {
-          this.$router.push('/');
+          await this.$router.push('/');
         }
       } else if ((action === 'publish' || action === 'offline') && currentSelected) {
         this.$emit('update-publish-state', action === 'publish');
