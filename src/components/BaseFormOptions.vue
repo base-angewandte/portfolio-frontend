@@ -1,7 +1,15 @@
 <template>
   <BaseOptions
-    :show-options="showOptions"
-    @options-toggle="showOptions = $event">
+    :show-options.sync="showOptions"
+    :options-button-icon="{
+      show: 'options-menu',
+      hide: 'remove',
+    }"
+    :options-button-text="{
+      show: 'options',
+      hide: 'options',
+    }"
+    use-options-button-on="mobile">
     <template slot="options">
       <BaseButton
         :disabled="isNewForm"

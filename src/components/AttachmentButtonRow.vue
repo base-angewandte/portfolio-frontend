@@ -35,6 +35,8 @@
         @onTooltip="$emit('open-new-form')" />
 
       <!-- ADD FILES -->
+      <!-- TODO: is this label really needed?
+      alternatively: should it be extended with a label text (accesibility?) -->
       <label
         class="file-select">
         <BaseDropBox
@@ -89,6 +91,8 @@
         @clicked="$emit('open-new-form')" />
 
       <!-- ADD FILES -->
+      <!-- TODO: is this label really needed?
+      alternatively: should it be extended with a label text (accesibility?) -->
       <label class="file-select">
         <BaseButton
           key="mobile-addExisting"

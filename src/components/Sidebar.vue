@@ -27,12 +27,20 @@
       <div class="sidebar-options-container">
         <BaseOptions
           ref="baseOptions"
-          :always-show-options-button="true"
           :show-options="showCheckbox"
           :options-hidden="optionsDisabled"
-          :show-after-options-inline="showDropDownsInline"
+          :use-options-button-on="'always'"
+          :show-after-options-below="true"
+          :options-button-icon="{
+            show: 'options-menu',
+            hide: 'options-menu',
+          }"
+          :options-button-text="{
+            show: 'options',
+            hide: 'options',
+          }"
           align-options="left"
-          @options-toggle="toggleSidebarOptions">
+          @update:show-options="toggleSidebarOptions">
           <template slot="afterOptions">
             <div
               ref="afterOptions"
@@ -232,7 +240,6 @@ export default {
       entriesExist: false,
       noEntriesTitle: '',
       noEntriesSubtext: '',
-      showDropDownsInline: true,
       // to have shadow when sidebar list below sidebar head
       sidebarBelow: false,
     };

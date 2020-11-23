@@ -6,31 +6,26 @@
       :entry-list="linkedList"
       :message-text="$t('form-view.deleteLinkedText')"
       :message-subtext="$t('form-view.deleteLinkedSubtext')"
-      :option-button-text="$t('form-view.deleteLinked')"
-      :action-button-text="$t('form-view.deleteButton')"
-      :cancel-text="$t('cancel')"
       :header-text="$t('form-view.attachedEntries')"
-      :action="entryAction"
+      :show-action-button-boxes="true"
       :is-loading="entriesLoading"
-      :selected-list="selectedEntries"
-      @set-action="setEntryAction('entry')"
-      @all-selected="selectEntries('linked', $event)"
-      @submit-action="deleteLinked"
-      @cancel-action="resetSelected">
+      :selected-list.sync="selectedEntries"
+      :edit-mode="editModeActive === 'entry'"
+      @update:edit-mode="editModeActive = 'entry'"
+      @submit-action="deleteLinked">
       <template
         v-slot:result-box="props">
         <BaseImageBox
           :key="props.item.id"
           :selectable="props.selectActive"
-          :selected="selectedEntries.map(entry => entry.id || entry).includes(props.item.id)"
-          :box-size="{ width: 'calc(25% - 8rem/19 - (8rem/19/2))' }"
+          :selected="props.isEntrySelected(props.item)"
           :title="props.item.to.title"
           :subtext="props.item.to.subtitle"
           :description="props.item.description"
           :image-url="props.item.to.image ? getImagePath(props.item.to.image) : ''"
           show-title
           class="linked-base-box"
-          @select-triggered="entrySelected(props.item.id, $event)"
+          @select-triggered="props.entrySelected(props.item.id, $event)"
           @clicked="goToLinked(props.item.to.id)" />
       </template>
     </BaseResultBoxSection>
@@ -38,46 +33,50 @@
     <!-- ATTACHED FILES -->
     <BaseResultBoxSection
       ref="fileSection"
+      :always-show-options-button="true"
       :entry-list="attachedList"
-      :message-text="fileText"
-      :message-subtext="fileSubtext"
+      :message-text="'Select files to edit.'"
+      :message-subtext="'Select the relevant media and then choose your action'"
       :cancel-text="$t('cancel')"
       :header-text="$t('form-view.attachedFiles')"
-      :action-button-text="buttonText"
-      :action="action"
+      :edit-mode="editModeActive === 'file'"
       :is-loading="filesLoading"
-      :selected-list="selectedFiles"
-      entry-type="media"
-      @all-selected="selectEntries('files', $event)"
-      @set-action="setAction"
+      :use-expand-mode="true"
+      :use-pagination="true"
+      :max-show-more-rows="1"
+      :max-rows="2"
+      :selected-list.sync="selectedFiles"
+      :action-buttons-config="[
+        {
+          text: $t('form-view.changeLicense'),
+          icon: 'licence',
+          value: 'license',
+          display: 'all',
+        },
+        {
+          text: $t('form-view.publishMedia'),
+          icon: 'eye',
+          value: 'publish',
+          display: 'all',
+        },
+        {
+          text: 'Offline nehmen',
+          icon: 'eye',
+          value: 'publish',
+          display: 'all',
+        },
+        {
+          text: $t('form-view.deleteMedia'),
+          icon: 'waste-bin',
+          value: 'delete',
+          display: 'all',
+        },
+      ]"
       @submit-action="saveFileMeta"
-      @cancel-action="resetSelected">
-      <!-- SLOT FOR ADDITIONAL OPTIONS NEEDED FOR FILES -->
-      <template
-        slot="option-buttons"
-        slot-scope="scope">
-        <BaseButton
-          :text="$t('form-view.changeLicense')"
-          icon-size="large"
-          icon="licence"
-          button-style="single"
-          @clicked="scope.setAction('license')" />
-        <BaseButton
-          :text="$t('form-view.publishMedia')"
-          icon-size="large"
-          icon="eye"
-          button-style="single"
-          @clicked="scope.setAction('publish')" />
-        <BaseButton
-          :text="$t('form-view.deleteMedia')"
-          icon-size="large"
-          icon="waste-bin"
-          button-style="single"
-          @clicked="scope.setAction('delete')" />
-      </template>
+      @update:edit-mode="editModeActive = 'file'">
       <template slot="options-message-area-after">
         <BaseDropDown
-          v-if="action === 'license'"
+          v-if="pendingAction === 'license'"
           v-model="licenseSelected"
           :options="licenses"
           :show-label="false"
@@ -93,19 +92,18 @@
           :key="props.item.id"
           :show-title="true"
           :selectable="props.selectActive"
-          :selected="selectedFiles.map(file => file.id || file).includes(props.item.id)"
+          :selected="props.isEntrySelected(props.item)"
           :title="props.item.original ? getFileName(props.item.original) : props.item.id"
           :subtext="getLicenseLabel(props.item.license)"
           :description="getFileType(props.item)"
           :image-url="getImagePath(props.item.thumbnail
             || props.item.cover, imageHover[props.index])"
-          :box-size="{ width: 'calc(25% - 8rem/19 - (8rem/19/2))' }"
           :box-ratio="100"
           :box-text="generateBoxText(props.item.metadata)"
           class="linked-base-box"
           @mouseenter.native="changeVideoHoverState($event, props.index, true)"
           @mouseleave.native="changeVideoHoverState($event, props.index, false)"
-          @select-triggered="filesSelected(props.item.id, $event, props.item.published)"
+          @select-triggered="props.entrySelected(props.item.id, $event, props.item.published)"
           @clicked="$emit('show-preview', props.item)">
           <div
             slot="top">
@@ -134,27 +132,24 @@
       :action-button-text="$t('form-view.deleteButton')"
       :cancel-text="$t('cancel')"
       :header-text="$t('form-view.parentEntries')"
-      :action="parentEntryAction"
+      :edit-mode="editModeActive === 'parent'"
       :is-loading="entriesLoading"
-      :selected-list="selectedEntries"
-      @set-action="setEntryAction('parentEntry')"
-      @all-selected="selectEntries('parent', $event)"
+      :selected-list.sync="selectedEntries"
       @submit-action="deleteLinked"
-      @cancel-action="resetSelected">
+      @update:edit-mode="editModeActive = 'parent'">
       <template
         v-slot:result-box="props">
         <BaseImageBox
           :key="props.item.id"
           :selectable="props.selectActive"
-          :selected="selectedEntries.map(entry => entry.id || entry).includes(props.item.id)"
-          :box-size="{ width: 'calc(25% - 8rem/19 - (8rem/19/2))' }"
+          :selected="props.isEntrySelected(props.item)"
           :title="props.item.parent.title"
           :subtext="props.item.parent.subtitle"
           :description="props.item.description"
           :image-url="props.item.parent.image ? getImagePath(props.item.parent.image) : ''"
           show-title
           class="linked-base-box"
-          @select-triggered="entrySelected(props.item.id, $event)"
+          @select-triggered="props.entrySelected(props.item.id, $event)"
           @clicked="goToLinked(props.item.parent.id)" />
       </template>
     </BaseResultBoxSection>
@@ -189,22 +184,12 @@ export default {
   },
   data() {
     return {
-      // text for message area of files (differs per action)
-      fileText: '',
-      // subtext for message area of files (differs per action)
-      fileSubtext: '',
-      // button text for files (differs per action)
-      buttonText: '',
-      // current action active for entries section
-      entryAction: '',
-      // current action active for entries section
-      parentEntryAction: '',
+      // which section has the edit mode active
+      editModeActive: '',
       // entries selected
       selectedEntries: [],
       // files selected
       selectedFiles: [],
-      // current action for files
-      action: '',
       // variable specific for license action to store selected license
       licenseSelected: {},
       // to switch url during hover save hover state in this array
@@ -214,6 +199,8 @@ export default {
       // toggle loader display, displayed during db requests
       entriesLoading: false,
       filesLoading: false,
+      // store the pending action in a variable until process finished
+      pendingAction: '',
       capitalizeString,
     };
   },
@@ -249,6 +236,7 @@ export default {
     },
     // function for using options (delete, change license, publish state) for files
     async saveFileMeta(act) {
+      this.pendingAction = act;
       this.filesLoading = true;
       // special case publish since publish / offline in one
       const action = act === 'publish' ? 'change' : act;
@@ -266,7 +254,7 @@ export default {
         });
         // check if a license was selected if action is license change
         // if not inform user he should select a license
-      } else if (this.action === 'license' && this.licenseSelected.source === undefined) {
+      } else if (this.pendingAction === 'license' && this.licenseSelected.source === undefined) {
         this.$notify({
           group: 'request-notifications',
           title: this.$t('notify.actionFailed', { action: this.$t('notify.license') }),
@@ -277,7 +265,7 @@ export default {
         // if all error checks pass actually do the action
         const [successIds, failIds] = await this.$store.dispatch('data/actionFiles', {
           list: this.selectedFiles,
-          action: this.action,
+          action: this.pendingAction,
           value: this.licenseSelected,
         });
         // and inform user of the fail / success
@@ -292,7 +280,7 @@ export default {
           }
         }
         // clear all variables after action
-        this.action = '';
+        this.pendingAction = '';
         this.selectedFiles = [];
         this.licenseSelected = {};
       }
@@ -306,7 +294,7 @@ export default {
         // use parent function to action entries
         await this.$parent.actionLinked({ list: this.selectedEntries, action: 'delete' });
         // reset all involved variables
-        this.entryAction = '';
+        this.entryEditModeActive = false;
         this.parentEntryAction = '';
         this.selectedEntries = [];
       } else {
@@ -322,37 +310,6 @@ export default {
         });
       }
       this.entriesLoading = false;
-    },
-    // function triggered upon entry selection updating selectedEntries accordingly
-    entrySelected(objId, sel) {
-      if (sel) {
-        // only add if entry is not there yet
-        if (!this.selectedEntries.includes(objId)) {
-          this.selectedEntries.push(objId);
-        }
-      } else {
-        this.selectedEntries = this.selectedEntries.filter((entryId) => entryId !== objId);
-      }
-    },
-    // function triggered if medium selected
-    filesSelected(objId, sel, published) {
-      // special case publish, for all others just update selectedFiles accordingly
-      if (this.action !== 'publish') {
-        if (sel) {
-          this.selectedFiles.push(objId);
-        } else {
-          this.selectedFiles = this.selectedFiles.filter((entryId) => entryId !== objId);
-        }
-      } else {
-        // filter item from array in case it was already added previously
-        // easier than replacing the selected value for relevant item
-        this.selectedFiles = this.selectedFiles.filter((file) => file.id !== objId);
-        // check if file was selected and add it with opposite value
-        /* eslint-disable-next-line */
-        if (sel) {
-          this.selectedFiles.push({ id: objId, selected: !published });
-        }
-      }
     },
     // get file name from url
     getFileName(file) {
@@ -442,42 +399,9 @@ export default {
         }, 60000);
       }
     },
-    setAction(val) {
-      // close other selects
-      this.entryAction = '';
-      this.parentEntryAction = '';
-      if (val) {
-        this.action = val;
-        this.fileSubtext = this.$t(`form-view.${val}Subtext`);
-        this.fileText = this.$t('form-view.fileActionText', { action: this.$t(`form-view.${val}Text`) });
-        this.buttonText = this.$t(`form-view.${val}Button`);
-      } else {
-        this.fileText = '';
-        this.selectedFiles = [];
-      }
-    },
-    setEntryAction(type) {
-      // close other selects
-      this.action = '';
-      this[`${type === 'entry' ? 'parentEntry' : 'entry'}Action`] = '';
-      // clear entries
-      this.selectedEntries = [];
-      this[`${type}Action`] = 'delete';
-    },
     resetSelected() {
       this.selectedEntries = [];
       this.selectedFiles = [];
-    },
-    selectEntries(listType, selectAll) {
-      if (listType === 'files') {
-        this.selectedFiles = [];
-        if (selectAll) {
-          this.attachedList
-            .forEach((file) => this.filesSelected(file.id, selectAll, file.published));
-        }
-      } else {
-        this.selectedEntries = selectAll ? this[`${listType}List`].map((entry) => entry.id) : [];
-      }
     },
     publishedIconDescription(item) {
       return `${this.$t('form-view.file')} ${this.$t('form-view.filePublished', { file: this.getFileName(item) })}`;
@@ -513,41 +437,11 @@ export default {
         }
       }
     }
-
-    .linked-base-box:nth-child(n + 5) {
-      margin-top: $spacing;
-    }
-
-    .linked-base-box:not(:nth-child(4n)) {
-      margin-right: $spacing;
-    }
   }
 
   .license-dropdown {
     margin: $spacing auto 0 auto;
     text-align: left;
     max-width: 100%;
-  }
-
-  @media screen and (max-width: $tablet) {
-    .attachment-area {
-
-      .linked-base-box {
-        // subtracted 0.01rem for edge
-        flex: 0 0 calc(50% - #{$spacing-small} - 0.01rem);
-      }
-
-      .linked-base-box:nth-child(n + 3) {
-        margin-top: $spacing;
-      }
-
-      .linked-base-box:not(:nth-child(4n)) {
-        margin-right: 0;
-      }
-
-      .linked-base-box:not(:nth-child(2n)) {
-        margin-right: $spacing;
-      }
-    }
   }
 </style>

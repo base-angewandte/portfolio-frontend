@@ -44,6 +44,7 @@ import {
   BaseProgressBar,
   BaseSwitchButton,
 } from 'base-ui-components';
+// TODO: import component css separately!
 import 'base-ui-components/dist/base-ui-components-common.css';
 import 'base-ui-components/dist/base-ui-components.css';
 
