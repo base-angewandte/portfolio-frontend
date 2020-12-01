@@ -11,10 +11,21 @@
       :is-loading="entriesLoading"
       :selected-list.sync="selectedEntries"
       :edit-mode="editModeActive === 'entry'"
+      :action-buttons-config="[{
+        text: 'form-view.deleteLinked',
+        icon: 'waste-bin',
+        value: 'delete',
+        display: 'all',
+      }]"
+      :select-options-text="{
+        selectAll: $t('selectAll'),
+        selectNone: $t('selectNone'),
+        entriesSelected: $t('entriesSelected', { type: $tc('entry', selectedEntries.length) })
+      }"
       @update:edit-mode="editModeActive = 'entry'"
       @submit-action="deleteLinked">
       <template
-        v-slot:result-box="props">
+        #resultBox="props">
         <BaseImageBox
           :key="props.item.id"
           :selectable="props.selectActive"
@@ -35,16 +46,12 @@
       ref="fileSection"
       :always-show-options-button="true"
       :entry-list="attachedList"
-      :message-text="'Select files to edit.'"
-      :message-subtext="'Select the relevant media and then choose your action'"
+      :message-text="$t('form-view.fileActionText')"
+      :message-subtext="$t('form-view.fileActionSubtext')"
       :cancel-text="$t('cancel')"
       :header-text="$t('form-view.attachedFiles')"
       :edit-mode="editModeActive === 'file'"
       :is-loading="filesLoading"
-      :use-expand-mode="true"
-      :use-pagination="true"
-      :max-show-more-rows="1"
-      :max-rows="2"
       :selected-list.sync="selectedFiles"
       :action-buttons-config="[
         {
@@ -87,7 +94,7 @@
           class="license-dropdown" />
       </template>
       <template
-        v-slot:result-box="props">
+        #resultBox="props">
         <BaseImageBox
           :key="props.item.id"
           :show-title="true"
@@ -138,7 +145,7 @@
       @submit-action="deleteLinked"
       @update:edit-mode="editModeActive = 'parent'">
       <template
-        v-slot:result-box="props">
+        #resultBox="props">
         <BaseImageBox
           :key="props.item.id"
           :selectable="props.selectActive"
@@ -157,8 +164,8 @@
 </template>
 
 <script>
-import { userInfo } from '../mixins/userInfo';
-import { capitalizeString, getApiUrl, getLangLabel } from '../utils/commonUtils';
+import { userInfo } from '@/mixins/userInfo';
+import { capitalizeString, getApiUrl, getLangLabel } from '@/utils/commonUtils';
 
 export default {
   mixins: [userInfo],
