@@ -580,7 +580,9 @@ const actions = {
             });
         } else {
           if (action === 'publish') {
-            formData.append('published', mediaId.selected);
+            formData.append('published', true);
+          } else if (action === 'offline') {
+            formData.append('published', false);
           } else if (action === 'license') {
             formData.append('license', value.source ? JSON.stringify(value) : null);
           } else {

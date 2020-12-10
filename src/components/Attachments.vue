@@ -44,11 +44,9 @@
     <!-- ATTACHED FILES -->
     <BaseResultBoxSection
       ref="fileSection"
-      :always-show-options-button="true"
       :entry-list="attachedList"
       :message-text="$t('form-view.fileActionText')"
       :message-subtext="$t('form-view.fileActionSubtext')"
-      :cancel-text="$t('cancel')"
       :header-text="$t('form-view.attachedFiles')"
       :edit-mode="editModeActive === 'file'"
       :is-loading="filesLoading"
@@ -67,9 +65,9 @@
           display: 'all',
         },
         {
-          text: 'Offline nehmen',
-          icon: 'eye',
-          value: 'publish',
+          text: $t('form-view.offlineMedia'),
+          icon: 'hide',
+          value: 'offline',
           display: 'all',
         },
         {
@@ -79,19 +77,29 @@
           display: 'all',
         },
       ]"
-      @submit-action="saveFileMeta"
+      use-options-button-on="always"
+      @submit-action="checkFileActioning"
       @update:edit-mode="editModeActive = 'file'">
-      <template slot="options-message-area-after">
-        <BaseDropDown
+      <template #optionsMessageAreaAfter>
+        <div
           v-if="pendingAction === 'license'"
-          v-model="licenseSelected"
-          :options="licenses"
-          :show-label="false"
-          :label="$t('form-view.selectLicense')"
-          :placeholder="$t('form-view.selectLicense')"
-          :language="$i18n.locale"
-          value-prop="source"
-          class="license-dropdown" />
+          class="attachments__license-drop-down">
+          <BaseDropDown
+            v-model="licenseSelected"
+            :options="licenses"
+            :show-label="false"
+            :label="$t('form-view.selectLicense')"
+            :placeholder="$t('form-view.selectLicense')"
+            :language="$i18n.locale"
+            value-prop="source" />
+          <BaseButton
+            :text="$t('form-view.licenseButton')"
+            icon-position="right"
+            icon="check-mark"
+            button-style="secondary"
+            class="license-button"
+            @clicked="saveFileMeta('license')" />
+        </div>
       </template>
       <template
         #resultBox="props">
@@ -135,15 +143,24 @@
       :entry-list="parentList"
       :message-text="$t('form-view.deleteLinkedText')"
       :message-subtext="$t('form-view.deleteLinkedSubtext')"
-      :option-button-text="$t('form-view.deleteParents')"
-      :action-button-text="$t('form-view.deleteButton')"
-      :cancel-text="$t('cancel')"
       :header-text="$t('form-view.parentEntries')"
-      :edit-mode="editModeActive === 'parent'"
+      :show-action-button-boxes="true"
       :is-loading="entriesLoading"
       :selected-list.sync="selectedEntries"
-      @submit-action="deleteLinked"
-      @update:edit-mode="editModeActive = 'parent'">
+      :edit-mode="editModeActive === 'parent'"
+      :action-buttons-config="[{
+        text: 'form-view.deleteParents',
+        icon: 'waste-bin',
+        value: 'delete',
+        display: 'all',
+      }]"
+      :select-options-text="{
+        selectAll: $t('selectAll'),
+        selectNone: $t('selectNone'),
+        entriesSelected: $t('entriesSelected', { type: $tc('entry', selectedEntries.length) })
+      }"
+      @update:edit-mode="editModeActive = 'parent'"
+      @submit-action="deleteLinked">
       <template
         #resultBox="props">
         <BaseImageBox
@@ -241,20 +258,28 @@ export default {
     changeVideoHoverState(event, index, value) {
       this.$set(this.imageHover, index, value);
     },
-    // function for using options (delete, change license, publish state) for files
-    async saveFileMeta(act) {
+    /**
+     * add a step before executing the action to check if action is 'license'
+     * --> needs license selection first!
+     * @param act
+     */
+    checkFileActioning(act) {
       this.pendingAction = act;
+      if (this.pendingAction !== 'license') {
+        this.saveFileMeta();
+      }
+    },
+    // function for using options (delete, change license, publish state) for files
+    async saveFileMeta() {
       this.filesLoading = true;
-      // special case publish since publish / offline in one
-      const action = act === 'publish' ? 'change' : act;
       // check if files were selected
       if (!this.selectedFiles.length) {
         // if not notify user that he needs to select files
         this.$notify({
           group: 'request-notifications',
-          title: this.$t('notify.actionFailed', { action: this.$t(`notify.${action}`) }),
+          title: this.$t('notify.actionFailed', { action: this.$t(`notify.${this.pendingAction}`) }),
           text: this.$t('notify.selectForAction', {
-            action: this.$t(`notify.${action}File`),
+            action: this.$t(`notify.${this.pendingAction}File`),
             type: this.$tc('notify.media', 0),
           }),
           type: 'error',
@@ -277,12 +302,12 @@ export default {
         });
         // and inform user of the fail / success
         this.informUser({
-          successArr: successIds, failedArr: failIds, action, type: 'media',
+          successArr: successIds, failedArr: failIds, action: this.pendingAction, type: 'media',
         });
         if (successIds.length) {
           await this.fetchMedia();
           // check if action was delete and if yes propagate to parent to update user quota
-          if (action === 'delete') {
+          if (this.pendingAction === 'delete') {
             this.$emit('files-deleted');
           }
         }
@@ -302,7 +327,6 @@ export default {
         await this.$parent.actionLinked({ list: this.selectedEntries, action: 'delete' });
         // reset all involved variables
         this.entryEditModeActive = false;
-        this.parentEntryAction = '';
         this.selectedEntries = [];
       } else {
         // notify user to select entries
@@ -406,10 +430,6 @@ export default {
         }, 60000);
       }
     },
-    resetSelected() {
-      this.selectedEntries = [];
-      this.selectedFiles = [];
-    },
     publishedIconDescription(item) {
       return `${this.$t('form-view.file')} ${this.$t('form-view.filePublished', { file: this.getFileName(item) })}`;
     },
@@ -421,6 +441,25 @@ export default {
   @import "../styles/variables.scss";
 
   .attachment-area {
+
+    .attachments__license-drop-down {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: $spacing auto 0 auto;
+      text-align: left;
+      max-width: 100%;
+
+      .license-button {
+        border: 1px solid #{$font-color-second};
+        padding: $spacing-small/2 $spacing-small !important;
+        box-shadow: 0 0 4px 0 rgba(0,0,0,0.25);
+
+        &:hover {
+          border: 1px solid #{$app-color};
+        }
+      }
+    }
 
     .linked-base-box {
       cursor: pointer;
@@ -444,11 +483,5 @@ export default {
         }
       }
     }
-  }
-
-  .license-dropdown {
-    margin: $spacing auto 0 auto;
-    text-align: left;
-    max-width: 100%;
   }
 </style>
