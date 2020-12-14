@@ -141,6 +141,8 @@
     "upload": "Dateiupload",
     "entryActionTitle": "Eintrag {action} | Einträge {action}",
     "entryActionText": "Wollen Sie diesen Eintrag wirklich {action}? | Wollen Sie diese Einträge wirklich {action}?",
+    "fileActionTitle": "Datei löschen | Dateien löschen",
+    "fileActionText": "Wollen Sie diese Datei wirklich löschen? | Wollen Sie diese Dateien wirklich löschen?",
     "unsavedChangesTitle": "Eintrag speichern?",
     "unsavedChangesText": "Sie haben ungesicherte Änderungen. Soll der Eintrag gespeichert werden?",
     "saveChanges": "Änderungen speichern",

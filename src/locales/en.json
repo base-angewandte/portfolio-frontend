@@ -150,6 +150,8 @@
     "entryActionTitle": "{action} entry | {action} entries",
     "entryActionText": "Do you really want to {action} this entry? | Do you really want to {action} these entries?",
     "unsavedChangesTitle": "Save Entry?",
+    "fileActionTitle": "Delete file | Delete files",
+    "fileActionText": "Do you really want to delete this file?? | Do you really want to delete these files?",
     "unsavedChangesText": "You have unsaved changes. Should they be saved?",
     "saveChanges": "Save changes",
     "dismissChanges": "Discard changes",

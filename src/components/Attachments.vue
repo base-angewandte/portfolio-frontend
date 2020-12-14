@@ -265,12 +265,35 @@ export default {
      */
     checkFileActioning(act) {
       this.pendingAction = act;
-      if (this.pendingAction !== 'license') {
+      // check if action is delete to add a confimation pop up before deleting
+      if (this.pendingAction === 'delete') {
+        // get all the data for selected file ids
+        const files = this.attachedList.filter((file) => this.selectedFiles.includes(file.id));
+        // get specifically the filenames to display (or the id if file is still converting)
+        const titles = files.map((entry) => (this.getFileName(entry.original) || entry.id)
+          .replace(/</g, '\\<')
+          .replace(/>/g, '\\>'));
+        // open the pop up
+        this.$store.commit('data/setPopUp', {
+          show: true,
+          header: `${this.$tc('notify.fileActionTitle', titles.length)}?`,
+          textTitle: this.$tc('notify.fileActionText', titles.length),
+          textList: titles,
+          icon: 'waste-bin',
+          buttonTextRight: this.$tc('notify.fileActionTitle', titles.length),
+          actionRight: () => this.saveFileMeta(),
+          actionLeft: () => this.cancelDelete(),
+        });
+        // if action is everything but license (and delete) continue with the action
+        // for license the drop down appears as soon as pendingAction is set and
+        // no further code execution is necessary until user input is done
+      } else if (this.pendingAction !== 'license') {
         this.saveFileMeta();
       }
     },
     // function for using options (delete, change license, publish state) for files
     async saveFileMeta() {
+      this.$store.commit('data/hidePopUp');
       this.filesLoading = true;
       // check if files were selected
       if (!this.selectedFiles.length) {
@@ -341,6 +364,9 @@ export default {
         });
       }
       this.entriesLoading = false;
+    },
+    cancelDelete() {
+      this.$store.commit('data/hidePopUp');
     },
     // get file name from url
     getFileName(file) {
