@@ -247,6 +247,7 @@ export default {
     },
     async type(val) {
       if (val) {
+        const originalFormFields = { ...this.formFieldsExtension };
         try {
           this.extensionIsLoading = true;
           const { properties } = await this.$store.dispatch('PortfolioAPI/get', {
@@ -255,6 +256,15 @@ export default {
           });
           this.$store.commit('data/setExtensionSchema', properties || {});
           await this.$store.dispatch('data/getStaticDropDowns', properties);
+
+          // map fields between each other
+          if (Object.keys(originalFormFields).length) {
+            this.mapFieldEquivalents({
+              originalFormFields,
+              newFormFields: properties,
+              equivalentName: 'contributors',
+            });
+          }
 
           // prepare roles by filtering all the roles that have separate fields
           const contributorFields = Object.keys(properties).reduce((prev, curr) => {
@@ -267,6 +277,7 @@ export default {
           this.prefetchedRoles = await this.$store.state.data.prefetchedTypes.contributors_role
             .filter((role) => !contributorFields.includes(role.source));
         } catch (e) {
+          console.error(e);
           // check if request was cancelled and ignore if yes - otherwise notify user
           if (!axios.isCancel(e)) {
             this.$notify({
@@ -804,6 +815,128 @@ export default {
           }
         });
       return fieldNameList;
+    },
+    /**
+     * function to do mapping between a general field and specialized fields - e.g. 'contributors'
+     * and 'authors', 'architects', 'artists', ... changing with form type
+     *
+     * @param {Object} originalFormFields - the form fields information in OpenAPI format
+     *  before the type change
+     * @param {Object} newFormFields - the form fields information in OpenAPI format
+     *  after the type change
+     * @param {string} equivalentName - the property name of the general field (e.g. 'contributors')
+     * @param {string} [idProp=source] - the unique identifier property name of entries (e.g. for
+     *  contributor or specific role --> 'source')
+     * @param {string} [fieldProp=roles] - the property name that contains the relevant information
+     *  for the specialized fields
+     * @param {string} [defaultProp=default_role] - the property name of the x-attribute that
+     *  contains the unique ID of the form field (e.g. 'default_role')
+     */
+    mapFieldEquivalents({
+      originalFormFields,
+      newFormFields,
+      equivalentName,
+      idProp = 'source',
+      fieldProp = 'roles',
+      defaultProp = 'default_role',
+    }) {
+      const originalFieldInformation = this.filterFormFieldsForEquivalent(
+        originalFormFields, equivalentName, defaultProp,
+      );
+      const newFieldInformation = this.filterFormFieldsForEquivalent(
+        newFormFields, equivalentName, defaultProp,
+      );
+      // store the general equivalent field in a variable
+      // (needed for both sides of mapping)
+      const equivalentFieldData = this.valueList.data[equivalentName];
+      // first map from previous equivalents to contributors if this field
+      // does not exist in the new form
+      if (originalFieldInformation && originalFieldInformation.length) {
+        // loop through every of the specialized fields
+        originalFieldInformation.forEach((equivalentField) => {
+          // check if this field does NOT occur in the new form and if this
+          // field has data
+          if (!Object.prototype.hasOwnProperty.call(newFormFields, equivalentField.name)
+            && this.valueList.data && this.valueList.data[equivalentField.name]) {
+            // get a list of all the equivalent field entry ids
+            const equivalentFieldDataIds = equivalentFieldData.map((cont) => cont[idProp]);
+            // loop through all the entries in the specialized field separately to be able
+            // to either
+            // a) add only the necessary additional prop value (e.g. a specific role)
+            //    to an already existing entry or
+            // b) add a new entry to the equivalent field
+            this.valueList.data[equivalentField.name].forEach((entry) => {
+              // get entry index in equivalent field
+              const contIndex = equivalentFieldDataIds.indexOf(entry[idProp]);
+              // check if entry is acutally identifyable by an unique id and
+              // is already contained in the equivalent field
+              if (entry[idProp] && contIndex >= 0) {
+                // if yes - just add the relevant properties to the existing entry
+                equivalentFieldData[contIndex][fieldProp].push(entry[fieldProp][0]);
+              } else {
+                // if no - push the complete entry
+                equivalentFieldData.push(entry);
+              }
+            });
+            // remove the property from valueList.data
+            delete this.valueList.data[equivalentField];
+          }
+        });
+      }
+      // second map from common field to equivalents if this field appears in the form
+      if (newFieldInformation && newFieldInformation.length) {
+        // check if this field acutally has data (array is assumed for now)
+        if (equivalentFieldData && equivalentFieldData.length) {
+          // get a list of all field IDs before looping through all the entries
+          const newEquivalentFieldIds = newFieldInformation.map((newField) => newField.default);
+          // check each entry in the equivalent field if they should go to
+          // a specialized field
+          equivalentFieldData.forEach((equivalent) => {
+            // check if the specific prop (e.g. roles) has entries
+            if (equivalent[fieldProp] && equivalent[fieldProp].length) {
+              // loop through all the entries for the specific prop
+              equivalent[fieldProp].forEach((role, index) => {
+                // and check for a match with the list of new fields
+                if (newEquivalentFieldIds.includes(role[idProp])) {
+                  // if there is a match, create a new entry for that field
+                  // with data from the equivalent field but with only the specific prop entry
+                  // that was matching (e.g. role 'author' for 'authors' field)
+                  const newFieldEntry = { ...equivalent, ...{ [fieldProp]: [role] } };
+                  // to add this entry find the field where entry should be added
+                  const field = newFieldInformation
+                    .find((newField) => newField.default === role[idProp]);
+                  // if this field aready exists add the new entry by pushing to array
+                  if (this.valueList.data[field.name]) {
+                    this.valueList.data[field.name].push(newFieldEntry);
+                  } else {
+                    // else create a new property in valueList.data
+                    this.$set(this.valueList.data, field.name, [newFieldEntry]);
+                  }
+                  // remove entry from equivalent list
+                  equivalent[fieldProp].splice(index, 1);
+                }
+              });
+            }
+          });
+        }
+      }
+    },
+    /**
+     * extract the relevant information for mapping from the OpenAPI object
+     *
+     * @param {Object} formFields - the form field information in OpenAPI format
+     * @param {string} equivalentName - the property name of the common field (e.g. 'contributors')
+     * @param {string} defaultProp - the property name of the x-attribute containing the specialized
+     *  field unique id
+     * @returns {{default: string, name: string}[]}
+     */
+    filterFormFieldsForEquivalent(formFields, equivalentName, defaultProp) {
+      return Object.keys(formFields)
+        .filter((fieldName) => formFields[fieldName]['x-attrs'].equivalent === equivalentName)
+        .map((fieldName) => ({
+          name: fieldName,
+          default: formFields[fieldName]['x-attrs'][defaultProp],
+        }));
     },
   },
 };
