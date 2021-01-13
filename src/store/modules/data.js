@@ -591,7 +591,7 @@ const actions = {
   },
   async removeUnknownProps({ state, dispatch }, { data, fields }) {
     const newData = {};
-    Object.keys(data).forEach(async (key) => {
+    await Promise.all(Object.keys(data).map(async (key) => {
       const field = fields[key];
       const xAttrs = field ? field['x-attrs'] : {};
       let values = data[key];
@@ -663,7 +663,7 @@ const actions = {
         if (i18n.locale in field.properties) {
           Vue.set(newData, key, values);
         } else {
-          Object.keys(values).forEach(async (valueKey) => {
+          await Promise.all(Object.keys(values).map(async (valueKey) => {
             // this is needed for Date fields that need to be removed if no value present
             if (!hasFieldContent(values[valueKey])) {
               return;
@@ -680,7 +680,7 @@ const actions = {
                 Vue.set(validProperties, valueKey, values[valueKey]);
               }
             }
-          });
+          }));
           Vue.set(newData, key, validProperties);
         }
         // check if field type is string and values are actually matching the type
@@ -688,7 +688,7 @@ const actions = {
       } else if (field.type === 'string' && typeof values === 'string') {
         Vue.set(newData, key, values);
       }
-    });
+    }));
     return newData;
   },
 };
