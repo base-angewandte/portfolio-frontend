@@ -133,7 +133,7 @@
 import axios from 'axios';
 import { attachmentHandlingMixin } from '@/mixins/attachmentHandling';
 import { entryHandlingMixin } from '@/mixins/entryHandling';
-import { getApiUrl, getLangLabel } from '@/utils/commonUtils';
+import { getApiUrl, getLangLabel, toTitleString } from '@/utils/commonUtils';
 import BaseRow from '../components/BaseRow';
 import BaseFormOptions from '../components/BaseFormOptions';
 
@@ -198,7 +198,16 @@ export default {
       return this.$store.state.data.prefetchedTypes;
     },
     objectTypes() {
-      return this.$store.state.PortfolioAPI.schemas;
+      // map fields to get the correct casing for en
+      return this.$store.state.PortfolioAPI.schemas.map((schema) => ({
+        ...schema,
+        ...{
+          label: {
+            ...schema.label,
+            ...{ en: toTitleString(schema.label.en) },
+          },
+        },
+      }));
     },
     formDataPresent() {
       return !this.currentItemId || (!!Object.keys(this.formFields).length
@@ -249,10 +258,12 @@ export default {
       if (val) {
         try {
           this.extensionIsLoading = true;
-          const { properties } = await this.$store.dispatch('PortfolioAPI/get', {
+          let { properties } = await this.$store.dispatch('PortfolioAPI/get', {
             kind: 'jsonschema',
             id: encodeURIComponent(this.valueList.type[0].source),
           });
+          // add english lang casing to title and placeholders
+          properties = await this.$store.dispatch('data/addEnglishTitleCasing', properties);
           this.$store.commit('data/setExtensionSchema', properties || {});
           await this.$store.dispatch('data/getStaticDropDowns', properties);
 
@@ -267,6 +278,7 @@ export default {
           this.prefetchedRoles = await this.$store.state.data.prefetchedTypes.contributors_role
             .filter((role) => !contributorFields.includes(role.source));
         } catch (e) {
+          console.error(e);
           // check if request was cancelled and ignore if yes - otherwise notify user
           if (!axios.isCancel(e)) {
             this.$notify({
