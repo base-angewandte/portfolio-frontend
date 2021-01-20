@@ -377,10 +377,7 @@ const actions = {
       try {
         entryData = await this.dispatch('PortfolioAPI/get', { kind: 'entry', id });
         if (entryData) {
-          // Modifications of data received from backend needed:
-          // 1. type needs to be array in logic here!
-          const objectType = entryData.type && entryData.type.source ? [entryData.type] : [];
-          // 2. Text needs to look different
+          // Modifications for text that needs to look different
           const textData = entryData.texts && entryData.texts.length
             ? await Promise.all(entryData.texts
               // eslint-disable-next-line no-async-promise-executor
@@ -399,7 +396,6 @@ const actions = {
 
           const adjustedEntry = {
             ...entryData,
-            type: objectType,
             texts: textData,
           };
           commit('setCurrentItem', adjustedEntry);
@@ -632,7 +628,7 @@ const actions = {
       }
       // special case data - which has separate schema - needs to be checked first since data prop
       // also has hidden prop
-      if (key === 'data') {
+      if (key === 'data' && values) {
         const extensionData = await dispatch('removeUnknownProps', { data: values, fields: state.extensionSchema });
         Vue.set(newData, key, extensionData);
         // ignore props that are hidden (except data - see above)
@@ -649,13 +645,15 @@ const actions = {
         // special case single choice chips (saved as object in backend)
       } else if (xAttrs && xAttrs.field_type && xAttrs.field_type.includes('chips')
         && field.type === 'object') {
-        Vue.set(newData, key, values[0] || null);
+        // check again if values provided are object or array
+        const objectValue = values instanceof Array ? values[0] || {} : values;
+        Vue.set(newData, key, objectValue);
       } else if (field.type === 'integer') {
         const number = parseInt(values, 10);
         Vue.set(newData, key, !Number.isNaN(number) ? number : 0);
         // check if field is array and values are array values
         // (was neccessary because of published_in)
-      } else if (field.type === 'array' && typeof values === 'object') {
+      } else if (values && field.type === 'array' && typeof values === 'object') {
         // a check if a group field actually has content - otherwise it is removed
         if (xAttrs && xAttrs.field_type === 'group') {
           values = values.filter((value) => hasFieldContent(value));
@@ -663,23 +661,25 @@ const actions = {
         // special case chips with unknown entries allowed - we want label set in all languages
         if (field.items.properties.label && field.items.properties.label.type === 'object'
           && xAttrs && xAttrs.allow_unknown_entries) {
-          // check for each chip if all languages are set
-          values = values.map((value) => {
-            const valueLocales = Object.keys(value.label);
-            // for some weird reason i can not use env variable directly
-            const languages = process.env.VUE_APP_LOCALES.split(',').map((langString) => langString.trim());
-            if (!value.source && valueLocales !== languages) {
-              const fieldValue = value.label[valueLocales.find((lang) => !!value.label[lang])];
-              const newLabelObject = {};
+          if (values) {
+            // check for each chip if all languages are set
+            values = values.map((value) => {
+              const valueLocales = Object.keys(value.label);
+              // for some weird reason i can not use env variable directly
+              const languages = process.env.VUE_APP_LOCALES.split(',').map((langString) => langString.trim());
+              if (!value.source && valueLocales !== languages) {
+                const fieldValue = value.label[valueLocales.find((lang) => !!value.label[lang])];
+                const newLabelObject = {};
 
-              // add language specific label for all languages if not set from external
-              languages.forEach((lang) => {
-                Vue.set(newLabelObject, lang, fieldValue);
-              });
-              Vue.set(value, 'label', newLabelObject);
-            }
-            return value;
-          });
+                // add language specific label for all languages if not set from external
+                languages.forEach((lang) => {
+                  Vue.set(newLabelObject, lang, fieldValue);
+                });
+                Vue.set(value, 'label', newLabelObject);
+              }
+              return value;
+            });
+          }
         }
         const arrayValues = await Promise.all(values
           .map((value) => dispatch('removeUnknownProps', { data: value, fields: field.items.properties })));
