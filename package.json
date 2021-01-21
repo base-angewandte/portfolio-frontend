@@ -9,7 +9,6 @@
     "dev": " gulp set-default-lists && vue-cli-service serve",
     "build": "gulp && vue-cli-service build",
     "build:test": "npm run build && node server.js",
-    "build:container": "gulp && vue-cli-service build --no-clean",
     "build:analyze": "vue-cli-service build --report",
     "lint": "vue-cli-service lint"
   },
