@@ -10,4 +10,4 @@ RUN npm i npm@latest -g && npm i
 
 COPY . .
 
-CMD ["npm", "run", "build"]
+CMD ["npm", "run", "build:container"]
