@@ -380,8 +380,7 @@ const actions = {
           // Modifications for text that needs to look different
           const textData = entryData.texts && entryData.texts.length
             ? await Promise.all(entryData.texts
-              // eslint-disable-next-line no-async-promise-executor
-              .map((entry) => new Promise(async (res) => {
+              .map((entry) => {
                 const textObj = {};
                 const { type } = entry;
                 // TODO: temporary hack - probably should fetch label for lang as well
@@ -391,8 +390,8 @@ const actions = {
                     Vue.set(textObj, langInternal.toLowerCase(), language.text);
                   });
                 }
-                res({ type, ...textObj });
-              }))) : [];
+                return ({ type, ...textObj });
+              })) : [];
 
           const adjustedEntry = {
             ...entryData,
