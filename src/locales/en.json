@@ -72,7 +72,6 @@
   "form-view": {
     "notFound": "Entry Not Found",
     "notFoundSubtext": "The requested Entry with ID \"{id}\" does not exist.",
-    "formExtended": "Further Information",
     "attachedEntries": "Attached Entries",
     "attachedFiles": "Attached Files",
     "addExistingEntry": "Attach an Existing Entry",
