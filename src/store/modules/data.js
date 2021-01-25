@@ -71,7 +71,6 @@ function addEnglishTextStyling(object) {
     if (value['x-attrs'] && value['x-attrs'].field_type === 'group') {
       const alteredGroupFields = addEnglishTextStyling(value.items.properties);
       Vue.set(value.items, 'properties', alteredGroupFields);
-      console.log(value);
     }
     return {
       ...prev,
