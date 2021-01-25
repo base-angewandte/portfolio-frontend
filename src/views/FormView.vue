@@ -20,11 +20,12 @@
         class="form-loading-area">
         <BaseLoader class="loader" />
       </div>
+      <!-- Fallback: use formFields, if x-attr form_group is not provided from backend -->
       <BaseForm
-        v-if="Object.keys(formFieldsGroup1).length"
+        v-if="Object.keys(formFieldsGroup1).length || Object.keys(formFields).length"
         ref="baseForm"
         :form-id="'main'"
-        :form-field-json="formFieldsGroup1"
+        :form-field-json="Object.keys(formFieldsGroup1).length ? formFieldsGroup1 : formFields"
         :value-list="valueList"
         :available-locales="locales"
         :language="$i18n.locale"
