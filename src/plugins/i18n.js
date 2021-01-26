@@ -49,10 +49,14 @@ if (lang !== process.env.VUE_APP_DEFAULT_LOCALE) {
 const locale = process.env.VUE_APP_LOCALES.split(',').map((langString) => langString.trim())
   .includes(lang) ? lang : process.env.VUE_APP_DEFAULT_LOCALE;
 
+/* eslint-disable-next-line no-extra-boolean-cast */
+const customFormaterObject = JSON.parse(process.env.VUE_APP_EN_TITLE_CASING)
+  ? { formatter: new CustomFormatter({ locale }) } : {};
+
 /* eslint-disable-next-line */
 export const i18n = new VueI18n({
   locale,
-  formatter: new CustomFormatter({ locale }),
+  ...customFormaterObject,
   fallbackLocale: process.env.VUE_APP_DEFAULT_LOCALE,
   messages: { ...{ [process.env.VUE_APP_DEFAULT_LOCALE]: defaultJson }, ...{ [lang]: langJson } },
 });

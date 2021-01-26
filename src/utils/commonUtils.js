@@ -11,7 +11,7 @@ export const capitalizeString = (string) => {
 
 export const toTitleString = (string, language = 'en') => {
   const functionLang = i18n.locale || language;
-  if (functionLang === 'en') {
+  if (process.env.VUE_APP_EN_TITLE_CASING && functionLang === 'en') {
     /* this function was taken from:
     To Title Case © 2018 David Gouch | https://github.com/gouch/to-title-case
     */
