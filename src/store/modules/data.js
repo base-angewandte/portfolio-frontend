@@ -418,8 +418,10 @@ const actions = {
       // remove duplicates (by source), sort the results and add title casing to
       // english label string
       const entryTypes = sorting(data
-        .filter((type, index, self) => self
-          .map((entry) => entry.source).indexOf(type.source) === index), 'label', i18n.locale)
+        // check if type actually contains any properties since case of empty
+        // object being returned already happened and just safe guarding anyway
+        .filter((type, index, self) => Object.keys(type).length && self.map((entry) => entry.source)
+          .indexOf(type.source) === index), 'label', i18n.locale)
         .map((type) => ({
           ...type,
           ...{
