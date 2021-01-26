@@ -133,7 +133,7 @@
 import axios from 'axios';
 import { attachmentHandlingMixin } from '@/mixins/attachmentHandling';
 import { entryHandlingMixin } from '@/mixins/entryHandling';
-import { getApiUrl, getLangLabel } from '@/utils/commonUtils';
+import { getApiUrl, getLangLabel, hasFieldContent } from '@/utils/commonUtils';
 import BaseRow from '../components/BaseRow';
 import BaseFormOptions from '../components/BaseFormOptions';
 
@@ -212,7 +212,27 @@ export default {
       return this.$store.getters['data/getCurrentMedia'].length;
     },
     unsavedChanges() {
-      return JSON.stringify(this.valueList) !== JSON.stringify(this.valueListOriginal);
+      // check if any field has actually data (and exclude the data field)
+      const valueListFiltered = Object.entries(this.valueList)
+        .filter(([key, value]) => key !== 'data' && hasFieldContent(value));
+      // check if any field has actually data (and exclude the data field) in
+      // the originally stored data
+      const valueListOriginalFiltered = Object.entries(this.valueListOriginal)
+        .filter(([key, value]) => key !== 'data' && hasFieldContent(value));
+      // now also check for the data field separately and also check first if data field
+      // exists
+      const valueListFilteredData = this.valueList.data ? Object.entries(this.valueList.data)
+        .filter(([key, value]) => key !== 'data' && hasFieldContent(value)) : [];
+      // now also check for the data field separately and also check first if data field
+      // exists for the originally saved data
+      const valueListOriginalFilteredData = this.valueListOriginal.data
+        ? Object.entries(this.valueListOriginal.data)
+          .filter(([key, value]) => key !== 'data' && hasFieldContent(value)) : [];
+      // now compare both main form and extended form data - if one of them is different
+      // return unsavedChanges true
+      return (JSON.stringify(valueListFiltered) !== JSON.stringify(valueListOriginalFiltered)
+        || JSON.stringify(valueListFilteredData) !== JSON
+          .stringify(valueListOriginalFilteredData));
     },
     locales() {
       return process.env.VUE_APP_LOCALES.split(',').map((langString) => langString.trim());
