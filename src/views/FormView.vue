@@ -212,27 +212,32 @@ export default {
       return this.$store.getters['data/getCurrentMedia'].length;
     },
     unsavedChanges() {
-      // check if any field has actually data (and exclude the data field)
+      // check if there were changes in the data field first
+      if (this.type) {
+        // now also check for the data field separately and also check first if data field
+        // exists
+        const valueListFilteredData = this.type ? Object.entries(this.valueList.data)
+          .filter(([key, value]) => key !== 'data' && hasFieldContent(value)) : [];
+        // now also check for the data field separately and also check first if data field
+        // exists for the originally saved data
+        const valueListOriginalFilteredData = this.type
+          ? Object.entries(this.valueListOriginal.data)
+            .filter(([key, value]) => key !== 'data' && hasFieldContent(value)) : [];
+        if (JSON.stringify(valueListFilteredData) !== JSON
+          .stringify(valueListOriginalFilteredData)) {
+          return true;
+        }
+      }
+      // if data field did not already return true for unsaved changes then also check the
+      // the main fields (except data field)
       const valueListFiltered = Object.entries(this.valueList)
         .filter(([key, value]) => key !== 'data' && hasFieldContent(value));
-      // check if any field has actually data (and exclude the data field) in
+      // check if any field has actually data in
       // the originally stored data
       const valueListOriginalFiltered = Object.entries(this.valueListOriginal)
         .filter(([key, value]) => key !== 'data' && hasFieldContent(value));
-      // now also check for the data field separately and also check first if data field
-      // exists
-      const valueListFilteredData = this.valueList.data ? Object.entries(this.valueList.data)
-        .filter(([key, value]) => key !== 'data' && hasFieldContent(value)) : [];
-      // now also check for the data field separately and also check first if data field
-      // exists for the originally saved data
-      const valueListOriginalFilteredData = this.valueListOriginal.data
-        ? Object.entries(this.valueListOriginal.data)
-          .filter(([key, value]) => key !== 'data' && hasFieldContent(value)) : [];
-      // now compare both main form and extended form data - if one of them is different
-      // return unsavedChanges true
-      return (JSON.stringify(valueListFiltered) !== JSON.stringify(valueListOriginalFiltered)
-        || JSON.stringify(valueListFilteredData) !== JSON
-          .stringify(valueListOriginalFilteredData));
+      // return unsavedChanges true if original value list different from current value list
+      return JSON.stringify(valueListFiltered) !== JSON.stringify(valueListOriginalFiltered);
     },
     locales() {
       return process.env.VUE_APP_LOCALES.split(',').map((langString) => langString.trim());
