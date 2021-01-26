@@ -66,7 +66,8 @@
         :language="$i18n.locale"
         :field-is-loading="fieldIsLoading"
         :drop-down-lists="dropDownListsInt"
-        :class="[{ 'base-form-spacing': type, 'base-form-pt-0': !type }]"
+        :form-style="!type ? { 'padding-top': 0 } : {}"
+        :class="[{ 'base-form-spacing': type }]"
         @values-changed="handleInput($event)"
         @fetch-autocomplete="fetchAutocomplete" />
 
@@ -825,11 +826,20 @@ export default {
       return fieldNameList;
     },
     getFormFieldsByGroup(group = 1) {
-      return Object.fromEntries(
-        Object.entries(this.formFields)
-          .filter(([key]) => this.formFields[key]['x-attrs']
-            && this.formFields[key]['x-attrs'].form_group === group),
-      );
+      if (!Object.entries(this.formFields).length) {
+        return false;
+      }
+
+      return Object.entries(this.formFields).reduce((prev, [key, value]) => {
+        if (this.formFields[key]['x-attrs']
+          && this.formFields[key]['x-attrs'].form_group === group) {
+          return {
+            ...prev,
+            [key]: value,
+          };
+        }
+        return prev;
+      }, {});
     },
   },
 };
