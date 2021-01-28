@@ -22,7 +22,8 @@ class CustomFormatter {
       fn = this._formatter.compile(message, this._locale);
       this._caches[message] = fn;
     }
-    return [toTitleString(fn(values), this._locale)];
+    return [values && values.toTitleCase === false
+      ? fn(values) : toTitleString(fn(values), this._locale)];
   }
 }
 
