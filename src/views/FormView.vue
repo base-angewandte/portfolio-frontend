@@ -879,7 +879,7 @@ export default {
               }
             });
             // remove the property from valueList.data
-            delete this.valueList.data[equivalentField];
+            delete this.valueList.data[equivalentField.name];
           }
         });
       }
