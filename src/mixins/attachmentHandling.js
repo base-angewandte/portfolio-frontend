@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { userInfo } from './userInfo';
 
 /* eslint-disable-next-line */
@@ -56,13 +57,17 @@ export const attachmentHandlingMixin = {
         this.$store.commit('data/setLinked', { list: entry.relations || [], replace: true });
         this.$store.commit('data/setLinkedParents', { list: entry.parents });
       } catch (e) {
-        console.error(e);
-        this.$notify({
-          group: 'request-notifications',
-          title: this.$t('notify.somethingWrong'),
-          text: this.$t('notify.fetchLinkedFail'),
-          type: 'error',
-        });
+        if (axios.isCancel(e)) {
+          console.warn(e.message);
+        } else {
+          console.error(e);
+          this.$notify({
+            group: 'request-notifications',
+            title: this.$t('notify.somethingWrong'),
+            text: this.$t('notify.fetchLinkedFail'),
+            type: 'error',
+          });
+        }
       }
       if (attachmentArea) {
         attachmentArea.entriesLoading = false;

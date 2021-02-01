@@ -133,7 +133,7 @@
 import axios from 'axios';
 import { attachmentHandlingMixin } from '@/mixins/attachmentHandling';
 import { entryHandlingMixin } from '@/mixins/entryHandling';
-import { getApiUrl, getLangLabel } from '@/utils/commonUtils';
+import { getApiUrl, getLangLabel, hasFieldContent } from '@/utils/commonUtils';
 import BaseRow from '../components/BaseRow';
 import BaseFormOptions from '../components/BaseFormOptions';
 
@@ -218,11 +218,24 @@ export default {
       return process.env.VUE_APP_LOCALES.split(',').map((langString) => langString.trim());
     },
     dropDownFieldsList() {
-      const fields = { ...this.formFields, ...this.formFieldsExtension };
-      return this.getDropDownFields(fields);
+      return this.getDropDownFields(this.fieldsList);
+    },
+    fieldsList() {
+      return { ...this.formFields, ...this.formFieldsExtension };
     },
   },
   watch: {
+    formDataPresent() {
+      this.initializeValueList(this.formFields, this.valueList);
+      this.initializeValueList(this.formFieldsExtension, this.valueList.data);
+      // check if previously unsaved changes were stored in session storage
+      const storedValueList = JSON.parse(sessionStorage.getItem('valueList'));
+      // only if there is no data in session storage also set the original data list
+      // used for determining unsaved changes to the new values
+      if (!(storedValueList && storedValueList.id === this.currentItemId)) {
+        this.valueListOriginal = { ...JSON.parse(JSON.stringify(this.valueList)) };
+      }
+    },
     formFields() {
       this.formIsLoading = false;
     },
@@ -382,8 +395,7 @@ export default {
     resetForm() {
       this.valueList = {};
       this.valueList.data = {};
-      // this.$refs.baseForm.initializeValueObject();
-      this.valueListOriginal = { ...this.valueList };
+      this.valueListOriginal = { ...JSON.parse(JSON.stringify(this.valueList)) };
     },
     async updateForm() {
       this.formIsLoading = true;
@@ -392,10 +404,15 @@ export default {
         this.valueList = { ...data };
         this.extensionIsLoading = !!this.type;
         this.$set(this.valueList, 'data', { ...data.data });
+        // update the set dat to currently necessary formats
+        this.initializeValueList(this.formFields, this.valueList);
+        this.initializeValueList(this.formFieldsExtension, this.valueList);
         // copy the original object to check for unsaved changes later
-        this.valueListOriginal = { ...this.valueList };
+        this.valueListOriginal = { ...JSON.parse(JSON.stringify(this.valueList)) };
       } catch (e) {
-        if (e && e.response && e.response.status === 404) {
+        if (axios.isCancel(e)) {
+          console.warn(e.message);
+        } else if (e && e.response && e.response.status === 404) {
           this.$router.push(`/not-found?id=${this.currentItemId}`);
           // only notify if user was already authenticated
         } else if (!e || !e.response || e.response.status !== 403) {
@@ -410,24 +427,65 @@ export default {
         }
       }
     },
+    /**
+     * a function to adapt data fields that need adapting - currently solely in there - single
+     * chips input fields that come as object but need to be an array for BaseChipsInputField
+     *
+     * @param {Object} fields - the swagger format form fields
+     * @param {Object} data - the entry data
+     */
+    initializeValueList(fields, data) {
+      Object.entries(fields).forEach(([key, value]) => {
+        // 1. check for single chips inputs as they come from backend as an object
+        // but need to be an array in front end
+        if (value['x-attrs'] && value['x-attrs'].field_type === 'chips' && value.type === 'object') {
+          this.$set(data, key, hasFieldContent(data[key]) ? [].concat(data[key]) : []);
+        }
+        // also loop through secondary fields (e.g. roles)
+        if (hasFieldContent(data[key]) && value.items && value.items.properties) {
+          // handle for every entry of array
+          if (data[key] instanceof Array) {
+            data[key].forEach((entry) => this.initializeValueList(value.items.properties, entry));
+            // or object (currently not present)
+          } else {
+            this.initializeValueList(value.properties, data[key]);
+          }
+        }
+      });
+    },
+    /**
+     * function called on user form input
+     *
+     * @param {Object} data - the entry data provided by the respective form
+     * @param {?string} type - if data are provided from a subform (and a certain attribute of
+     * the entry data respectiviely)
+     */
     handleInput(data, type) {
       if (cancel) {
         this.fieldIsLoading = '';
         cancel('value already selected');
       }
-      // check if type is set (= this event is coming from a subform)
-      if (type) {
-        this.$set(this.valueList, type, {
-          ...this.valueList[type],
-          ...JSON.parse(JSON.stringify(data)),
-        });
-      } else {
-        // check if type has changed - if yes - map data to new fields
-        if (JSON.stringify(this.valueList.type) !== JSON.stringify(data.type)) {
-          // TODO: map data between fields!!
+      // get the data in question - either complete entry data or if type is set
+      // the specific data connected with that attribute
+      const originalDataObject = type ? this.valueList[type] : this.valueList;
+      // find changed data so only the data that truly changed go into valueList
+      Object.keys(this.fieldsList).forEach((key) => {
+        const value = data[key];
+        // check if specifiy property of data changed values
+        if ((this.fieldsList[key]['x-attrs'] && !this.fieldsList[key]['x-attrs'].hidden)
+          && JSON.stringify(value) !== JSON.stringify(this.valueList[key])) {
+          // store in variable if respective fields have data
+          const newDataHasFieldContent = hasFieldContent(value);
+          const originalDataHasFieldContent = hasFieldContent(originalDataObject[key]);
+          // then only update valueList when either new data has values or old data
+          // has values and new data has not (= data was deleted) - this is done to
+          // prevent the empty fields initialized in BaseForm to pollute the valueList
+          // with empty 'values'
+          if (newDataHasFieldContent || (!newDataHasFieldContent && originalDataHasFieldContent)) {
+            this.$set(originalDataObject, key, value);
+          }
         }
-        this.valueList = { ...this.valueList, ...JSON.parse(JSON.stringify(data)) };
-      }
+      });
     },
     async saveForm(routeToNewEntry = true) {
       // check if there is a title (only requirement for saving)
@@ -486,7 +544,7 @@ export default {
             text: this.$t('notify.saveSuccessSubtext', { title: validData.title }),
             type: 'success',
           });
-          this.valueListOriginal = { ...this.valueList };
+          this.valueListOriginal = { ...JSON.parse(JSON.stringify(this.valueList)) };
           this.dataSaving = false;
           return true;
         } catch (e) {
@@ -615,7 +673,7 @@ export default {
           },
           actionLeft: () => {
             // if changes are discarded reset to original value list
-            this.valueList = { ...this.valueListOriginal };
+            this.valueList = { ...JSON.parse(JSON.stringify(this.valueList)) };
             followUpAction();
           },
         });
@@ -666,10 +724,11 @@ export default {
             //  source name, separated name, dob, profession
             this.fieldIsLoading = '';
           } catch (e) {
-            console.error(e);
             if (e instanceof DOMException) {
               console.error('If you see above error it is likely because the source is missing for a field!');
               this.fieldIsLoading = '';
+            } else if (axios.isCancel(e)) {
+              console.warn(e.message);
             } else {
               // TODO: inform user?? notification or just info in drop down??
             }

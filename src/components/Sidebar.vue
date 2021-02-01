@@ -492,7 +492,9 @@ export default {
         }
         this.$emit('sidebar-data-changed');
       } catch (e) {
-        if (!axios.isCancel(e) && (e.response && e.response.status !== 403)) {
+        if (axios.isCancel(e)) {
+          console.warn(e.message);
+        } else if (e.response && e.response.status !== 403) {
           console.error(e);
           this.$notify({
             group: 'request-notifications',

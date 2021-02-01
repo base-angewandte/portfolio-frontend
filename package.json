@@ -1,6 +1,6 @@
 {
   "name": "portfolio-frontend",
-  "version": "1.0.0",
+  "version": "1.0.6",
   "description": "A base project",
   "author": "base dev team",
   "private": true,
@@ -13,7 +13,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "axios": "^0.19.0",
+    "axios": "^0.21.1",
     "base-ui-components": "^1.0.0",
     "core-js": "^3.6.5",
     "normalize.css": "^8.0.1",

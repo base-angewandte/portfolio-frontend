@@ -147,6 +147,7 @@
 </template>
 
 <script>
+import axios from 'axios';
 import Sidebar from './Sidebar';
 import Uploader from './Uploader';
 import { userInfo } from '../mixins/userInfo';
@@ -274,7 +275,11 @@ export default {
                 to: entry,
               });
             } catch (e) {
-              console.error(e);
+              if (axios.isCancel(e)) {
+                console.warn(e.message);
+              } else {
+                console.error(e);
+              }
               failArr.push(entryId);
               resolve();
             }
