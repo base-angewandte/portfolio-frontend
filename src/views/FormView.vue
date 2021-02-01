@@ -212,32 +212,25 @@ export default {
       return this.$store.getters['data/getCurrentMedia'].length;
     },
     unsavedChanges() {
-      // check if there were changes in the data field first
-      if (this.type) {
-        // now also check for the data field separately and also check first if data field
-        // exists
-        const valueListFilteredData = this.type ? Object.entries(this.valueList.data)
-          .filter(([key, value]) => key !== 'data' && hasFieldContent(value)) : [];
-        // now also check for the data field separately and also check first if data field
-        // exists for the originally saved data
-        const valueListOriginalFilteredData = this.type
-          ? Object.entries(this.valueListOriginal.data)
-            .filter(([key, value]) => key !== 'data' && hasFieldContent(value)) : [];
-        if (JSON.stringify(valueListFilteredData) !== JSON
-          .stringify(valueListOriginalFilteredData)) {
-          return true;
-        }
+      // every value of formFields is compared - with Array.every it will stop automatically
+      // as soon as comparison returns false and therefore only traverse through object
+      // until non-equal fields are found
+      const mainFieldsHaveChanges = !Object.entries(this.formFields)
+        .every(([key, value]) => this.compareDataValues(
+          this.valueList[key],
+          this.valueListOriginal[key],
+          value,
+        ));
+      if (!this.type || mainFieldsHaveChanges) {
+        return mainFieldsHaveChanges;
       }
-      // if data field did not already return true for unsaved changes then also check the
-      // the main fields (except data field)
-      const valueListFiltered = Object.entries(this.valueList)
-        .filter(([key, value]) => key !== 'data' && hasFieldContent(value));
-      // check if any field has actually data in
-      // the originally stored data
-      const valueListOriginalFiltered = Object.entries(this.valueListOriginal)
-        .filter(([key, value]) => key !== 'data' && hasFieldContent(value));
-      // return unsavedChanges true if original value list different from current value list
-      return JSON.stringify(valueListFiltered) !== JSON.stringify(valueListOriginalFiltered);
+      // if main fields dont have changes also iterate through data fields
+      return !Object.entries(this.formFieldsExtension)
+        .every(([key, value]) => this.compareDataValues(
+          this.valueList.data[key],
+          this.valueListOriginal.data[key],
+          value,
+        ));
     },
     locales() {
       return process.env.VUE_APP_LOCALES.split(',').map((langString) => langString.trim());
@@ -829,6 +822,55 @@ export default {
           }
         });
       return fieldNameList;
+    },
+    compareDataValues(newData, originalData, formFieldValues) {
+      const xAttrs = formFieldValues['x-attrs'];
+      // for hidden fields automatically return true
+      if ((xAttrs && xAttrs.hidden) || !formFieldValues.type) return true;
+      // check if the fields to compare acutally have content
+      const data1ContainsValues = hasFieldContent(newData);
+      const data2ContainsValues = hasFieldContent(originalData);
+      // when none of the two fields contain values they are equal
+      if (!data1ContainsValues && !data2ContainsValues) return true;
+      // if one field contains data and one doesn't they are definitely not equal
+      if ((!data1ContainsValues && data2ContainsValues)
+        || (data1ContainsValues && !data2ContainsValues)) return false;
+      // assign whichever field has a value to determine the type of the field
+      // done this way since formFields information is not reliable here since in backend
+      // partially different data type than in front end (e.g. type BE: object, FE: array)
+      const hasValue = data1ContainsValues ? newData : originalData;
+      // const xAttrs = formFieldValues['x-attrs'];
+      // start comparing based on field type
+      // for string simply compare the two values
+      if (typeof hasValue === 'string') {
+        return newData === originalData;
+      }
+      // for an array traverse through each position
+      if (typeof hasValue === 'object' && hasValue.length) {
+        // if the two arrays do not have the same length they are not equal
+        if (newData.length !== originalData.length) {
+          return false;
+        }
+        // if they have the same length check if one of the array values is not
+        // equal with its data2 equivalent and return the result of that
+        return newData.every((value, index) => this
+          .compareDataValues(
+            value,
+            originalData[index],
+            formFieldValues.items || formFieldValues,
+          ));
+      }
+      if (typeof hasValue === 'object') {
+        // need to check for newData key because of props partially added later before saving
+        // e.g. roles for specific contributor fields (e.g. authors)
+        return Object.keys(formFieldValues.properties).every((key) => !newData[key]
+          || this.compareDataValues(
+            newData[key],
+            originalData[key],
+            formFieldValues.properties[key],
+          ));
+      }
+      return true;
     },
   },
 };
