@@ -716,7 +716,9 @@ export default {
             if (e instanceof DOMException) {
               console.error('If you see above error it is likely because the source is missing for a field!');
               this.fieldIsLoading = '';
-            } else if (!axios.isCancel(e)) {
+            } else if (axios.isCancel(e)) {
+              console.warn(e.message);
+            } else {
               // TODO: inform user?? notification or just info in drop down??
             }
           }
