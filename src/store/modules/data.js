@@ -511,6 +511,9 @@ const actions = {
           addedArr.push(createdEntryId);
         }
       } catch (e) {
+        if (axios.isCancel(e)) {
+          console.warn(e.message);
+        }
         errorArr.push(entryTitle);
       } finally {
         resolve();
@@ -533,7 +536,11 @@ const actions = {
           await dispatch('addOrUpdateEntry', { ...entryToUpdate, [prop]: value });
           successArr.push(entry.id);
         } catch (e) {
-          console.error(e);
+          if (axios.isCancel(e)) {
+            console.warn(e.message);
+          } else {
+            console.error(e);
+          }
           failArr.push(entry.title);
         }
       } else {

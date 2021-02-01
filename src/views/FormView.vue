@@ -399,7 +399,9 @@ export default {
         // copy the original object to check for unsaved changes later
         this.valueListOriginal = { ...JSON.parse(JSON.stringify(this.valueList)) };
       } catch (e) {
-        if (e && e.response && e.response.status === 404) {
+        if (axios.isCancel(e)) {
+          console.warn(e.message);
+        } else if (e && e.response && e.response.status === 404) {
           this.$router.push(`/not-found?id=${this.currentItemId}`);
           // only notify if user was already authenticated
         } else if (!e || !e.response || e.response.status !== 403) {
@@ -711,11 +713,10 @@ export default {
             //  source name, separated name, dob, profession
             this.fieldIsLoading = '';
           } catch (e) {
-            console.error(e);
             if (e instanceof DOMException) {
               console.error('If you see above error it is likely because the source is missing for a field!');
               this.fieldIsLoading = '';
-            } else {
+            } else if (!axios.isCancel(e)) {
               // TODO: inform user?? notification or just info in drop down??
             }
           }
