@@ -270,12 +270,20 @@ export default {
           this.$store.commit('data/setExtensionSchema', properties || {});
           await this.$store.dispatch('data/getStaticDropDowns', properties);
 
+          // get the list of available roles for mapping and filtering out roles from contributors
+          // field
+          const roleFieldList = this.$store.state.data.prefetchedTypes.contributors_role;
+
           // map fields between each other
           if (Object.keys(originalFormFields).length) {
             this.mapFieldEquivalents({
               originalFormFields,
               newFormFields: properties,
               equivalentName: 'contributors',
+              idProp: 'source',
+              fieldProp: 'roles',
+              defaultProp: 'default_role',
+              fieldPropList: roleFieldList,
             });
           }
 
@@ -287,7 +295,7 @@ export default {
             }
             return prev;
           }, []);
-          this.prefetchedRoles = await this.$store.state.data.prefetchedTypes.contributors_role
+          this.prefetchedRoles = roleFieldList
             .filter((role) => !contributorFields.includes(role.source));
         } catch (e) {
           console.error(e);
@@ -879,6 +887,9 @@ export default {
      * function to do mapping between a general field and specialized fields - e.g. 'contributors'
      * and 'authors', 'architects', 'artists', ... changing with form type
      *
+     * TODO: the aim is to make this as generalized as possible but it will definitely have to be
+     * reevaluated with other fields (e.g. date_location)!!
+     *
      * @param {Object} originalFormFields - the form fields information in OpenAPI format
      *  before the type change
      * @param {Object} newFormFields - the form fields information in OpenAPI format
@@ -895,9 +906,10 @@ export default {
       originalFormFields,
       newFormFields,
       equivalentName,
-      idProp = 'source',
-      fieldProp = 'roles',
-      defaultProp = 'default_role',
+      idProp,
+      fieldProp,
+      defaultProp,
+      fieldPropList,
     }) {
       const originalFieldInformation = this.filterFormFieldsForEquivalent(
         originalFormFields, equivalentName, defaultProp,
@@ -929,9 +941,21 @@ export default {
               const contIndex = equivalentFieldDataIds.indexOf(entry[idProp]);
               // check if entry is acutally identifyable by an unique id and
               // is already contained in the equivalent field
+              // if yes - just add the relevant properties to the existing entry
               if (entry[idProp] && contIndex >= 0) {
-                // if yes - just add the relevant properties to the existing entry
-                equivalentFieldData[contIndex][fieldProp].push(entry[fieldProp][0]);
+                // since the field necessary to fill specialized field might not always
+                // be available check if it is and if not find it in provided list from
+                // default value specified in specialized field
+                const fieldPropValue = entry[fieldProp] && entry[fieldProp][0] && fieldPropList
+                  ? entry[fieldProp][0] : fieldPropList
+                    .find((listItem) => listItem[idProp] === equivalentField.default);
+                // then also check if the prop field does already exist in the general field
+                // if yes push to it - if not create it by setting the value
+                if (equivalentFieldData[contIndex][fieldProp]) {
+                  equivalentFieldData[contIndex][fieldProp].push(fieldPropValue);
+                } else {
+                  this.$set(equivalentFieldData[contIndex], fieldProp, fieldPropValue);
+                }
               } else {
                 // if no - push the complete entry
                 equivalentFieldData.push(entry);
@@ -948,9 +972,11 @@ export default {
         if (equivalentFieldData && equivalentFieldData.length) {
           // get a list of all field IDs before looping through all the entries
           const newEquivalentFieldIds = newFieldInformation.map((newField) => newField.default);
+          // store index of entries that should be deleted (because no values in fieldProp left
+          const deleteFromEquivalent = [];
           // check each entry in the equivalent field if they should go to
           // a specialized field
-          equivalentFieldData.forEach((equivalent) => {
+          equivalentFieldData.forEach((equivalent, equivalentIndex) => {
             // check if the specific prop (e.g. roles) has entries
             if (equivalent[fieldProp] && equivalent[fieldProp].length) {
               // loop through all the entries for the specific prop
@@ -973,10 +999,20 @@ export default {
                   }
                   // remove entry from equivalent list
                   equivalent[fieldProp].splice(index, 1);
+                  // after that also check if there are actually any roles left - if not
+                  // delete entry from common field
+                  if (!equivalent[fieldProp].length) {
+                    deleteFromEquivalent.push(equivalentIndex);
+                  }
                 }
               });
             }
           });
+          // after loop has finished remove empty common field entries (otherwise loop is influenced
+          // and not looping through everything properly
+          if (deleteFromEquivalent.length) {
+            deleteFromEquivalent.forEach((index) => equivalentFieldData.splice(index, 1));
+          }
         }
       }
     },
