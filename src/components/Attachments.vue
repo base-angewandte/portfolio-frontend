@@ -259,8 +259,8 @@ export default {
           group: 'request-notifications',
           title: this.$t('notify.actionFailed', { action: this.$t(`notify.${action}`) }),
           text: this.$t('notify.selectForAction', {
-            action: this.$t(`notify.${action}File`),
-            type: this.$tc('notify.media', 0),
+            action: this.$t(`notify.${action}File`, { toTitleCase: false }),
+            type: this.$tc('notify.media', 0, { toTitleCase: false }),
           }),
           type: 'error',
         });
@@ -315,8 +315,8 @@ export default {
           group: 'request-notifications',
           title: this.$t('notify.actionFailed', { action: this.$t('notify.delete') }),
           text: this.$t('notify.selectForAction', {
-            action: this.$t('notify.deleteFile'),
-            type: this.$tc('notify.entry', 0),
+            action: this.$t('notify.deleteFile', { toTitleCase: false }),
+            type: this.$tc('notify.entry', 0, { toTitleCase: false }),
           }),
           type: 'error',
         });

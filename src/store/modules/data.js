@@ -1,11 +1,11 @@
 /* eslint no-shadow: ["error", { "allow": ["state", "getters"] }] */
 import Vue from 'vue';
 import axios from 'axios';
-import { i18n } from '../../plugins/i18n';
+import { i18n } from '@/plugins/i18n';
 
 import {
-  sorting, capitalizeString, setLangLabels, getApiUrl, hasFieldContent,
-} from '../../utils/commonUtils';
+  sorting, capitalizeString, setLangLabels, getApiUrl, hasFieldContent, toTitleString,
+} from '@/utils/commonUtils';
 
 function transformTextData(data) {
   const textData = [];
@@ -41,6 +41,60 @@ function transformTextData(data) {
     });
   }
   return textData;
+}
+
+function checkForLabel(value) {
+  let newValue = value;
+  // check if value is array or object
+  if (newValue && typeof value === 'object') {
+    // check if value is array
+    if (newValue.length) {
+      newValue = newValue.map((entry) => checkForLabel(entry));
+    } else if (Object.keys(newValue).length) {
+      if (Object.keys(newValue).includes('label') && newValue.label.en) {
+        Vue.set(newValue, 'label', { ...newValue.label, ...{ en: toTitleString(newValue.label.en) } });
+      }
+      newValue = Object.entries(newValue)
+        .reduce((prev, [propKey, propValue]) => ({
+          ...prev,
+          ...{ [propKey]: checkForLabel(propValue) },
+        }), {});
+    }
+  }
+  return newValue;
+}
+
+function addEnglishTextStyling(object) {
+  return Object.entries(object).reduce((prev, [key, value]) => {
+    const { title } = value;
+    const { placeholder } = value['x-attrs'] && value['x-attrs'].placeholder ? value['x-attrs'] : { placeholder: '' };
+    if (value['x-attrs'] && value['x-attrs'].field_type === 'group') {
+      const alteredGroupFields = addEnglishTextStyling(value.items.properties);
+      Vue.set(value.items, 'properties', alteredGroupFields);
+    }
+    return {
+      ...prev,
+      ...{
+        [key]: {
+          ...value,
+          ...{
+            title: title ? toTitleString(title) : '',
+            'x-attrs': {
+              ...value['x-attrs'],
+              ...{
+                placeholder: typeof placeholder === 'string' ? toTitleString(placeholder)
+                  : Object.entries(placeholder)
+                    .reduce((placeholderPrev, [placeholderKey, placeholderVal]) => ({
+                      ...placeholderPrev,
+                      ...{ [placeholderKey]: toTitleString(placeholderVal) },
+                    }), {}),
+              },
+            },
+          },
+        },
+      },
+    };
+  }, {});
 }
 
 const state = {
@@ -255,7 +309,7 @@ const actions = {
               'Accept-Language': i18n.locale,
             },
           });
-        const formFields = jsonSchema.data.definitions.Entry.properties;
+        const formFields = addEnglishTextStyling(jsonSchema.data.definitions.Entry.properties);
         // information for media license source is also contained in swagger.json --> extract!
         const mediaPath = jsonSchema.data.paths['/api/v1/media/'].post.parameters
           .find((param) => param.name === 'license')['x-attrs'].source;
@@ -323,8 +377,21 @@ const actions = {
                   'Accept-Language': i18n.locale,
                 },
               });
-            commit('setPrefetchedTypes', { field: fieldName, data, source: sourceAttribute });
-            resolve('x');
+            // transform the en text style
+            const casedData = data.map((entry) => {
+              const newEnLabel = entry.label && entry.label.en ? toTitleString(entry.label.en) : {};
+              return ({
+                ...entry,
+                ...{
+                  label: {
+                    ...entry.label,
+                    ...{ en: newEnLabel },
+                  },
+                },
+              });
+            });
+            commit('setPrefetchedTypes', { field: fieldName, data: casedData, source: sourceAttribute });
+            resolve();
           } catch (e) {
             reject(e);
           }
@@ -348,7 +415,19 @@ const actions = {
           'Accept-Language': i18n.locale,
         },
       });
-      const entryTypes = sorting(data, 'label', i18n.locale);
+      // remove duplicates (by source), sort the results and add title casing to
+      // english label string
+      const entryTypes = sorting(data
+        // check if type actually contains any properties since case of empty
+        // object being returned already happened and just safe guarding anyway
+        .filter((type, index, self) => Object.keys(type).length && self.map((entry) => entry.source)
+          .indexOf(type.source) === index), 'label', i18n.locale)
+        .map((type) => ({
+          ...type,
+          ...{
+            label: { ...type.label, ...{ en: toTitleString(type.label.en) } },
+          },
+        }));
       // add 'all types' option
       entryTypes.unshift({
         label: setLangLabels('dropdown.allTypes', i18n.availableLocales),
@@ -377,7 +456,15 @@ const actions = {
       try {
         entryData = await this.dispatch('PortfolioAPI/get', { kind: 'entry', id });
         if (entryData) {
-          // Modifications for text that needs to look different
+          // Modifications of data received from backend needed:
+          // 1. adapt english style casing
+          entryData = Object.entries(entryData).reduce((prev, [key, value]) => {
+            const newVal = checkForLabel(value);
+            return { ...prev, ...{ [key]: newVal } };
+          }, {});
+          // 2. type needs to be array in logic here!
+          const objectType = entryData.type && entryData.type.source ? [entryData.type] : [];
+          // 3. Text needs to look different
           const textData = entryData.texts && entryData.texts.length
             ? await Promise.all(entryData.texts
               .map((entry) => {
@@ -395,6 +482,7 @@ const actions = {
 
           const adjustedEntry = {
             ...entryData,
+            type: objectType,
             texts: textData,
           };
           commit('setCurrentItem', adjustedEntry);
@@ -725,6 +813,9 @@ const actions = {
       }
     }));
     return newData;
+  },
+  addEnglishTitleCasing(context, object) {
+    return addEnglishTextStyling(object);
   },
 };
 
