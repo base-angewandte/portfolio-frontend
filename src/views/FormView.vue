@@ -20,11 +20,12 @@
         class="form-loading-area">
         <BaseLoader class="loader" />
       </div>
+      <!-- Fallback: use formFields, if x-attr form_group is not provided from backend -->
       <BaseForm
-        v-if="Object.keys(formFields).length"
+        v-if="Object.keys(formFieldsGroup1).length || Object.keys(formFields).length"
         ref="baseForm"
         :form-id="'main'"
-        :form-field-json="formFields"
+        :form-field-json="Object.keys(formFieldsGroup1).length ? formFieldsGroup1 : formFields"
         :value-list="valueList"
         :available-locales="locales"
         :language="$i18n.locale"
@@ -34,16 +35,11 @@
         @fetch-autocomplete="fetchAutocomplete" />
 
       <transition-group
-        name="slide-fade-form">
+        name="fade-form">
         <!-- FORM EXTENSION -->
         <div
           v-if="type && formDataPresent"
           key="extended-section">
-          <div
-            key="extended-title"
-            class="subtitle">
-            {{ $t('form-view.formExtended') }}
-          </div>
           <BaseForm
             key="extended-form"
             ref="formExtension"
@@ -54,11 +50,29 @@
             :language="$i18n.locale"
             :field-is-loading="fieldIsLoading"
             :drop-down-lists="dropDownListsInt"
-            class="form"
+            class="form base-form-spacing"
             @values-changed="handleInput($event, 'data')"
             @fetch-autocomplete="fetchAutocomplete" />
         </div>
+      </transition-group>
 
+      <BaseForm
+        v-if="Object.keys(formFieldsGroup2).length"
+        ref="baseForm"
+        :form-id="'main2'"
+        :form-field-json="formFieldsGroup2"
+        :value-list="valueList"
+        :available-locales="locales"
+        :language="$i18n.locale"
+        :field-is-loading="fieldIsLoading"
+        :drop-down-lists="dropDownListsInt"
+        :form-style="!type ? { 'padding-top': 0 } : {}"
+        :class="[{ 'base-form-spacing': type }]"
+        @values-changed="handleInput($event)"
+        @fetch-autocomplete="fetchAutocomplete" />
+
+      <transition-group
+        name="slide-fade-form">
         <!-- SAVE ROW (only on mobile) -->
         <BaseRow
           v-if="!formIsLoading && formDataPresent"
@@ -193,6 +207,12 @@ export default {
     },
     formFields() {
       return this.$store.getters['data/getGeneralSchema'];
+    },
+    formFieldsGroup1() {
+      return this.getFormFieldsByGroup(1);
+    },
+    formFieldsGroup2() {
+      return this.getFormFieldsByGroup(2);
     },
     preFetchedData() {
       return this.$store.state.data.prefetchedTypes;
@@ -864,6 +884,22 @@ export default {
         });
       return fieldNameList;
     },
+    getFormFieldsByGroup(group = 1) {
+      if (!Object.entries(this.formFields).length) {
+        return false;
+      }
+
+      return Object.entries(this.formFields).reduce((prev, [key, value]) => {
+        if (this.formFields[key]['x-attrs']
+          && this.formFields[key]['x-attrs'].form_group === group) {
+          return {
+            ...prev,
+            [key]: value,
+          };
+        }
+        return prev;
+      }, {});
+    },
   },
 };
 </script>
@@ -950,6 +986,10 @@ export default {
     }
   }
 
+  .base-form-spacing {
+    margin-top: $spacing;
+  }
+
   .last-modified {
     margin: $spacing 0;
     color: $font-color-second;
@@ -964,9 +1004,27 @@ export default {
     transition: none;
   }
 
-  .slide-fade-form-enter-active, .slide-fade-form-move {
+  .fade-form-enter-active,
+  .fade-form-leave-active {
+    transition: all 0.5s ease-in-out;
+    opacity: 0;
+  }
+
+  .fade-form-enter-to,
+  .fade-form-leave {
+    opacity: 1;
+  }
+
+  .fade-form-enter,
+  .fade-form-leave-to {
+    opacity: 0;
+  }
+
+  .slide-fade-form-enter-active,
+  .slide-fade-form-move {
     transition: all 0.5s ease;
   }
+
   .slide-fade-form-enter, .slide-fade-form-leave-to {
     opacity: 0;
     transform: translateY(-#{$spacing});
