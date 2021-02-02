@@ -966,11 +966,12 @@ export default {
                 if (equivalentFieldData[contIndex][fieldProp]) {
                   equivalentFieldData[contIndex][fieldProp].push(fieldPropValue);
                 } else {
-                  this.$set(equivalentFieldData[contIndex], fieldProp, fieldPropValue);
+                  this.$set(equivalentFieldData[contIndex], fieldProp, [fieldPropValue]);
                 }
               } else {
                 equivalentFieldData.push((entry[fieldProp]
                   ? entry : { ...entry, [fieldProp]: [fieldPropValue] }));
+                console.log(equivalentFieldData);
               }
             });
             delete this.valueList.data[equivalentField.name];
