@@ -924,6 +924,11 @@ export default {
       const newFieldInformation = this.filterFormFieldsForEquivalent(
         newFormFields, equivalentName, defaultProp,
       );
+      // if the common field does not exist yet - create and initialize it
+      // TODO: what if this should not be an array
+      if (!this.valueList.data[equivalentName]) {
+        this.$set(this.valueList.data, equivalentName, []);
+      }
       // store the general equivalent field in a variable
       // (needed for both sides of mapping)
       const equivalentFieldData = this.valueList.data[equivalentName];
@@ -964,15 +969,10 @@ export default {
                   this.$set(equivalentFieldData[contIndex], fieldProp, fieldPropValue);
                 }
               } else {
-                // if no - push the complete entry
-                equivalentFieldData.push({
-                  ...entry,
-                  [fieldProp]: entry[fieldProp]
-                    ? entry[fieldProp].push(fieldPropValue) : [fieldPropValue],
-                });
+                equivalentFieldData.push((entry[fieldProp]
+                  ? entry : { ...entry, [fieldProp]: [fieldPropValue] }));
               }
             });
-            // remove the property from valueList.data
             delete this.valueList.data[equivalentField.name];
           }
         });
