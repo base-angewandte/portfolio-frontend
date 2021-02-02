@@ -175,6 +175,8 @@ export default {
       defaultDropDownValues: {},
       // object with all prefetched drop down options from all fields
       prefetchedDropDownLists: {},
+      // store previous form fields in a variable in case type is deleted inbetween
+      previousFormFields: {},
     };
   },
   computed: {
@@ -259,8 +261,11 @@ export default {
       this.formIsLoading = false;
     },
     async type(val) {
+      // store previous formFieldsExtension in case type is deleted inbetween
+      if (Object.keys(this.formFieldsExtension).length) {
+        this.previousFormFields = { ...this.formFieldsExtension };
+      }
       if (val) {
-        const originalFormFields = { ...this.formFieldsExtension };
         try {
           this.extensionIsLoading = true;
           const { properties } = await this.$store.dispatch('PortfolioAPI/get', {
@@ -275,9 +280,9 @@ export default {
           const roleFieldList = this.$store.state.data.prefetchedTypes.contributors_role;
 
           // map fields between each other
-          if (Object.keys(originalFormFields).length) {
+          if (Object.keys(this.previousFormFields).length) {
             this.mapFieldEquivalents({
-              originalFormFields,
+              originalFormFields: this.previousFormFields,
               newFormFields: properties,
               equivalentName: 'contributors',
               idProp: 'source',
@@ -895,12 +900,14 @@ export default {
      * @param {Object} newFormFields - the form fields information in OpenAPI format
      *  after the type change
      * @param {string} equivalentName - the property name of the general field (e.g. 'contributors')
-     * @param {string} [idProp=source] - the unique identifier property name of entries (e.g. for
+     * @param {string} [idProp] - the unique identifier property name of entries (e.g. for
      *  contributor or specific role --> 'source')
-     * @param {string} [fieldProp=roles] - the property name that contains the relevant information
+     * @param {string} [fieldProp] - the property name that contains the relevant information
      *  for the specialized fields
-     * @param {string} [defaultProp=default_role] - the property name of the x-attribute that
+     * @param {string} [defaultProp] - the property name of the x-attribute that
      *  contains the unique ID of the form field (e.g. 'default_role')
+     * @param {Object[]} [fieldPropList] - a list of possible values for the fieldProp field (e.g.
+     *  list of roles)
      */
     mapFieldEquivalents({
       originalFormFields,
@@ -939,16 +946,16 @@ export default {
             this.valueList.data[equivalentField.name].forEach((entry) => {
               // get entry index in equivalent field
               const contIndex = equivalentFieldDataIds.indexOf(entry[idProp]);
+              // since the field necessary to fill specialized field might not always
+              // be available check if it is and if not find it in provided list from
+              // default value specified in specialized field
+              const fieldPropValue = entry[fieldProp] && entry[fieldProp][0] && fieldPropList
+                ? entry[fieldProp][0] : fieldPropList
+                  .find((listItem) => listItem[idProp] === equivalentField.default);
               // check if entry is acutally identifyable by an unique id and
               // is already contained in the equivalent field
               // if yes - just add the relevant properties to the existing entry
               if (entry[idProp] && contIndex >= 0) {
-                // since the field necessary to fill specialized field might not always
-                // be available check if it is and if not find it in provided list from
-                // default value specified in specialized field
-                const fieldPropValue = entry[fieldProp] && entry[fieldProp][0] && fieldPropList
-                  ? entry[fieldProp][0] : fieldPropList
-                    .find((listItem) => listItem[idProp] === equivalentField.default);
                 // then also check if the prop field does already exist in the general field
                 // if yes push to it - if not create it by setting the value
                 if (equivalentFieldData[contIndex][fieldProp]) {
@@ -958,7 +965,11 @@ export default {
                 }
               } else {
                 // if no - push the complete entry
-                equivalentFieldData.push(entry);
+                equivalentFieldData.push({
+                  ...entry,
+                  [fieldProp]: entry[fieldProp]
+                    ? entry[fieldProp].push(fieldPropValue) : [fieldPropValue],
+                });
               }
             });
             // remove the property from valueList.data
