@@ -266,6 +266,11 @@ export default {
         this.previousFormFields = { ...this.formFieldsExtension };
       }
       if (val) {
+        // if type was set check if the data form field does already exist and if not
+        // also set it for the form extension fields
+        if (!this.valueList.data) {
+          this.$set(this.valueList, 'data', {});
+        }
         try {
           this.extensionIsLoading = true;
           const { properties } = await this.$store.dispatch('PortfolioAPI/get', {
@@ -278,7 +283,6 @@ export default {
           // get the list of available roles for mapping and filtering out roles from contributors
           // field
           const roleFieldList = this.$store.state.data.prefetchedTypes.contributors_role;
-
           // map fields between each other
           if (Object.keys(this.previousFormFields).length) {
             this.mapFieldEquivalents({
@@ -489,7 +493,8 @@ export default {
           && JSON.stringify(value) !== JSON.stringify(this.valueList[key])) {
           // store in variable if respective fields have data
           const newDataHasFieldContent = hasFieldContent(value);
-          const originalDataHasFieldContent = hasFieldContent(originalDataObject[key]);
+          const originalDataHasFieldContent = originalDataObject && originalDataObject[key]
+            && hasFieldContent(originalDataObject[key]);
           // then only update valueList when either new data has values or old data
           // has values and new data has not (= data was deleted) - this is done to
           // prevent the empty fields initialized in BaseForm to pollute the valueList
@@ -971,7 +976,6 @@ export default {
               } else {
                 equivalentFieldData.push((entry[fieldProp]
                   ? entry : { ...entry, [fieldProp]: [fieldPropValue] }));
-                console.log(equivalentFieldData);
               }
             });
             delete this.valueList.data[equivalentField.name];
