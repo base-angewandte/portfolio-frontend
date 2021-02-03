@@ -937,6 +937,7 @@ export default {
       // store the general equivalent field in a variable
       // (needed for both sides of mapping)
       const equivalentFieldData = this.valueList.data[equivalentName];
+
       // first map from previous equivalents to contributors if this field
       // does not exist in the new form
       if (originalFieldInformation && originalFieldInformation.length) {
@@ -988,24 +989,37 @@ export default {
         if (equivalentFieldData && equivalentFieldData.length) {
           // get a list of all field IDs before looping through all the entries
           const newEquivalentFieldIds = newFieldInformation.map((newField) => newField.default);
-          // store index of entries that should be deleted (because no values in fieldProp left
-          const deleteFromEquivalent = [];
           // check each entry in the equivalent field if they should go to
           // a specialized field
-          equivalentFieldData.forEach((equivalent, equivalentIndex) => {
+          // looped through in reverse order so the splicing in the end does not affect
+          // the array
+          for (let commonFieldIndex = equivalentFieldData.length - 1;
+            commonFieldIndex >= 0;
+            commonFieldIndex -= 1) {
+            const equivalentEntry = equivalentFieldData[commonFieldIndex];
             // check if the specific prop (e.g. roles) has entries
-            if (equivalent[fieldProp] && equivalent[fieldProp].length) {
+            // loop through in reverse so there are no problems with splicing entries from fieldProp
+            // field
+            if (equivalentEntry[fieldProp] && equivalentEntry[fieldProp].length) {
               // loop through all the entries for the specific prop
-              equivalent[fieldProp].forEach((role, index) => {
+              // looped through in reverse order so the splicing in the end does not
+              // affect the array
+              for (let fieldPropIndex = equivalentEntry[fieldProp].length - 1;
+                fieldPropIndex >= 0;
+                fieldPropIndex -= 1) {
+                const fieldPropEntry = equivalentEntry[fieldProp][fieldPropIndex];
                 // and check for a match with the list of new fields
-                if (newEquivalentFieldIds.includes(role[idProp])) {
+                if (newEquivalentFieldIds.includes(fieldPropEntry[idProp])) {
                   // if there is a match, create a new entry for that field
                   // with data from the equivalent field but with only the specific prop entry
                   // that was matching (e.g. role 'author' for 'authors' field)
-                  const newFieldEntry = { ...equivalent, ...{ [fieldProp]: [role] } };
+                  const newFieldEntry = {
+                    ...equivalentEntry,
+                    [fieldProp]: [fieldPropEntry],
+                  };
                   // to add this entry find the field where entry should be added
                   const field = newFieldInformation
-                    .find((newField) => newField.default === role[idProp]);
+                    .find((newField) => newField.default === fieldPropEntry[idProp]);
                   // if this field aready exists add the new entry by pushing to array
                   if (this.valueList.data[field.name]) {
                     this.valueList.data[field.name].push(newFieldEntry);
@@ -1014,20 +1028,15 @@ export default {
                     this.$set(this.valueList.data, field.name, [newFieldEntry]);
                   }
                   // remove entry from equivalent list
-                  equivalent[fieldProp].splice(index, 1);
+                  equivalentEntry[fieldProp].splice(fieldPropIndex, 1);
                   // after that also check if there are actually any roles left - if not
                   // delete entry from common field
-                  if (!equivalent[fieldProp].length) {
-                    deleteFromEquivalent.push(equivalentIndex);
+                  if (!equivalentEntry[fieldProp].length) {
+                    equivalentFieldData.splice(commonFieldIndex, 1);
                   }
                 }
-              });
+              }
             }
-          });
-          // after loop has finished remove empty common field entries (otherwise loop is influenced
-          // and not looping through everything properly
-          if (deleteFromEquivalent.length) {
-            deleteFromEquivalent.forEach((index) => equivalentFieldData.splice(index, 1));
           }
         }
       }
