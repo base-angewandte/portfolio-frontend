@@ -1025,8 +1025,10 @@ export default {
      * @param {Object} newFormFields - the form fields information in OpenAPI format
      *  after the type change
      * @param {string} equivalentName - the property name of the general field (e.g. 'contributors')
-     * @param {string} [idProp] - the unique identifier property name of entries (e.g. for
+     * @param {string} [idProp='source'] - the unique identifier property name of entries (e.g. for
      *  contributor or specific role --> 'source')
+     * @param {string} [labelProp='label'] - the property in which the displayed string for an entry
+     * is specified (e.g. for contributor or specific role --> 'label')
      * @param {string} [fieldProp] - the property name that contains the relevant information
      *  for the specialized fields
      * @param {string} [defaultProp] - the property name of the x-attribute that
@@ -1038,7 +1040,8 @@ export default {
       originalFormFields,
       newFormFields,
       equivalentName,
-      idProp,
+      idProp = 'source',
+      labelProp = 'label',
       fieldProp,
       defaultProp,
       fieldPropList,
@@ -1068,7 +1071,8 @@ export default {
           if (!Object.prototype.hasOwnProperty.call(newFormFields, equivalentField.name)
             && this.valueList.data && this.valueList.data[equivalentField.name]) {
             // get a list of all the equivalent field entry ids
-            const equivalentFieldDataIds = equivalentFieldData.map((cont) => cont[idProp]);
+            const equivalentFieldDataIds = equivalentFieldData
+              .map((cont) => cont[idProp] || cont[labelProp].toLowerCase());
             // loop through all the entries in the specialized field separately to be able
             // to either
             // a) add only the necessary additional prop value (e.g. a specific role)
@@ -1076,7 +1080,8 @@ export default {
             // b) add a new entry to the equivalent field
             this.valueList.data[equivalentField.name].forEach((entry) => {
               // get entry index in equivalent field
-              const contIndex = equivalentFieldDataIds.indexOf(entry[idProp]);
+              const contIndex = equivalentFieldDataIds
+                .indexOf(entry[idProp] || entry[labelProp].toLowerCase());
               // since the field necessary to fill specialized field might not always
               // be available check if it is and if not find it in provided list from
               // default value specified in specialized field
@@ -1086,7 +1091,7 @@ export default {
               // check if entry is acutally identifyable by an unique id and
               // is already contained in the equivalent field
               // if yes - just add the relevant properties to the existing entry
-              if (entry[idProp] && contIndex >= 0) {
+              if (contIndex >= 0) {
                 // then also check if the prop field does already exist in the general field
                 // if yes push to it - if not create it by setting the value
                 if (equivalentFieldData[contIndex][fieldProp]) {
