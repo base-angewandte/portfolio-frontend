@@ -179,7 +179,7 @@ export default {
       // but not necessary anyways --> just delete unsaved changes
       if (this.$route.params.id === id) {
         const formComponent = this.$refs.view;
-        formComponent.valueList = { ...formComponent.valueListOriginal };
+        formComponent.valueList = JSON.parse(JSON.stringify(formComponent.valueListOriginal));
       } else {
         this.$router.push(`/entry/${id}`);
       }
