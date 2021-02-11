@@ -18,6 +18,16 @@
     <noscript>
       <strong>We're sorry but <%= VUE_APP_TITLE %> doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
     </noscript>
+    <div id="ie" class="browser-update" style="display: none">
+      <strong>We're sorry but <%= VUE_APP_TITLE %> doesn't work properly on IE11 and lower.</strong><br>
+      Please switch to a modern browser such as
+      <a href="https://www.mozilla.org/firefox/new/" title="Download Mozilla Firefox" target="_blank">Mozilla Firefox</a>,
+      <a href="https://www.google.com/intl/de/chrome/" title="Download Google Chrome" target="_blank">Google Chrome</a> or
+      <a href="https://www.microsoft.com/de-at/windows/microsoft-edge" title="Download Microsoft Edge" target="_blank">Microsoft Edge</a>.
+    </div>
+    <script>
+      window.navigator.userAgent.match(/(MSIE|Trident)/) ? document.getElementById('ie').style.display = 'block' : '';
+    </script>
     <div id="app"></div>
     <!-- built files will be auto injected -->
     <script src="<%= VUE_APP_HEADER %>"></script>

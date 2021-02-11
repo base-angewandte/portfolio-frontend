@@ -60,3 +60,10 @@ html {
     }
   }
 }
+
+.browser-update {
+  margin: $spacing;
+  a {
+    text-decoration: underline;
+  }
+}
