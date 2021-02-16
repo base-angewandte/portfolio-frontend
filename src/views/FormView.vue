@@ -542,9 +542,9 @@ export default {
       // find changed data so only the data that truly changed go into valueList
       Object.keys(this.fieldsList).forEach((key) => {
         const value = data[key];
-        // check if specifiy property of data changed values
+        // check if specifiy property of data exists and changed values
         if ((this.fieldsList[key]['x-attrs'] && !this.fieldsList[key]['x-attrs'].hidden)
-          && JSON.stringify(value) !== JSON.stringify(this.valueList[key])) {
+          && value !== undefined && JSON.stringify(value) !== JSON.stringify(this.valueList[key])) {
           // store in variable if respective fields have data
           const newDataHasFieldContent = hasFieldContent(value);
           const originalDataHasFieldContent = originalDataObject && originalDataObject[key]
