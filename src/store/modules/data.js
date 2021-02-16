@@ -730,11 +730,13 @@ const actions = {
         Vue.set(newData, key, values);
         // handle special case texts - needs to be mapped to database schema
       } else if (key === 'texts') {
+        // check that texts is not undefinded
+        const tempValues = values || [];
         // check if transformation is still necessary by checking for data property (only there
         // if data from db (on clone entries)
-        const texts = values && values.length
-        && (!values[0].data || !values[0].data.length)
-          ? transformTextData(values) : [].concat(values);
+        const texts = tempValues && tempValues.length
+        && (!tempValues[0].data || !tempValues[0].data.length)
+          ? transformTextData(tempValues) : [].concat(tempValues);
         Vue.set(newData, key, texts);
         // special case single choice chips (saved as object in backend)
       } else if (xAttrs && xAttrs.field_type && xAttrs.field_type.includes('chips')
