@@ -997,7 +997,8 @@ export default {
       if (typeof hasValue === 'object' && hasValue.length) {
         // if the two arrays do not have the same length they are not equal
         // but dont trigger unsaved changes for subform group fields
-        if (xAttrs.field_type !== 'group' && newData.length !== originalData.length) {
+        if ((!xAttrs || (xAttrs && xAttrs.field_type !== 'group'))
+          && newData.length !== originalData.length) {
           return false;
         }
         // if they have the same length check if one of the array values is not
