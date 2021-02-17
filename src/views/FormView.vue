@@ -248,6 +248,11 @@ export default {
       return this.$store.getters['data/getCurrentMedia'].length;
     },
     unsavedChanges() {
+      // to not have to check every single value every time do check first if
+      // stringified form values are maybe equal already
+      if (JSON.stringify(this.valueList) === JSON.stringify(this.valueListOriginal)) {
+        return false;
+      }
       // every value of formFields is compared - with Array.every it will stop automatically
       // as soon as comparison returns false and therefore only traverse through object
       // until non-equal fields are found
@@ -1004,7 +1009,7 @@ export default {
       if (typeof hasValue === 'object') {
         // need to check for newData key because of props partially added later before saving
         // e.g. roles for specific contributor fields (e.g. authors)
-        return Object.keys(formFieldValues.properties).every((key) => !newData[key]
+        return Object.keys(formFieldValues.properties).every((key) => !newData[key] === undefined
           || this.compareDataValues(
             newData[key],
             originalData[key],
