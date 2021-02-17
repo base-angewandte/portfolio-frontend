@@ -555,13 +555,12 @@ export default {
           const originalDataHasFieldContent = originalDataObject && originalDataObject[key]
             && hasFieldContent(originalDataObject[key]);
           // then only update valueList when either new data has values or old data
-          // has values and new data has not (= data was deleted), or if array length changed
-          // (important for field groups) - this is done to
+          // has values and new data has not (= data was deleted), or if field type is group
+          // (important if group was added or removed) - this is done to
           // prevent the empty fields initialized in BaseForm to pollute the valueList
           // with empty 'values'
           if (newDataHasFieldContent || (!newDataHasFieldContent && originalDataHasFieldContent)
-            || (data[key] && originalDataObject[key]
-              && data[key].length !== originalDataObject[key].length)) {
+            || (this.fieldsList[key]['x-attrs'].field_type === 'group')) {
             this.$set(originalDataObject, key, value);
           }
         }
@@ -997,7 +996,8 @@ export default {
       // for an array traverse through each position
       if (typeof hasValue === 'object' && hasValue.length) {
         // if the two arrays do not have the same length they are not equal
-        if (newData.length !== originalData.length) {
+        // but dont trigger unsaved changes for subform group fields
+        if (xAttrs.field_type !== 'group' && newData.length !== originalData.length) {
           return false;
         }
         // if they have the same length check if one of the array values is not
