@@ -491,10 +491,12 @@ export default {
           this.entriesExist = !!this.entryNumber;
         }
         this.$emit('sidebar-data-changed');
+        this.isLoading = false;
       } catch (e) {
         if (axios.isCancel(e)) {
           console.warn(e.message);
         } else if (e.response && e.response.status !== 403) {
+          this.isLoading = false;
           console.error(e);
           this.$notify({
             group: 'request-notifications',
@@ -504,9 +506,8 @@ export default {
           });
         } else {
           console.error(e);
+          this.isLoading = false;
         }
-      } finally {
-        this.isLoading = false;
       }
     },
     async dataRequest(offset) {
