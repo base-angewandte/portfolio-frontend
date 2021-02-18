@@ -31,7 +31,7 @@
         :language="$i18n.locale"
         :field-is-loading="fieldIsLoading"
         :drop-down-lists="dropDownListsInt"
-        @values-changed="handleInput($event)"
+        @values-changed="handleInput($event, '')"
         @fetch-autocomplete="fetchAutocomplete" />
 
       <transition-group
@@ -550,10 +550,13 @@ export default {
           const originalDataHasFieldContent = originalDataObject && originalDataObject[key]
             && hasFieldContent(originalDataObject[key]);
           // then only update valueList when either new data has values or old data
-          // has values and new data has not (= data was deleted) - this is done to
+          // has values and new data has not (= data was deleted), or if array length changed
+          // (important for field groups) - this is done to
           // prevent the empty fields initialized in BaseForm to pollute the valueList
           // with empty 'values'
-          if (newDataHasFieldContent || (!newDataHasFieldContent && originalDataHasFieldContent)) {
+          if (newDataHasFieldContent || (!newDataHasFieldContent && originalDataHasFieldContent)
+            || (data[key] && originalDataObject[key]
+              && data[key].length !== originalDataObject[key].length)) {
             this.$set(originalDataObject, key, value);
           }
         }
