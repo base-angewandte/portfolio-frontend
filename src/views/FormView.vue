@@ -910,7 +910,9 @@ export default {
           if (defaults && defaults.length) {
             const dropDownList = [...defaults];
             // special case contributors - add user
-            if ((field.equivalent === 'contributors') || field.name === 'contributors') {
+            // - but also check first if necessary user attributes exist
+            if (user.name && user.uuid
+              && ((field.equivalent === 'contributors') || field.name === 'contributors')) {
               // set user
               dropDownList.unshift({
                 label: user.name,
