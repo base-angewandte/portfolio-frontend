@@ -302,7 +302,7 @@ const actions = {
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
       try {
-        const jsonSchema = await axios.get(`${process.env.VUE_APP_DATABASE_API}swagger.json`,
+        const jsonSchema = await axios.get(`${process.env.VUE_APP_BACKEND_BASE_URL}${process.env.VUE_APP_BACKEND_API_PATH}swagger.json`,
           {
             withCredentials: true,
             headers: {
@@ -409,7 +409,7 @@ const actions = {
   async fetchEntryTypes({ commit }) {
     // TODO: replace with C. store module!
     try {
-      const { data } = await axios.get(`${process.env.VUE_APP_DATABASE_API}entry/types/`, {
+      const { data } = await axios.get(`${process.env.VUE_APP_BACKEND_BASE_URL}${process.env.VUE_APP_BACKEND_API_PATH}entry/types/`, {
         withCredentials: true,
         headers: {
           'Accept-Language': i18n.locale,
@@ -510,7 +510,7 @@ const actions = {
   },
   async fetchMediaData({ commit }, id) {
     // TODO: replace with Portofolio_API
-    const { data } = await axios.get(`${process.env.VUE_APP_DATABASE_API}entry/${id}/media/?detailed=true`,
+    const { data } = await axios.get(`${process.env.VUE_APP_BACKEND_BASE_URL}${process.env.VUE_APP_BACKEND_API_PATH}entry/${id}/media/?detailed=true`,
       {
         withCredentials: true,
         xsrfCookieName: 'csrftoken_portfolio',
@@ -662,7 +662,7 @@ const actions = {
       try {
         if (axiosAction === 'delete') {
           // TODO: replace with Portofolio_API
-          await axios[axiosAction](`${process.env.VUE_APP_DATABASE_API}media/${id}/`,
+          await axios[axiosAction](`${process.env.VUE_APP_BACKEND_BASE_URL}${process.env.VUE_APP_BACKEND_API_PATH}media/${id}/`,
             {
               withCredentials: true,
               xsrfCookieName: 'csrftoken_portfolio',
@@ -677,7 +677,7 @@ const actions = {
             console.error('file action unknown');
           }
           // TODO: replace with Portofolio_API
-          await axios[axiosAction](`${process.env.VUE_APP_DATABASE_API}media/${id}/`,
+          await axios[axiosAction](`${process.env.VUE_APP_BACKEND_BASE_URL}${process.env.VUE_APP_BACKEND_API_PATH}media/${id}/`,
             formData,
             {
               withCredentials: true,

@@ -40,14 +40,14 @@ export default {
       return this.$store.state.PortfolioAPI ? this.$store.state.PortfolioAPI.user : {};
     },
     urls() {
-      const headerUrls = JSON.parse(process.env.VUE_APP_HEADER_URLS);
+      const backendUrl = `${process.env.VUE_APP_BACKEND_BASE_URL}${process.env.VUE_APP_BACKEND_PREFIX}`;
       return {
         de: `${process.env.VUE_APP_PREFIX}/de${this.$route.path}`,
         en: `${process.env.VUE_APP_PREFIX}/en${this.$route.path}`,
-        login: headerUrls.LOGIN,
-        logout: headerUrls.LOGOUT,
-        terms: headerUrls.TERMS,
-        siteNotice: headerUrls.NOTICE,
+        login: `${backendUrl}/accounts/login/`,
+        logout: `${backendUrl}/accounts/logout/?next=/`,
+        terms: process.env.VUE_APP_HEADER_URL_TERMS,
+        siteNotice: process.env.VUE_APP_HEADER_NOTICE,
       };
     },
     headerName() {

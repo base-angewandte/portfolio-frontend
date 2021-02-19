@@ -75,14 +75,11 @@ In the `.env` file contained in the project folder the following variables can b
 
 | Variable              | Description                                                                                                                                                 |
 |-----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| VUE_APP_DATABASE_API          | url for the backend rest api (database requests)                                                                                                            |                                                                                                                              |
-| VUE_APP_PORTFOLIO_BACKEND_BASE_URL | base url of portfolio backend                                                                                                                      |
+| VUE_APP_BACKEND_BASE_URL      | base url of portfolio backend                                                                                                                      |
+| VUE_APP_BACKEND_API_PATH      | path to the backend rest api (database requests)                                                                                                    |
 | VUE_APP_BACKEND_PREFIX      | a prefix for the backend                                                                                                 |
-| VUE_APP_HEADER_URLS        | header / footer urls                                                                                                                              |
-|     &nbsp;&nbsp;&nbsp;&nbsp;LOGIN             | for login                                                                                                                                                   |
-|     &nbsp;&nbsp;&nbsp;&nbsp;LOGOUT            | for logout                                                                                                                                                  |
-|     &nbsp;&nbsp;&nbsp;&nbsp;TERMS            | to link to terms and conditions                                                                                                                                                |
-|     &nbsp;&nbsp;&nbsp;&nbsp;NOTICE            | to link to site legal notice                                                                                                                              |
+| VUE_APP_HEADER_URL_TERMS      | to link to terms and conditions                                                                                                                                                |
+| VUE_APP_HEADER_URL_NOTICE     | to link to site legal notice                                                                                                                              |
 | VUE_APP_HEADER_JSON           | json file url where the latest header version is specified                                                                                                                                  |
 | VUE_APP_HEADER                | the complete header url, no need to set manually (will be overwritten!), can be set via `gulp set-header` (but is run automatically on project start up as well)                                                      |
 | VUE_APP_PREFIX            | the desired prefix of the application                                                                                                                        |
