@@ -198,7 +198,7 @@ export default {
                 this.$emit('upload-start');
 
                 try {
-                  await axios.post(`${process.env.VUE_APP_BACKEND_BASE_URL}${process.env.VUE_APP_BACKEND_API_PATH}media/`,
+                  await axios.post(`${process.env.VUE_APP_BACKEND_BASE_URL}${process.env.VUE_APP_BACKEND_PREFIX}${process.env.VUE_APP_BACKEND_API_PATH}media/`,
                     formData,
                     {
                       withCredentials: true,
