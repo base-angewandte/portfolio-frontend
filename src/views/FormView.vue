@@ -445,7 +445,8 @@ export default {
       }
     });
     // add event listener triggered before unload
-    window.addEventListener('beforeunload', () => {
+    // 'beforeunload' is not triggered on iOS Safari, therefore using 'pagehide'
+    window.addEventListener('pagehide', () => {
       // if there are unsaved changes store them in session storage,
       // otherwise clear storage
       if (this.unsavedChanges && Object.keys(this.valueList).length) {
