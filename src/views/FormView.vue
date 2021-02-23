@@ -248,6 +248,7 @@ export default {
       return this.$store.getters['data/getCurrentMedia'].length;
     },
     unsavedChanges() {
+      debugger;
       // to not have to check every single value every time do check first if
       // stringified form values are maybe equal already
       if (JSON.stringify(this.valueList) === JSON.stringify(this.valueListOriginal)) {
@@ -262,6 +263,7 @@ export default {
           this.valueListOriginal[key],
           value,
         ));
+      console.log(mainFieldsHaveChanges);
       if (!this.type || mainFieldsHaveChanges) {
         return mainFieldsHaveChanges;
       }
@@ -1015,12 +1017,22 @@ export default {
       if (typeof hasValue === 'object') {
         // need to check for newData key because of props partially added later before saving
         // e.g. roles for specific contributor fields (e.g. authors)
-        return Object.keys(formFieldValues.properties).every((key) => !newData[key] === undefined
-          || this.compareDataValues(
-            newData[key],
-            originalData[key],
-            formFieldValues.properties[key],
-          ));
+        return Object.keys({ ...newData, ...originalData })
+          .every((key) => {
+            // a special solution is needed for texts because the object contains other properties
+            // than specified in the swagger information
+            const swaggerProps = formFieldValues.properties[key];
+            if (!swaggerProps) {
+              // for these non swagger values make simple stringified comparison for now
+              return JSON.stringify(newData[key]) === JSON.stringify(originalData[key]);
+            }
+            return !newData[key] === undefined
+            || this.compareDataValues(
+              newData[key],
+              originalData[key],
+              formFieldValues.properties[key],
+            );
+          });
       }
       return true;
     },
