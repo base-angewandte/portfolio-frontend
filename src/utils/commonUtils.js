@@ -111,9 +111,9 @@ export const convertSpace = (bytes, si) => {
 
 export const getApiUrl = (requestUrl = '') => {
   if (!requestUrl.includes(process.env.VUE_APP_BACKEND_PREFIX)) {
-    return `${process.env.VUE_APP_PORTFOLIO_BACKEND_BASE_URL}${process.env.VUE_APP_BACKEND_PREFIX}${requestUrl}`;
+    return `${process.env.VUE_APP_BACKEND_BASE_URL}${process.env.VUE_APP_BACKEND_PREFIX}${requestUrl}`;
   }
-  return `${process.env.VUE_APP_PORTFOLIO_BACKEND_BASE_URL}${requestUrl}`;
+  return `${process.env.VUE_APP_BACKEND_BASE_URL}${requestUrl}`;
 };
 
 /**
