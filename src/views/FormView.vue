@@ -248,11 +248,14 @@ export default {
       return this.$store.getters['data/getCurrentMedia'].length;
     },
     unsavedChanges() {
-      debugger;
       // to not have to check every single value every time do check first if
       // stringified form values are maybe equal already
       if (JSON.stringify(this.valueList) === JSON.stringify(this.valueListOriginal)) {
         return false;
+      }
+      // check if data special fields changed
+      if (Object.keys(this.valueList.data) !== Object.keys(this.valueListOriginal.data)) {
+        return true;
       }
       // every value of formFields is compared - with Array.every it will stop automatically
       // as soon as comparison returns false and therefore only traverse through object
@@ -263,7 +266,6 @@ export default {
           this.valueListOriginal[key],
           value,
         ));
-      console.log(mainFieldsHaveChanges);
       if (!this.type || mainFieldsHaveChanges) {
         return mainFieldsHaveChanges;
       }
