@@ -765,7 +765,7 @@ export default {
           buttonTextLeft: this.$t('notify.dismissChanges'),
           actionRight: async () => {
             try {
-              await this.saveForm();
+              await this.saveForm(false);
               followUpAction();
             } catch (e) {
               console.error(e);
