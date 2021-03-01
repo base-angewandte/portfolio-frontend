@@ -42,8 +42,8 @@ export default {
     urls() {
       const backendUrl = `${process.env.VUE_APP_BACKEND_BASE_URL}${process.env.VUE_APP_BACKEND_PREFIX}`;
       return {
-        de: `${process.env.VUE_APP_PREFIX}/de${this.$route.path}`,
-        en: `${process.env.VUE_APP_PREFIX}/en${this.$route.path}`,
+        de: `${process.env.VUE_APP_PREFIX}/de${this.$route.fullPath}`,
+        en: `${process.env.VUE_APP_PREFIX}/en${this.$route.fullPath}`,
         login: `${backendUrl}/accounts/login/`,
         logout: `${backendUrl}/accounts/logout/?next=/`,
         terms: process.env.VUE_APP_HEADER_URL_TERMS,

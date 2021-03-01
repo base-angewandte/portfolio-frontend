@@ -49,7 +49,7 @@ export default new Router({
           },
           async beforeEnter(to, from, next) {
             const { lang } = to.params;
-            const path = to.path.replace(/^\/[a-z]{2}/, '');
+            const path = to.fullPath.replace(/^\/[a-z]{2}/, '');
             if (!process.env.VUE_APP_LOCALES.split(',').map((langString) => langString.trim())
               .includes(lang)) return next(process.env.VUE_APP_DEFAULT_LOCALE);
             if (lang) {
