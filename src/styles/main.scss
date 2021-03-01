@@ -15,17 +15,9 @@ html {
     font-size: $font-root-regular;
   }
 
-  button {
-    font-family: $font;
-  }
-
   *, *:before, *:after {
     box-sizing: border-box;
     margin: 0;
-  }
-
-  .base-input-label {
-    color: $font-color-second;
   }
 
   .rotate-180 {
