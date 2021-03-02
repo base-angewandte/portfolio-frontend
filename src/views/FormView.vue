@@ -254,8 +254,9 @@ export default {
         return false;
       }
       // check if data special fields changed
-      if (JSON.stringify(Object.keys(this.valueList.data)) !== JSON
-        .stringify(Object.keys(this.valueListOriginal.data))) {
+      if (this.valueList.data && this.valueListOriginal.data
+        && JSON.stringify(Object.keys(this.valueList.data)) !== JSON
+          .stringify(Object.keys(this.valueListOriginal.data))) {
         return true;
       }
       // every value of formFields is compared - with Array.every it will stop automatically
