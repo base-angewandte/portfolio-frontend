@@ -203,7 +203,7 @@ export default {
       }) : [];
       if (this.assetFilePath) {
         this.showPreview = true;
-        // if previws are available use the last converted size in array to set image size
+        // if previews are available use the last converted size in array to set image size
         // size only width - set maxWidth instead of width to prevent strange effects
         if (fileData.previews && fileData.previews.length) {
           this.previewSize = {
@@ -222,9 +222,18 @@ export default {
           // previewSize not required for audio (and pdf)
         } else if (fileData.metadata && (fileData.metadata.ImageHeight
           || fileData.metadata.SourceImageHeight)) {
+          // portrait media
+          if (fileData.metadata.Rotation.val === 90) {
+            // height is used for width due dimension are the same in rotated mode
+            this.previewSize = {
+              'max-width': `${fileData.metadata.ImageHeight ? fileData.metadata.ImageHeight.val
+                : fileData.metadata.SourceImageHeight.val}px`,
+            };
+            return;
+          }
+
+          // landscape media
           this.previewSize = {
-            height: `${fileData.metadata.ImageHeight ? fileData.metadata.ImageHeight.val
-              : fileData.metadata.SourceImageHeight.val}px`,
             width: `${fileData.metadata.ImageWidth ? fileData.metadata.ImageWidth.val
               : fileData.metadata.SourceImageWidth.val}px`,
           };
