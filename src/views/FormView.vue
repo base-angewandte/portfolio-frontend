@@ -253,10 +253,11 @@ export default {
       if (JSON.stringify(this.valueList) === JSON.stringify(this.valueListOriginal)) {
         return false;
       }
-      // check if data special fields changed
-      if (this.valueList.data && this.valueListOriginal.data
-        && JSON.stringify(Object.keys(this.valueList.data)) !== JSON
-          .stringify(Object.keys(this.valueListOriginal.data))) {
+      // cover special cases that could lead to an unambigous result without recursive looping
+      // e.g. the case that data field does not exist yet in one of the valueLists
+      if ((this.valueList.type && this.valueList.type.length
+        && this.valueListOriginal.type && this.valueListOriginal.type.length
+        && this.valueList.type[0].source !== this.valueListOriginal.type[0].source)) {
         return true;
       }
       // every value of formFields is compared - with Array.every it will stop automatically
@@ -326,7 +327,7 @@ export default {
     async type(val) {
       // store previous formFieldsExtension in case type is deleted inbetween
       if (Object.keys(this.formFieldsExtension).length) {
-        this.previousFormFields = { ...this.formFieldsExtension };
+        this.previousFormFields = JSON.parse(JSON.stringify(this.formFieldsExtension));
       }
       if (val) {
         // if type was set check if the data form field does already exist and if not
@@ -353,7 +354,7 @@ export default {
             this.mapFieldEquivalents({
               originalFormFields: this.previousFormFields,
               newFormFields: properties,
-              equivalentName: 'contributors',
+              commonFieldName: 'contributors',
               idProp: 'source',
               fieldProp: 'roles',
               defaultProp: 'default_role',
@@ -478,6 +479,7 @@ export default {
       this.valueList = {};
       this.valueList.data = {};
       this.valueListOriginal = { ...JSON.parse(JSON.stringify(this.valueList)) };
+      this.previousFormFields = {};
     },
     async updateForm() {
       this.formIsLoading = true;
@@ -488,7 +490,7 @@ export default {
         this.$set(this.valueList, 'data', { ...data.data });
         // update the set dat to currently necessary formats
         this.initializeValueList(this.formFields, this.valueList);
-        this.initializeValueList(this.formFieldsExtension, this.valueList);
+        this.initializeValueList(this.formFieldsExtension, this.valueList.data);
         // copy the original object to check for unsaved changes later
         this.valueListOriginal = { ...JSON.parse(JSON.stringify(this.valueList)) };
       } catch (e) {
@@ -520,7 +522,8 @@ export default {
       Object.entries(fields).forEach(([key, value]) => {
         // 1. check for single chips inputs as they come from backend as an object
         // but need to be an array in front end
-        if (value['x-attrs'] && value['x-attrs'].field_type === 'chips' && value.type === 'object') {
+        if (value['x-attrs'] && (value['x-attrs'].field_type === 'chips'
+          || value['x-attrs'].field_type === 'chips-below') && value.type === 'object') {
           this.$set(data, key, hasFieldContent(data[key]) ? [].concat(data[key]) : []);
         }
         // also loop through secondary fields (e.g. roles)
@@ -1051,7 +1054,8 @@ export default {
      *  before the type change
      * @param {Object} newFormFields - the form fields information in OpenAPI format
      *  after the type change
-     * @param {string} equivalentName - the property name of the general field (e.g. 'contributors')
+     * @param {string} commonFieldName - the property name of the general field
+     *  (e.g. 'contributors')
      * @param {string} [idProp='source'] - the unique identifier property name of entries (e.g. for
      *  contributor or specific role --> 'source')
      * @param {string} [labelProp='label'] - the property in which the displayed string for an entry
@@ -1066,7 +1070,7 @@ export default {
     mapFieldEquivalents({
       originalFormFields,
       newFormFields,
-      equivalentName,
+      commonFieldName,
       idProp = 'source',
       labelProp = 'label',
       fieldProp,
@@ -1074,19 +1078,20 @@ export default {
       fieldPropList,
     }) {
       const originalFieldInformation = this.filterFormFieldsForEquivalent(
-        originalFormFields, equivalentName, defaultProp,
+        originalFormFields, commonFieldName, defaultProp,
       );
       const newFieldInformation = this.filterFormFieldsForEquivalent(
-        newFormFields, equivalentName, defaultProp,
+        newFormFields, commonFieldName, defaultProp,
       );
+
       // if the common field does not exist yet - create and initialize it
       // TODO: what if this should not be an array
-      if (!this.valueList.data[equivalentName]) {
-        this.$set(this.valueList.data, equivalentName, []);
+      if (!this.valueList.data[commonFieldName]) {
+        this.$set(this.valueList.data, commonFieldName, []);
       }
       // store the general equivalent field in a variable
       // (needed for both sides of mapping)
-      const equivalentFieldData = this.valueList.data[equivalentName];
+      const equivalentFieldData = this.valueList.data[commonFieldName];
 
       // first map from previous equivalents to contributors if this field
       // does not exist in the new form
@@ -1131,6 +1136,7 @@ export default {
                   ? entry : { ...entry, [fieldProp]: [fieldPropValue] }));
               }
             });
+            // since it should not exist in the new form - delete the specialized field
             delete this.valueList.data[equivalentField.name];
           }
         });
@@ -1197,14 +1203,14 @@ export default {
      * extract the relevant information for mapping from the OpenAPI object
      *
      * @param {Object} formFields - the form field information in OpenAPI format
-     * @param {string} equivalentName - the property name of the common field (e.g. 'contributors')
+     * @param {string} commonFieldName - the property name of the common field (e.g. 'contributors')
      * @param {string} defaultProp - the property name of the x-attribute containing the specialized
      *  field unique id
      * @returns {{default: string, name: string}[]}
      */
-    filterFormFieldsForEquivalent(formFields, equivalentName, defaultProp) {
+    filterFormFieldsForEquivalent(formFields, commonFieldName, defaultProp) {
       return Object.keys(formFields)
-        .filter((fieldName) => formFields[fieldName]['x-attrs'].equivalent === equivalentName)
+        .filter((fieldName) => formFields[fieldName]['x-attrs'].equivalent === commonFieldName)
         .map((fieldName) => ({
           name: fieldName,
           default: formFields[fieldName]['x-attrs'][defaultProp],
