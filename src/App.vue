@@ -47,7 +47,8 @@ export default {
         login: `${backendUrl}/accounts/login/`,
         logout: `${backendUrl}/accounts/logout/?next=/`,
         terms: process.env.VUE_APP_HEADER_URL_TERMS,
-        siteNotice: process.env.VUE_APP_HEADER_NOTICE,
+        siteNotice: process.env.VUE_APP_HEADER_URL_NOTICE,
+        portfolio: `${process.env.VUE_APP_PREFIX}/`,
       };
     },
     headerName() {
