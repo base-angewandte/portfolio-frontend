@@ -237,9 +237,13 @@ export default {
       }));
     },
     formDataPresent() {
+      // return true if
+      // a) there is no current item id or
+      // b) formFields has content (swagger field information) and valueList has data
+      // and IF there is a type - also formFieldsExtension has content (swagger form field info)
       return !this.currentItemId || (!!Object.keys(this.formFields).length
         && !!Object.keys(this.valueList).length
-        && !(this.type && !Object.keys(this.formFieldsExtension).length));
+        && (!this.type || Object.keys(this.formFieldsExtension).length));
     },
     formFieldsExtension() {
       return this.$store.getters['data/getExtensionSchema'];
@@ -294,13 +298,6 @@ export default {
     formDataPresent() {
       this.initializeValueList(this.formFields, this.valueList);
       this.initializeValueList(this.formFieldsExtension, this.valueList.data);
-      // check if previously unsaved changes were stored in session storage
-      const storedValueList = JSON.parse(sessionStorage.getItem('valueList'));
-      // only if there is no data in session storage also set the original data list
-      // used for determining unsaved changes to the new values
-      if (!(storedValueList && storedValueList.id === this.currentItemId)) {
-        this.valueListOriginal = { ...JSON.parse(JSON.stringify(this.valueList)) };
-      }
     },
     formFields() {
       this.formIsLoading = false;
