@@ -461,12 +461,16 @@ export default {
     if (storedParentString) {
       this.$store.commit('data/setParentItem', JSON.parse(storedParentString));
     }
-    if (this.currentItemId) {
-      this.idChanged = true;
-      await this.updateForm();
-    }
     // check if previously unsaved changes were stored in session storage
     const storedValueList = JSON.parse(sessionStorage.getItem('valueList'));
+    if (this.currentItemId) {
+      // only if there is no data in session storage also set the original data list
+      // used for determining unsaved changes to the new values
+      if (!storedValueList || !storedValueList.id === this.currentItemId) {
+        this.idChanged = true;
+      }
+      await this.updateForm();
+    }
     // if it matches the current entry id, merge it with db fetched data
     if (storedValueList && storedValueList.id === this.currentItemId) {
       this.valueList = { ...this.valueList, ...storedValueList };
