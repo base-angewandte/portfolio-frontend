@@ -202,7 +202,7 @@ export default {
        * store if the currentItemId has changed (on switching between entries or page reload)
        * necessary because form fields extension information is not loaded yet when updateForm()
        * is called and form fields can not be transformed (e.g. software - open source license)
-       * (--> need to watch formFieldsExtension instead and trigger initializeValueList when
+       * (--> need to watch formFieldsExtension instead and trigger transformValueList when
        * idChanged is true)
        */
       idChanged: false,
@@ -309,7 +309,7 @@ export default {
       this.formIsLoading = false;
     },
     /**
-     * watch form fields extension to initialize value fields that need to be transformed
+     * watch form fields extension to transform value fields that need to be transformed
      * when an entry is fetched from the database (e.g. software - open source license from
      * object to array)
      */
@@ -318,9 +318,9 @@ export default {
       // a) formFieldsExtension has information and
       // b) idChanged is true (= current page reload or entry switch)
       if (val && Object.keys(val).length && this.idChanged) {
-        // initialize the valueList (only extension since main fields are already
-        // initialized in update() )
-        this.initializeValueList(this.formFieldsExtension, this.valueList.data);
+        // transform the valueList (only extension since main fields are already
+        // transformd in update() )
+        this.transformValueList(this.formFieldsExtension, this.valueList.data);
         // assign the updated valueList to valueListOriginal as well to have correct
         // unsavedChanges behaviour
         this.valueListOriginal = JSON.parse(JSON.stringify(this.valueList));
@@ -340,7 +340,9 @@ export default {
       sessionStorage.removeItem('valueList');
       sessionStorage.removeItem('parent');
       if (val) {
-        this.idChanged = true;
+        if (this.valueList.type && this.valueList.type.length) {
+          this.idChanged = true;
+        }
         this.resetForm();
         await this.updateForm();
       } else {
@@ -466,7 +468,8 @@ export default {
     if (this.currentItemId) {
       // only if there is no data in session storage also set the original data list
       // used for determining unsaved changes to the new values
-      if (!storedValueList || !storedValueList.id === this.currentItemId) {
+      if ((!storedValueList || !storedValueList.id === this.currentItemId)
+        && this.valueList.type && this.valueList.type.length) {
         this.idChanged = true;
       }
       await this.updateForm();
@@ -522,7 +525,7 @@ export default {
         this.extensionIsLoading = !!this.type;
         this.$set(this.valueList, 'data', { ...data.data });
         // update the set dat to currently necessary formats
-        this.initializeValueList(this.formFields, this.valueList);
+        this.transformValueList(this.formFields, this.valueList);
         // copy the original object to check for unsaved changes later
         this.valueListOriginal = { ...JSON.parse(JSON.stringify(this.valueList)) };
       } catch (e) {
@@ -550,7 +553,7 @@ export default {
      * @param {Object} fields - the swagger format form fields
      * @param {Object} data - the entry data
      */
-    initializeValueList(fields, data) {
+    transformValueList(fields, data) {
       Object.entries(fields).forEach(([key, value]) => {
         // 1. check for single chips inputs as they come from backend as an object
         // but need to be an array in front end
@@ -562,10 +565,10 @@ export default {
         if (hasFieldContent(data[key]) && value.items && value.items.properties) {
           // handle for every entry of array
           if (data[key] instanceof Array) {
-            data[key].forEach((entry) => this.initializeValueList(value.items.properties, entry));
+            data[key].forEach((entry) => this.transformValueList(value.items.properties, entry));
             // or object (currently not present)
           } else {
-            this.initializeValueList(value.properties, data[key]);
+            this.transformValueList(value.properties, data[key]);
           }
         }
       });
@@ -1071,16 +1074,26 @@ export default {
           ));
       }
       if (typeof hasValue === 'object') {
+        const validProperties = Object.keys(formFieldValues.properties);
         // need to check for newData key because of props partially added later before saving
         // e.g. roles for specific contributor fields (e.g. authors)
-        return Object.keys({ ...newData, ...originalData })
+        return Object.keys(newData)
           .every((key) => {
+            // if prop is not in validProperties and original data field also does not have
+            // values for this field (e.g. 'additional' prop it contributors fields) - ignore it
+            // and return true
+            // last part is a hack for texts field again since there the props are different
+            // but should not be ignored
+            if (!validProperties.includes(key) && originalData[key] === undefined
+              && !validProperties.includes('data')) {
+              return true;
+            }
             // a special solution is needed for texts because the object contains other properties
             // than specified in the swagger information
-            const swaggerProps = formFieldValues.properties[key];
-            if (!swaggerProps) {
+            if (!validProperties.includes(key)) {
               // for these non swagger values make simple stringified comparison for now
-              return JSON.stringify(newData[key]) === JSON.stringify(originalData[key]);
+              return JSON.stringify(newData[key]) === JSON.stringify(originalData[key]
+                || (newData[key] && originalData[key] !== undefined));
             }
             return !newData[key] === undefined
             || this.compareDataValues(
