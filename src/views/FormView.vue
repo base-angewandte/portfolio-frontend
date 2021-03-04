@@ -198,6 +198,14 @@ export default {
       previousFormFields: {},
       // store previous contributor entries that did not have any roles assigned
       emptyMappingFields: {},
+      /**
+       * store if the currentItemId has changed (on switching between entries or page reload)
+       * necessary because form fields extension information is not loaded yet when updateForm()
+       * is called and form fields can not be transformed (e.g. software - open source license)
+       * (--> need to watch formFieldsExtension instead and trigger initializeValueList when
+       * idChanged is true)
+       */
+      idChanged: false,
     };
   },
   computed: {
@@ -297,12 +305,29 @@ export default {
     },
   },
   watch: {
-    formDataPresent() {
-      this.initializeValueList(this.formFields, this.valueList);
-      this.initializeValueList(this.formFieldsExtension, this.valueList.data);
-    },
     formFields() {
       this.formIsLoading = false;
+    },
+    /**
+     * watch form fields extension to initialize value fields that need to be transformed
+     * when an entry is fetched from the database (e.g. software - open source license from
+     * object to array)
+     */
+    formFieldsExtension(val) {
+      // intitalize valueList if
+      // a) formFieldsExtension has information and
+      // b) idChanged is true (= current page reload or entry switch)
+      if (val && Object.keys(val).length && this.idChanged) {
+        // initialize the valueList (only extension since main fields are already
+        // initialized in update() )
+        this.initializeValueList(this.formFieldsExtension, this.valueList.data);
+        // assign the updated valueList to valueListOriginal as well to have correct
+        // unsavedChanges behaviour
+        this.valueListOriginal = JSON.parse(JSON.stringify(this.valueList));
+        // reset idChanged variable so it is not triggered anymore as long as user stays
+        // on same entry
+        this.idChanged = false;
+      }
     },
     preFetchedData() {
       this.setDropDownValues();
@@ -315,6 +340,7 @@ export default {
       sessionStorage.removeItem('valueList');
       sessionStorage.removeItem('parent');
       if (val) {
+        this.idChanged = true;
         this.resetForm();
         await this.updateForm();
       } else {
@@ -436,6 +462,7 @@ export default {
       this.$store.commit('data/setParentItem', JSON.parse(storedParentString));
     }
     if (this.currentItemId) {
+      this.idChanged = true;
       await this.updateForm();
     }
     // check if previously unsaved changes were stored in session storage
@@ -492,7 +519,6 @@ export default {
         this.$set(this.valueList, 'data', { ...data.data });
         // update the set dat to currently necessary formats
         this.initializeValueList(this.formFields, this.valueList);
-        this.initializeValueList(this.formFieldsExtension, this.valueList.data);
         // copy the original object to check for unsaved changes later
         this.valueListOriginal = { ...JSON.parse(JSON.stringify(this.valueList)) };
       } catch (e) {
