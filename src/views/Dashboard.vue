@@ -218,25 +218,8 @@ export default {
           } else if (imageHeight && imageHeight > imageWidth && imageHeight < window.innerHeight) {
             this.previewSize = { ...this.previewSize, maxHeight: `${fileData.metadata.ImageHeight.val}px` };
           }
-          // else get size from metadata
-          // previewSize not required for audio (and pdf)
-        } else if (fileData.metadata && (fileData.metadata.ImageHeight
-          || fileData.metadata.SourceImageHeight)) {
-          // portrait media
-          if (fileData.metadata.Rotation.val === 90) {
-            // height is used for width due dimension are the same in rotated mode
-            this.previewSize = {
-              'max-width': `${fileData.metadata.ImageHeight ? fileData.metadata.ImageHeight.val
-                : fileData.metadata.SourceImageHeight.val}px`,
-            };
-            return;
-          }
-
-          // landscape media
-          this.previewSize = {
-            width: `${fileData.metadata.ImageWidth ? fileData.metadata.ImageWidth.val
-              : fileData.metadata.SourceImageWidth.val}px`,
-          };
+        } else {
+          // previewSize not required for audio, video and pdf
         }
         // landing here if file is not fully converted yet
       } else {
