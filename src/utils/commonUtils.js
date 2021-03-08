@@ -9,7 +9,7 @@ export const capitalizeString = (string) => {
     .map((partialString) => partialString.slice(0, 1).toUpperCase() + partialString.slice(1)).join(' ');
 };
 
-export const toTitleString = (string, language = 'en') => {
+export const toTitleString = (string = '', language = 'en') => {
   const functionLang = i18n.locale || language;
   const sentenceIndicators = /[.!?:]$/;
   if (process.env.VUE_APP_EN_TITLE_CASING && functionLang === 'en' && string.search(sentenceIndicators) < 0) {
