@@ -136,8 +136,15 @@
       v-if="valueList.date_created && valueList.date_changed && !formIsLoading && formDataPresent"
       class="last-modified">
       {{
-        `${$t('form-view.created')} ${createHumanReadableData(valueList.date_created)}` }} <br>
-      {{ `${$t('form-view.lastModified')} ${createHumanReadableData(valueList.date_changed)}`
+        `${$t('form-view.created', {
+          toTitleCase: false,
+        })} ${createHumanReadableData(valueList.date_created)}`
+      }}
+      <br>
+      {{
+        `${$t('form-view.lastModified', {
+          toTitleCase: false
+        })} ${createHumanReadableData(valueList.date_changed)}`
       }}
     </div>
   </div>
@@ -790,7 +797,7 @@ export default {
     },
     createHumanReadableData(val) {
       const date = new Date(val);
-      return `${date.toLocaleDateString('de')} ${this.$t('form-view.at')} ${date.toLocaleTimeString('de')}`;
+      return `${date.toLocaleDateString('de')} ${this.$t('form-view.at', { toTitleCase: false })} ${date.toLocaleTimeString('de')}`;
     },
     openUnsavedChangesPopUp(followUpAction) {
       if (this.unsavedChanges) {
