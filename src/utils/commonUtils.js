@@ -10,6 +10,9 @@ export const capitalizeString = (string) => {
 };
 
 export const toTitleString = (string = '', language = 'en') => {
+  if (!string) {
+    return '';
+  }
   const functionLang = i18n.locale || language;
   const sentenceIndicators = /[.!?:]$/;
   if (process.env.VUE_APP_EN_TITLE_CASING && functionLang === 'en' && string.search(sentenceIndicators) < 0) {
