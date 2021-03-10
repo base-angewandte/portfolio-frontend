@@ -31,7 +31,7 @@
         :language="$i18n.locale"
         :field-is-loading="fieldIsLoading"
         :drop-down-lists="dropDownListsInt"
-        @values-changed="handleInput($event)"
+        @values-changed="handleInput($event, '')"
         @fetch-autocomplete="fetchAutocomplete" />
 
       <transition-group
@@ -196,6 +196,8 @@ export default {
       prefetchedDropDownLists: {},
       // store previous form fields in a variable in case type is deleted inbetween
       previousFormFields: {},
+      // store previous contributor entries that did not have any roles assigned
+      emptyMappingFields: {},
     };
   },
   computed: {
@@ -248,6 +250,11 @@ export default {
       return this.$store.getters['data/getCurrentMedia'].length;
     },
     unsavedChanges() {
+      // to not have to check every single value every time do check first if
+      // stringified form values are maybe equal already
+      if (JSON.stringify(this.valueList) === JSON.stringify(this.valueListOriginal)) {
+        return false;
+      }
       // every value of formFields is compared - with Array.every it will stop automatically
       // as soon as comparison returns false and therefore only traverse through object
       // until non-equal fields are found
@@ -331,7 +338,9 @@ export default {
           });
           // add english lang casing to title and placeholders
           properties = await this.$store.dispatch('data/addEnglishTitleCasing', properties);
+          // set the retrieved extension schema to store
           this.$store.commit('data/setExtensionSchema', properties || {});
+          // get the static drop down data for this extension
           await this.$store.dispatch('data/getStaticDropDowns', properties);
 
           // get the list of available roles for mapping and filtering out roles from contributors
@@ -440,7 +449,8 @@ export default {
       }
     });
     // add event listener triggered before unload
-    window.addEventListener('beforeunload', () => {
+    // 'beforeunload' is not triggered on iOS Safari, therefore using 'pagehide'
+    window.addEventListener('pagehide', () => {
       // if there are unsaved changes store them in session storage,
       // otherwise clear storage
       if (this.unsavedChanges && Object.keys(this.valueList).length) {
@@ -542,18 +552,37 @@ export default {
       // find changed data so only the data that truly changed go into valueList
       Object.keys(this.fieldsList).forEach((key) => {
         const value = data[key];
+        const xAttrs = this.fieldsList[key]['x-attrs'];
         // check if specifiy property of data exists and changed values
-        if ((this.fieldsList[key]['x-attrs'] && !this.fieldsList[key]['x-attrs'].hidden)
+        if ((xAttrs && !xAttrs.hidden)
           && value !== undefined && JSON.stringify(value) !== JSON.stringify(this.valueList[key])) {
           // store in variable if respective fields have data
           const newDataHasFieldContent = hasFieldContent(value);
           const originalDataHasFieldContent = originalDataObject && originalDataObject[key]
             && hasFieldContent(originalDataObject[key]);
           // then only update valueList when either new data has values or old data
-          // has values and new data has not (= data was deleted) - this is done to
+          // has values and new data has not (= data was deleted), or if field type is group
+          // (important if group was added or removed) - this is done to
           // prevent the empty fields initialized in BaseForm to pollute the valueList
           // with empty 'values'
-          if (newDataHasFieldContent || (!newDataHasFieldContent && originalDataHasFieldContent)) {
+          if (newDataHasFieldContent || (!newDataHasFieldContent && originalDataHasFieldContent)
+            || (xAttrs.field_type === 'group')) {
+            // if necessary update emptyFieldsList
+            if (this.emptyMappingFields[key]) {
+              // if a value in contributors was deleted also remove it from empty fields list
+              if (originalDataObject[key].length > value.length) {
+                this.$set(this.emptyMappingFields, key, this.emptyMappingFields[key]
+                  .filter((id) => value.map((val) => val.source || val.label).includes(id)));
+              }
+              // take care if roles are not empty anymore
+              value.forEach((val) => {
+                if (val.roles && val.roles.length
+                  && this.emptyMappingFields[key].includes(val.source || val.label)) {
+                  this.$set(this.emptyMappingFields, key, this.emptyMappingFields[key]
+                    .filter((id) => (val.source || val.label) !== id));
+                }
+              });
+            }
             this.$set(originalDataObject, key, value);
           }
         }
@@ -991,7 +1020,9 @@ export default {
       // for an array traverse through each position
       if (typeof hasValue === 'object' && hasValue.length) {
         // if the two arrays do not have the same length they are not equal
-        if (newData.length !== originalData.length) {
+        // but dont trigger unsaved changes for subform group fields
+        if ((!xAttrs || (xAttrs && xAttrs.field_type !== 'group'))
+          && newData.length !== originalData.length) {
           return false;
         }
         // if they have the same length check if one of the array values is not
@@ -1006,7 +1037,7 @@ export default {
       if (typeof hasValue === 'object') {
         // need to check for newData key because of props partially added later before saving
         // e.g. roles for specific contributor fields (e.g. authors)
-        return Object.keys(formFieldValues.properties).every((key) => !newData[key]
+        return Object.keys(formFieldValues.properties).every((key) => !newData[key] === undefined
           || this.compareDataValues(
             newData[key],
             originalData[key],
@@ -1061,10 +1092,25 @@ export default {
       }
       // store the general equivalent field in a variable
       // (needed for both sides of mapping)
-      const equivalentFieldData = this.valueList.data[equivalentName];
+      const commonFieldData = this.valueList.data[equivalentName];
 
-      // first map from previous equivalents to contributors if this field
-      // does not exist in the new form
+      // check if there are contributor fields that dont have roles assigned
+      this.$set(this.emptyMappingFields, equivalentName, [
+        ...this.emptyMappingFields[equivalentName] || [],
+        ...commonFieldData
+          .reduce((array, entry) => {
+            const entryId = entry[idProp] || entry[labelProp];
+            if ((!entry[fieldProp] || !entry[fieldProp].length)
+              && (!this.emptyMappingFields[equivalentName]
+                || !this.emptyMappingFields[equivalentName].includes(entryId))) {
+              return array.concat([entry[idProp] || entry[labelProp]]);
+            }
+            return array;
+          }, []),
+      ]);
+
+      // first map from equivalent fields (e.g. authors) to common field (e.g. contributors)
+      // if this field does not exist in the new form
       if (originalFieldInformation && originalFieldInformation.length) {
         // loop through every of the specialized fields
         originalFieldInformation.forEach((equivalentField) => {
@@ -1073,7 +1119,7 @@ export default {
           if (!Object.prototype.hasOwnProperty.call(newFormFields, equivalentField.name)
             && this.valueList.data && this.valueList.data[equivalentField.name]) {
             // get a list of all the equivalent field entry ids
-            const equivalentFieldDataIds = equivalentFieldData
+            const equivalentFieldDataIds = commonFieldData
               .map((cont) => cont[idProp] || cont[labelProp].toLowerCase());
             // loop through all the entries in the specialized field separately to be able
             // to either
@@ -1096,13 +1142,13 @@ export default {
               if (contIndex >= 0) {
                 // then also check if the prop field does already exist in the general field
                 // if yes push to it - if not create it by setting the value
-                if (equivalentFieldData[contIndex][fieldProp]) {
-                  equivalentFieldData[contIndex][fieldProp].push(fieldPropValue);
+                if (commonFieldData[contIndex][fieldProp]) {
+                  commonFieldData[contIndex][fieldProp].push(fieldPropValue);
                 } else {
-                  this.$set(equivalentFieldData[contIndex], fieldProp, [fieldPropValue]);
+                  this.$set(commonFieldData[contIndex], fieldProp, [fieldPropValue]);
                 }
               } else {
-                equivalentFieldData.push((entry[fieldProp]
+                commonFieldData.push((entry[fieldProp]
                   ? entry : { ...entry, [fieldProp]: [fieldPropValue] }));
               }
             });
@@ -1113,17 +1159,17 @@ export default {
       // second map from common field to equivalents if this field appears in the form
       if (newFieldInformation && newFieldInformation.length) {
         // check if this field acutally has data (array is assumed for now)
-        if (equivalentFieldData && equivalentFieldData.length) {
+        if (commonFieldData && commonFieldData.length) {
           // get a list of all field IDs before looping through all the entries
           const newEquivalentFieldIds = newFieldInformation.map((newField) => newField.default);
           // check each entry in the equivalent field if they should go to
           // a specialized field
           // looped through in reverse order so the splicing in the end does not affect
           // the array
-          for (let commonFieldIndex = equivalentFieldData.length - 1;
+          for (let commonFieldIndex = commonFieldData.length - 1;
             commonFieldIndex >= 0;
             commonFieldIndex -= 1) {
-            const equivalentEntry = equivalentFieldData[commonFieldIndex];
+            const equivalentEntry = commonFieldData[commonFieldIndex];
             // check if the specific prop (e.g. roles) has entries
             // loop through in reverse so there are no problems with splicing entries from fieldProp
             // field
@@ -1158,8 +1204,10 @@ export default {
                   equivalentEntry[fieldProp].splice(fieldPropIndex, 1);
                   // after that also check if there are actually any roles left - if not
                   // delete entry from common field
-                  if (!equivalentEntry[fieldProp].length) {
-                    equivalentFieldData.splice(commonFieldIndex, 1);
+                  if (!equivalentEntry[fieldProp].length
+                    && !this.emptyMappingFields[equivalentName]
+                      .includes(newFieldEntry.source || newFieldEntry.label)) {
+                    commonFieldData.splice(commonFieldIndex, 1);
                   }
                 }
               }
