@@ -112,8 +112,13 @@ export const convertSpace = (bytes, si) => {
   return `${newBytes.toFixed(1)} ${units[u]}`;
 };
 
+/**
+ * @param {string|null} requestUrl
+ * @returns {string}
+ */
 export const getApiUrl = (requestUrl = '') => {
-  if (requestUrl != null && !requestUrl.includes(process.env.VUE_APP_BACKEND_PREFIX)) {
+  if (requestUrl === null) return '';
+  if (!requestUrl.includes(process.env.VUE_APP_BACKEND_PREFIX)) {
     return `${process.env.VUE_APP_BACKEND_BASE_URL}${process.env.VUE_APP_BACKEND_PREFIX}${requestUrl}`;
   }
   return `${process.env.VUE_APP_BACKEND_BASE_URL}${requestUrl}`;
