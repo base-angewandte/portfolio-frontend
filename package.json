@@ -10,11 +10,12 @@
     "build": "gulp && vue-cli-service build",
     "build:test": "npm run build && node server.js",
     "build:analyze": "vue-cli-service build --report",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "preinstall": "npx npm-force-resolutions"
   },
   "dependencies": {
     "axios": "^0.21.1",
-    "base-ui-components": "^1.0.7",
+    "base-ui-components": "^1.0.9",
     "core-js": "^3.6.5",
     "messageformat": "^2.3.0",
     "normalize.css": "^8.0.1",
@@ -42,5 +43,8 @@
     "sass-loader": "^8.0.2",
     "vue-svg-loader": "^0.16.0",
     "vue-template-compiler": "^2.6.11"
+  },
+  "resolutions": {
+    "yargs-parser": "^18.1.2"
   }
 }
