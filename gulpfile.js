@@ -1,18 +1,27 @@
 const path = require('path');
-
+const fs = require('fs');
 const gulp = require('gulp')
 const axios = require('axios')
 const log = require('fancy-log')
 const replace = require('gulp-replace')
+
+let envFile = './.env.local';
+
+// fallback if user forgets to create an .env.local file
+if (!fs.existsSync(envFile)) {
+  fs.copyFileSync('./.env', envFile);
+  log.info('.env.local file was not found and was created! However it most likely needs adaptions - please check the configuration!');
+}
+
 require('dotenv').config({
-  path: './.env.local',
+  path: envFile,
 })
 
 gulp.task('set-header', async function () {
   try {
     const res = await axios.get(`${process.env.VUE_APP_HEADER_JSON}`);
     const baseUrl = process.env.VUE_APP_HEADER_JSON.match(/(^https?:\/\/[a-z-.]+)/)[0];
-    return gulp.src(['.env.local'], { base: './' })
+    return gulp.src([envFile], { base: './' })
       .pipe(replace(/(\s+VUE_APP_HEADER=).*/, function (match, p1) {
         return `${p1}${baseUrl}/${res.data.latest}`
       }))
@@ -26,10 +35,21 @@ gulp.task('set-header', async function () {
 
 gulp.task('set-default-lists', async function () {
   try {
-    const test2 = JSON.stringify(require(path.join(__dirname, './config/default_lists.json')));
-    return gulp.src(['.env.local'], { base: './' })
+    // create default_lists from default_lists-skel if it does not exist
+    if (!fs.existsSync('./config/default_lists.json')) {
+      fs.copyFileSync('./config/default_lists-skel.json', './config/default_lists.json');
+      log.info('default_lists file was created.');
+    }
+  } catch(e) {
+    log.warn('Something went wrong while creating the file config/default_lists.json from config/default_lists-skel.json!' +
+      'please check if file exists and create manually if necessary.');
+    log.error(e);
+  }
+  try {
+    const defaultListData = JSON.stringify(require(path.join(__dirname, './config/default_lists.json')));
+    return gulp.src([envFile], { base: './' })
       .pipe(replace(/(\s+VUE_APP_DEFAULT_LISTS=).*/, function (match, p1) {
-        return `${p1}${test2}`
+        return `${p1}${defaultListData}`
       }))
       .pipe(gulp.dest('.'))
       .on('end', function () { log('Default lists updated!') })
