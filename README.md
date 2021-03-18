@@ -18,10 +18,16 @@ Also check and if necessary adapt the configuration:
 # switch into the project folder
 cd portfolio-frontend
 
-# use your favourite text editor to inspect and adapt the config file 
-nano .env
+# create a local copy of your environment variables
+cp .env .env.local
 
-# also adapt the default values for drop down lists if necessary
+# use your favourite text editor to inspect and adapt the config file 
+nano .env.local
+
+# if you would like to adapt the default values for drop down lists (in the respective form fields) 
+# also create a local copy of default lists
+cp default_lists-skel.json default_lists.json
+# and edit the lists
 nano config/default_lists.json
 ```
 
@@ -95,12 +101,9 @@ In the `.env` file contained in the project folder the following variables can b
 
 #### For Development:
 
-* As per default there is one `.env` file in the project folder.
+* As per default there is one `.env` file in the project folder where a local copy `.env.local` should be created.
   In case you need development and production specific values the file could be copied
-  to create new files `.env.development` and `env.production` which will overwrite the default `.env` file.
-
-* for development it might make sense to make a local copy of the `.env` file that will be ignored by git:
-```
-# copy env file and adapt settings if necessary
-cp .env .env.local
-```
+  to create new files `.env.development.local` and `env.production.local` which will overwrite the default `.env.local` file.
+  
+* For further details on the use of environmental variables in this App also refer to the  [Vue-CLI documentation](https://cli.vuejs.org/guide/mode-and-env.html#environment-variables).  
+  
