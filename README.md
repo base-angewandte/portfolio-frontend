@@ -81,7 +81,7 @@ In the `.env` file contained in the project folder the following variables can b
 
 | Variable              | Description                                                                                                                                                 |
 |-----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| VUE_APP_BACKEND_BASE_URL      | base url of portfolio backend                                                                                                                      |
+| VUE_APP_TITLE                 | the name of the app, used to set title tag                                                                                                                      |
 | VUE_APP_BACKEND_API_PATH      | path to the backend rest api (database requests)                                                                                                    |
 | VUE_APP_BACKEND_PREFIX      | a prefix for the backend                                                                                                 |
 | VUE_APP_HEADER_URL_TERMS      | to link to terms and conditions                                                                                                                                                |
