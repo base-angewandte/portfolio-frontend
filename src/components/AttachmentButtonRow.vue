@@ -147,22 +147,13 @@
 </template>
 
 <script>
-import {
-  BaseDropBox,
-  BaseButton,
-  BaseBoxButton,
-  BasePopUp,
-} from 'base-ui-components';
+import axios from 'axios';
 import Sidebar from './Sidebar';
 import Uploader from './Uploader';
 import { userInfo } from '../mixins/userInfo';
 
 export default {
   components: {
-    BaseBoxButton,
-    BaseDropBox,
-    BaseButton,
-    BasePopUp,
     Sidebar,
     Uploader,
   },
@@ -248,14 +239,14 @@ export default {
     },
     getSelectedIdsAndLink(objList) {
       // get only a list of ids from entries that should be linked
-      const idList = objList.map(entry => entry.id);
+      const idList = objList.map((entry) => entry.id);
       this.linkEntries(idList);
     },
     async linkEntries(val) {
       const list = [];
       val.forEach((entryId) => {
         // if entry is not linked already - add it to the list that will be linked
-        if (!this.linkedList.map(e => e.to.id).includes(entryId)) {
+        if (!this.linkedList.map((e) => e.to.id).includes(entryId)) {
           list.push(entryId);
           // otherwise inform user about it
         } else {
@@ -274,6 +265,7 @@ export default {
       } else {
         const failArr = [];
         const fullList = await Promise.all(list
+          // eslint-disable-next-line no-async-promise-executor
           .map((entryId, index) => new Promise(async (resolve) => {
             try {
               // get the data of the linked entry
@@ -283,7 +275,11 @@ export default {
                 to: entry,
               });
             } catch (e) {
-              console.error(e);
+              if (axios.isCancel(e)) {
+                console.warn(e.message);
+              } else {
+                console.error(e);
+              }
               failArr.push(entryId);
               resolve();
             }

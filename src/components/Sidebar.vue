@@ -150,32 +150,12 @@
 </template>
 
 <script>
-import {
-  BaseMenuList,
-  BaseButton,
-  BaseDropDown,
-  BaseSearch,
-  BasePagination,
-  BaseLoader,
-  BaseSelectOptions,
-} from 'base-ui-components';
 import axios from 'axios';
-import BaseOptions from './BaseOptions';
-import { entryHandlingMixin } from '../mixins/entryHandling';
-import { userInfo } from '../mixins/userInfo';
-import { capitalizeString } from '../utils/commonUtils';
+import { entryHandlingMixin } from '@/mixins/entryHandling';
+import { userInfo } from '@/mixins/userInfo';
+import { getLangLabel } from '@/utils/commonUtils';
 
 export default {
-  components: {
-    BaseMenuList,
-    BaseButton,
-    BaseDropDown,
-    BaseSearch,
-    BasePagination,
-    BaseOptions,
-    BaseLoader,
-    BaseSelectOptions,
-  },
   mixins: [entryHandlingMixin, userInfo],
   props: {
     /**
@@ -263,7 +243,7 @@ export default {
     },
     activeEntry() {
       if (!this.hideActive && this.activeEntryId) {
-        return this.listInt.map(entry => entry.id).indexOf(this.activeEntryId);
+        return this.listInt.map((entry) => entry.id).indexOf(this.activeEntryId);
       }
       return -1;
     },
@@ -311,7 +291,7 @@ export default {
       return this.$store.getters['data/getEntryTypes'];
     },
     selectedList() {
-      return this.selectedMenuEntries.map(entry => entry.id);
+      return this.selectedMenuEntries.map((entry) => entry.id);
     },
     windowWidth() {
       return this.$store.state.data.windowWidth;
@@ -371,7 +351,7 @@ export default {
         this.selectedMenuEntries.push(this.listInt[evt.index]);
       } else {
         this.selectedMenuEntries = this.selectedMenuEntries
-          .filter(entry => entry.id !== this.listInt[evt.index].id);
+          .filter((entry) => entry.id !== this.listInt[evt.index].id);
       }
       // TODO: check if selectedEntries should also be handled internally
       this.$emit('selected-changed', this.selectedMenuEntries);
@@ -383,9 +363,9 @@ export default {
         // deduplicate by creating set and convert back to array
         this.selectedMenuEntries = [...new Set(this.selectedMenuEntries)];
       } else {
-        const listIntIds = this.listInt.map(entry => entry.id);
+        const listIntIds = this.listInt.map((entry) => entry.id);
         this.selectedMenuEntries = this.selectedMenuEntries
-          .filter(entry => !listIntIds.includes(entry.id));
+          .filter((entry) => !listIntIds.includes(entry.id));
       }
     },
     getNewForm() {
@@ -431,8 +411,8 @@ export default {
         // if any entries were sucessfully duplicated route to the new entry
         if (duplicatedNumber) {
           this.selectedMenuEntries = [];
-          this.fetchSidebarData();
-          this.$router.push(`/entry/${routingIds.pop()}`);
+          await this.fetchSidebarData();
+          await this.$router.push(`/entry/${routingIds.pop()}`);
         }
         this.isLoading = false;
       } else {
@@ -458,10 +438,10 @@ export default {
     },
     async action(action) {
       const currentSelected = this.selectedMenuEntries
-        .some(entry => entry.id === this.activeEntryId);
+        .some((entry) => entry.id === this.activeEntryId);
       await this.actionEntries(action);
       this.selectedMenuEntries = [];
-      this.fetchSidebarData();
+      await this.fetchSidebarData();
 
       this.$store.commit('data/setOptions', false);
       // if the form was open and the item was selected for deletion a redirect to dashboard
@@ -469,12 +449,12 @@ export default {
       if (action === 'delete') {
         try {
           // update user quota in case any of the deleted entries had files attached
-          this.$store.dispatch('PortfolioAPI/fetchUser');
+          await this.$store.dispatch('PortfolioAPI/fetchUser');
         } catch (e) {
           console.error(e);
         }
         if (currentSelected) {
-          this.$router.push('/');
+          await this.$router.push('/');
         }
       } else if ((action === 'publish' || action === 'offline') && currentSelected) {
         this.$emit('update-publish-state', action === 'publish');
@@ -483,7 +463,7 @@ export default {
     toggleSidebarOptions() {
       const { menuList } = this.$refs;
       if (menuList) {
-        this.$refs.menuList.entryProps.forEach(entry => this.$set(entry, 'selected', false));
+        this.$refs.menuList.entryProps.forEach((entry) => this.$set(entry, 'selected', false));
       }
       this.$store.commit('data/setOptions', !this.showCheckbox);
     },
@@ -500,9 +480,7 @@ export default {
           response = await this.dataRequest(offset);
         }
         this.listInt = response.results
-          .map(entry => Object.assign({}, entry, {
-            description: entry.type && entry.type.label ? capitalizeString(entry.type.label[this.$i18n.locale]) : '',
-          }));
+          .map((entry) => ({ ...entry, description: entry.type && entry.type.label ? getLangLabel(entry.type.label) : '' }));
         this.entryNumber = response.count;
         if (!this.entryNumber) {
           this.setInfoText();
@@ -513,8 +491,12 @@ export default {
           this.entriesExist = !!this.entryNumber;
         }
         this.$emit('sidebar-data-changed');
+        this.isLoading = false;
       } catch (e) {
-        if (!axios.isCancel(e) && (e.response && e.response.status !== 403)) {
+        if (axios.isCancel(e)) {
+          console.warn(e.message);
+        } else if (e.response && e.response.status !== 403) {
+          this.isLoading = false;
           console.error(e);
           this.$notify({
             group: 'request-notifications',
@@ -522,9 +504,10 @@ export default {
             text: this.$t('notify.entryFetchFailSub'),
             type: 'error',
           });
+        } else {
+          console.error(e);
+          this.isLoading = false;
         }
-      } finally {
-        this.isLoading = false;
       }
     },
     async dataRequest(offset) {
@@ -578,7 +561,7 @@ export default {
       // get all child elements that are not options (= should be inline with options button)
       // and calculate sum of width
       const childElementsWidth = children
-        .filter(child => child.$el.className.includes('base-options-button') || child.$el.className.includes('sidebar-dropdown'))
+        .filter((child) => child.$el.className.includes('base-options-button') || child.$el.className.includes('sidebar-dropdown'))
         .reduce((prev, curr) => prev + curr.$el.clientWidth, 0);
       // need to know margin of drop down element as well since not included in width
       const margin = parseFloat(getComputedStyle(children[children.length - 1].$el).marginLeft.replace('px', ''));

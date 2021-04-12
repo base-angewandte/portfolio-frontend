@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { userInfo } from './userInfo';
 
 /* eslint-disable-next-line */
@@ -15,19 +16,20 @@ export const attachmentHandlingMixin = {
       const successArr = [];
       let filteredList = list;
       // filter out entries that are already parents and inform user about it
-      const alreadyParents = parentEntries.filter(parent => list.includes(parent.parent.id));
+      const alreadyParents = parentEntries.filter((parent) => list.includes(parent.parent.id));
       if (alreadyParents.length) {
-        filteredList = list.filter(linkId => !parentEntries
-          .map(parent => parent.parent.id).includes(linkId));
+        filteredList = list.filter((linkId) => !parentEntries
+          .map((parent) => parent.parent.id).includes(linkId));
         this.$notify({
           group: 'request-notifications',
           title: this.$t('notify.linkingNotPossible'),
-          text: `${this.$tc('notify.parentsAlready', alreadyParents.length)}: "${alreadyParents.map(parent => parent.parent.title).join('", "')}"`,
+          text: `${this.$tc('notify.parentsAlready', alreadyParents.length)}: "${alreadyParents.map((parent) => parent.parent.title).join('", "')}"`,
           type: 'info',
           duration: 8000,
         });
       }
-      await Promise.all(filteredList.map(relationId => new Promise(async (resolve) => {
+      // eslint-disable-next-line no-async-promise-executor
+      await Promise.all(filteredList.map((relationId) => new Promise(async (resolve) => {
         try {
           if (action === 'save') {
             const data = { from_entry: fromId, to_entry: relationId };
@@ -55,13 +57,17 @@ export const attachmentHandlingMixin = {
         this.$store.commit('data/setLinked', { list: entry.relations || [], replace: true });
         this.$store.commit('data/setLinkedParents', { list: entry.parents });
       } catch (e) {
-        console.error(e);
-        this.$notify({
-          group: 'request-notifications',
-          title: this.$t('notify.somethingWrong'),
-          text: this.$t('notify.fetchLinkedFail'),
-          type: 'error',
-        });
+        if (axios.isCancel(e)) {
+          console.warn(e.message);
+        } else {
+          console.error(e);
+          this.$notify({
+            group: 'request-notifications',
+            title: this.$t('notify.somethingWrong'),
+            text: this.$t('notify.fetchLinkedFail'),
+            type: 'error',
+          });
+        }
       }
       if (attachmentArea) {
         attachmentArea.entriesLoading = false;

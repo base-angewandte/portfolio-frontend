@@ -1,11 +1,11 @@
 /* eslint no-shadow: ["error", { "allow": ["state", "getters"] }] */
 import Vue from 'vue';
 import axios from 'axios';
-import { i18n } from '../../plugins/i18n';
+import { i18n } from '@/plugins/i18n';
 
 import {
-  sorting, capitalizeString, setLangLabels, getApiUrl, hasFieldContent,
-} from '../../utils/commonUtils';
+  sorting, capitalizeString, setLangLabels, getApiUrl, hasFieldContent, toTitleString,
+} from '@/utils/commonUtils';
 
 function transformTextData(data) {
   const textData = [];
@@ -17,15 +17,15 @@ function transformTextData(data) {
         Vue.set(textObj, 'type', textItem.type);
       }
       const text = Object.keys(textItem)
-        .filter(props => !['type', 'text', 'data'].includes(props))
+        .filter((props) => !['type', 'text', 'data'].includes(props))
         .map((lang) => {
           if (textItem[lang]) {
-            return Object.assign({}, {
+            return {
               language: {
-                source: `${process.env.LANG_URL}${lang}`,
+                source: `${process.env.VUE_APP_LANG_URL}${lang}`,
               },
               text: textItem[lang],
-            });
+            };
           }
           return null;
         }).filter(Boolean);
@@ -41,6 +41,60 @@ function transformTextData(data) {
     });
   }
   return textData;
+}
+
+function checkForLabel(value) {
+  let newValue = value;
+  // check if value is array or object
+  if (newValue && typeof value === 'object') {
+    // check if value is array
+    if (newValue.length) {
+      newValue = newValue.map((entry) => checkForLabel(entry));
+    } else if (Object.keys(newValue).length) {
+      if (Object.keys(newValue).includes('label') && newValue.label.en) {
+        Vue.set(newValue, 'label', { ...newValue.label, ...{ en: toTitleString(newValue.label.en) } });
+      }
+      newValue = Object.entries(newValue)
+        .reduce((prev, [propKey, propValue]) => ({
+          ...prev,
+          ...{ [propKey]: checkForLabel(propValue) },
+        }), {});
+    }
+  }
+  return newValue;
+}
+
+function addEnglishTextStyling(object) {
+  return Object.entries(object).reduce((prev, [key, value]) => {
+    const { title } = value;
+    const { placeholder } = value['x-attrs'] && value['x-attrs'].placeholder ? value['x-attrs'] : { placeholder: '' };
+    if (value['x-attrs'] && value['x-attrs'].field_type === 'group') {
+      const alteredGroupFields = addEnglishTextStyling(value.items.properties);
+      Vue.set(value.items, 'properties', alteredGroupFields);
+    }
+    return {
+      ...prev,
+      ...{
+        [key]: {
+          ...value,
+          ...{
+            title: title ? toTitleString(title) : '',
+            'x-attrs': {
+              ...value['x-attrs'],
+              ...{
+                placeholder: typeof placeholder === 'string' ? toTitleString(placeholder)
+                  : Object.entries(placeholder)
+                    .reduce((placeholderPrev, [placeholderKey, placeholderVal]) => ({
+                      ...placeholderPrev,
+                      ...{ [placeholderKey]: toTitleString(placeholderVal) },
+                    }), {}),
+              },
+            },
+          },
+        },
+      },
+    };
+  }, {});
 }
 
 const state = {
@@ -84,7 +138,7 @@ const getters = {
     return state.linkedEntries;
   },
   getLinkedIds(state) {
-    return state.linkedEntries.length ? state.linkedEntries.map(entry => entry.to.id)
+    return state.linkedEntries.length ? state.linkedEntries.map((entry) => entry.to.id)
       : [];
   },
   getCurrentMedia(state) {
@@ -94,9 +148,9 @@ const getters = {
     return state.linkedParents;
   },
   getMediaIds(state) {
-    return state.linkedMedia.map(entry => entry.id);
+    return state.linkedMedia.map((entry) => entry.id);
   },
-  getPrefetchedTypes: state => (field, source) => {
+  getPrefetchedTypes: (state) => (field, source) => {
     if (source === 'source') {
       return state.prefetchedTypes[field];
     }
@@ -115,7 +169,7 @@ const getters = {
   getObjectTypeLabel(state) {
     return (id) => {
       if (id) {
-        return state.formObjectTypes.find(type => type.value === id);
+        return state.formObjectTypes.find((type) => type.value === id);
       }
       return '';
     };
@@ -139,7 +193,7 @@ const mutations = {
     state.showOptions = val;
   },
   setPopUp(state, data) {
-    state.popUp = Object.assign({}, state.popUp, data);
+    state.popUp = { ...state.popUp, ...data };
   },
   hidePopUp(state) {
     state.popUp = {
@@ -174,7 +228,8 @@ const mutations = {
   setLinked(state, { list, replace }) {
     const existingEntries = replace ? [] : state.linkedEntries;
     // add new list of entries and add a description (for type display)
-    state.linkedEntries = [].concat(list.map(entry => Object.assign({}, entry, {
+    state.linkedEntries = [].concat(list.map((entry) => ({
+      ...entry,
       description: entry.to && entry.to.type && entry.to.type.label
         ? capitalizeString(entry.to.type.label[i18n.locale]) : '',
     })), existingEntries);
@@ -182,7 +237,8 @@ const mutations = {
   setLinkedParents(state, { list }) {
     if (list.length) {
       // add new list of entries and add a description (for type display)
-      state.linkedParents = [].concat(list.map(entry => Object.assign({}, entry, {
+      state.linkedParents = [].concat(list.map((entry) => ({
+        ...entry,
         description: entry.parent && entry.parent.type && entry.parent.type.label
           ? capitalizeString(entry.parent.type.label[i18n.locale]) : '',
       })));
@@ -191,12 +247,12 @@ const mutations = {
     }
   },
   deleteLinked(state, list) {
-    state.linkedEntries = state.linkedEntries.filter(entry => !list
-      .map(deleted => deleted.id).includes(entry.id));
+    state.linkedEntries = state.linkedEntries.filter((entry) => !list
+      .map((deleted) => deleted.id).includes(entry.id));
   },
   deleteLinkedParent(state, list) {
-    state.linkedParents = state.linkedParents.filter(entry => !list
-      .map(deleted => deleted.id).includes(entry.id));
+    state.linkedParents = state.linkedParents.filter((entry) => !list
+      .map((deleted) => deleted.id).includes(entry.id));
   },
   setMedia(state, { list, replace }) {
     const existingMedia = replace ? [] : state.linkedMedia;
@@ -211,10 +267,10 @@ const mutations = {
     }
   },
   setGeneralSchema(state, schema) {
-    state.generalSchema = Object.assign({}, schema);
+    state.generalSchema = { ...schema };
   },
   setExtensionSchema(state, schema) {
-    state.extensionSchema = Object.assign({}, schema);
+    state.extensionSchema = { ...schema };
   },
   setEntryTypes(state, data) {
     state.entryTypes = [].concat(data);
@@ -230,7 +286,12 @@ const mutations = {
   },
 };
 
+const portfolioApiUrl = `${process.env.VUE_APP_BACKEND_BASE_URL}${process.env.VUE_APP_BACKEND_PREFIX}${process.env.VUE_APP_BACKEND_API_PATH}`;
+
 const actions = {
+  async init({ dispatch }) {
+    dispatch('fetchGeneralFields');
+  },
   /**
    * fetch the schema of the general fields (first form part) to be able to generate
    * a form. Fetched from actual swagger.json
@@ -240,19 +301,20 @@ const actions = {
    * @returns {Promise<*>}
    */
   async fetchGeneralFields({ commit, dispatch }) {
+    // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
       try {
-        const jsonSchema = await axios.get(`${process.env.DATABASE_API}swagger.json`,
+        const jsonSchema = await axios.get(`${portfolioApiUrl}swagger.json`,
           {
             withCredentials: true,
             headers: {
               'Accept-Language': i18n.locale,
             },
           });
-        const formFields = jsonSchema.data.definitions.Entry.properties;
+        const formFields = addEnglishTextStyling(jsonSchema.data.definitions.Entry.properties);
         // information for media license source is also contained in swagger.json --> extract!
         const mediaPath = jsonSchema.data.paths['/api/v1/media/'].post.parameters
-          .find(param => param.name === 'license')['x-attrs'].source;
+          .find((param) => param.name === 'license')['x-attrs'].source;
         commit('setGeneralSchema', formFields);
         commit('setMediaLicensesPath', mediaPath);
         // get fields that should be prefetched
@@ -282,7 +344,7 @@ const actions = {
         // check if prefetch properties are set in the x-attrs
         if (attrs && attrs.prefetch && attrs.prefetch.length) {
           return {
-            [field]: attrs.prefetch.map(source => ({
+            [field]: attrs.prefetch.map((source) => ({
               path: attrs[source],
               sourceAttribute: source,
             })),
@@ -300,9 +362,11 @@ const actions = {
       });
     }
     // now use the variable to acutally fetch the information
-    await Promise.all(prefetchFields.map(field => new Promise(async (resolve, reject) => {
+    // eslint-disable-next-line no-async-promise-executor
+    await Promise.all(prefetchFields.map((field) => new Promise(async (resolve, reject) => {
       const [fieldName, sources] = Object.entries(field)[0];
-      await Promise.all(sources.map(source => new Promise(async () => {
+      // eslint-disable-next-line no-async-promise-executor
+      await Promise.all(sources.map((source) => new Promise(async () => {
         const { path, sourceAttribute } = source;
         // check if data are already there, if not fetch info
         if (!getters.getPrefetchedTypes(fieldName, sourceAttribute)) {
@@ -315,8 +379,21 @@ const actions = {
                   'Accept-Language': i18n.locale,
                 },
               });
-            commit('setPrefetchedTypes', { field: fieldName, data, source: sourceAttribute });
-            resolve('x');
+            // transform the en text style
+            const casedData = data.map((entry) => {
+              const newEnLabel = entry.label && entry.label.en ? toTitleString(entry.label.en) : {};
+              return ({
+                ...entry,
+                ...{
+                  label: {
+                    ...entry.label,
+                    ...{ en: newEnLabel },
+                  },
+                },
+              });
+            });
+            commit('setPrefetchedTypes', { field: fieldName, data: casedData, source: sourceAttribute });
+            resolve();
           } catch (e) {
             reject(e);
           }
@@ -334,13 +411,25 @@ const actions = {
   async fetchEntryTypes({ commit }) {
     // TODO: replace with C. store module!
     try {
-      const { data } = await axios.get(`${process.env.DATABASE_API}entry/types/`, {
+      const { data } = await axios.get(`${portfolioApiUrl}entry/types/`, {
         withCredentials: true,
         headers: {
           'Accept-Language': i18n.locale,
         },
       });
-      const entryTypes = sorting(data, 'label', i18n.locale);
+      // remove duplicates (by source), sort the results and add title casing to
+      // english label string
+      const entryTypes = sorting(data
+        // check if type actually contains any properties since case of empty
+        // object being returned already happened and just safe guarding anyway
+        .filter((type, index, self) => Object.keys(type).length && self.map((entry) => entry.source)
+          .indexOf(type.source) === index), 'label', i18n.locale)
+        .map((type) => ({
+          ...type,
+          ...{
+            label: { ...type.label, ...{ en: toTitleString(type.label.en) } },
+          },
+        }));
       // add 'all types' option
       entryTypes.unshift({
         label: setLangLabels('dropdown.allTypes', i18n.availableLocales),
@@ -363,18 +452,24 @@ const actions = {
    * @returns {Promise<*>}
    */
   async fetchEntryData({ commit, dispatch }, id) {
+    // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
       let entryData = {};
       try {
         entryData = await this.dispatch('PortfolioAPI/get', { kind: 'entry', id });
         if (entryData) {
           // Modifications of data received from backend needed:
-          // 1. type needs to be array in logic here!
+          // 1. adapt english style casing
+          entryData = Object.entries(entryData).reduce((prev, [key, value]) => {
+            const newVal = checkForLabel(value);
+            return { ...prev, ...{ [key]: newVal } };
+          }, {});
+          // 2. type needs to be array in logic here!
           const objectType = entryData.type && entryData.type.source ? [entryData.type] : [];
-          // 2. Text needs to look different
+          // 3. Text needs to look different
           const textData = entryData.texts && entryData.texts.length
             ? await Promise.all(entryData.texts
-              .map(entry => new Promise(async (res) => {
+              .map((entry) => {
                 const textObj = {};
                 const { type } = entry;
                 // TODO: temporary hack - probably should fetch label for lang as well
@@ -384,13 +479,14 @@ const actions = {
                     Vue.set(textObj, langInternal.toLowerCase(), language.text);
                   });
                 }
-                res(Object.assign({}, { type }, textObj));
-              }))) : [];
+                return ({ type, ...textObj });
+              })) : [];
 
-          const adjustedEntry = Object.assign({}, entryData, {
+          const adjustedEntry = {
+            ...entryData,
             type: objectType,
             texts: textData,
-          });
+          };
           commit('setCurrentItem', adjustedEntry);
           // use linked entry info already provided with response data
           commit('setLinked', { list: entryData.relations || [], replace: true });
@@ -416,7 +512,7 @@ const actions = {
   },
   async fetchMediaData({ commit }, id) {
     // TODO: replace with Portofolio_API
-    const { data } = await axios.get(`${process.env.DATABASE_API}entry/${id}/media/?detailed=true`,
+    const { data } = await axios.get(`${portfolioApiUrl}entry/${id}/media/?detailed=true`,
       {
         withCredentials: true,
         xsrfCookieName: 'csrftoken_portfolio',
@@ -429,6 +525,7 @@ const actions = {
     }
   },
   addOrUpdateEntry({ commit }, data) {
+    // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
       try {
         const createdEntry = await this.dispatch('PortfolioAPI/post', { kind: 'entry', id: data.id, data });
@@ -446,7 +543,8 @@ const actions = {
     const successArr = [];
     const failArr = [];
     await Promise.all(state.selectedEntries
-      .map(entry => new Promise(async (resolve) => {
+      // eslint-disable-next-line no-async-promise-executor
+      .map((entry) => new Promise(async (resolve) => {
         try {
           await this.dispatch('PortfolioAPI/delete', { kind: 'entry', id: entry.id });
           successArr.push(entry.id);
@@ -462,10 +560,10 @@ const actions = {
     dispatch('fetchEntryTypes');
     // check if any deleted items are currently displayed in form as linked
     const deletedLinked = state.linkedEntries
-      .filter(entry => successArr.includes(entry.to.id));
+      .filter((entry) => successArr.includes(entry.to.id));
     // check if any deleted entries are currenly displayed as parent entries
     const deletedLinkedParents = state.linkedParents
-      .filter(entry => successArr.includes(entry.parent.id));
+      .filter((entry) => successArr.includes(entry.parent.id));
     if (deletedLinked.length) {
       commit('deleteLinked', deletedLinked);
     }
@@ -474,7 +572,7 @@ const actions = {
     }
     // check if deleted was a parent (displayed in header row)
     const deletedParents = state.parentItems
-      .filter(entry => deletedLinked.includes(entry.id));
+      .filter((entry) => deletedLinked.includes(entry.id));
     if (deletedParents) {
       commit('deleteParentItems');
     }
@@ -483,7 +581,8 @@ const actions = {
   async duplicateEntries({ commit, dispatch }, entryArr) {
     const errorArr = [];
     const addedArr = [];
-    await Promise.all(entryArr.map(entry => new Promise(async (resolve) => {
+    // eslint-disable-next-line no-async-promise-executor
+    await Promise.all(entryArr.map((entry) => new Promise(async (resolve) => {
       const entryTitle = entry.title;
       try {
         // fetch entry fresh from db in case props were not updated before
@@ -502,6 +601,9 @@ const actions = {
           addedArr.push(createdEntryId);
         }
       } catch (e) {
+        if (axios.isCancel(e)) {
+          console.warn(e.message);
+        }
         errorArr.push(entryTitle);
       } finally {
         resolve();
@@ -514,16 +616,21 @@ const actions = {
     const successArr = [];
     const failArr = [];
     const noActionArr = [];
-    await Promise.all(state.selectedEntries.map(entry => new Promise(async (resolve) => {
+    // eslint-disable-next-line no-async-promise-executor
+    await Promise.all(state.selectedEntries.map((entry) => new Promise(async (resolve) => {
       // check if entry needs to be modified or already has requested value
       if (entry[prop] !== value) {
         try {
           // fetch fresh because value list might also contain unsaved changes...
           const entryToUpdate = await this.dispatch('PortfolioAPI/get', { kind: 'entry', id: entry.id });
-          await dispatch('addOrUpdateEntry', Object.assign({}, entryToUpdate, { [prop]: value }));
+          await dispatch('addOrUpdateEntry', { ...entryToUpdate, [prop]: value });
           successArr.push(entry.id);
         } catch (e) {
-          console.error(e);
+          if (axios.isCancel(e)) {
+            console.warn(e.message);
+          } else {
+            console.error(e);
+          }
           failArr.push(entry.title);
         }
       } else {
@@ -550,13 +657,14 @@ const actions = {
     const successArr = [];
     const errorArr = [];
 
-    await Promise.all(list.map(mediaId => new Promise(async (resolve) => {
+    // eslint-disable-next-line no-async-promise-executor
+    await Promise.all(list.map((mediaId) => new Promise(async (resolve) => {
       const formData = new FormData();
       const id = mediaId.id || mediaId;
       try {
         if (axiosAction === 'delete') {
           // TODO: replace with Portofolio_API
-          await axios[axiosAction](`${process.env.DATABASE_API}media/${id}/`,
+          await axios[axiosAction](`${portfolioApiUrl}media/${id}/`,
             {
               withCredentials: true,
               xsrfCookieName: 'csrftoken_portfolio',
@@ -571,7 +679,7 @@ const actions = {
             console.error('file action unknown');
           }
           // TODO: replace with Portofolio_API
-          await axios[axiosAction](`${process.env.DATABASE_API}media/${id}/`,
+          await axios[axiosAction](`${portfolioApiUrl}media/${id}/`,
             formData,
             {
               withCredentials: true,
@@ -601,9 +709,22 @@ const actions = {
       if (!field || (!field['x-nullable'] && !hasFieldContent(values))) {
         return;
       }
+      // adding of roles is also done here... (probably more performant anyway
+      // to only add ONCE before saving not whenever a value is changed)
+      if (xAttrs && xAttrs.equivalent === 'contributors') {
+        const fieldRole = state.prefetchedTypes.contributors_role
+          .find((role) => role.source === xAttrs.default_role);
+        values.forEach((contributor, index) => {
+          if (typeof contributor === 'string') {
+            Vue.set(values, index, { label: contributor, roles: [fieldRole] });
+          } else {
+            Vue.set(values, index, { ...contributor, ...{ roles: [fieldRole] } });
+          }
+        });
+      }
       // special case data - which has separate schema - needs to be checked first since data prop
       // also has hidden prop
-      if (key === 'data') {
+      if (key === 'data' && values) {
         const extensionData = await dispatch('removeUnknownProps', { data: values, fields: state.extensionSchema });
         Vue.set(newData, key, extensionData);
         // ignore props that are hidden (except data - see above)
@@ -611,49 +732,55 @@ const actions = {
         Vue.set(newData, key, values);
         // handle special case texts - needs to be mapped to database schema
       } else if (key === 'texts') {
+        // check that texts is not undefinded
+        const tempValues = values || [];
         // check if transformation is still necessary by checking for data property (only there
         // if data from db (on clone entries)
-        const texts = values && values.length
-        && (!values[0].data || !values[0].data.length)
-          ? transformTextData(values) : [].concat(values);
+        const texts = tempValues && tempValues.length
+        && (!tempValues[0].data || !tempValues[0].data.length)
+          ? transformTextData(tempValues) : [].concat(tempValues);
         Vue.set(newData, key, texts);
         // special case single choice chips (saved as object in backend)
       } else if (xAttrs && xAttrs.field_type && xAttrs.field_type.includes('chips')
         && field.type === 'object') {
-        Vue.set(newData, key, values[0] || null);
+        // check again if values provided are object or array
+        const objectValue = values instanceof Array ? values[0] || {} : values;
+        Vue.set(newData, key, objectValue);
       } else if (field.type === 'integer') {
         const number = parseInt(values, 10);
         Vue.set(newData, key, !Number.isNaN(number) ? number : 0);
         // check if field is array and values are array values
         // (was neccessary because of published_in)
-      } else if (field.type === 'array' && typeof values === 'object') {
+      } else if (values && field.type === 'array' && typeof values === 'object') {
         // a check if a group field actually has content - otherwise it is removed
         if (xAttrs && xAttrs.field_type === 'group') {
-          values = values.filter(value => hasFieldContent(value));
+          values = values.filter((value) => hasFieldContent(value));
         }
         // special case chips with unknown entries allowed - we want label set in all languages
         if (field.items.properties.label && field.items.properties.label.type === 'object'
           && xAttrs && xAttrs.allow_unknown_entries) {
-          // check for each chip if all languages are set
-          values = values.map((value) => {
-            const valueLocales = Object.keys(value.label);
-            // for some weird reason i can not use env variable directly
-            const languages = process.env.LOCALES;
-            if (!value.source && valueLocales !== languages) {
-              const fieldValue = value.label[valueLocales.find(lang => !!value.label[lang])];
-              const newLabelObject = {};
+          if (values) {
+            // check for each chip if all languages are set
+            values = values.map((value) => {
+              const valueLocales = Object.keys(value.label);
+              // for some weird reason i can not use env variable directly
+              const languages = process.env.VUE_APP_LOCALES.split(',').map((langString) => langString.trim());
+              if (!value.source && valueLocales !== languages) {
+                const fieldValue = value.label[valueLocales.find((lang) => !!value.label[lang])];
+                const newLabelObject = {};
 
-              // add language specific label for all languages if not set from external
-              languages.forEach((lang) => {
-                Vue.set(newLabelObject, lang, fieldValue);
-              });
-              Vue.set(value, 'label', newLabelObject);
-            }
-            return value;
-          });
+                // add language specific label for all languages if not set from external
+                languages.forEach((lang) => {
+                  Vue.set(newLabelObject, lang, fieldValue);
+                });
+                Vue.set(value, 'label', newLabelObject);
+              }
+              return value;
+            });
+          }
         }
         const arrayValues = await Promise.all(values
-          .map(value => dispatch('removeUnknownProps', { data: value, fields: field.items.properties })));
+          .map((value) => dispatch('removeUnknownProps', { data: value, fields: field.items.properties })));
         Vue.set(newData, key, arrayValues || []);
       // check if field is object
       } else if (field.type === 'object' && typeof values === 'object' && !values.length) {
@@ -690,6 +817,9 @@ const actions = {
       }
     }));
     return newData;
+  },
+  addEnglishTitleCasing(context, object) {
+    return addEnglishTextStyling(object);
   },
 };
 

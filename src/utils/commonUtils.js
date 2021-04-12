@@ -1,11 +1,66 @@
 import Vue from 'vue';
-import { i18n } from '../plugins/i18n';
+// eslint-disable-next-line import/no-cycle
+import { i18n } from '@/plugins/i18n';
 
 export const capitalizeString = (string) => {
   const newString = string.split('/')
-    .map(partialString => partialString.slice(0, 1).toUpperCase() + partialString.slice(1)).join('/');
+    .map((partialString) => partialString.slice(0, 1).toUpperCase() + partialString.slice(1)).join('/');
   return newString.split(' ')
-    .map(partialString => partialString.slice(0, 1).toUpperCase() + partialString.slice(1)).join(' ');
+    .map((partialString) => partialString.slice(0, 1).toUpperCase() + partialString.slice(1)).join(' ');
+};
+
+export const toTitleString = (string = '', language = 'en') => {
+  if (!string) {
+    return '';
+  }
+  const functionLang = i18n.locale || language;
+  const sentenceIndicators = /[.!?:]$/;
+  if (process.env.VUE_APP_EN_TITLE_CASING && functionLang === 'en' && string.search(sentenceIndicators) < 0) {
+    /* this function was taken from:
+    To Title Case © 2018 David Gouch | https://github.com/gouch/to-title-case
+    */
+    const smallWords = /^(a|an|and|as|at|but|by|en|for|if|in|nor|of|on|or|per|the|to|v.?|vs.?|via)$/i;
+    const alphanumericPattern = /([A-Za-z0-9\u00C0-\u00FF])/;
+    const wordSeparators = /([ :–—-])/;
+
+    return string.split(wordSeparators)
+      .map((current, index, array) => {
+        const isSmallWord = current.search(smallWords) > -1;
+        if (
+          /* Check for small words */
+          isSmallWord
+          /* Skip first and last word */
+          && index !== 0 && index !== array.length - 1
+          /* Ignore title end and subtitle start */
+          && array[index - 3] !== ':' && array[index + 1] !== ':'
+          /* Ignore small words that start a hyphenated phrase */
+          && (array[index + 1] !== '-' || (array[index - 1] === '-' && array[index + 1] === '-'))
+        ) {
+          // ignore single letters so they remain capitalized if they already were
+          // (e.g. 'A' from 'A - Z')
+          if (current.length !== 1) {
+            return current.toLowerCase();
+          }
+          return current;
+        }
+
+        /* Ignore intentional capitalization */
+        if (current.substr(1)
+          .search(/[A-Z]|\../) > -1) {
+          return current;
+        }
+
+        /* Ignore URLs */
+        if (array[index + 1] === ':' && array[index + 2] !== '') {
+          return current;
+        }
+
+        /* Capitalize the first letter */
+        return current.replace(alphanumericPattern, (match) => match.toUpperCase());
+      })
+      .join('');
+  }
+  return string;
 };
 
 export const sorting = (list, property, lang) => list.sort((a, b) => {
@@ -27,17 +82,17 @@ export const setLangLabels = (key, locales) => locales
     return prev;
   }, {});
 
-export const getLangLabel = (value, locale, useAny = false) => {
+export const getLangLabel = (value, locale = i18n.locale, useAny = false) => {
   if (typeof value === 'string') return value;
   if (value && locale && value[locale]) {
-    return value[locale];
+    return toTitleString(value[locale]);
   }
   if (value && locale && useAny) {
-    const lang = Object.keys(value).find(key => !!value[key]);
+    const lang = Object.keys(value).find((key) => !!value[key]);
     // return the first one that has content
-    return (value[lang] || value[locale]);
+    return toTitleString(value[lang] || value[locale]);
   }
-  return value;
+  return toTitleString(value);
 };
 
 export const convertSpace = (bytes, si) => {
@@ -57,11 +112,16 @@ export const convertSpace = (bytes, si) => {
   return `${newBytes.toFixed(1)} ${units[u]}`;
 };
 
+/**
+ * @param {string|null} requestUrl
+ * @returns {string}
+ */
 export const getApiUrl = (requestUrl = '') => {
-  if (!requestUrl.includes(process.env.BACKEND_PREFIX)) {
-    return `${process.env.PORTFOLIO_BACKEND_BASE_URL}${process.env.BACKEND_PREFIX}${requestUrl}`;
+  if (requestUrl === null) return '';
+  if (!requestUrl.includes(process.env.VUE_APP_BACKEND_PREFIX)) {
+    return `${process.env.VUE_APP_BACKEND_BASE_URL}${process.env.VUE_APP_BACKEND_PREFIX}${requestUrl}`;
   }
-  return `${process.env.PORTFOLIO_BACKEND_BASE_URL}${requestUrl}`;
+  return `${process.env.VUE_APP_BACKEND_BASE_URL}${requestUrl}`;
 };
 
 /**

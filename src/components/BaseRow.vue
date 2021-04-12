@@ -52,14 +52,7 @@
 </template>
 
 <script>
-import { BaseMenuEntry, BaseButton, BaseLoader } from 'base-ui-components';
-
 export default {
-  components: {
-    BaseMenuEntry,
-    BaseButton,
-    BaseLoader,
-  },
   props: {
     unsavedChanges: {
       type: Boolean,

@@ -18,12 +18,12 @@
         <transition-group
           name="bar-move"
           class="transition">
-          <BaseUploadBar
+          <BaseProgressBar
             v-for="(file, index) of fileList"
             :key="file.name"
             :progress="uploadPercentage[index]"
-            :filename="file.name"
-            :filesize="userQuotaExceeded ? convertDiskSpace(file.size) : ''"
+            :file-name="file.name"
+            :file-size="userQuotaExceeded ? convertDiskSpace(file.size) : ''"
             :status="getStatus(file.name)"
             :show-remove="isInitial"
             class="upload-bar"
@@ -88,17 +88,9 @@
 </template>
 
 <script>
-import {
-  BasePopUp,
-  BaseDropDown,
-  BaseUploadBar,
-  BaseButton,
-  BaseLoader,
-} from 'base-ui-components';
 import axios from 'axios';
-import FailIcon from '../assets/icons/attention.svg';
+import FailIcon from '../assets/icons/attention.svg?inline';
 import { convertSpace } from '../utils/commonUtils';
-// import upload from '../assets/file-upload.fake.service';
 
 const STATUS_INITIAL = 0;
 const STATUS_SAVING = 1;
@@ -107,11 +99,6 @@ const STATUS_FAILED = 3;
 
 export default {
   components: {
-    BaseButton,
-    BasePopUp,
-    BaseDropDown,
-    BaseUploadBar,
-    BaseLoader,
     FailIcon,
   },
   props: {
@@ -161,7 +148,7 @@ export default {
     },
     defaultLicense() {
       // TODO: set via env variable
-      return this.licenses.find(license => license.source === 'http://base.uni-ak.ac.at/portfolio/licenses/copyright');
+      return this.licenses.find((license) => license.source === 'http://base.uni-ak.ac.at/portfolio/licenses/copyright');
     },
     userSpace() {
       return this.$store.state.PortfolioAPI.user.space;
@@ -191,6 +178,7 @@ export default {
           // reset rejected files list
           this.rejectedFiles = [];
           await Promise.all(this.fileList
+            // eslint-disable-next-line no-async-promise-executor
             .map((file, index) => new Promise(async (resolve, reject) => {
               // accounting for retrys by only acting on files that have no upload
               // percentage yet
@@ -210,7 +198,7 @@ export default {
                 this.$emit('upload-start');
 
                 try {
-                  await axios.post(`${process.env.DATABASE_API}media/`,
+                  await axios.post(`${process.env.VUE_APP_BACKEND_BASE_URL}${process.env.VUE_APP_BACKEND_PREFIX}${process.env.VUE_APP_BACKEND_API_PATH}media/`,
                     formData,
                     {
                       withCredentials: true,
@@ -221,7 +209,8 @@ export default {
                       },
                       onUploadProgress: (progressEvent) => {
                         this.$set(this.uploadPercentage, index,
-                          progressEvent.loaded / progressEvent.total);
+                          // eslint-disable-next-line no-mixed-operators
+                          progressEvent.loaded / progressEvent.total * 100);
                       },
                     });
                   this.uploadedFiles.push(file.name);
@@ -246,6 +235,8 @@ export default {
               text: this.$t('notify.quotaExceeded'),
               type: 'error',
             });
+          } else {
+            console.error(e);
           }
         }
         if (this.uploadedFiles.length) {

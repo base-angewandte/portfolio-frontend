@@ -1,34 +1,22 @@
-// https://eslint.org/docs/user-guide/configuring
-
 module.exports = {
   root: true,
-  parserOptions: {
-    parser: 'babel-eslint'
-  },
   env: {
     browser: true,
   },
-  // https://github.com/vuejs/eslint-plugin-vue#priority-a-essential-error-prevention
-  // consider switching to `plugin:vue/strongly-recommended` or `plugin:vue/recommended` for stricter rules.
-  extends: ['plugin:vue/recommended', 'airbnb-base'],
-  // required to lint *.vue files
-  plugins: [
-    'vue'
+  extends: [
+    'plugin:vue/recommended',
+    '@vue/airbnb',
   ],
-  // check if imports actually resolve
-  settings: {
-    'import/resolver': {
-      webpack: {
-        config: 'build/webpack.base.conf.js'
-      }
-    }
+  parserOptions: {
+    parser: 'babel-eslint',
   },
-  // add your custom rules here
   rules: {
     // don't require .vue extension when importing
     'import/extensions': ['error', 'always', {
       js: 'never',
-      vue: 'never'
+      vue: 'never',
+      // to get rid of ?inline error
+      svg: 'never',
     }],
     // disallow reassignment of function parameters
     // disallow parameter object manipulation except for specific exclusions
@@ -51,5 +39,7 @@ module.exports = {
     // allow debugger and console during development
     'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
     'no-console': [process.env.NODE_ENV === 'production' ? 'error' : 'off', { allow: ["warn", "error"] }],
-  }
-}
+    "indent": ["error", 2, { "ignoredNodes": ["TemplateLiteral"] }],
+    "template-curly-spacing" : "off",
+  },
+};

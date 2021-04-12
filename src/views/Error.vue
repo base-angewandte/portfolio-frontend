@@ -35,24 +35,21 @@
   </div>
 </template>
 
-
 <script>
-import { BaseButton } from 'base-ui-components';
-import HomeIcon from '../assets/icons/home.svg';
-import RefreshIcon from '../assets/icons/refresh.svg';
+import HomeIcon from '../assets/icons/home.svg?inline';
+import RefreshIcon from '../assets/icons/refresh.svg?inline';
 
 export default {
   components: {
-    BaseButton,
     HomeIcon,
     RefreshIcon,
   },
   methods: {
     refreshPage() {
-      window.location.href = `${process.env.APP_PREFIX}/`;
+      window.location.href = `${process.env.VUE_APP_PREFIX}/`;
     },
     returnToBase() {
-      window.location.href = process.env.PORTFOLIO_BACKEND_BASE_URL;
+      window.location.href = process.env.VUE_APP_BACKEND_BASE_URL;
     },
   },
 };

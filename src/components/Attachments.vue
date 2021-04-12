@@ -1,9 +1,9 @@
 <template>
   <div class="attachment-area">
     <!-- ATTACHED ENTRIES -->
-    <AttachmentsSection
+    <BaseResultBoxSection
       ref="linkedSection"
-      :attached-list="linkedList"
+      :entry-list="linkedList"
       :message-text="$t('form-view.deleteLinkedText')"
       :message-subtext="$t('form-view.deleteLinkedSubtext')"
       :option-button-text="$t('form-view.deleteLinked')"
@@ -14,12 +14,11 @@
       :is-loading="entriesLoading"
       :selected-list="selectedEntries"
       @set-action="setEntryAction('entry')"
-      @selected="selectEntries('linked', $event)"
+      @all-selected="selectEntries('linked', $event)"
       @submit-action="deleteLinked"
       @cancel-action="resetSelected">
       <template
-        slot="attached-box"
-        slot-scope="props">
+        v-slot:result-box="props">
         <BaseImageBox
           :key="props.item.id"
           :selectable="props.selectActive"
@@ -34,12 +33,12 @@
           @select-triggered="entrySelected(props.item.id, $event)"
           @clicked="goToLinked(props.item.to.id)" />
       </template>
-    </AttachmentsSection>
+    </BaseResultBoxSection>
 
     <!-- ATTACHED FILES -->
-    <AttachmentsSection
+    <BaseResultBoxSection
       ref="fileSection"
-      :attached-list="attachedList"
+      :entry-list="attachedList"
       :message-text="fileText"
       :message-subtext="fileSubtext"
       :cancel-text="$t('cancel')"
@@ -49,7 +48,7 @@
       :is-loading="filesLoading"
       :selected-list="selectedFiles"
       entry-type="media"
-      @selected="selectEntries('files', $event)"
+      @all-selected="selectEntries('files', $event)"
       @set-action="setAction"
       @submit-action="saveFileMeta"
       @cancel-action="resetSelected">
@@ -89,8 +88,7 @@
           class="license-dropdown" />
       </template>
       <template
-        slot="attached-box"
-        slot-scope="props">
+        v-slot:result-box="props">
         <BaseImageBox
           :key="props.item.id"
           :show-title="true"
@@ -113,27 +111,23 @@
             slot="top">
             <template v-if="props.item.published">
               <div class="file-published">
-                <EyeIcon
-                  :aria-labelledby="'title_' + props.item.id"
-                  class="published-icon">
-                  <title :id="'title_' + props.item.id">
-                    Published
-                  </title>
-                  <desc>
-                    {{ `file ${getFileName(props.item.original)} is released for publication` }}
-                  </desc>
-                </EyeIcon>
+                <base-icon
+                  name="eye"
+                  :title="capitalizeString($t('notify.publishd'))"
+                  :aria-title="capitalizeString($t('notify.publishd'))"
+                  :aria-description="publishedIconDescription(props.item.original)"
+                  class="published-icon" />
               </div>
             </template>
           </div>
         </BaseImageBox>
       </template>
-    </AttachmentsSection>
+    </BaseResultBoxSection>
 
     <!-- PARENT ENTRIES -->
-    <AttachmentsSection
+    <BaseResultBoxSection
       ref="parentSection"
-      :attached-list="parentList"
+      :entry-list="parentList"
       :message-text="$t('form-view.deleteLinkedText')"
       :message-subtext="$t('form-view.deleteLinkedSubtext')"
       :option-button-text="$t('form-view.deleteParents')"
@@ -144,12 +138,11 @@
       :is-loading="entriesLoading"
       :selected-list="selectedEntries"
       @set-action="setEntryAction('parentEntry')"
-      @selected="selectEntries('parent', $event)"
+      @all-selected="selectEntries('parent', $event)"
       @submit-action="deleteLinked"
       @cancel-action="resetSelected">
       <template
-        slot="attached-box"
-        slot-scope="props">
+        v-slot:result-box="props">
         <BaseImageBox
           :key="props.item.id"
           :selectable="props.selectActive"
@@ -164,27 +157,15 @@
           @select-triggered="entrySelected(props.item.id, $event)"
           @clicked="goToLinked(props.item.parent.id)" />
       </template>
-    </AttachmentsSection>
+    </BaseResultBoxSection>
   </div>
 </template>
 
 <script>
-import {
-  BaseImageBox, BaseButton, BaseDropDown,
-} from 'base-ui-components';
-import EyeIcon from '../assets/icons/eye.svg';
 import { userInfo } from '../mixins/userInfo';
-import { getApiUrl, getLangLabel } from '../utils/commonUtils';
-import AttachmentsSection from './AttachmentsSection';
+import { capitalizeString, getApiUrl, getLangLabel } from '../utils/commonUtils';
 
 export default {
-  components: {
-    AttachmentsSection,
-    BaseDropDown,
-    BaseImageBox,
-    BaseButton,
-    EyeIcon,
-  },
   mixins: [userInfo],
   props: {
     linkedList: {
@@ -233,12 +214,13 @@ export default {
       // toggle loader display, displayed during db requests
       entriesLoading: false,
       filesLoading: false,
+      capitalizeString,
     };
   },
   computed: {
     // variable for checking if there are still unconverted files
     isConverting() {
-      return this.attachedList.some(file => !file.metadata);
+      return this.attachedList.some((file) => !file.metadata);
     },
     licenses() {
       return this.$store.getters['data/getPrefetchedTypes']('medialicenses', 'source');
@@ -277,8 +259,8 @@ export default {
           group: 'request-notifications',
           title: this.$t('notify.actionFailed', { action: this.$t(`notify.${action}`) }),
           text: this.$t('notify.selectForAction', {
-            action: this.$t(`notify.${action}File`),
-            type: this.$tc('notify.media', 0),
+            action: this.$t(`notify.${action}File`, { toTitleCase: false }),
+            type: this.$tc('notify.media', 0, { toTitleCase: false }),
           }),
           type: 'error',
         });
@@ -333,8 +315,8 @@ export default {
           group: 'request-notifications',
           title: this.$t('notify.actionFailed', { action: this.$t('notify.delete') }),
           text: this.$t('notify.selectForAction', {
-            action: this.$t('notify.deleteFile'),
-            type: this.$tc('notify.entry', 0),
+            action: this.$t('notify.deleteFile', { toTitleCase: false }),
+            type: this.$tc('notify.entry', 0, { toTitleCase: false }),
           }),
           type: 'error',
         });
@@ -349,7 +331,7 @@ export default {
           this.selectedEntries.push(objId);
         }
       } else {
-        this.selectedEntries = this.selectedEntries.filter(entryId => entryId !== objId);
+        this.selectedEntries = this.selectedEntries.filter((entryId) => entryId !== objId);
       }
     },
     // function triggered if medium selected
@@ -359,12 +341,12 @@ export default {
         if (sel) {
           this.selectedFiles.push(objId);
         } else {
-          this.selectedFiles = this.selectedFiles.filter(entryId => entryId !== objId);
+          this.selectedFiles = this.selectedFiles.filter((entryId) => entryId !== objId);
         }
       } else {
         // filter item from array in case it was already added previously
         // easier than replacing the selected value for relevant item
-        this.selectedFiles = this.selectedFiles.filter(file => file.id !== objId);
+        this.selectedFiles = this.selectedFiles.filter((file) => file.id !== objId);
         // check if file was selected and add it with opposite value
         /* eslint-disable-next-line */
         if (sel) {
@@ -400,12 +382,12 @@ export default {
     // get the correct media url
     getImagePath(iconName, hover) {
       // check if a gif is available in metadata
-      if (iconName && iconName.gif) {
+      if (iconName && iconName.gif && iconName.jpg) {
         // use it if hover state is true else use still image
         return getApiUrl(hover ? iconName.gif : iconName.jpg);
       }
       // check if there is url provided
-      if (iconName) {
+      if (typeof iconName === 'string' && iconName) {
         // check if url is complete - if yes just use it
         if (iconName.includes('http')) {
           return iconName;
@@ -419,8 +401,8 @@ export default {
     generateBoxText(metadata) {
       const wantedAttributes = ['FileSize', 'ImageSize', 'Title', 'Artist', 'Year'];
       if (metadata) {
-        return Object.keys(metadata).filter(key => wantedAttributes.includes(key))
-          .map(data => `${metadata[data].val}`);
+        return Object.keys(metadata).filter((key) => wantedAttributes.includes(key))
+          .map((data) => `${metadata[data].val}`);
       }
       return [];
     },
@@ -491,11 +473,14 @@ export default {
         this.selectedFiles = [];
         if (selectAll) {
           this.attachedList
-            .forEach(file => this.filesSelected(file.id, selectAll, file.published));
+            .forEach((file) => this.filesSelected(file.id, selectAll, file.published));
         }
       } else {
-        this.selectedEntries = selectAll ? this[`${listType}List`].map(entry => entry.id) : [];
+        this.selectedEntries = selectAll ? this[`${listType}List`].map((entry) => entry.id) : [];
       }
+    },
+    publishedIconDescription(item) {
+      return `${this.$t('form-view.file')} ${this.$t('form-view.filePublished', { file: this.getFileName(item) })}`;
     },
   },
 };

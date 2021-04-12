@@ -12,6 +12,7 @@
       :button-right-text="capitalizeFirstLetter($store.state.data.popUp.buttonTextRight)"
       :button-right-icon="$store.state.data.popUp.icon"
       :is-loading="$store.state.data.popUp.isLoading"
+      is-open-focus="#popup-right-button"
       description-element-id="sidebar-pop-up-title"
       @close="cancelAction"
       @button-left="cancelAction($store.state.data.popUp.actionLeft)"
@@ -74,15 +75,12 @@
 </template>
 
 <script>
-import { BasePopUp, BaseMediaPreview } from 'base-ui-components';
 import Sidebar from '../components/Sidebar';
 import { capitalizeString, getApiUrl, getLangLabel } from '../utils/commonUtils';
 
 export default {
   components: {
-    BaseMediaPreview,
     Sidebar,
-    BasePopUp,
   },
   data() {
     return {
@@ -124,12 +122,6 @@ export default {
   },
   mounted() {
     this.$store.commit('data/setNewForm', this.$route.name === 'newEntry');
-  },
-  updated() {
-    // if pop up was opened switch focus to pop up buttons for accessibility reasons
-    if (this.showPopUp) {
-      document.getElementById('popup-right-button').focus();
-    }
   },
   methods: {
     createNewForm() {
@@ -187,7 +179,7 @@ export default {
       // but not necessary anyways --> just delete unsaved changes
       if (this.$route.params.id === id) {
         const formComponent = this.$refs.view;
-        formComponent.valueList = { ...formComponent.valueListOriginal };
+        formComponent.valueList = JSON.parse(JSON.stringify(formComponent.valueListOriginal));
       } else {
         this.$router.push(`/entry/${id}`);
       }
@@ -207,11 +199,11 @@ export default {
       this.assetObject = fileData;
       this.imagePreviews = fileData.previews ? fileData.previews.map((size) => {
         const [width, url] = Object.entries(size)[0];
-        return Object.assign({}, { [width]: getApiUrl(url) });
+        return { [width]: getApiUrl(url) };
       }) : [];
       if (this.assetFilePath) {
         this.showPreview = true;
-        // if previws are available use the last converted size in array to set image size
+        // if previews are available use the last converted size in array to set image size
         // size only width - set maxWidth instead of width to prevent strange effects
         if (fileData.previews && fileData.previews.length) {
           this.previewSize = {
@@ -222,24 +214,12 @@ export default {
           const imageWidth = fileData.metadata && fileData.metadata.ImageWidth
             ? fileData.metadata.ImageWidth.val : null;
           if (imageWidth && imageWidth > imageHeight && imageWidth < window.innerWidth) {
-            this.previewSize = Object.assign({}, this.previewSize, {
-              maxWidth: `${fileData.metadata.ImageWidth.val}px`,
-            });
+            this.previewSize = { ...this.previewSize, maxWidth: `${fileData.metadata.ImageWidth.val}px` };
           } else if (imageHeight && imageHeight > imageWidth && imageHeight < window.innerHeight) {
-            this.previewSize = Object.assign({}, this.previewSize, {
-              maxHeight: `${fileData.metadata.ImageHeight.val}px`,
-            });
+            this.previewSize = { ...this.previewSize, maxHeight: `${fileData.metadata.ImageHeight.val}px` };
           }
-          // else get size from metadata
-          // previewSize not required for audio (and pdf)
-        } else if (fileData.metadata && (fileData.metadata.ImageHeight
-          || fileData.metadata.SourceImageHeight)) {
-          this.previewSize = {
-            height: `${fileData.metadata.ImageHeight ? fileData.metadata.ImageHeight.val
-              : fileData.metadata.SourceImageHeight.val}px`,
-            width: `${fileData.metadata.ImageWidth ? fileData.metadata.ImageWidth.val
-              : fileData.metadata.SourceImageWidth.val}px`,
-          };
+        } else {
+          // previewSize not required for audio, video and pdf
         }
         // landing here if file is not fully converted yet
       } else {
@@ -299,6 +279,7 @@ export default {
         link.setAttribute('download', name);
         document.body.appendChild(link);
         link.click();
+        document.body.removeChild(link);
       } catch (e) {
         this.showPreview = false;
         this.$notify({

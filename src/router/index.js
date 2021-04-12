@@ -1,17 +1,17 @@
 import Vue from 'vue';
 import Router from 'vue-router';
+import { i18n } from '@/plugins/i18n';
 import Dashboard from '../views/Dashboard';
 import FormView from '../views/FormView';
 import NotFoundComponent from '../views/EntryNotFound';
 import NetworkError from '../views/Error';
 import store from '../store';
-import { i18n } from '../plugins/i18n';
 
 Vue.use(Router);
 
 export default new Router({
   mode: 'history',
-  base: process.env.APP_PREFIX,
+  base: process.env.VUE_APP_PREFIX,
   routes: [
     {
       path: '*',
@@ -49,8 +49,9 @@ export default new Router({
           },
           async beforeEnter(to, from, next) {
             const { lang } = to.params;
-            const path = to.path.replace(/^\/[a-z]{2}/, '');
-            if (!process.env.LOCALES.includes(lang)) return next(process.env.DEFAULT_LOCALE);
+            const path = to.fullPath.replace(/^\/[a-z]{2}/, '');
+            if (!process.env.VUE_APP_LOCALES.split(',').map((langString) => langString.trim())
+              .includes(lang)) return next(process.env.VUE_APP_DEFAULT_LOCALE);
             if (lang) {
               await import(`@/locales/${lang}.json`).then((msgs) => {
                 i18n.setLocaleMessage(lang, msgs.default || msgs);

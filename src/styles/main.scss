@@ -1,3 +1,5 @@
+@import 'variables';
+
 html {
   font-family: $font;
   font-size: $font-size-regular;
@@ -13,17 +15,9 @@ html {
     font-size: $font-root-regular;
   }
 
-  button {
-    font-family: $font;
-  }
-
   *, *:before, *:after {
     box-sizing: border-box;
     margin: 0;
-  }
-
-  .base-input-label {
-    color: $font-color-second;
   }
 
   .rotate-180 {
@@ -56,5 +50,12 @@ html {
     &:root {
       font-size: $font-root-mobile;
     }
+  }
+}
+
+.browser-update {
+  margin: $spacing;
+  a {
+    text-decoration: underline;
   }
 }
