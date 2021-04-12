@@ -3,9 +3,10 @@ node_modules
 /dist
 
 
-# local env files
+# local env and config files
 .env.local
 .env.*.local
+/config/default_lists.json
 
 # Log files
 npm-debug.log*

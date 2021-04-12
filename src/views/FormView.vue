@@ -136,8 +136,15 @@
       v-if="valueList.date_created && valueList.date_changed && !formIsLoading && formDataPresent"
       class="last-modified">
       {{
-        `${$t('form-view.created')} ${createHumanReadableData(valueList.date_created)}` }} <br>
-      {{ `${$t('form-view.lastModified')} ${createHumanReadableData(valueList.date_changed)}`
+        `${$t('form-view.created', {
+          toTitleCase: false,
+        })} ${createHumanReadableData(valueList.date_created)}`
+      }}
+      <br>
+      {{
+        `${$t('form-view.lastModified', {
+          toTitleCase: false
+        })} ${createHumanReadableData(valueList.date_changed)}`
       }}
     </div>
   </div>
@@ -198,6 +205,14 @@ export default {
       previousFormFields: {},
       // store previous contributor entries that did not have any roles assigned
       emptyMappingFields: {},
+      /**
+       * store if the currentItemId has changed (on switching between entries or page reload)
+       * necessary because form fields extension information is not loaded yet when updateForm()
+       * is called and form fields can not be transformed (e.g. software - open source license)
+       * (--> need to watch formFieldsExtension instead and trigger transformValueList when
+       * idChanged is true)
+       */
+      idChanged: false,
     };
   },
   computed: {
@@ -239,9 +254,13 @@ export default {
       }));
     },
     formDataPresent() {
+      // return true if
+      // a) there is no current item id or
+      // b) formFields has content (swagger field information) and valueList has data
+      // and IF there is a type - also formFieldsExtension has content (swagger form field info)
       return !this.currentItemId || (!!Object.keys(this.formFields).length
         && !!Object.keys(this.valueList).length
-        && !(this.type && !Object.keys(this.formFieldsExtension).length));
+        && (!this.type || Object.keys(this.formFieldsExtension).length));
     },
     formFieldsExtension() {
       return this.$store.getters['data/getExtensionSchema'];
@@ -254,6 +273,13 @@ export default {
       // stringified form values are maybe equal already
       if (JSON.stringify(this.valueList) === JSON.stringify(this.valueListOriginal)) {
         return false;
+      }
+      // cover special cases that could lead to an unambigous result without recursive looping
+      // e.g. the case that data field does not exist yet in one of the valueLists
+      if ((this.valueList.type && this.valueList.type.length
+        && this.valueListOriginal.type && this.valueListOriginal.type.length
+        && this.valueList.type[0].source !== this.valueListOriginal.type[0].source)) {
+        return true;
       }
       // every value of formFields is compared - with Array.every it will stop automatically
       // as soon as comparison returns false and therefore only traverse through object
@@ -286,19 +312,29 @@ export default {
     },
   },
   watch: {
-    formDataPresent() {
-      this.initializeValueList(this.formFields, this.valueList);
-      this.initializeValueList(this.formFieldsExtension, this.valueList.data);
-      // check if previously unsaved changes were stored in session storage
-      const storedValueList = JSON.parse(sessionStorage.getItem('valueList'));
-      // only if there is no data in session storage also set the original data list
-      // used for determining unsaved changes to the new values
-      if (!(storedValueList && storedValueList.id === this.currentItemId)) {
-        this.valueListOriginal = { ...JSON.parse(JSON.stringify(this.valueList)) };
-      }
-    },
     formFields() {
       this.formIsLoading = false;
+    },
+    /**
+     * watch form fields extension to transform value fields that need to be transformed
+     * when an entry is fetched from the database (e.g. software - open source license from
+     * object to array)
+     */
+    formFieldsExtension(val) {
+      // intitalize valueList if
+      // a) formFieldsExtension has information and
+      // b) idChanged is true (= current page reload or entry switch)
+      if (val && Object.keys(val).length && this.idChanged) {
+        // transform the valueList (only extension since main fields are already
+        // transformd in update() )
+        this.transformValueList(this.formFieldsExtension, this.valueList.data);
+        // assign the updated valueList to valueListOriginal as well to have correct
+        // unsavedChanges behaviour
+        this.valueListOriginal = JSON.parse(JSON.stringify(this.valueList));
+        // reset idChanged variable so it is not triggered anymore as long as user stays
+        // on same entry
+        this.idChanged = false;
+      }
     },
     preFetchedData() {
       this.setDropDownValues();
@@ -311,6 +347,9 @@ export default {
       sessionStorage.removeItem('valueList');
       sessionStorage.removeItem('parent');
       if (val) {
+        if (this.valueList.type && this.valueList.type.length) {
+          this.idChanged = true;
+        }
         this.resetForm();
         await this.updateForm();
       } else {
@@ -322,7 +361,7 @@ export default {
     async type(val) {
       // store previous formFieldsExtension in case type is deleted inbetween
       if (Object.keys(this.formFieldsExtension).length) {
-        this.previousFormFields = { ...this.formFieldsExtension };
+        this.previousFormFields = JSON.parse(JSON.stringify(this.formFieldsExtension));
       }
       if (val) {
         // if type was set check if the data form field does already exist and if not
@@ -351,7 +390,7 @@ export default {
             this.mapFieldEquivalents({
               originalFormFields: this.previousFormFields,
               newFormFields: properties,
-              equivalentName: 'contributors',
+              commonFieldName: 'contributors',
               idProp: 'source',
               fieldProp: 'roles',
               defaultProp: 'default_role',
@@ -431,11 +470,17 @@ export default {
     if (storedParentString) {
       this.$store.commit('data/setParentItem', JSON.parse(storedParentString));
     }
-    if (this.currentItemId) {
-      await this.updateForm();
-    }
     // check if previously unsaved changes were stored in session storage
     const storedValueList = JSON.parse(sessionStorage.getItem('valueList'));
+    if (this.currentItemId) {
+      // only if there is no data in session storage also set the original data list
+      // used for determining unsaved changes to the new values
+      if ((!storedValueList || !storedValueList.id === this.currentItemId)
+        && this.valueList.type && this.valueList.type.length) {
+        this.idChanged = true;
+      }
+      await this.updateForm();
+    }
     // if it matches the current entry id, merge it with db fetched data
     if (storedValueList && storedValueList.id === this.currentItemId) {
       this.valueList = { ...this.valueList, ...storedValueList };
@@ -477,6 +522,7 @@ export default {
       this.valueList = {};
       this.valueList.data = {};
       this.valueListOriginal = { ...JSON.parse(JSON.stringify(this.valueList)) };
+      this.previousFormFields = {};
     },
     async updateForm() {
       this.formIsLoading = true;
@@ -486,8 +532,7 @@ export default {
         this.extensionIsLoading = !!this.type;
         this.$set(this.valueList, 'data', { ...data.data });
         // update the set dat to currently necessary formats
-        this.initializeValueList(this.formFields, this.valueList);
-        this.initializeValueList(this.formFieldsExtension, this.valueList);
+        this.transformValueList(this.formFields, this.valueList);
         // copy the original object to check for unsaved changes later
         this.valueListOriginal = { ...JSON.parse(JSON.stringify(this.valueList)) };
       } catch (e) {
@@ -515,21 +560,22 @@ export default {
      * @param {Object} fields - the swagger format form fields
      * @param {Object} data - the entry data
      */
-    initializeValueList(fields, data) {
+    transformValueList(fields, data) {
       Object.entries(fields).forEach(([key, value]) => {
         // 1. check for single chips inputs as they come from backend as an object
         // but need to be an array in front end
-        if (value['x-attrs'] && value['x-attrs'].field_type === 'chips' && value.type === 'object') {
+        if (value['x-attrs'] && (value['x-attrs'].field_type === 'chips'
+          || value['x-attrs'].field_type === 'chips-below') && value.type === 'object') {
           this.$set(data, key, hasFieldContent(data[key]) ? [].concat(data[key]) : []);
         }
         // also loop through secondary fields (e.g. roles)
         if (hasFieldContent(data[key]) && value.items && value.items.properties) {
           // handle for every entry of array
           if (data[key] instanceof Array) {
-            data[key].forEach((entry) => this.initializeValueList(value.items.properties, entry));
+            data[key].forEach((entry) => this.transformValueList(value.items.properties, entry));
             // or object (currently not present)
           } else {
-            this.initializeValueList(value.properties, data[key]);
+            this.transformValueList(value.properties, data[key]);
           }
         }
       });
@@ -751,7 +797,7 @@ export default {
     },
     createHumanReadableData(val) {
       const date = new Date(val);
-      return `${date.toLocaleDateString('de')} ${this.$t('form-view.at')} ${date.toLocaleTimeString('de')}`;
+      return `${date.toLocaleDateString('de')} ${this.$t('form-view.at', { toTitleCase: false })} ${date.toLocaleTimeString('de')}`;
     },
     openUnsavedChangesPopUp(followUpAction) {
       if (this.unsavedChanges) {
@@ -1035,14 +1081,34 @@ export default {
           ));
       }
       if (typeof hasValue === 'object') {
+        const validProperties = Object.keys(formFieldValues.properties);
         // need to check for newData key because of props partially added later before saving
         // e.g. roles for specific contributor fields (e.g. authors)
-        return Object.keys(formFieldValues.properties).every((key) => !newData[key] === undefined
-          || this.compareDataValues(
-            newData[key],
-            originalData[key],
-            formFieldValues.properties[key],
-          ));
+        return Object.keys(newData)
+          .every((key) => {
+            // if prop is not in validProperties and original data field also does not have
+            // values for this field (e.g. 'additional' prop it contributors fields) - ignore it
+            // and return true
+            // last part is a hack for texts field again since there the props are different
+            // but should not be ignored
+            if (!validProperties.includes(key) && originalData[key] === undefined
+              && !validProperties.includes('data')) {
+              return true;
+            }
+            // a special solution is needed for texts because the object contains other properties
+            // than specified in the swagger information
+            if (!validProperties.includes(key)) {
+              // for these non swagger values make simple stringified comparison for now
+              return JSON.stringify(newData[key]) === JSON.stringify(originalData[key]
+                || (newData[key] && originalData[key] !== undefined));
+            }
+            return !newData[key] === undefined
+            || this.compareDataValues(
+              newData[key],
+              originalData[key],
+              formFieldValues.properties[key],
+            );
+          });
       }
       return true;
     },
@@ -1057,7 +1123,8 @@ export default {
      *  before the type change
      * @param {Object} newFormFields - the form fields information in OpenAPI format
      *  after the type change
-     * @param {string} equivalentName - the property name of the general field (e.g. 'contributors')
+     * @param {string} commonFieldName - the property name of the general field
+     *  (e.g. 'contributors')
      * @param {string} [idProp='source'] - the unique identifier property name of entries (e.g. for
      *  contributor or specific role --> 'source')
      * @param {string} [labelProp='label'] - the property in which the displayed string for an entry
@@ -1072,7 +1139,7 @@ export default {
     mapFieldEquivalents({
       originalFormFields,
       newFormFields,
-      equivalentName,
+      commonFieldName,
       idProp = 'source',
       labelProp = 'label',
       fieldProp,
@@ -1080,29 +1147,30 @@ export default {
       fieldPropList,
     }) {
       const originalFieldInformation = this.filterFormFieldsForEquivalent(
-        originalFormFields, equivalentName, defaultProp,
+        originalFormFields, commonFieldName, defaultProp,
       );
       const newFieldInformation = this.filterFormFieldsForEquivalent(
-        newFormFields, equivalentName, defaultProp,
+        newFormFields, commonFieldName, defaultProp,
       );
+
       // if the common field does not exist yet - create and initialize it
       // TODO: what if this should not be an array
-      if (!this.valueList.data[equivalentName]) {
-        this.$set(this.valueList.data, equivalentName, []);
+      if (!this.valueList.data[commonFieldName]) {
+        this.$set(this.valueList.data, commonFieldName, []);
       }
       // store the general equivalent field in a variable
       // (needed for both sides of mapping)
-      const commonFieldData = this.valueList.data[equivalentName];
+      const commonFieldData = this.valueList.data[commonFieldName];
 
       // check if there are contributor fields that dont have roles assigned
-      this.$set(this.emptyMappingFields, equivalentName, [
-        ...this.emptyMappingFields[equivalentName] || [],
+      this.$set(this.emptyMappingFields, commonFieldName, [
+        ...this.emptyMappingFields[commonFieldName] || [],
         ...commonFieldData
           .reduce((array, entry) => {
             const entryId = entry[idProp] || entry[labelProp];
             if ((!entry[fieldProp] || !entry[fieldProp].length)
-              && (!this.emptyMappingFields[equivalentName]
-                || !this.emptyMappingFields[equivalentName].includes(entryId))) {
+              && (!this.emptyMappingFields[commonFieldName]
+                || !this.emptyMappingFields[commonFieldName].includes(entryId))) {
               return array.concat([entry[idProp] || entry[labelProp]]);
             }
             return array;
@@ -1152,6 +1220,7 @@ export default {
                   ? entry : { ...entry, [fieldProp]: [fieldPropValue] }));
               }
             });
+            // since it should not exist in the new form - delete the specialized field
             delete this.valueList.data[equivalentField.name];
           }
         });
@@ -1205,7 +1274,7 @@ export default {
                   // after that also check if there are actually any roles left - if not
                   // delete entry from common field
                   if (!equivalentEntry[fieldProp].length
-                    && !this.emptyMappingFields[equivalentName]
+                    && !this.emptyMappingFields[commonFieldName]
                       .includes(newFieldEntry.source || newFieldEntry.label)) {
                     commonFieldData.splice(commonFieldIndex, 1);
                   }
@@ -1220,14 +1289,14 @@ export default {
      * extract the relevant information for mapping from the OpenAPI object
      *
      * @param {Object} formFields - the form field information in OpenAPI format
-     * @param {string} equivalentName - the property name of the common field (e.g. 'contributors')
+     * @param {string} commonFieldName - the property name of the common field (e.g. 'contributors')
      * @param {string} defaultProp - the property name of the x-attribute containing the specialized
      *  field unique id
      * @returns {{default: string, name: string}[]}
      */
-    filterFormFieldsForEquivalent(formFields, equivalentName, defaultProp) {
+    filterFormFieldsForEquivalent(formFields, commonFieldName, defaultProp) {
       return Object.keys(formFields)
-        .filter((fieldName) => formFields[fieldName]['x-attrs'].equivalent === equivalentName)
+        .filter((fieldName) => formFields[fieldName]['x-attrs'].equivalent === commonFieldName)
         .map((fieldName) => ({
           name: fieldName,
           default: formFields[fieldName]['x-attrs'][defaultProp],

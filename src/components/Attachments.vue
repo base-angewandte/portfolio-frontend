@@ -382,12 +382,12 @@ export default {
     // get the correct media url
     getImagePath(iconName, hover) {
       // check if a gif is available in metadata
-      if (iconName && iconName.gif) {
+      if (iconName && iconName.gif && iconName.jpg) {
         // use it if hover state is true else use still image
         return getApiUrl(hover ? iconName.gif : iconName.jpg);
       }
       // check if there is url provided
-      if (iconName) {
+      if (typeof iconName === 'string' && iconName) {
         // check if url is complete - if yes just use it
         if (iconName.includes('http')) {
           return iconName;

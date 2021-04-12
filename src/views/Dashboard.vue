@@ -279,6 +279,7 @@ export default {
         link.setAttribute('download', name);
         document.body.appendChild(link);
         link.click();
+        document.body.removeChild(link);
       } catch (e) {
         this.showPreview = false;
         this.$notify({
