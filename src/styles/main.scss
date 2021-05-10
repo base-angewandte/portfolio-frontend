@@ -1,5 +1,9 @@
 @import 'variables';
 
+:root {
+  --app-color: #FF9800;
+}
+
 html {
   font-family: $font;
   font-size: $font-size-regular;

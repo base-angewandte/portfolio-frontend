@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
 require('dotenv').config({
-  path: './.env.production.local',
+  path: './.env.local',
 });
 
 const app = express();
