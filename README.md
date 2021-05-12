@@ -26,7 +26,7 @@ nano .env.local
 
 # if you would like to adapt the default values for drop down lists (in the respective form fields) 
 # also create a local copy of default lists
-cp default_lists-skel.json default_lists.json
+cp config/default_lists-skel.json config/default_lists.json
 # and edit the lists
 nano config/default_lists.json
 ```
