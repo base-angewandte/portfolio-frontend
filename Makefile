@@ -8,3 +8,5 @@ git-update:
 	if [ "$(shell whoami)" != "base" ]; then sudo -u base git pull; else git pull; fi
 
 update: git-update build-app
+
+update-local: git-update build-app-local
