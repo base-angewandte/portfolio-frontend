@@ -6,7 +6,6 @@ const log = require('fancy-log')
 const replace = require('gulp-replace')
 
 let envFile = './.env.local';
-const pjson = require('./package.json');
 
 // fallback if user forgets to create an .env.local file
 if (!fs.existsSync(envFile)) {
@@ -57,21 +56,6 @@ gulp.task('set-default-lists', async function () {
   } catch (e) {
     log.warn(`WARNING: Default lists from config/default_lists.json could not be set!
      Please make sure the VUE_APP_DEFAULT_LISTS variable in .env.local has an appropriate value!`)
-    log.error(e);
-  }
-});
-
-gulp.task('set-version', () => {
-    try {
-      console.log(pjson.version);
-      return gulp.src('Makefile', { base: './' })
-        .pipe(replace(/(baseangewandte\/portfolio-frontend-build:)\d+\.\d+\.\d+/, function (match, p1) {
-          return `${p1}${pjson.version}`
-        }))
-        .pipe(gulp.dest('.'))
-        .on('end', function () { log('Version for docker-container set to: ' + pjson.version) })
-  } catch (e) {
-    log.warn(`WARNING: Version in Makefile could not be updated to ${pjson.version} and should be updated to `)
     log.error(e);
   }
 });
