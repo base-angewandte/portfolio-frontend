@@ -11,7 +11,8 @@
     "build:test": "npm run build && node server.js",
     "build:analyze": "vue-cli-service build --report",
     "lint": "vue-cli-service lint",
-    "preinstall": "npx npm-force-resolutions"
+    "preinstall": "npx npm-force-resolutions",
+    "postversion": "./docker-build-and-push.sh"
   },
   "dependencies": {
     "axios": "^0.21.1",
