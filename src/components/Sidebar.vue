@@ -22,7 +22,7 @@
           :show-image="true"
           :placeholder="$t('search')"
           class="search-bar"
-          @input-change="filterEntries($event, 'title')" />
+          @input="filterEntries($event, 'title')" />
       </div>
       <div class="sidebar-options-container">
         <BaseOptions
