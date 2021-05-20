@@ -28,8 +28,8 @@ export const userInfo = {
           title: this.$t('notify.actionSuccessTitle', { action: this.$t(`notify.${action}`) }),
           text: this.$tc('notify.actionSuccessSubtext', entryCount >= 0 ? entryCount : actionedNumber, {
             count: actionedNumber,
-            action: this.$t(`notify.${action}d`),
-            type: this.$tc(`notify.${type}`, actionedNumber),
+            action: this.$t(`notify.${action}d`, { toTitleCase: false }),
+            type: this.$tc(`notify.${type}`, actionedNumber, { toTitleCase: false }),
           }),
           type: 'success',
         });
@@ -41,8 +41,8 @@ export const userInfo = {
           title: this.$t('notify.actionFailed', { action: this.$t(`notify.${action}`) }),
           text: this.$tc('notify.actionFailSubtext', failedNumber, {
             count: failedNumber,
-            action: this.$t(`notify.${action}d`),
-            type: `${this.$tc(`notify.${type}`, failedNumber)} ${listEntries ? failedArr.join(', ') : ''}`,
+            action: this.$t(`notify.${action}d`, { toTitleCase: false }),
+            type: `${this.$tc(`notify.${type}`, failedNumber, { toTitleCase: false })} ${listEntries ? failedArr.join(', ') : ''}`,
           }),
           type: 'error',
         });
@@ -52,7 +52,7 @@ export const userInfo = {
           group: 'request-notifications',
           title: this.$t('notify.noAction'),
           text: `${this.$t('notify.noActionList', {
-            action: this.$t(`notify.${action}d`),
+            action: this.$t(`notify.${action}d`, { toTitleCase: false }),
           })} ${noActionArr.join(', ')}`,
           type: 'error',
         });

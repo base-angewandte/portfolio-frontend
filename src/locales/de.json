@@ -71,7 +71,6 @@
   "form-view": {
     "notFound": "Eintrag nicht gefunden.",
     "notFoundSubtext": "Der Eintrag mit ID \"{id}\" existiert leider nicht.",
-    "formExtended": "Weitere Angaben",
     "attachedEntries": "Angeheftete Einträge",
     "attachedFiles": "Angehängte Dateien",
     "addExistingEntry": "Vorhandenen Eintrag anheften",

@@ -179,7 +179,7 @@ export default {
       // but not necessary anyways --> just delete unsaved changes
       if (this.$route.params.id === id) {
         const formComponent = this.$refs.view;
-        formComponent.valueList = { ...formComponent.valueListOriginal };
+        formComponent.valueList = JSON.parse(JSON.stringify(formComponent.valueListOriginal));
       } else {
         this.$router.push(`/entry/${id}`);
       }
@@ -203,7 +203,7 @@ export default {
       }) : [];
       if (this.assetFilePath) {
         this.showPreview = true;
-        // if previws are available use the last converted size in array to set image size
+        // if previews are available use the last converted size in array to set image size
         // size only width - set maxWidth instead of width to prevent strange effects
         if (fileData.previews && fileData.previews.length) {
           this.previewSize = {
@@ -218,16 +218,8 @@ export default {
           } else if (imageHeight && imageHeight > imageWidth && imageHeight < window.innerHeight) {
             this.previewSize = { ...this.previewSize, maxHeight: `${fileData.metadata.ImageHeight.val}px` };
           }
-          // else get size from metadata
-          // previewSize not required for audio (and pdf)
-        } else if (fileData.metadata && (fileData.metadata.ImageHeight
-          || fileData.metadata.SourceImageHeight)) {
-          this.previewSize = {
-            height: `${fileData.metadata.ImageHeight ? fileData.metadata.ImageHeight.val
-              : fileData.metadata.SourceImageHeight.val}px`,
-            width: `${fileData.metadata.ImageWidth ? fileData.metadata.ImageWidth.val
-              : fileData.metadata.SourceImageWidth.val}px`,
-          };
+        } else {
+          // previewSize not required for audio, video and pdf
         }
         // landing here if file is not fully converted yet
       } else {
@@ -287,6 +279,7 @@ export default {
         link.setAttribute('download', name);
         document.body.appendChild(link);
         link.click();
+        document.body.removeChild(link);
       } catch (e) {
         this.showPreview = false;
         this.$notify({

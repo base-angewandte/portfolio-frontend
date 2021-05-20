@@ -49,7 +49,7 @@ export default {
       window.location.href = `${process.env.VUE_APP_PREFIX}/`;
     },
     returnToBase() {
-      window.location.href = process.env.VUE_APP_PORTFOLIO_BACKEND_BASE_URL;
+      window.location.href = process.env.VUE_APP_BACKEND_BASE_URL;
     },
   },
 };

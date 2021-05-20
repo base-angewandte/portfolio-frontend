@@ -1,2 +1,6 @@
+dist
 node_modules
 npm-debug.log
+docker-build-and-push.sh
+Makefile
+.env.local

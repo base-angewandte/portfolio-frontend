@@ -1,10 +1,12 @@
 build-app:
-	docker build -t portfolio-build-container .; mkdir -p dist; docker run --mount type=bind,source=$(shell pwd)/dist,target=/app/dist portfolio-build-container
+	docker run -it -v "$(shell pwd)"/.env.local:/app/.env.local -v "$(shell pwd)"/dist:/app/dist_host baseangewandte/portfolio-frontend-build:1.1.3 sh -c "npm run build && rm -rf /app/dist_host/* && mv /app/dist/* /app/dist_host"
 
-set-header:
-	docker run --mount type=bind,source=$(shell pwd)/dist,target=/app/dist portfolio-build-container
+build-app-local:
+	docker build -t portfolio-frontend-build .; docker run -it -v "$(shell pwd)"/.env.local:/app/.env.local -v "$(shell pwd)"/dist:/app/dist_host portfolio-frontend-build sh -c "npm run build && rm -rf /app/dist_host/* && mv /app/dist/* /app/dist_host"
 
 git-update:
 	if [ "$(shell whoami)" != "base" ]; then sudo -u base git pull; else git pull; fi
 
 update: git-update build-app
+
+update-local: git-update build-app-local

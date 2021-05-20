@@ -41,17 +41,6 @@
         ]
       },
       "source_name": "geocode.earth"
-    },
-    {
-      "label": "Online",
-      "source": "angewandte-online-event",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          0.000000,
-          0.000000
-        ]
-      }
     }
   ]
 }

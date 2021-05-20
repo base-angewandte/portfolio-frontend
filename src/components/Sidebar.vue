@@ -159,9 +159,9 @@
 
 <script>
 import axios from 'axios';
-import { entryHandlingMixin } from '../mixins/entryHandling';
-import { userInfo } from '../mixins/userInfo';
-import { capitalizeString } from '../utils/commonUtils';
+import { entryHandlingMixin } from '@/mixins/entryHandling';
+import { userInfo } from '@/mixins/userInfo';
+import { getLangLabel } from '@/utils/commonUtils';
 
 export default {
   mixins: [entryHandlingMixin, userInfo],
@@ -487,7 +487,7 @@ export default {
           response = await this.dataRequest(offset);
         }
         this.listInt = response.results
-          .map((entry) => ({ ...entry, description: entry.type && entry.type.label ? capitalizeString(entry.type.label[this.$i18n.locale]) : '' }));
+          .map((entry) => ({ ...entry, description: entry.type && entry.type.label ? getLangLabel(entry.type.label) : '' }));
         this.entryNumber = response.count;
         if (!this.entryNumber) {
           this.setInfoText();
@@ -498,8 +498,12 @@ export default {
           this.entriesExist = !!this.entryNumber;
         }
         this.$emit('sidebar-data-changed');
+        this.isLoading = false;
       } catch (e) {
-        if (!axios.isCancel(e) && (e.response && e.response.status !== 403)) {
+        if (axios.isCancel(e)) {
+          console.warn(e.message);
+        } else if (e.response && e.response.status !== 403) {
+          this.isLoading = false;
           console.error(e);
           this.$notify({
             group: 'request-notifications',
@@ -507,9 +511,10 @@ export default {
             text: this.$t('notify.entryFetchFailSub'),
             type: 'error',
           });
+        } else {
+          console.error(e);
+          this.isLoading = false;
         }
-      } finally {
-        this.isLoading = false;
       }
     },
     async dataRequest(offset) {

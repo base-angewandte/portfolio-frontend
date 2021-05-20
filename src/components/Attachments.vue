@@ -302,8 +302,8 @@ export default {
           group: 'request-notifications',
           title: this.$t('notify.actionFailed', { action: this.$t(`notify.${this.pendingAction}`) }),
           text: this.$t('notify.selectForAction', {
-            action: this.$t(`notify.${this.pendingAction}File`),
-            type: this.$tc('notify.media', 0),
+            action: this.$t(`notify.${this.pendingAction}File`, { toTitleCase: false }),
+            type: this.$tc('notify.media', 0, { toTitleCase: false }),
           }),
           type: 'error',
         });
@@ -357,8 +357,8 @@ export default {
           group: 'request-notifications',
           title: this.$t('notify.actionFailed', { action: this.$t('notify.delete') }),
           text: this.$t('notify.selectForAction', {
-            action: this.$t('notify.deleteFile'),
-            type: this.$tc('notify.entry', 0),
+            action: this.$t('notify.deleteFile', { toTitleCase: false }),
+            type: this.$tc('notify.entry', 0, { toTitleCase: false }),
           }),
           type: 'error',
         });
@@ -396,12 +396,12 @@ export default {
     // get the correct media url
     getImagePath(iconName, hover) {
       // check if a gif is available in metadata
-      if (iconName && iconName.gif) {
+      if (iconName && iconName.gif && iconName.jpg) {
         // use it if hover state is true else use still image
         return getApiUrl(hover ? iconName.gif : iconName.jpg);
       }
       // check if there is url provided
-      if (iconName) {
+      if (typeof iconName === 'string' && iconName) {
         // check if url is complete - if yes just use it
         if (iconName.includes('http')) {
           return iconName;
