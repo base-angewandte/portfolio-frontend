@@ -3,6 +3,17 @@
     :show-options="showOptions"
     @options-toggle="showOptions = $event">
     <template slot="options">
+      <a
+        v-if="getCurrentItemData && getCurrentItemData.archive_URI"
+        :href="getCurrentItemData.archive_URI"
+        target="_blank">
+        <BaseButton
+          :text="$tc('form-view.archiveButton')"
+          :has-background-color="false"
+          icon-size="large"
+          icon="link"
+          button-style="single" />
+      </a>
       <BaseButton
         :disabled="isNewForm"
         :text="isPublished ? $tc('offline') : $tc('publish')"
@@ -24,6 +35,8 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
+
 export default {
   props: {
     defaultExpanded: {
@@ -47,6 +60,11 @@ export default {
     return {
       showOptions: this.defaultExpanded,
     };
+  },
+  computed: {
+    ...mapGetters('data', [
+      'getCurrentItemData',
+    ]),
   },
 };
 </script>

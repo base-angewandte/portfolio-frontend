@@ -57,6 +57,12 @@
         slot="option-buttons"
         slot-scope="scope">
         <BaseButton
+          :text="$t('form-view.archiveMedia')"
+          icon-size="large"
+          icon="link"
+          button-style="single"
+          @clicked="scope.setAction('archiveMedia')" />
+        <BaseButton
           :text="$t('form-view.changeLicense')"
           icon-size="large"
           icon="licence"
@@ -86,13 +92,28 @@
           :language="$i18n.locale"
           value-prop="source"
           class="license-dropdown" />
+        <div
+          v-if="action === 'archiveMedia'"
+          class="license-dropdown">
+          <p>
+            <a
+              href="https://phaidra.bibliothek.uni-ak.ac.at/terms_of_use/show_terms_of_use"
+              target="_blank">terms of use</a>
+          </p>
+          <base-checkmark
+            v-model="archiveMediaConsent"
+            :show-label="true"
+            :label="$t('form-view.archiveMediaConsent')"
+            mark-style="checkbox"
+            class="license-dropdown" />
+        </div>
       </template>
       <template
         v-slot:result-box="props">
         <BaseImageBox
           :key="props.item.id"
           :show-title="true"
-          :selectable="props.selectActive"
+          :selectable="props.selectActive && (action !== 'archiveMedia' || !props.item.archive_URI)"
           :selected="selectedFiles.map(file => file.id || file).includes(props.item.id)"
           :title="props.item.original ? getFileName(props.item.original) : props.item.id"
           :subtext="getLicenseLabel(props.item.license)"
@@ -115,6 +136,16 @@
                   name="eye"
                   :title="capitalizeString($t('notify.publishd'))"
                   :aria-title="capitalizeString($t('notify.publishd'))"
+                  :aria-description="publishedIconDescription(props.item.original)"
+                  class="published-icon" />
+              </div>
+            </template>
+            <template v-if="props.item.archive_id">
+              <div class="file-archived">
+                <base-icon
+                  name="link"
+                  :title="capitalizeString($t('notify.archiveMediad'))"
+                  :aria-title="capitalizeString($t('notify.archiveMediad'))"
                   :aria-description="publishedIconDescription(props.item.original)"
                   class="published-icon" />
               </div>
@@ -162,6 +193,7 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
 import { userInfo } from '../mixins/userInfo';
 import { capitalizeString, getApiUrl, getLangLabel } from '../utils/commonUtils';
 
@@ -215,6 +247,8 @@ export default {
       entriesLoading: false,
       filesLoading: false,
       capitalizeString,
+      // has the user accepted the terms and conditions before pushing to archive
+      archiveMediaConsent: false,
     };
   },
   computed: {
@@ -222,9 +256,17 @@ export default {
     isConverting() {
       return this.attachedList.some((file) => !file.metadata);
     },
+    isArchiving() {
+      return this.attachedList.some((file) => file.archive_URI === '');
+    },
     licenses() {
       return this.$store.getters['data/getPrefetchedTypes']('medialicenses', 'source');
     },
+    ...mapGetters('data', [
+      'getCurrentItemData',
+      'getMandatoryFields',
+      'getCurrentItemType',
+    ]),
   },
   watch: {
     // if attached media list changes trigger function to re-fetch media from time to time
@@ -247,7 +289,7 @@ export default {
     changeVideoHoverState(event, index, value) {
       this.$set(this.imageHover, index, value);
     },
-    // function for using options (delete, change license, publish state) for files
+    // function for using options (delete, change license, publish state, push to archive) for files
     async saveFileMeta(act) {
       this.filesLoading = true;
       // special case publish since publish / offline in one
@@ -271,6 +313,15 @@ export default {
           group: 'request-notifications',
           title: this.$t('notify.actionFailed', { action: this.$t('notify.license') }),
           text: this.$t('notify.selectLicense'),
+          type: 'error',
+        });
+      } else if (this.action === 'archiveMedia' && this.getMandatoryFields.length > 0) {
+        // TO DO - Show a dialog box with missing mandatory fields
+      } else if (this.action === 'archiveMedia' && !this.archiveMediaConsent) {
+        this.$notify({
+          group: 'request-notifications',
+          title: this.$t('notify.actionFailed', { action: this.$t('notify.archive') }),
+          text: this.$t('notify.mustConsent'),
           type: 'error',
         });
       } else {
@@ -436,7 +487,7 @@ export default {
         this.timeout = null;
       }
       // request media data again in a minute if media are still converting
-      if (this.isConverting) {
+      if (this.isConverting || this.isArchiving) {
         this.timeout = setTimeout(() => {
           this.fetchMedia();
         }, 60000);
@@ -487,67 +538,72 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "../styles/variables.scss";
-
-  .attachment-area {
-
-    .linked-base-box {
-      cursor: pointer;
-
-      .file-published {
-        height: $icon-max;
-        width: $icon-max;
-        position: absolute;
-        border-radius: $icon-max/2;
-        background: radial-gradient(closest-side,
-          rgba(255,255,255,1) 50%,
-          rgba(255,255,255,0) 100%);
-        right: -$spacing-small;
-        top: -$spacing-small;
-        display: flex;
-
-        .published-icon {
-          height: $icon-medium;
-          max-width: $icon-medium;
-          margin: auto;
-        }
+@import "../styles/variables.scss";
+.attachment-area {
+  .linked-base-box {
+    cursor: pointer;
+    .file-published {
+      height: $icon-max;
+      width: $icon-max;
+      position: absolute;
+      border-radius: $icon-max/2;
+      background: radial-gradient(closest-side,
+        rgba(255,255,255,1) 50%,
+        rgba(255,255,255,0) 100%);
+      right: -$spacing-small;
+      top: -$spacing-small;
+      display: flex;
+      .published-icon {
+        height: $icon-medium;
+        max-width: $icon-medium;
+        margin: auto;
       }
     }
-
-    .linked-base-box:nth-child(n + 5) {
+    .file-archived {
+      height: $icon-max;
+      width: $icon-max;
+      position: absolute;
+      border-radius: $icon-max/2;
+      background: radial-gradient(closest-side,
+        rgba(255,255,255,1) 50%,
+        rgba(255,255,255,0) 100%);
+      right: $spacing-small*2;
+      top: -$spacing-small;
+      display: flex;
+      .published-icon {
+        height: $icon-medium;
+        max-width: $icon-medium;
+        margin: auto;
+      }
+    }
+  }
+  .linked-base-box:nth-child(n + 5) {
+    margin-top: $spacing;
+  }
+  .linked-base-box:not(:nth-child(4n)) {
+    margin-right: $spacing;
+  }
+}
+.license-dropdown {
+  margin: $spacing auto 0 auto;
+  text-align: left;
+  max-width: 100%;
+}
+@media screen and (max-width: $tablet) {
+  .attachment-area {
+    .linked-base-box {
+      // subtracted 0.01rem for edge
+      flex: 0 0 calc(50% - #{$spacing-small} - 0.01rem);
+    }
+    .linked-base-box:nth-child(n + 3) {
       margin-top: $spacing;
     }
-
     .linked-base-box:not(:nth-child(4n)) {
+      margin-right: 0;
+    }
+    .linked-base-box:not(:nth-child(2n)) {
       margin-right: $spacing;
     }
   }
-
-  .license-dropdown {
-    margin: $spacing auto 0 auto;
-    text-align: left;
-    max-width: 100%;
-  }
-
-  @media screen and (max-width: $tablet) {
-    .attachment-area {
-
-      .linked-base-box {
-        // subtracted 0.01rem for edge
-        flex: 0 0 calc(50% - #{$spacing-small} - 0.01rem);
-      }
-
-      .linked-base-box:nth-child(n + 3) {
-        margin-top: $spacing;
-      }
-
-      .linked-base-box:not(:nth-child(4n)) {
-        margin-right: 0;
-      }
-
-      .linked-base-box:not(:nth-child(2n)) {
-        margin-right: $spacing;
-      }
-    }
-  }
+}
 </style>

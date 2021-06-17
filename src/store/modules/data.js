@@ -2,10 +2,12 @@
 import Vue from 'vue';
 import axios from 'axios';
 import { i18n } from '@/plugins/i18n';
-
 import {
   sorting, capitalizeString, setLangLabels, getApiUrl, hasFieldContent, toTitleString,
 } from '@/utils/commonUtils';
+
+// TO DO: Implement action/mutation for setting mandatory fields as soon as backend provides them
+const mandatoryFields = JSON.parse(process.env.VUE_APP_MANDATORY_FIELDS);
 
 function transformTextData(data) {
   const textData = [];
@@ -99,6 +101,7 @@ function addEnglishTextStyling(object) {
 
 const state = {
   currentItemId: null,
+  currentItemData: null,
   parentItems: [],
   isNewForm: false,
   showOptions: false,
@@ -125,6 +128,8 @@ const state = {
   generalSchema: {},
   extensionSchema: {},
   windowWidth: null,
+  // stores fields that are mandatory for Phaidra upload but currently missing
+  mandatoryFields,
 };
 
 const getters = {
@@ -174,6 +179,12 @@ const getters = {
       return '';
     };
   },
+  getCurrentItemData(state) {
+    return state.currentItemData;
+  },
+  getMandatoryFields(state) {
+    return state.mandatoryFields;
+  },
 };
 
 const mutations = {
@@ -183,8 +194,12 @@ const mutations = {
   setCurrentItem(state, obj) {
     state.currentItemId = obj.id;
   },
+  setCurrentItemData(state, obj) {
+    state.currentItemData = obj;
+  },
   deleteCurrentItem(state) {
     state.currentItemId = null;
+    state.currentItemData = null;
     state.linkedEntries = [];
     state.linkedMedia = [];
     state.linkedParents = [];
@@ -488,6 +503,7 @@ const actions = {
             texts: textData,
           };
           commit('setCurrentItem', adjustedEntry);
+          commit('setCurrentItemData', entryData);
           // use linked entry info already provided with response data
           commit('setLinked', { list: entryData.relations || [], replace: true });
           // and also fetch media data if flag set true
@@ -531,6 +547,7 @@ const actions = {
         const createdEntry = await this.dispatch('PortfolioAPI/post', { kind: 'entry', id: data.id, data });
         if (createdEntry) {
           commit('setCurrentItem', createdEntry);
+          commit('setCurrentItemData', createdEntry);
         }
         resolve(createdEntry.id);
       } catch (e) {
@@ -656,7 +673,7 @@ const actions = {
     const axiosAction = action === 'delete' ? action : 'patch';
     const successArr = [];
     const errorArr = [];
-
+    if (action === 'archiveMedia') return context.dispatch('archiveFiles', list);
     // eslint-disable-next-line no-async-promise-executor
     await Promise.all(list.map((mediaId) => new Promise(async (resolve) => {
       const formData = new FormData();
@@ -695,6 +712,30 @@ const actions = {
         resolve();
       }
     })));
+    return [successArr, errorArr];
+  },
+  /**
+   * submitting files for archival or update
+   * @param context
+   * @param list
+   * @returns {Promise<[][]>}
+   */
+  async archiveFiles(context, list) {
+    const successArr = [];
+    const errorArr = [];
+    const media = list.join(',');
+    try {
+      await axios.get(`${portfolioApiUrl}archive_assets/media/${media}/`,
+        {
+          withCredentials: true,
+          xsrfCookieName: 'csrftoken_portfolio',
+          xsrfHeaderName: 'X-CSRFToken',
+        });
+      successArr.push(list);
+    } catch (e) {
+      console.error(e);
+      errorArr.push(list);
+    }
     return [successArr, errorArr];
   },
   async removeUnknownProps({ state, dispatch }, { data, fields }) {
@@ -737,7 +778,7 @@ const actions = {
         // check if transformation is still necessary by checking for data property (only there
         // if data from db (on clone entries)
         const texts = tempValues && tempValues.length
-        && (!tempValues[0].data || !tempValues[0].data.length)
+          && (!tempValues[0].data || !tempValues[0].data.length)
           ? transformTextData(tempValues) : [].concat(tempValues);
         Vue.set(newData, key, texts);
         // special case single choice chips (saved as object in backend)
@@ -782,7 +823,7 @@ const actions = {
         const arrayValues = await Promise.all(values
           .map((value) => dispatch('removeUnknownProps', { data: value, fields: field.items.properties })));
         Vue.set(newData, key, arrayValues || []);
-      // check if field is object
+        // check if field is object
       } else if (field.type === 'object' && typeof values === 'object' && !values.length) {
         const validProperties = {};
         // special case languages which is object because of languages but is
