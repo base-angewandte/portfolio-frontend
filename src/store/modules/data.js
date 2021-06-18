@@ -6,9 +6,6 @@ import {
   sorting, capitalizeString, setLangLabels, getApiUrl, hasFieldContent, toTitleString,
 } from '@/utils/commonUtils';
 
-// TO DO: Implement action/mutation for setting mandatory fields as soon as backend provides them
-const mandatoryFields = JSON.parse(process.env.VUE_APP_MANDATORY_FIELDS);
-
 function transformTextData(data) {
   const textData = [];
   if (data && data.length) {
@@ -128,8 +125,9 @@ const state = {
   generalSchema: {},
   extensionSchema: {},
   windowWidth: null,
-  // stores fields that are mandatory for Phaidra upload but currently missing
-  mandatoryFields,
+  // stores archival errors received from backend
+  // TO DO: implement action for setting it as soon as backend provides this data
+  archivalErrors: {},
 };
 
 const getters = {
@@ -182,8 +180,8 @@ const getters = {
   getCurrentItemData(state) {
     return state.currentItemData;
   },
-  getMandatoryFields(state) {
-    return state.mandatoryFields;
+  getArchivalErrors(state) {
+    return state.archivalErrors;
   },
 };
 

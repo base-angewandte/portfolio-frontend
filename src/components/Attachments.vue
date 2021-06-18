@@ -264,8 +264,7 @@ export default {
     },
     ...mapGetters('data', [
       'getCurrentItemData',
-      'getMandatoryFields',
-      'getCurrentItemType',
+      'getArchivalErrors',
     ]),
   },
   watch: {
@@ -315,7 +314,7 @@ export default {
           text: this.$t('notify.selectLicense'),
           type: 'error',
         });
-      } else if (this.action === 'archiveMedia' && this.getMandatoryFields.length > 0) {
+      } else if (this.action === 'archiveMedia' && this.getArchivalErrors.length > 0) {
         // TO DO - Show a dialog box with missing mandatory fields
       } else if (this.action === 'archiveMedia' && !this.archiveMediaConsent) {
         this.$notify({
