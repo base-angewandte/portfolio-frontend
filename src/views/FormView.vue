@@ -88,6 +88,7 @@
         <AttachmentArea
           v-if="!formIsLoading && formDataPresent"
           key="attachments"
+          @save-before-archival="saveForm(false)"
           @open-new-form="openNewForm"
           @show-preview="$emit('show-preview', $event)"
           @open-linked="goToLinked" />
@@ -440,6 +441,11 @@ export default {
     dropDownFieldsList() {
       this.setDefaultDropDownLists();
       this.setDropDownValues();
+    },
+    // watch for unsaved changes and update the store property
+    // isFormSaved with the opposite Boolean value
+    unsavedChanges() {
+      this.$store.commit('data/setIsFormSaved', !this.unsavedChanges);
     },
   },
   async beforeCreate() {

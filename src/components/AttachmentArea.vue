@@ -12,6 +12,7 @@
       :linked-list="linkedList"
       :attached-list="mediaList"
       :parent-list="parentList"
+      @save-before-archival="$emit('save-before-archival')"
       @files-deleted="updateUserQuota"
       @show-preview="$emit('show-preview', $event)"
       @open-linked="$emit('open-linked', $event)" />

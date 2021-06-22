@@ -265,6 +265,7 @@ export default {
     ...mapGetters('data', [
       'getCurrentItemData',
       'getArchivalErrors',
+      'getIsFormSaved',
     ]),
   },
   watch: {
@@ -314,6 +315,8 @@ export default {
           text: this.$t('notify.selectLicense'),
           type: 'error',
         });
+      } else if (this.action === 'archiveMedia' && !this.getIsFormSaved) {
+        this.openSaveBeforeArchivalPopUp();
       } else if (this.action === 'archiveMedia' && this.getArchivalErrors.length > 0) {
         // TO DO - Show a dialog box with missing mandatory fields
       } else if (this.action === 'archiveMedia' && !this.archiveMediaConsent) {
@@ -531,6 +534,36 @@ export default {
     },
     publishedIconDescription(item) {
       return `${this.$t('form-view.file')} ${this.$t('form-view.filePublished', { file: this.getFileName(item) })}`;
+    },
+    /**
+     * Open a "Save First" dialog box if user attempts to archive unsaved entry
+     */
+    openSaveBeforeArchivalPopUp() {
+      if (!this.getIsFormSaved) {
+        this.$store.commit('data/setPopUp', {
+          show: true,
+          header: this.$t('notify.archive'),
+          textTitle: this.$t('notify.saveBeforeArchive'),
+          textList: [],
+          icon: 'save-file',
+          buttonTextRight: this.$t('notify.saveChanges'),
+          buttonTextLeft: this.$t('cancel'),
+          actionRight: async () => {
+            try {
+              // Emit the event for the parent components
+              this.$emit('save-before-archival');
+            } catch (e) {
+              console.error(e);
+            }
+            this.$store.commit('data/hidePopUp');
+          },
+          actionLeft: () => {
+            this.$store.commit('data/hidePopUp');
+          },
+        });
+      } else {
+        // nothing to do
+      }
     },
   },
 };

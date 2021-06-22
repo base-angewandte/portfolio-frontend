@@ -160,6 +160,7 @@
     "entryActionText": "Do you really want to {action} this entry? | Do you really want to {action} these entries?",
     "unsavedChangesTitle": "Save Entry?",
     "unsavedChangesText": "You have unsaved changes. Should they be saved?",
+    "saveBeforeArchive": "Please save the entry first.",
     "saveChanges": "Save changes",
     "dismissChanges": "Discard changes",
     "selectLicense": "Please choose a license!",

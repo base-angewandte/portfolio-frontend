@@ -128,6 +128,8 @@ const state = {
   // stores archival errors received from backend
   // TO DO: implement action for setting it as soon as backend provides this data
   archivalErrors: {},
+  // stores whether the currently loaded form is saved
+  isFormSaved: false,
 };
 
 const getters = {
@@ -182,6 +184,9 @@ const getters = {
   },
   getArchivalErrors(state) {
     return state.archivalErrors;
+  },
+  getIsFormSaved(state) {
+    return state.isFormSaved;
   },
 };
 
@@ -296,6 +301,9 @@ const mutations = {
   },
   setWindowWidth(state, val) {
     state.windowWidth = val;
+  },
+  setIsFormSaved(state, val) {
+    state.isFormSaved = val;
   },
 };
 
@@ -546,6 +554,7 @@ const actions = {
         if (createdEntry) {
           commit('setCurrentItem', createdEntry);
           commit('setCurrentItemData', createdEntry);
+          commit('setIsFormSaved', true);
         }
         resolve(createdEntry.id);
       } catch (e) {

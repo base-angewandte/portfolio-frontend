@@ -154,6 +154,7 @@
     "entryActionText": "Wollen Sie diesen Eintrag wirklich {action}? | Wollen Sie diese Einträge wirklich {action}?",
     "unsavedChangesTitle": "Eintrag speichern?",
     "unsavedChangesText": "Sie haben ungesicherte Änderungen. Soll der Eintrag gespeichert werden?",
+    "saveBeforeArchive": "Bitte speichern Sie den Eintrag zuerst ab.",
     "saveChanges": "Änderungen speichern",
     "dismissChanges": "Änderungen verwerfen",
     "selectLicense": "Bitte wählen Sie eine Lizenz aus.",
