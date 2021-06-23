@@ -129,7 +129,7 @@ const state = {
   // TO DO: implement action for setting it as soon as backend provides this data
   archivalErrors: {},
   // stores whether the currently loaded form is saved
-  isFormSaved: false,
+  isFormSaved: true,
 };
 
 const getters = {
