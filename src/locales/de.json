@@ -6,6 +6,7 @@
   "back": "Zurück",
   "entry": "Eintrag",
   "save": "Speichern",
+  "next": "Weiter",
   "english": "Englisch",
   "german":  "Deutsch",
   "en": "Englisch",
@@ -87,7 +88,7 @@
     "publishText": "freizugebenden bzw. zu versteckenden",
     "deleteText": "löschenden",
     "archiveMediaText": "archivierenden",
-    "archiveMediaSubtext": "Die von Ihnen ausgewählten Dateien, einschließlich der Metadaten, werden dauerhaft im Repositorium gespeichert. Sie können die Dateien nach Abschluss des Vorgangs nicht mehr löschen. Wenn Sie auf „Datei(en) archivieren“ klicken, akzeptieren Sie außerdem die Nutzungsbedingungen des Repositoriums.",
+    "archiveMediaSubtext": "Die ausgeählten Dateien werden archiviert.",
     "archiveMediaButton": "Archivieren",
     "archiveMediaConsent": "Ich stimme zu",
     "fileActionText": "Bitte die zu {action} Dateien auswählen:",
@@ -215,5 +216,14 @@
     "done": "Fertig",
     "retry": "Erneut versuchen",
     "quotaExceeded": "Leider überschreitet dieser Upload Ihren verfügbaren Speicherplatz und Sie haben nur noch {space} übrig. Bitte entfernen Sie Dateien um den Upload zu ermöglichen."
+  },
+  "archival": {
+    "fieldsMissingTitle": "Archivierung - Fehlende Felder",
+    "fieldsMissingText": "Leider sind nicht alle notwendigen Daten für die Archivierung vorhanden. Bitte fülle auch die folgenden Felder aus:",
+    "disclaimerText": "Die von Ihnen ausgewählten Dateien, einschließlich der Metadaten, werden dauerhaft im Repositorium gespeichert. Sie können die Dateien nach Abschluss des Vorgangs nicht mehr löschen. Wenn Sie auf „Datei(en) archivieren“ klicken, akzeptieren Sie außerdem die Nutzungsbedingungen des Repositoriums.",
+    "confirmTitle": "Archivierung - Bestätigung",
+    "confirmText": "Die folgenden Dateien werden im nächsten Schritt archiviert:",
+    "archiveWizardButton": "Datei Archivieren",
+    "archiveMediaConsent": "Nutzungsbedingungen akzeptieren"
   }
 }

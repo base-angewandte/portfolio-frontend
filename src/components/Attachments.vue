@@ -59,7 +59,7 @@
         <BaseButton
           :text="$t('form-view.archiveMedia')"
           icon-size="large"
-          icon="link"
+          icon="archive-arrow"
           button-style="single"
           @clicked="scope.setAction('archiveMedia')" />
         <BaseButton
@@ -92,21 +92,6 @@
           :language="$i18n.locale"
           value-prop="source"
           class="license-dropdown" />
-        <div
-          v-if="action === 'archiveMedia'"
-          class="license-dropdown">
-          <p>
-            <a
-              href="https://phaidra.bibliothek.uni-ak.ac.at/terms_of_use/show_terms_of_use"
-              target="_blank">terms of use</a>
-          </p>
-          <base-checkmark
-            v-model="archiveMediaConsent"
-            :show-label="true"
-            :label="$t('form-view.archiveMediaConsent')"
-            mark-style="checkbox"
-            class="license-dropdown" />
-        </div>
       </template>
       <template
         v-slot:result-box="props">
@@ -189,6 +174,70 @@
           @clicked="goToLinked(props.item.parent.id)" />
       </template>
     </BaseResultBoxSection>
+
+    <!-- ARCHIVAL VALIDATION POP-UP -->
+    <base-pop-up
+      :show="showArchivalValidationPopUp"
+      :title="$t('archival.fieldsMissingTitle')"
+      :button-right-text="$t('next')"
+      button-right-icon="link"
+      @close="cancelArchivalWizard"
+      @button-left="cancelArchivalWizard"
+      @button-right="saveFileMeta('archiveMedia')">
+      <div class="validation-popup-body">
+        <p class="archival-popup-para">
+          {{ $t('archival.fieldsMissingText') }}
+        </p>
+      </div>
+    </base-pop-up>
+
+    <!-- ARCHIVAL LICENSING AGREEMENT POP-UP -->
+    <base-pop-up
+      :show="showArchivalAgreementPopUp"
+      :title="$t('archival.confirmTitle')"
+      @close="cancelArchivalWizard">
+      <div class="agreement-popup-body">
+        <p class="archival-popup-title">
+          {{ $t('archival.confirmText') }}
+        </p>
+        <ul class="archival-popup-title">
+          <li
+            v-for="fileName in selectedFileNames"
+            :key="fileName">
+            {{ fileName }}
+          </li>
+        </ul>
+        <p class="archival-popup-para">
+          {{ $t('archival.disclaimerText') }}
+        </p>
+        <p class="archival-popup-para">
+          <base-checkmark
+            v-model="archiveMediaConsent"
+            :show-label="true"
+            :label="$t('archival.archiveMediaConsent')"
+            mark-style="checkbox" />
+        </p>
+      </div>
+      <template v-slot:button-row>
+        <base-button
+          button-style="single"
+          :text="$t('cancel')"
+          icon="remove"
+          icon-position="right"
+          icon-size="small"
+          class="base-archival-bar-button"
+          @clicked="cancelArchivalWizard" />
+        <base-button
+          button-style="single"
+          :text="$t('archival.archiveWizardButton')"
+          icon="archive-arrow"
+          icon-position="right"
+          icon-size="small"
+          :disabled="!archiveMediaConsent"
+          class="base-archival-bar-button"
+          @clicked="saveFileMeta('archiveMedia')" />
+      </template>
+    </base-pop-up>
   </div>
 </template>
 
@@ -249,6 +298,10 @@ export default {
       capitalizeString,
       // has the user accepted the terms and conditions before pushing to archive
       archiveMediaConsent: false,
+      // show/hide the archival validation pop-up
+      showArchivalValidationPopUp: false,
+      // show/hide the archival licensing agreement pop-up
+      showArchivalAgreementPopUp: false,
     };
   },
   computed: {
@@ -267,6 +320,18 @@ export default {
       'getArchivalErrors',
       'getIsFormSaved',
     ]),
+    // Returns an array with short file names (no path) + extension for currently selected files
+    selectedFileNames() {
+      const fileNames = [];
+      // first filter out only objects where filename is selected
+      const selObjects = this.attachedList.filter((obj) => this.selectedFiles.includes(obj.id));
+      // now iterate through filtered objects and populate fileNames
+      selObjects.forEach((obj) => {
+        // push only part after the last / character
+        fileNames.push(obj.original.substr(obj.original.lastIndexOf('/') + 1));
+      });
+      return fileNames;
+    },
   },
   watch: {
     // if attached media list changes trigger function to re-fetch media from time to time
@@ -315,18 +380,28 @@ export default {
           text: this.$t('notify.selectLicense'),
           type: 'error',
         });
-      } else if (this.action === 'archiveMedia' && !this.getIsFormSaved) {
-        this.openSaveBeforeArchivalPopUp();
-      } else if (this.action === 'archiveMedia' && this.getArchivalErrors.length > 0) {
-        // TO DO - Show a dialog box with missing mandatory fields
-      } else if (this.action === 'archiveMedia' && !this.archiveMediaConsent) {
+        // check if any files are still converting before taking archiveMedia action
+      } else if (this.action === 'archiveMedia' && this.isConverting) {
         this.$notify({
           group: 'request-notifications',
-          title: this.$t('notify.actionFailed', { action: this.$t('notify.archive') }),
-          text: this.$t('notify.mustConsent'),
+          title: this.$t('notify.actionFailed', { action: this.$t('notify.archiveMedia') }),
+          text: this.$t('notify.notConverted'),
           type: 'error',
         });
+        // check if there are unsaved changes when action is archiveMedia
+      } else if (this.action === 'archiveMedia' && !this.getIsFormSaved) {
+        this.openSaveBeforeArchivalPopUp();
+        // check for validation errors when action is archiveMedia
+      } else if (this.action === 'archiveMedia' && Object.entries(this.getArchivalErrors).length > 0) {
+        this.showArchivalValidationPopUp = true;
+        // check if license agreement was accepted when action is archiveMedia
+      } else if (this.action === 'archiveMedia' && !this.archiveMediaConsent) {
+        this.showArchivalAgreementPopUp = true;
       } else {
+        // special case: if action is mediaArchive close the agreement pop-up first
+        if (action === 'archiveMedia') {
+          this.showArchivalAgreementPopUp = false;
+        }
         // if all error checks pass actually do the action
         const [successIds, failIds] = await this.$store.dispatch('data/actionFiles', {
           list: this.selectedFiles,
@@ -565,6 +640,14 @@ export default {
         // nothing to do
       }
     },
+    /**
+     * Triggered when the user cancels archival from the archival wizard
+     */
+    cancelArchivalWizard() {
+      this.showArchivalValidationPopUp = false;
+      this.showArchivalAgreementPopUp = false;
+      this.archiveMediaConsent = false;
+    },
   },
 };
 </script>
@@ -621,6 +704,26 @@ export default {
   text-align: left;
   max-width: 100%;
 }
+.archival-popup-title {
+  margin: $spacing auto 0 auto;
+  font-size: $font-size-large;
+}
+.archival-popup-para {
+  margin: $spacing auto 0 auto;
+}
+.agreement-popup-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  color: $font-color-second;
+}
+.base-archival-bar-button {
+  flex-basis: 100%;
+}
+.base-archival-bar-button + .base-archival-bar-button {
+    margin-left: $spacing;
+ }
 @media screen and (max-width: $tablet) {
   .attachment-area {
     .linked-base-box {
@@ -635,6 +738,10 @@ export default {
     }
     .linked-base-box:not(:nth-child(2n)) {
       margin-right: $spacing;
+    }
+    .base-archival-bar-button + .base-archival-bar-button {
+      margin-left: 0;
+      margin-top: $spacing;
     }
   }
 }

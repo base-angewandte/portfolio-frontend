@@ -6,6 +6,7 @@
   "back": "Return",
   "entry": "Entry",
   "save": "Save",
+  "next": "Next",
   "english": "English",
   "german":  "German",
   "English": "English",
@@ -90,9 +91,8 @@
     "deleteLinked": "Delete Attached Entries",
     "deleteParents": "Delete Parent Entries",
     "archiveMediaText": "to be archived",
-    "archiveMediaSubtext": "The files, including metadata, you have selected are permanently saved in the repository. You cannot delete the files after the process is complete. In addition, by clicking on “Archive File(s)” you accept the terms of use of the repository.",
+    "archiveMediaSubtext": "The selected files will be archived.",
     "archiveMediaButton": "Push to Archive",
-    "archiveMediaConsent": "I Accept",
     "fileActionText": "Please choose the files {action}:",
     "licenseText": "for which the license should be set:",
     "publishText": "for which to change the release state:",
@@ -221,5 +221,14 @@
     "done": "Done",
     "retry": "Try Again",
     "quotaExceeded": "Unfortunately you exceeded your quota, because you have only {space} of space left. Please remove some files to enable uploading."
+  },
+  "archival": {
+    "fieldsMissingTitle": "Archive - Fields Missing",
+    "fieldsMissingText": "Unfortunately, some data required for archival is missing. Please fill in the following fields:",
+    "disclaimerText": "The files, including metadata, you have selected are permanently saved in the repository. You cannot delete the files after the process is complete. In addition, by clicking on “Archive File(s)” you accept the terms of use of the repository.",
+    "confirmTitle": "Archive - Confirm",
+    "confirmText": "The following files will be archived:",
+    "archiveWizardButton": "Archive file(s)",
+    "archiveMediaConsent": "I Accept the Terms of Use."
   }
 }
