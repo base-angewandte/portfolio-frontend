@@ -96,8 +96,41 @@ function addEnglishTextStyling(object) {
   }, {});
 }
 
+async function adjustEntry(entryData) {
+  // Modifications of data received from backend needed:
+  // 1. adapt english style casing
+  const entryObj = Object.entries(entryData).reduce((prev, [key, value]) => {
+    const newVal = checkForLabel(value);
+    return { ...prev, ...{ [key]: newVal } };
+  }, {});
+    // 2. type needs to be array in logic here!
+  const objectType = entryData.type && entryData.type.source ? [entryData.type] : [];
+  // 3. Text needs to look different
+  const textData = entryData.texts && entryData.texts.length
+    ? await Promise.all(entryData.texts
+      .map((entry) => {
+        const textObj = {};
+        const { type } = entry;
+        // TODO: temporary hack - probably should fetch label for lang as well
+        if (entry.data) {
+          entry.data.forEach((language) => {
+            const langInternal = language.language.source.split('/').pop();
+            Vue.set(textObj, langInternal.toLowerCase(), language.text);
+          });
+        }
+        return ({ type, ...textObj });
+      })) : [];
+  return {
+    ...entryObj,
+    type: objectType,
+    texts: textData,
+  };
+}
+
 const state = {
   currentItemId: null,
+  // This is the most recently saved entry data in a format that BaseForm understands.
+  // Be aware that this structure is slightly different from the "raw" one received from backend.
   currentItemData: null,
   parentItems: [],
   isNewForm: false,
@@ -194,7 +227,7 @@ const mutations = {
   setNewForm(state, val) {
     state.isNewForm = val;
   },
-  setCurrentItem(state, obj) {
+  setCurrentItemId(state, obj) {
     state.currentItemId = obj.id;
   },
   setCurrentItemData(state, obj) {
@@ -479,37 +512,11 @@ const actions = {
       try {
         entryData = await this.dispatch('PortfolioAPI/get', { kind: 'entry', id });
         if (entryData) {
-          // Modifications of data received from backend needed:
-          // 1. adapt english style casing
-          entryData = Object.entries(entryData).reduce((prev, [key, value]) => {
-            const newVal = checkForLabel(value);
-            return { ...prev, ...{ [key]: newVal } };
-          }, {});
-          // 2. type needs to be array in logic here!
-          const objectType = entryData.type && entryData.type.source ? [entryData.type] : [];
-          // 3. Text needs to look different
-          const textData = entryData.texts && entryData.texts.length
-            ? await Promise.all(entryData.texts
-              .map((entry) => {
-                const textObj = {};
-                const { type } = entry;
-                // TODO: temporary hack - probably should fetch label for lang as well
-                if (entry.data) {
-                  entry.data.forEach((language) => {
-                    const langInternal = language.language.source.split('/').pop();
-                    Vue.set(textObj, langInternal.toLowerCase(), language.text);
-                  });
-                }
-                return ({ type, ...textObj });
-              })) : [];
-
-          const adjustedEntry = {
-            ...entryData,
-            type: objectType,
-            texts: textData,
-          };
-          commit('setCurrentItem', adjustedEntry);
-          commit('setCurrentItemData', entryData);
+          // this adjustment is necessary to be able to
+          // populate a BaseForm with existing values like 'texts'
+          const adjustedEntry = await adjustEntry(entryData);
+          commit('setCurrentItemId', adjustedEntry);
+          commit('setCurrentItemData', adjustedEntry);
           // use linked entry info already provided with response data
           commit('setLinked', { list: entryData.relations || [], replace: true });
           // and also fetch media data if flag set true
@@ -552,8 +559,11 @@ const actions = {
       try {
         const createdEntry = await this.dispatch('PortfolioAPI/post', { kind: 'entry', id: data.id, data });
         if (createdEntry) {
-          commit('setCurrentItem', createdEntry);
-          commit('setCurrentItemData', createdEntry);
+          commit('setCurrentItemId', createdEntry);
+          // this adjustment is necessary to be able to
+          // populate a BaseForm with existing values like 'texts'
+          const adjustedEntry = await adjustEntry(createdEntry);
+          commit('setCurrentItemData', adjustedEntry);
           commit('setIsFormSaved', true);
         }
         resolve(createdEntry.id);
