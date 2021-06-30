@@ -176,20 +176,11 @@
     </BaseResultBoxSection>
 
     <!-- ARCHIVAL VALIDATION POP-UP -->
-    <base-pop-up
-      :show="showArchivalValidationPopUp"
-      :title="$t('archival.fieldsMissingTitle')"
-      :button-right-text="$t('next')"
-      button-right-icon="link"
-      @close="cancelArchivalWizard"
-      @button-left="cancelArchivalWizard"
-      @button-right="saveFileMeta('archiveMedia')">
-      <div class="validation-popup-body">
-        <p class="archival-popup-para">
-          {{ $t('archival.fieldsMissingText') }}
-        </p>
-      </div>
-    </base-pop-up>
+    <archival-validation-pop-up
+      v-if="showArchivalValidationPopUp"
+      :open-me="showArchivalValidationPopUp"
+      @cancel-archival="cancelArchivalWizard"
+      @next-step="validateArchivalFields" />
 
     <!-- ARCHIVAL LICENSING AGREEMENT POP-UP -->
     <base-pop-up
@@ -245,9 +236,13 @@
 import { mapGetters } from 'vuex';
 import { userInfo } from '../mixins/userInfo';
 import { capitalizeString, getApiUrl, getLangLabel } from '../utils/commonUtils';
+import ArchivalValidationPopUp from './ArchivalValidationPopUp';
 
 export default {
+  components: { ArchivalValidationPopUp },
   mixins: [userInfo],
+  // inject method used to save the main form before sending archival validation request
+  inject: ['saveFormMain'],
   props: {
     linkedList: {
       type: Array,
@@ -332,6 +327,16 @@ export default {
       });
       return fileNames;
     },
+    /**
+     * Returns true if data that is to be submitted for archival validates
+     * successfully against the store.
+     */
+    isValidArchivalData() {
+      if (this.getArchivalErrors && Object.keys(this.getArchivalErrors).length > 0) {
+        return false;
+      }
+      return true;
+    },
   },
   watch: {
     // if attached media list changes trigger function to re-fetch media from time to time
@@ -350,6 +355,24 @@ export default {
     }
   },
   methods: {
+    /**
+     * Handles the request to validate archival fields after the user fills in
+     * the missing archival fields on the archival validation pop-up component
+     * and clicks "Next".
+     */
+    async validateArchivalFields() {
+      try {
+        this.showArchivalValidationPopUp = false;
+        // save the main form
+        await this.saveFormMain(false);
+        // TODO send advice to the store to validate archival fields against the backend
+        // and update the arhivalErrors property
+        // if validation successful, call this.saveFileMeta to perform actual archival
+        // else show the archival validation pop-up again
+      } catch (e) {
+        console.error(e);
+      }
+    },
     // save hover state on mouse enter / leave to get correct video url
     changeVideoHoverState(event, index, value) {
       this.$set(this.imageHover, index, value);
@@ -391,8 +414,8 @@ export default {
         // check if there are unsaved changes when action is archiveMedia
       } else if (this.action === 'archiveMedia' && !this.getIsFormSaved) {
         this.openSaveBeforeArchivalPopUp();
-        // check for validation errors when action is archiveMedia
-      } else if (this.action === 'archiveMedia' && Object.entries(this.getArchivalErrors).length > 0) {
+        // check for archival validation errors when action is archiveMedia
+      } else if (this.action === 'archiveMedia' && !this.isValidArchivalData) {
         this.showArchivalValidationPopUp = true;
         // check if license agreement was accepted when action is archiveMedia
       } else if (this.action === 'archiveMedia' && !this.archiveMediaConsent) {
@@ -625,8 +648,8 @@ export default {
           buttonTextLeft: this.$t('cancel'),
           actionRight: async () => {
             try {
-              // Emit the event for the parent components
-              this.$emit('save-before-archival');
+              // save main form via injected method
+              await this.saveFormMain(false);
             } catch (e) {
               console.error(e);
             }

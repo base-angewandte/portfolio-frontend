@@ -88,7 +88,6 @@
         <AttachmentArea
           v-if="!formIsLoading && formDataPresent"
           key="attachments"
-          @save-before-archival="saveForm(false)"
           @open-new-form="openNewForm"
           @show-preview="$emit('show-preview', $event)"
           @open-linked="goToLinked" />
@@ -180,6 +179,16 @@ export default {
     attachmentHandlingMixin,
     entryHandlingMixin,
   ],
+  provide() {
+    return {
+      dropDownListsMain: this.dropDownListsInt,
+      fetchAutocompleteMain: this.fetchAutocomplete,
+      valueListMain: this.valueList,
+      handleInputMain: this.handleInput,
+      saveFormMain: this.saveForm,
+      localesMain: this.locales,
+    };
+  },
   data() {
     return {
       dataSaving: false,

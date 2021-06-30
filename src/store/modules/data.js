@@ -159,8 +159,15 @@ const state = {
   extensionSchema: {},
   windowWidth: null,
   // stores archival errors received from backend
-  // TO DO: implement action for setting it as soon as backend provides this data
-  archivalErrors: {},
+  // TODO: implement action for setting it as soon as backend provides this data
+  archivalErrors: {
+    data: {
+      authors: ['Author is mandatory'],
+      contributors: ['At least one contributor with Advisor role must be added'],
+      language: ['Language is mandatory'],
+    },
+    texts: ['A text of type "Abstract" in English and German is mandatory.'],
+  },
   // stores whether the currently loaded form is saved
   isFormSaved: true,
 };
