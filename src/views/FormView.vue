@@ -183,9 +183,9 @@ export default {
     return {
       dropDownListsMain: this.dropDownListsInt,
       fetchAutocompleteMain: this.fetchAutocomplete,
-      valueListMain: this.valueList,
       handleInputMain: this.handleInput,
-      saveFormMain: this.saveForm,
+      saveMainForm: this.saveForm,
+      discardMainForm: this.discardUnsavedChanges,
       localesMain: this.locales,
     };
   },
@@ -1316,6 +1316,14 @@ export default {
           name: fieldName,
           default: formFields[fieldName]['x-attrs'][defaultProp],
         }));
+    },
+    /**
+     * Discard any unsaved changes and revert to the most recently saved values.
+     */
+    discardUnsavedChanges() {
+      this.formIsLoading = true;
+      this.valueList = JSON.parse(JSON.stringify(this.valueListOriginal));
+      this.formIsLoading = false;
     },
   },
 };

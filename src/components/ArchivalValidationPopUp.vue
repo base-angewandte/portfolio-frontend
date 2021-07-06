@@ -11,6 +11,9 @@
     <div
       class="validation-popup-body"
       style="max-height: 50vh; overflow-y:scroll;">
+      <p class="archival-popup-para">
+        {{ $t('archival.fieldsMissingText') }}
+      </p>
       <!-- THIS FORM CONTAINS GENERAL FIELDS (NOT SPECIFIC TO A TYPE)-->
       <base-form
         key="archival-validation-form1"
@@ -47,7 +50,7 @@ export default {
    * To populate drop-down lists and handle saving + auto-completion,
    * inject properties and methods provided by FormView
    */
-  inject: ['dropDownListsMain', 'fetchAutocompleteMain', 'valueListMain', 'handleInputMain', 'localesMain'],
+  inject: ['dropDownListsMain', 'fetchAutocompleteMain', 'handleInputMain', 'localesMain'],
   props: {
     openMe: {
       type: Boolean,
@@ -95,10 +98,10 @@ export default {
       this.$emit('next-step');
     },
     /**
-     * Occurs when the user cancels the pop-up.
+     * Occurs when the user clicks "Cancel" on the pop-up.
      */
     onCancel() {
-      this.$emit('cancel-archival');
+      this.$emit('cancel-validation');
     },
     /**
      * Returns form data that will be used to populate a BaseForm

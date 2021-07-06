@@ -179,14 +179,14 @@
     <archival-validation-pop-up
       v-if="showArchivalValidationPopUp"
       :open-me="showArchivalValidationPopUp"
-      @cancel-archival="cancelArchivalWizard"
+      @cancel-validation="cancelArchivalValidation"
       @next-step="validateArchivalFields" />
 
     <!-- ARCHIVAL LICENSING AGREEMENT POP-UP -->
     <base-pop-up
       :show="showArchivalAgreementPopUp"
       :title="$t('archival.confirmTitle')"
-      @close="cancelArchivalWizard">
+      @close="cancelArchivalAgreement">
       <div class="agreement-popup-body">
         <p class="archival-popup-title">
           {{ $t('archival.confirmText') }}
@@ -217,7 +217,7 @@
           icon-position="right"
           icon-size="small"
           class="base-archival-bar-button"
-          @clicked="cancelArchivalWizard" />
+          @clicked="cancelArchivalAgreement" />
         <base-button
           button-style="single"
           :text="$t('archival.archiveWizardButton')"
@@ -241,8 +241,8 @@ import ArchivalValidationPopUp from './ArchivalValidationPopUp';
 export default {
   components: { ArchivalValidationPopUp },
   mixins: [userInfo],
-  // inject method used to save the main form before sending archival validation request
-  inject: ['saveFormMain'],
+  // inject method used to save or discard the main form from child components of any depth
+  inject: ['saveMainForm', 'discardMainForm'],
   props: {
     linkedList: {
       type: Array,
@@ -364,7 +364,7 @@ export default {
       try {
         this.showArchivalValidationPopUp = false;
         // save the main form
-        await this.saveFormMain(false);
+        await this.saveMainForm(false);
         // TODO send advice to the store to validate archival fields against the backend
         // and update the arhivalErrors property
         // if validation successful, call this.saveFileMeta to perform actual archival
@@ -649,7 +649,7 @@ export default {
           actionRight: async () => {
             try {
               // save main form via injected method
-              await this.saveFormMain(false);
+              await this.saveMainForm(false);
             } catch (e) {
               console.error(e);
             }
@@ -664,10 +664,17 @@ export default {
       }
     },
     /**
-     * Triggered when the user cancels archival from the archival wizard
+     * Triggered when the user clicks "Cancel" on the archival validation pop-up
      */
-    cancelArchivalWizard() {
+    cancelArchivalValidation() {
+      // Discard any unsaved changes (#1433)
+      this.discardMainForm();
       this.showArchivalValidationPopUp = false;
+    },
+    /**
+     * Triggered when the user clicks "Cancel" on the archival agreement pop-up
+     */
+    cancelArchivalAgreement() {
       this.showArchivalAgreementPopUp = false;
       this.archiveMediaConsent = false;
     },
