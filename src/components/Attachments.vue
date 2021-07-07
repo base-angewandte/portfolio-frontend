@@ -600,7 +600,7 @@ export default {
       if (val) {
         this.action = val;
         this.fileSubtext = this.$t(`form-view.${val}Subtext`);
-        this.fileText = this.$t('form-view.fileActionText', { action: this.$t(`form-view.${val}Text`) });
+        this.fileText = this.$t('form-view.fileActionText', { action: this.$t(`form-view.${val}Text`, { toTitleCase: false }) });
         this.buttonText = this.$t(`form-view.${val}Button`);
       } else {
         this.fileText = '';
