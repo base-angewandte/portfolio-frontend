@@ -167,6 +167,7 @@
     "deleteFile": "zu löschen",
     "licenseFile": "die Lizenz zu ändern",
     "changeFile": "den Freigabestatus zu ändern",
+    "archiveMediaFile": "zu archivieren",
     "fetchSingleEntry": "Leider konnte der ausgewählte Eintrag nicht geladen werden.",
     "deleted": "gelöscht",
     "saved": "gespeichert",
