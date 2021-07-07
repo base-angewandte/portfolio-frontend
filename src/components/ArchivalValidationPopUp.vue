@@ -1,7 +1,7 @@
 <template>
   <!-- ARCHIVAL VALIDATION POP-UP -->
   <base-pop-up
-    :show="showMe"
+    :show="openMe"
     :title="$t('archival.fieldsMissingTitle')"
     :button-right-text="$t('next')"
     button-right-icon="archive-arrow"
@@ -24,6 +24,7 @@
         :available-locales="localesMain"
         :drop-down-lists="dropDownListsMain"
         :language="$i18n.locale"
+        :field-is-loading="reactive.fieldIsLoading"
         @values-changed="handleInputMain($event, '')"
         @fetch-autocomplete="fetchAutocompleteMain" />
       <!-- THIS FORM CONTAINS EXTENSION ENTRY FIELDS (SPECIFIC TO A TYPE)-->
@@ -36,6 +37,7 @@
         :available-locales="localesMain"
         :drop-down-lists="dropDownListsMain"
         :language="$i18n.locale"
+        :field-is-loading="reactive.fieldIsLoading"
         @values-changed="handleInputMain($event, 'data')"
         @fetch-autocomplete="fetchAutocompleteMain" />
     </div>
@@ -47,10 +49,10 @@ import { mapGetters } from 'vuex';
 
 export default {
   /**
-   * To populate drop-down lists and handle saving + auto-completion,
+   * To populate drop-down lists and handle auto-completion,
    * inject properties and methods provided by FormView
    */
-  inject: ['dropDownListsMain', 'fetchAutocompleteMain', 'handleInputMain', 'localesMain'],
+  inject: ['dropDownListsMain', 'fetchAutocompleteMain', 'handleInputMain', 'localesMain', 'reactive'],
   props: {
     openMe: {
       type: Boolean,
@@ -61,7 +63,6 @@ export default {
   },
   data() {
     return {
-      showMe: false,
       valueList1: {},
       valueList2: {},
       formData1: {},
@@ -77,8 +78,6 @@ export default {
     ]),
   },
   mounted() {
-    // Open the validation pop-up if such advice was received through the openMe prop
-    this.showMe = this.openMe;
     // Create open API data for the first form -- the one which stores only general fields.
     this.formData1 = this.createFormData(this.getArchivalErrors, this.getGeneralSchema);
     // Create open API data for the second form -- the one which stores extension fields.
