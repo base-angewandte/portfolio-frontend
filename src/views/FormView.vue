@@ -585,7 +585,7 @@ export default {
      *
      * @param {Object} data - the entry data provided by the respective form
      * @param {?string} type - if data are provided from a subform (and a certain attribute of
-     * the entry data respectiviely)
+     * the entry data respectively)
      */
     handleInput(data, type) {
       if (cancel) {
@@ -820,7 +820,7 @@ export default {
           },
           actionLeft: () => {
             // if changes are discarded reset to original value list
-            this.valueList = { ...JSON.parse(JSON.stringify(this.valueList)) };
+            this.valueList = { ...JSON.parse(JSON.stringify(this.valueListOriginal)) };
             followUpAction();
           },
         });
