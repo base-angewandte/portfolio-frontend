@@ -1,7 +1,7 @@
 <template>
   <!-- ARCHIVAL VALIDATION POP-UP -->
   <base-pop-up
-    :show="openMe"
+    :show="isPopUpOpen"
     :title="$t('archival.fieldsMissingTitle')"
     :button-right-text="$t('next')"
     button-right-icon="archive-arrow"
@@ -9,9 +9,8 @@
     @button-left="onCancel"
     @button-right="onNext">
     <div
-      class="validation-popup-body"
-      style="max-height: 50vh; overflow-y:scroll;">
-      <p class="archival-popup-para">
+      class="popup-body">
+      <p class="popup-para">
         {{ $t('archival.fieldsMissingText') }}
       </p>
       <!-- THIS FORM CONTAINS GENERAL FIELDS (NOT SPECIFIC TO A TYPE)-->
@@ -54,7 +53,7 @@ export default {
    */
   inject: ['dropDownListsMain', 'fetchAutocompleteMain', 'handleInputMain', 'localesMain', 'reactive'],
   props: {
-    openMe: {
+    isPopUpOpen: {
       type: Boolean,
       default() {
         return false;
@@ -63,9 +62,13 @@ export default {
   },
   data() {
     return {
+      // Values used to populate the first form on the pop-up
       valueList1: {},
+      // Values used to populate the second form on the pop-up
       valueList2: {},
+      // OpenAPI data for the first form -- the one which stores only general fields
       formData1: {},
+      // OpenAPI data for the second form -- the one which stores extension fields
       formData2: {},
     };
   },
@@ -78,22 +81,19 @@ export default {
     ]),
   },
   mounted() {
-    // Create open API data for the first form -- the one which stores only general fields.
+    // Create open API data (field structure) for both forms
     this.formData1 = this.createFormData(this.getArchivalErrors, this.getGeneralSchema);
-    // Create open API data for the second form -- the one which stores extension fields.
-    // These are to be found inside a 'data' key.
     this.formData2 = this.createFormData(this.getArchivalErrors.data, this.getExtensionSchema);
-    // If the user has already filled in some values in fields that failed validation,
-    // populate such values on the first form.
+    // Populate both forms with values from the store
+    // Values for the extension form are to be found inside a 'data' key
     this.valueList1 = this.getCurrentItemData;
-    // Same as above for the second form
     this.valueList2 = this.getCurrentItemData.data;
   },
   methods: {
     /**
      * Occurs when the user clicks "Next" on the pop-up.
      */
-    async onNext() {
+    onNext() {
       this.$emit('next-step');
     },
     /**
@@ -129,11 +129,11 @@ export default {
 
 <style lang="scss" scoped>
 @import "../styles/variables.scss";
-.archival-popup-title {
-  margin: $spacing auto 0 auto;
-  font-size: $font-size-large;
+.popup-body {
+  max-height: 50vh;
+  overflow-y:scroll;
 }
-.archival-popup-para {
+.popup-para {
   margin: $spacing auto 0 auto;
 }
 .base-archival-bar-button {

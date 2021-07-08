@@ -178,57 +178,17 @@
     <!-- ARCHIVAL VALIDATION POP-UP -->
     <archival-validation-pop-up
       v-if="showArchivalValidationPopUp"
-      :open-me="showArchivalValidationPopUp"
+      :is-pop-up-open="showArchivalValidationPopUp"
       @cancel-validation="cancelArchivalValidation"
       @next-step="validateArchivalFields" />
 
     <!-- ARCHIVAL LICENSING AGREEMENT POP-UP -->
-    <base-pop-up
-      :show="showArchivalAgreementPopUp"
-      :title="$t('archival.confirmTitle')"
-      @close="cancelArchivalAgreement">
-      <div class="agreement-popup-body">
-        <p class="archival-popup-title">
-          {{ $t('archival.confirmText') }}
-        </p>
-        <ul class="archival-popup-title">
-          <li
-            v-for="fileName in selectedFileNames"
-            :key="fileName">
-            {{ fileName }}
-          </li>
-        </ul>
-        <p class="archival-popup-para">
-          {{ $t('archival.disclaimerText') }}
-        </p>
-        <p class="archival-popup-para">
-          <base-checkmark
-            v-model="archiveMediaConsent"
-            :show-label="true"
-            :label="$t('archival.archiveMediaConsent')"
-            mark-style="checkbox" />
-        </p>
-      </div>
-      <template v-slot:button-row>
-        <base-button
-          button-style="single"
-          :text="$t('cancel')"
-          icon="remove"
-          icon-position="right"
-          icon-size="small"
-          class="base-archival-bar-button"
-          @clicked="cancelArchivalAgreement" />
-        <base-button
-          button-style="single"
-          :text="$t('archival.archiveWizardButton')"
-          icon="archive-arrow"
-          icon-position="right"
-          icon-size="small"
-          :disabled="!archiveMediaConsent"
-          class="base-archival-bar-button"
-          @clicked="saveFileMeta('archiveMedia')" />
-      </template>
-    </base-pop-up>
+    <archival-agreement-pop-up
+      v-if="showArchivalAgreementPopUp"
+      :is-pop-up-open="showArchivalAgreementPopUp"
+      :selected-files="selectedFiles"
+      @cancel-agreement="cancelArchivalAgreement"
+      @next-step="saveFileMeta('archiveMedia')" />
   </div>
 </template>
 
@@ -237,9 +197,10 @@ import { mapGetters } from 'vuex';
 import { userInfo } from '../mixins/userInfo';
 import { capitalizeString, getApiUrl, getLangLabel } from '../utils/commonUtils';
 import ArchivalValidationPopUp from './ArchivalValidationPopUp';
+import ArchivalAgreementPopUp from './ArchivalAgreementPopUp';
 
 export default {
-  components: { ArchivalValidationPopUp },
+  components: { ArchivalValidationPopUp, ArchivalAgreementPopUp },
   mixins: [userInfo],
   // inject method used to save or discard the main form from child components of any depth
   inject: ['saveMainForm', 'discardMainForm'],
@@ -291,8 +252,6 @@ export default {
       entriesLoading: false,
       filesLoading: false,
       capitalizeString,
-      // has the user accepted the terms and conditions before pushing to archive
-      archiveMediaConsent: false,
       // show/hide the archival validation pop-up
       showArchivalValidationPopUp: false,
       // show/hide the archival licensing agreement pop-up
@@ -314,19 +273,8 @@ export default {
       'getCurrentItemData',
       'getArchivalErrors',
       'getIsFormSaved',
+      'getArchiveMediaConsent',
     ]),
-    // Returns an array with short file names (no path) + extension for currently selected files
-    selectedFileNames() {
-      const fileNames = [];
-      // first filter out only objects where filename is selected
-      const selObjects = this.attachedList.filter((obj) => this.selectedFiles.includes(obj.id));
-      // now iterate through filtered objects and populate fileNames
-      selObjects.forEach((obj) => {
-        // push only part after the last / character
-        fileNames.push(obj.original.substr(obj.original.lastIndexOf('/') + 1));
-      });
-      return fileNames;
-    },
     /**
      * Returns true if data that is to be submitted for archival validates
      * successfully against the store.
@@ -355,24 +303,6 @@ export default {
     }
   },
   methods: {
-    /**
-     * Handles the request to validate archival fields after the user fills in
-     * the missing archival fields on the archival validation pop-up component
-     * and clicks "Next".
-     */
-    async validateArchivalFields() {
-      try {
-        this.showArchivalValidationPopUp = false;
-        // save the main form
-        await this.saveMainForm(false);
-        // TODO send advice to the store to validate archival fields against the backend
-        // and update the arhivalErrors property
-        // if validation successful, call this.saveFileMeta to perform actual archival
-        // else show the archival validation pop-up again
-      } catch (e) {
-        console.error(e);
-      }
-    },
     // save hover state on mouse enter / leave to get correct video url
     changeVideoHoverState(event, index, value) {
       this.$set(this.imageHover, index, value);
@@ -418,12 +348,15 @@ export default {
       } else if (this.action === 'archiveMedia' && !this.isValidArchivalData) {
         this.showArchivalValidationPopUp = true;
         // check if license agreement was accepted when action is archiveMedia
-      } else if (this.action === 'archiveMedia' && !this.archiveMediaConsent) {
+      } else if (this.action === 'archiveMedia' && !this.getArchiveMediaConsent) {
         this.showArchivalAgreementPopUp = true;
       } else {
-        // special case: if action is mediaArchive close the agreement pop-up first
+        // if action is mediaArchive, close the agreement pop-up first
+        // and also revoke the archival agreement consent, because it should not
+        // be possible to send repeated requests without seeing the agreement pop-up first
         if (action === 'archiveMedia') {
           this.showArchivalAgreementPopUp = false;
+          this.$store.commit('data/setArchiveMediaConsent', false);
         }
         // if all error checks pass actually do the action
         const [successIds, failIds] = await this.$store.dispatch('data/actionFiles', {
@@ -676,7 +609,25 @@ export default {
      */
     cancelArchivalAgreement() {
       this.showArchivalAgreementPopUp = false;
-      this.archiveMediaConsent = false;
+    },
+    /**
+     * Handles the request to validate archival fields after the user fills in
+     * the missing archival fields on the archival validation pop-up component
+     * and clicks "Next".
+     */
+    async validateArchivalFields() {
+      try {
+        // Explicitly close the pop-up to destroy the current instance
+        this.showArchivalValidationPopUp = false;
+        // Save the main form
+        await this.saveMainForm(false);
+        // TODO send advice to the store to validate archival fields against the backend
+        // and update the arhivalErrors property
+        // if validation successful, call this.saveFileMeta to perform actual archival
+        // else show the archival validation pop-up again
+      } catch (e) {
+        console.error(e);
+      }
     },
   },
 };
@@ -734,26 +685,6 @@ export default {
   text-align: left;
   max-width: 100%;
 }
-.archival-popup-title {
-  margin: $spacing auto 0 auto;
-  font-size: $font-size-large;
-}
-.archival-popup-para {
-  margin: $spacing auto 0 auto;
-}
-.agreement-popup-body {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  color: $font-color-second;
-}
-.base-archival-bar-button {
-  flex-basis: 100%;
-}
-.base-archival-bar-button + .base-archival-bar-button {
-    margin-left: $spacing;
- }
 @media screen and (max-width: $tablet) {
   .attachment-area {
     .linked-base-box {
@@ -768,10 +699,6 @@ export default {
     }
     .linked-base-box:not(:nth-child(2n)) {
       margin-right: $spacing;
-    }
-    .base-archival-bar-button + .base-archival-bar-button {
-      margin-left: 0;
-      margin-top: $spacing;
     }
   }
 }

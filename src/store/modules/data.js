@@ -168,6 +168,8 @@ const state = {
     },
     texts: ['A text of type "Abstract" in English and German is mandatory.'],
   },
+  // true if the user has accepted the archival licensing agreement, false otherwise
+  archiveMediaConsent: false,
   // stores whether the currently loaded form is saved
   isFormSaved: true,
 };
@@ -227,6 +229,9 @@ const getters = {
   },
   getIsFormSaved(state) {
     return state.isFormSaved;
+  },
+  getArchiveMediaConsent(state) {
+    return state.archiveMediaConsent;
   },
 };
 
@@ -344,6 +349,9 @@ const mutations = {
   },
   setIsFormSaved(state, val) {
     state.isFormSaved = val;
+  },
+  setArchiveMediaConsent(state, val) {
+    state.archiveMediaConsent = val;
   },
 };
 
