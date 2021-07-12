@@ -57,6 +57,7 @@
         slot="option-buttons"
         slot-scope="scope">
         <BaseButton
+          v-if="isArchivalEnabled"
           :text="$t('form-view.archiveMedia')"
           icon-size="large"
           icon="archive-arrow"
@@ -275,6 +276,12 @@ export default {
       'getIsFormSaved',
       'getArchiveMediaConsent',
     ]),
+    /**
+     * Turn archival on/off based on environment var
+     */
+    isArchivalEnabled() {
+      return JSON.parse(process.env.VUE_APP_PHAIDRA_UPLOAD);
+    },
     /**
      * Returns true if data that is to be submitted for archival validates
      * successfully against the store.
