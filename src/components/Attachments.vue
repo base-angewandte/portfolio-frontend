@@ -45,7 +45,7 @@
       :header-text="$t('form-view.attachedFiles')"
       :action-button-text="buttonText"
       :action="action"
-      :is-loading="filesLoading"
+      :is-loading="filesLoading || getIsArchivalBusy"
       :selected-list="selectedFiles"
       entry-type="media"
       @all-selected="selectEntries('files', $event)"
@@ -189,7 +189,7 @@
       :is-pop-up-open="showArchivalAgreementPopUp"
       :selected-files="selectedFiles"
       @cancel-agreement="cancelArchivalAgreement"
-      @next-step="saveFileMeta('archiveMedia')" />
+      @next-step="proceedToArchival" />
   </div>
 </template>
 
@@ -257,6 +257,9 @@ export default {
       showArchivalValidationPopUp: false,
       // show/hide the archival licensing agreement pop-up
       showArchivalAgreementPopUp: false,
+      // true if the archival wizard has been completed
+      // and it's OK to send the actual archival request
+      isArchivalWizardCompleted: false,
     };
   },
   computed: {
@@ -272,25 +275,17 @@ export default {
     },
     ...mapGetters('data', [
       'getCurrentItemData',
+      'getArchivalValidationOutcome',
       'getArchivalErrors',
       'getIsFormSaved',
       'getArchiveMediaConsent',
+      'getIsArchivalBusy',
     ]),
     /**
      * Turn archival on/off based on environment var
      */
     isArchivalEnabled() {
       return JSON.parse(process.env.VUE_APP_PHAIDRA_UPLOAD);
-    },
-    /**
-     * Returns true if data that is to be submitted for archival validates
-     * successfully against the store.
-     */
-    isValidArchivalData() {
-      if (this.getArchivalErrors && Object.keys(this.getArchivalErrors).length > 0) {
-        return false;
-      }
-      return true;
     },
   },
   watch: {
@@ -340,31 +335,11 @@ export default {
           text: this.$t('notify.selectLicense'),
           type: 'error',
         });
-        // check if any files are still converting before taking archiveMedia action
-      } else if (this.action === 'archiveMedia' && this.isConverting) {
-        this.$notify({
-          group: 'request-notifications',
-          title: this.$t('notify.actionFailed', { action: this.$t('notify.archiveMedia') }),
-          text: this.$t('notify.notConverted'),
-          type: 'error',
-        });
-        // check if there are unsaved changes when action is archiveMedia
-      } else if (this.action === 'archiveMedia' && !this.getIsFormSaved) {
-        this.openSaveBeforeArchivalPopUp();
-        // check for archival validation errors when action is archiveMedia
-      } else if (this.action === 'archiveMedia' && !this.isValidArchivalData) {
-        this.showArchivalValidationPopUp = true;
-        // check if license agreement was accepted when action is archiveMedia
-      } else if (this.action === 'archiveMedia' && !this.getArchiveMediaConsent) {
-        this.showArchivalAgreementPopUp = true;
+        // When action is archiveMedia, run the archival wizard if it has not been completed
+        // already AND if the archival consent has not been accepted yet
+      } else if (this.action === 'archiveMedia' && !this.isArchivalWizardCompleted && !this.getArchiveMediaConsent) {
+        this.runArchivalWizard();
       } else {
-        // if action is mediaArchive, close the agreement pop-up first
-        // and also revoke the archival agreement consent, because it should not
-        // be possible to send repeated requests without seeing the agreement pop-up first
-        if (action === 'archiveMedia') {
-          this.showArchivalAgreementPopUp = false;
-          this.$store.commit('data/setArchiveMediaConsent', false);
-        }
         // if all error checks pass actually do the action
         const [successIds, failIds] = await this.$store.dispatch('data/actionFiles', {
           list: this.selectedFiles,
@@ -386,6 +361,11 @@ export default {
         this.action = '';
         this.selectedFiles = [];
         this.licenseSelected = {};
+        // these clean-up actions pertain to archival only
+        if (this.action === 'archiveMedia') {
+          this.isArchivalWizardCompleted = false;
+          this.$store.commit('data/setArchiveMediaConsent', false);
+        }
       }
       this.filesLoading = false;
     },
@@ -574,34 +554,63 @@ export default {
       return `${this.$t('form-view.file')} ${this.$t('form-view.filePublished', { file: this.getFileName(item) })}`;
     },
     /**
+     * Provides execution logic for the archival wizard
+     * so as to walk the user sequentially through all archival steps.
+     */
+    async runArchivalWizard() {
+      if (!this.getIsFormSaved) {
+        this.openSaveBeforeArchivalPopUp();
+      } else {
+        await this.$store.dispatch('data/validateArchivalData', this.selectedFiles);
+        if (this.getArchivalValidationOutcome) {
+          switch (this.getArchivalValidationOutcome) {
+          case 200:
+            this.showArchivalAgreementPopUp = true;
+            break;
+          case 400:
+            this.showArchivalValidationPopUp = true;
+            break;
+          case 500:
+            this.failArchivalValidation(this.$t('archival.internalServerError'));
+            break;
+          case 503:
+            this.failArchivalValidation(this.$t('archival.serviceUnavailable'));
+            break;
+          default:
+            // unknown status code returned by the server
+            this.failArchivalValidation(this.$t('archival.generalError'));
+          }
+        } else {
+          // could not reasonably determine the validation outcome
+          this.failArchivalValidation(this.$t('archival.generalError'));
+        }
+      }
+    },
+    /**
      * Open a "Save First" dialog box if user attempts to archive unsaved entry
      */
     openSaveBeforeArchivalPopUp() {
-      if (!this.getIsFormSaved) {
-        this.$store.commit('data/setPopUp', {
-          show: true,
-          header: this.$t('notify.archive'),
-          textTitle: this.$t('notify.saveBeforeArchive'),
-          textList: [],
-          icon: 'save-file',
-          buttonTextRight: this.$t('notify.saveChanges'),
-          buttonTextLeft: this.$t('cancel'),
-          actionRight: async () => {
-            try {
-              // save main form via injected method
-              await this.saveMainForm(false);
-            } catch (e) {
-              console.error(e);
-            }
-            this.$store.commit('data/hidePopUp');
-          },
-          actionLeft: () => {
-            this.$store.commit('data/hidePopUp');
-          },
-        });
-      } else {
-        // nothing to do
-      }
+      this.$store.commit('data/setPopUp', {
+        show: true,
+        header: this.$t('notify.archive'),
+        textTitle: this.$t('notify.saveBeforeArchive'),
+        textList: [],
+        icon: 'save-file',
+        buttonTextRight: this.$t('notify.saveChanges'),
+        buttonTextLeft: this.$t('cancel'),
+        actionRight: async () => {
+          try {
+            // save main form via injected method
+            await this.saveMainForm(false);
+          } catch (e) {
+            console.error(e);
+          }
+          this.$store.commit('data/hidePopUp');
+        },
+        actionLeft: () => {
+          this.$store.commit('data/hidePopUp');
+        },
+      });
     },
     /**
      * Triggered when the user clicks "Cancel" on the archival validation pop-up
@@ -612,6 +621,18 @@ export default {
       this.showArchivalValidationPopUp = false;
     },
     /**
+     * Notifies the user that validation of archival data has failed due to technical reasons
+     * like server unavailable, request timeout, internal server error.
+     */
+    failArchivalValidation(reason) {
+      this.$notify({
+        group: 'request-notifications',
+        title: this.$t('notify.somethingWrong'),
+        text: reason,
+        type: 'error',
+      });
+    },
+    /**
      * Triggered when the user clicks "Cancel" on the archival agreement pop-up
      */
     cancelArchivalAgreement() {
@@ -619,22 +640,24 @@ export default {
     },
     /**
      * Handles the request to validate archival fields after the user fills in
-     * the missing archival fields on the archival validation pop-up component
-     * and clicks "Next".
+     * the missing archival fields on the archival validation pop-up and clicks "Next".
      */
     async validateArchivalFields() {
-      try {
-        // Explicitly close the pop-up to destroy the current instance
-        this.showArchivalValidationPopUp = false;
-        // Save the main form
-        await this.saveMainForm(false);
-        // TODO send advice to the store to validate archival fields against the backend
-        // and update the arhivalErrors property
-        // if validation successful, call this.saveFileMeta to perform actual archival
-        // else show the archival validation pop-up again
-      } catch (e) {
-        console.error(e);
-      }
+      // Explicitly close the pop-up to destroy the current instance if one was already running
+      this.showArchivalValidationPopUp = false;
+      // Wait for the main form to be saved
+      await this.saveMainForm(false);
+      // Initiate the archival routine again
+      this.saveFileMeta('archiveMedia');
+    },
+    /**
+     * Proceeds to the actual archival request after all the steps of the archival wizard
+     * (validation, licensing agreement) have been completed.
+     */
+    proceedToArchival() {
+      this.showArchivalAgreementPopUp = false;
+      this.isArchivalWizardCompleted = true;
+      this.saveFileMeta('archiveMedia');
     },
   },
 };

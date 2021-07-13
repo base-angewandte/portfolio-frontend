@@ -158,20 +158,17 @@ const state = {
   generalSchema: {},
   extensionSchema: {},
   windowWidth: null,
-  // stores archival errors received from backend
-  // TODO: implement action for setting it as soon as backend provides this data
-  archivalErrors: {
-    data: {
-      authors: ['Author is mandatory'],
-      contributors: ['At least one contributor with Advisor role must be added'],
-      language: ['Language is mandatory'],
-    },
-    texts: ['A text of type "Abstract" in English and German is mandatory.'],
-  },
+  // the status code returned by the back-end API after attempt to validate archival data
+  archivalValidationOutcome: null,
+  // stores archival errors received from backend,
+  // this property is populated only when archivalValidationOutcome=400
+  archivalErrors: {},
   // true if the user has accepted the archival licensing agreement, false otherwise
   archiveMediaConsent: false,
   // stores whether the currently loaded form is saved
   isFormSaved: true,
+  // true when there is an in-progress task related to archival
+  isArchivalBusy: false,
 };
 
 const getters = {
@@ -224,6 +221,9 @@ const getters = {
   getCurrentItemData(state) {
     return state.currentItemData;
   },
+  getArchivalValidationOutcome(state) {
+    return state.archivalValidationOutcome;
+  },
   getArchivalErrors(state) {
     return state.archivalErrors;
   },
@@ -232,6 +232,9 @@ const getters = {
   },
   getArchiveMediaConsent(state) {
     return state.archiveMediaConsent;
+  },
+  getIsArchivalBusy(state) {
+    return state.isArchivalBusy;
   },
 };
 
@@ -352,6 +355,15 @@ const mutations = {
   },
   setArchiveMediaConsent(state, val) {
     state.archiveMediaConsent = val;
+  },
+  setArchivalValidationOutcome(state, val) {
+    state.archivalValidationOutcome = val;
+  },
+  setArchivalErrors(state, obj) {
+    state.archivalErrors = obj;
+  },
+  setIsArchivalBusy(state, val) {
+    state.isArchivalBusy = val;
   },
 };
 
@@ -769,6 +781,55 @@ const actions = {
       errorArr.push(list);
     }
     return [successArr, errorArr];
+  },
+  /**
+   * Validate archival data against the backend and update store with the outcome.
+   * @param context
+   */
+  async validateArchivalData(context, selectedFiles) {
+    try {
+      // change state to indicate a long in-progress task
+      context.commit('setIsArchivalBusy', true);
+      // prepare the url param
+      const param = selectedFiles.join(',');
+      // await the validation response from the api
+      await axios.get(`${portfolioApiUrl}validate_assets/media/${param}/`,
+        {
+          withCredentials: true,
+          xsrfCookieName: 'csrftoken_portfolio',
+          xsrfHeaderName: 'X-CSRFToken',
+        });
+      // if status code is in range 200-299
+      context.commit('setArchivalValidationOutcome', 200);
+      context.commit('setArchivalErrors', {});
+    } catch (e) {
+      // on status code >= 300
+      if (e.response && e.response.status) {
+        switch (e.response.status) {
+        case 400:
+          // There are validation errors, update the store accordingly
+          context.commit('setArchivalValidationOutcome', 400);
+          context.commit('setArchivalErrors', e.response.data);
+          break;
+        case 500:
+          // This status indicates data integrity errors on server
+          context.commit('setArchivalValidationOutcome', 500);
+          break;
+        case 503:
+          // Service is unavailable
+          context.commit('setArchivalValidationOutcome', 503);
+          break;
+        default:
+          // On any other unhandled status code
+          console.error(e.response.status);
+        }
+      } else {
+        console.error(e);
+      }
+    } finally {
+      // update state to indicate the end of the long in-progress task
+      context.commit('setIsArchivalBusy', false);
+    }
   },
   async removeUnknownProps({ state, dispatch }, { data, fields }) {
     const newData = {};

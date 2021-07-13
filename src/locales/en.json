@@ -230,6 +230,9 @@
     "confirmTitle": "Archive - Confirm",
     "confirmText": "The following files will be archived:",
     "archiveWizardButton": "Archive file(s)",
-    "archiveMediaConsent": "I Accept the Terms of Use."
+    "archiveMediaConsent": "I Accept the Terms of Use.",
+    "generalError": "An error has occurred during archival. Please try again later.",
+    "serviceUnavailable": "The archival service is currently unavailable.",
+    "internalServerError": "An internal server error has occurred."
   }
 }

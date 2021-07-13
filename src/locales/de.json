@@ -225,6 +225,9 @@
     "confirmTitle": "Archivierung - Bestätigung",
     "confirmText": "Die folgenden Dateien werden im nächsten Schritt archiviert:",
     "archiveWizardButton": "Datei Archivieren",
-    "archiveMediaConsent": "Nutzungsbedingungen akzeptieren"
+    "archiveMediaConsent": "Nutzungsbedingungen akzeptieren",
+    "generalError": "Bei der Archivierung ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
+    "serviceUnavailable": "Der Archivierungsdienst ist derzeit nicht verfügbar.",
+    "internalServerError": "Es ist ein interner Serverfehler aufgetreten."
   }
 }
