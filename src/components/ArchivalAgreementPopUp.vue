@@ -9,9 +9,9 @@
       </p>
       <ul class="popup-title">
         <li
-          v-for="fileName in selectedFileNames"
-          :key="fileName">
-          {{ fileName }}
+          v-for="filename in filenames"
+          :key="filename">
+          {{ filename }}
         </li>
       </ul>
       <p class="popup-para">
@@ -58,32 +58,22 @@ export default {
         return false;
       },
     },
-    selectedFiles: {
+    selectedFilenames: {
       type: Array,
       default() {
         return [];
       },
     },
   },
+  data() {
+    return {
+      filenames: this.selectedFilenames,
+    };
+  },
   computed: {
     ...mapGetters('data', [
-      'getCurrentMedia',
       'getArchiveMediaConsent',
     ]),
-    /**
-     * Returns an array with short file names (no path) + extension for currently selected files.
-     */
-    selectedFileNames() {
-      const fileNames = [];
-      // first filter out only objects where filename is selected
-      const selObjects = this.getCurrentMedia.filter((obj) => this.selectedFiles.includes(obj.id));
-      // now iterate through filtered objects and populate fileNames
-      selObjects.forEach((obj) => {
-        // push only part after the last / character
-        fileNames.push(obj.original.substr(obj.original.lastIndexOf('/') + 1));
-      });
-      return fileNames;
-    },
   },
   methods: {
     /**

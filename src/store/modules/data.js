@@ -779,6 +779,11 @@ const actions = {
     } catch (e) {
       console.error(e);
       errorArr.push(list);
+    } finally {
+      // Revoke archival consent after each archival attempt;
+      // this ensures that the user cannot send repeated requests
+      // without seeing the wizard with the licensing agreement first.
+      context.commit('setArchiveMediaConsent', false);
     }
     return [successArr, errorArr];
   },

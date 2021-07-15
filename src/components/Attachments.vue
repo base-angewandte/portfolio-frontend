@@ -187,7 +187,7 @@
     <archival-agreement-pop-up
       v-if="showArchivalAgreementPopUp"
       :is-pop-up-open="showArchivalAgreementPopUp"
-      :selected-files="selectedFiles"
+      :selected-filenames="selectedFileNames"
       @cancel-agreement="cancelArchivalAgreement"
       @next-step="proceedToArchival" />
   </div>
@@ -257,9 +257,6 @@ export default {
       showArchivalValidationPopUp: false,
       // show/hide the archival licensing agreement pop-up
       showArchivalAgreementPopUp: false,
-      // true if the archival wizard has been completed
-      // and it's OK to send the actual archival request
-      isArchivalWizardCompleted: false,
     };
   },
   computed: {
@@ -275,6 +272,7 @@ export default {
     },
     ...mapGetters('data', [
       'getCurrentItemData',
+      'getCurrentMedia',
       'getArchivalValidationOutcome',
       'getArchivalErrors',
       'getIsFormSaved',
@@ -286,6 +284,26 @@ export default {
      */
     isArchivalEnabled() {
       return JSON.parse(process.env.VUE_APP_PHAIDRA_UPLOAD);
+    },
+    /**
+     * Returns an array with short file names (no path) + extension for currently selected files.
+     */
+    selectedFileNames() {
+      try {
+        const fileNames = [];
+        // first filter out only objects where filename is selected
+        // eslint-disable-next-line max-len
+        const selObjects = this.getCurrentMedia.filter((obj) => this.selectedFiles.includes(obj.id));
+        // now iterate through filtered objects and populate fileNames
+        selObjects.forEach((obj) => {
+        // push only part after the last / character
+          fileNames.push(obj.original.substr(obj.original.lastIndexOf('/') + 1));
+        });
+        return fileNames;
+      } catch (e) {
+        console.error(e);
+        return null;
+      }
     },
   },
   watch: {
@@ -335,9 +353,11 @@ export default {
           text: this.$t('notify.selectLicense'),
           type: 'error',
         });
-        // When action is archiveMedia, run the archival wizard if it has not been completed
-        // already AND if the archival consent has not been accepted yet
-      } else if (this.action === 'archiveMedia' && !this.isArchivalWizardCompleted && !this.getArchiveMediaConsent) {
+        // When action is archiveMedia, run the archival wizard.
+        // If the archival consent has been accepted, this means that all
+        // validation and agreement steps are already completed and in this case
+        // the wizard check will be skipped.
+      } else if (this.action === 'archiveMedia' && !this.getArchiveMediaConsent) {
         this.runArchivalWizard();
       } else {
         // if all error checks pass actually do the action
@@ -361,11 +381,6 @@ export default {
         this.action = '';
         this.selectedFiles = [];
         this.licenseSelected = {};
-        // these clean-up actions pertain to archival only
-        if (this.action === 'archiveMedia') {
-          this.isArchivalWizardCompleted = false;
-          this.$store.commit('data/setArchiveMediaConsent', false);
-        }
       }
       this.filesLoading = false;
     },
@@ -558,16 +573,22 @@ export default {
      * so as to walk the user sequentially through all archival steps.
      */
     async runArchivalWizard() {
+      // if form is not saved, notify the user to save first
       if (!this.getIsFormSaved) {
         this.openSaveBeforeArchivalPopUp();
       } else {
+        // first set any previous archival validation outcome to void
+        this.$store.commit('data/setArchivalValidationOutcome', null);
+        // obtain a new validation outcome
         await this.$store.dispatch('data/validateArchivalData', this.selectedFiles);
         if (this.getArchivalValidationOutcome) {
           switch (this.getArchivalValidationOutcome) {
           case 200:
-            this.showArchivalAgreementPopUp = true;
+            // display the agreement wizard page
+            this.displayArchivalAgreement();
             break;
           case 400:
+            // display the validation wizard page
             this.showArchivalValidationPopUp = true;
             break;
           case 500:
@@ -613,6 +634,26 @@ export default {
       });
     },
     /**
+     * Displays the agreement pop-up only if we have the filenames
+     * of the files that are to be archived.
+     */
+    displayArchivalAgreement() {
+      if (this.selectedFileNames && (this.selectedFileNames.length === this.selectedFiles.length)) {
+        // ok to open the pop-up
+        this.showArchivalAgreementPopUp = true;
+      } else {
+        // destroy any previous pop-up instance
+        this.showArchivalValidationPopUp = false;
+        // we don't have enough info to proceed
+        this.$notify({
+          group: 'request-notifications',
+          title: this.$t('notify.archive'),
+          text: this.$t('notify.somethingWrong'),
+          type: 'error',
+        });
+      }
+    },
+    /**
      * Triggered when the user clicks "Cancel" on the archival validation pop-up
      */
     cancelArchivalValidation() {
@@ -656,7 +697,6 @@ export default {
      */
     proceedToArchival() {
       this.showArchivalAgreementPopUp = false;
-      this.isArchivalWizardCompleted = true;
       this.saveFileMeta('archiveMedia');
     },
   },
