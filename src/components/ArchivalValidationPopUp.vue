@@ -31,6 +31,7 @@
         key="archival-validation-form2"
         ref="archivalValidationForm2"
         form-id="archivalValidationForm2"
+        style="margin-bottom: 1em;"
         :form-field-json="formData2"
         :value-list="valueList2"
         :available-locales="localesMain"
@@ -113,11 +114,16 @@ export default {
       const formDataObj = {};
       // if validation object actually exists and has any keys
       if (validationObj && Object.keys(validationObj).length) {
-        // iterate through each key
-        Object.keys(validationObj).forEach((key) => {
-          // Add a new key-value pair only if it exists in the schema object.
-          if (schemaObj[key]) {
-            formDataObj[key] = schemaObj[key];
+        Object.entries(validationObj).forEach(([key, value]) => {
+          if (schemaObj[key] && key !== 'data') {
+            // Create a copy of the form data from the schema object
+            formDataObj[key] = { ...schemaObj[key] };
+            // Alter form data so as to set the field title to the validation error text.
+            // Not using placeholder for that purpose because the field "Text" may already
+            // be filled by the user at this point but still have an associated error
+            // (e.g. Abstract is not set)
+            const [errorText] = value;
+            formDataObj[key].title = errorText;
           }
         });
       }
