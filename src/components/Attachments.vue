@@ -668,7 +668,7 @@ export default {
     failArchivalValidation(reason) {
       this.$notify({
         group: 'request-notifications',
-        title: this.$t('notify.somethingWrong'),
+        title: this.$t('form-view.archiveMedia'),
         text: reason,
         type: 'error',
       });

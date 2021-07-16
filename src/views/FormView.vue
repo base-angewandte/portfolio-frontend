@@ -183,11 +183,16 @@ export default {
     // Provide properties/methods of the FormView to child components (currently,
     // ArchivalValidationPopUp) since this child component needs access to data
     // from the main form. This is to make it possible to reuse the same methods
-    // to handle user input and auto-suggestions for drop-down lists (#916).
+    // to handle user input and auto-suggestions for drop-down lists, and
+    // also to detect missing field data (#916).
     const reactive = {};
     Object.defineProperty(reactive, 'fieldIsLoading', {
       enumerable: true,
       get: () => this.fieldIsLoading,
+    });
+    Object.defineProperty(reactive, 'valueList', {
+      enumerable: true,
+      get: () => this.valueList,
     });
     return {
       dropDownListsMain: this.dropDownListsInt,

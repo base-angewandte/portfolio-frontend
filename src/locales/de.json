@@ -228,6 +228,6 @@
     "archiveMediaConsent": "Nutzungsbedingungen akzeptieren",
     "generalError": "Bei der Archivierung ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
     "serviceUnavailable": "Der Archivierungsdienst ist derzeit nicht verfügbar.",
-    "internalServerError": "Es ist ein interner Serverfehler aufgetreten."
+    "internalServerError": "Bei der Validierung der Daten ist ein interner Serverfehler aufgetreten."
   }
 }
