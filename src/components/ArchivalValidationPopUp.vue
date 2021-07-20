@@ -167,8 +167,12 @@ export default {
             // Not using placeholder for that purpose because the field "Text" may already
             // be filled by the user at this point but still have an associated error
             // (e.g. Abstract is not set)
-            const [errorText] = value;
-            formDataObj[key].title = errorText;
+            formDataObj[key].title = value.join(' ');
+            // If the field occupies only half of the available width,
+            // set width to full, so as not to create empty space next to field
+            if (formDataObj[key]['x-attrs'].field_format === 'half') {
+              formDataObj[key]['x-attrs'].field_format = 'full';
+            }
           }
         });
       }
