@@ -161,8 +161,8 @@ export default {
       if (validationObj && Object.keys(validationObj).length) {
         Object.entries(validationObj).forEach(([key, value]) => {
           if (schemaObj[key] && key !== 'data') {
-            // Create a copy of the form data from the schema object
-            formDataObj[key] = { ...schemaObj[key] };
+            // Create a *deep* copy of the form data from the schema object
+            formDataObj[key] = JSON.parse(JSON.stringify(schemaObj[key]));
             // Alter form data so as to set the field title to the validation error text.
             // Not using placeholder for that purpose because the field "Text" may already
             // be filled by the user at this point but still have an associated error
@@ -170,8 +170,10 @@ export default {
             formDataObj[key].title = value.join(' ');
             // If the field occupies only half of the available width,
             // set width to full, so as not to create empty space next to field
-            if (formDataObj[key]['x-attrs'].field_format === 'half') {
-              formDataObj[key]['x-attrs'].field_format = 'full';
+            if (formDataObj[key]['x-attrs'] && formDataObj[key]['x-attrs'].field_format) {
+              if (formDataObj[key]['x-attrs'].field_format === 'half') {
+                formDataObj[key]['x-attrs'].field_format = 'full';
+              }
             }
           }
         });
