@@ -220,7 +220,7 @@
   },
   "archival": {
     "fieldsMissingTitle": "Archivierung - Fehlende Felder",
-    "fieldsMissingText": "Leider sind nicht alle notwendigen Daten für die Archivierung vorhanden. Bitte fülle auch die folgenden Felder aus:",
+    "fieldsMissingText": "Leider sind die folgenden Bedingungen für die Archivierung nicht erfüllt:",
     "disclaimerText": "Die von Ihnen ausgewählten Dateien, einschließlich der Metadaten, werden dauerhaft im Repositorium gespeichert. Sie können die Dateien nach Abschluss des Vorgangs nicht mehr löschen. Wenn Sie auf „Datei(en) archivieren“ klicken, akzeptieren Sie außerdem die Nutzungsbedingungen des Repositoriums.",
     "confirmTitle": "Archivierung - Bestätigung",
     "confirmText": "Die folgenden Dateien werden im nächsten Schritt archiviert:",

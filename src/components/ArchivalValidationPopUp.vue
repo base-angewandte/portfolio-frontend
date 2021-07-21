@@ -9,6 +9,26 @@
       <p class="popup-para">
         {{ $t('archival.fieldsMissingText') }}
       </p>
+      <ul
+        class="error-list">
+        <li
+          v-for="(value, name) in validationErrors"
+          :key="name">
+          <base-icon
+            class="error-list-icon"
+            name="attention"
+            title="attention" />
+          {{ name }}
+          <ul
+            class="error-list-indented">
+            <li
+              v-for="item in value"
+              :key="item">
+              &mdash; {{ item }}
+            </li>
+          </ul>
+        </li>
+      </ul>
       <!-- THIS FORM CONTAINS GENERAL FIELDS (NOT SPECIFIC TO A TYPE)-->
       <base-form
         key="archival-validation-form1"
@@ -86,6 +106,8 @@ export default {
       formData1: {},
       // OpenAPI data for the second form -- the one which stores extension fields
       formData2: {},
+      // All validation errors in a user-friendly format (key = localized field title).
+      validationErrors: {},
     };
   },
   computed: {
@@ -163,11 +185,8 @@ export default {
           if (schemaObj[key] && key !== 'data') {
             // Create a *deep* copy of the form data from the schema object
             formDataObj[key] = JSON.parse(JSON.stringify(schemaObj[key]));
-            // Alter form data so as to set the field title to the validation error text.
-            // Not using placeholder for that purpose because the field "Text" may already
-            // be filled by the user at this point but still have an associated error
-            // (e.g. Abstract is not set)
-            formDataObj[key].title = value.join(' ');
+            // Set the field placeholder to the validation error text.
+            formDataObj[key]['x-attrs'].placeholder = value.join(' ');
             // If the field occupies only half of the available width,
             // set width to full, so as not to create empty space next to field
             if (formDataObj[key]['x-attrs'] && formDataObj[key]['x-attrs'].field_format) {
@@ -175,6 +194,8 @@ export default {
                 formDataObj[key]['x-attrs'].field_format = 'full';
               }
             }
+            // Add the current error item to the component's validationErrors object
+            this.validationErrors[formDataObj[key].title] = value;
           }
         });
       }
@@ -222,8 +243,17 @@ export default {
   flex-basis: 100%;
 }
 .base-archival-bar-button + .base-archival-bar-button {
-    margin-left: $spacing;
- }
+  margin-left: $spacing;
+}
+.error-list {
+  margin: 1em 0 0 1em;
+}
+.error-list-indented {
+  margin: 0 0 0 2em;
+}
+.error-list-icon {
+  height: 24px; margin: 0 6px; color: $app-color;
+}
 @media screen and (max-width: $tablet) {
   .attachment-area {
     .base-archival-bar-button + .base-archival-bar-button {

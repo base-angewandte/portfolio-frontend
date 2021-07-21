@@ -225,7 +225,7 @@
   },
   "archival": {
     "fieldsMissingTitle": "Archive - Fields Missing",
-    "fieldsMissingText": "Unfortunately, some data required for archival is missing. Please fill in the following fields:",
+    "fieldsMissingText": "Unfortunately, the following conditions for archival are not met:",
     "disclaimerText": "The files, including metadata, you have selected are permanently saved in the repository. You cannot delete the files after the process is complete. In addition, by clicking on “Archive File(s)” you accept the terms of use of the repository.",
     "confirmTitle": "Archive - Confirm",
     "confirmText": "The following files will be archived:",
