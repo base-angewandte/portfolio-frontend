@@ -774,6 +774,9 @@ const actions = {
           withCredentials: true,
           xsrfCookieName: 'csrftoken_portfolio',
           xsrfHeaderName: 'X-CSRFToken',
+          headers: {
+            'Accept-Language': i18n.locale,
+          },
         });
       successArr.push(list);
     } catch (e) {
@@ -803,6 +806,9 @@ const actions = {
           withCredentials: true,
           xsrfCookieName: 'csrftoken_portfolio',
           xsrfHeaderName: 'X-CSRFToken',
+          headers: {
+            'Accept-Language': i18n.locale,
+          },
         });
       // if status code is in range 200-299
       context.commit('setArchivalValidationOutcome', 200);
