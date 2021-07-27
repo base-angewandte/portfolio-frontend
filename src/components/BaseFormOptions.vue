@@ -3,17 +3,14 @@
     :show-options="showOptions"
     @options-toggle="showOptions = $event">
     <template slot="options">
-      <a
+      <BaseButton
         v-if="getCurrentItemData && getCurrentItemData.archive_URI"
-        :href="getCurrentItemData.archive_URI"
-        target="_blank">
-        <BaseButton
-          :text="$tc('form-view.archiveButton')"
-          :has-background-color="false"
-          icon-size="large"
-          icon="link"
-          button-style="single" />
-      </a>
+        :text="$tc('form-view.archiveButton')"
+        :has-background-color="false"
+        icon-size="large"
+        icon="archive-arrow"
+        button-style="single"
+        @clicked="openArchiveUrl()" />
       <BaseButton
         :disabled="isNewForm"
         :text="isPublished ? $tc('offline') : $tc('publish')"
@@ -65,6 +62,18 @@ export default {
     ...mapGetters('data', [
       'getCurrentItemData',
     ]),
+  },
+  methods: {
+    /**
+     * Triggered when the user clicks the "View in Phaidra" button.
+     */
+    openArchiveUrl() {
+      const url = this.getCurrentItemData.archive_URI;
+      Object.assign(document.createElement('a'), {
+        target: '_blank',
+        href: url,
+      }).click();
+    },
   },
 };
 </script>

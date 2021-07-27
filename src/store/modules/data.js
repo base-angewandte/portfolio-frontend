@@ -764,7 +764,7 @@ const actions = {
    * @param list
    * @returns {Promise<[][]>}
    */
-  async archiveFiles(context, list) {
+  async archiveFiles({ state, dispatch, commit }, list) {
     const successArr = [];
     const errorArr = [];
     const media = list.join(',');
@@ -778,6 +778,9 @@ const actions = {
             'Accept-Language': i18n.locale,
           },
         });
+      // re-fetch entry data since it now contains the archive URI of the entry
+      // (which we need to display the "View in Phaidra" button immediately)
+      await dispatch('fetchEntryData', state.currentItemId);
       successArr.push(list);
     } catch (e) {
       console.error(e);
@@ -786,7 +789,7 @@ const actions = {
       // Revoke archival consent after each archival attempt;
       // this ensures that the user cannot send repeated requests
       // without seeing the wizard with the licensing agreement first.
-      context.commit('setArchiveMediaConsent', false);
+      commit('setArchiveMediaConsent', false);
     }
     return [successArr, errorArr];
   },
