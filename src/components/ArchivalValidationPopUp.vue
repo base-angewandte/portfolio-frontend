@@ -122,20 +122,26 @@ export default {
      * Used to enable the "Next" button only when all fields are filled.
      */
     isAnyGeneralPropertyEmpty() {
-      // collect the property names into an array
-      const list = Object.keys(this.getArchivalErrors).filter((key) => key !== 'data');
-      // return true on first empty property found
-      return list.some((el) => this.isEmpty(this.reactive.valueList[el]));
+      if (this.getArchivalErrors) {
+        // collect the property names into an array
+        const list = Object.keys(this.getArchivalErrors).filter((key) => key !== 'data');
+        // return true on first empty property found
+        return list.some((el) => this.isEmpty(this.reactive.valueList[el]));
+      }
+      return false;
     },
     /**
      * Return true if any single extended property is empty.
      * Used to enable the "Next" button only when all fields are filled.
      */
     isAnyExtendedPropertyEmpty() {
-      // collect the property names into an array
-      const list = Object.keys(this.getArchivalErrors.data);
-      // return true on first empty property found
-      return list.some((el) => this.isEmpty(this.reactive.valueList.data[el]));
+      if (this.getArchivalErrors.data) {
+        // collect the property names into an array
+        const list = Object.keys(this.getArchivalErrors.data);
+        // return true on first empty property found
+        return list.some((el) => this.isEmpty(this.reactive.valueList.data[el]));
+      }
+      return false;
     },
     /**
      * Return true if all fields on the pop-up mini-form are filled in, false otherwise.
