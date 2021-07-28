@@ -15,7 +15,7 @@
         drop-type="elements"
         drag-item-class="base-menu-list__list-entry"
         drop-element-name="menuEntry"
-        box-type="button"
+        render-element-as="button"
         class="file-box file-boxes-margin"
         @dropped-element="droppedEntries"
         @clicked="openEntrySelect" />
@@ -30,7 +30,7 @@
         :show-tooltip="!currentId ? true : false"
         icon="sheet-empty"
         class="file-box file-boxes-margin"
-        box-type="button"
+        render-element-as="button"
         @clicked="$emit('open-new-form')"
         @onTooltip="$emit('open-new-form')" />
 
