@@ -169,7 +169,7 @@
     "license": "Change of license",
     "archive": "Submit to archive",
     "archiveMedia": "push to archive",
-    "archiveMediad": "archived",
+    "archiveMediad": "submitted for archival",
     "publishFile": "change release state.",
     "deleteFile": "delete them.",
     "licenseFile": "change the license.",

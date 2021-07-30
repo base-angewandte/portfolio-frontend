@@ -765,8 +765,8 @@ const actions = {
    * @returns {Promise<[][]>}
    */
   async archiveFiles({ state, dispatch, commit }, list) {
-    const successArr = [];
-    const errorArr = [];
+    let successArr = [];
+    let errorArr = [];
     const media = list.join(',');
     try {
       await axios.get(`${portfolioApiUrl}archive_assets/media/${media}/`,
@@ -781,10 +781,10 @@ const actions = {
       // re-fetch entry data since it now contains the archive URI of the entry
       // (which we need to display the "View in Phaidra" button immediately)
       await dispatch('fetchEntryData', state.currentItemId);
-      successArr.push(list);
+      successArr = list;
     } catch (e) {
       console.error(e);
-      errorArr.push(list);
+      errorArr = list;
     } finally {
       // Revoke archival consent after each archival attempt;
       // this ensures that the user cannot send repeated requests

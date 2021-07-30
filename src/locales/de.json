@@ -178,7 +178,7 @@
     "changed": "geändert",
     "licensed": "geändert",
     "archiveMedia": "Archivierung",
-    "archiveMediad": "archiviert",
+    "archiveMediad": "zur Archivierung eingereicht",
     "actionSuccessTitle": "{action} erfolgreich",
     "actionSuccessSubtext": "1 {type} wurde erfolgreich {action}. | {count} {type} wurden erfolgreich {action}.",
     "actionFailed": "{action} fehlgeschlagen",
