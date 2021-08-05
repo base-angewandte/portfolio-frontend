@@ -122,12 +122,10 @@ export default {
 .base-archival-bar-button + .base-archival-bar-button {
     margin-left: $spacing;
  }
- @media screen and (max-width: $tablet) {
-  .attachment-area {
+ @media screen and (max-width: $mobile) {
     .base-archival-bar-button + .base-archival-bar-button {
       margin-left: 0;
       margin-top: $spacing;
     }
-  }
 }
 </style>

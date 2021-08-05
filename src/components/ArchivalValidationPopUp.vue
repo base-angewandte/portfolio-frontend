@@ -260,12 +260,10 @@ export default {
 .error-list-icon {
   height: 24px; margin: 0 6px; color: $app-color;
 }
-@media screen and (max-width: $tablet) {
-  .attachment-area {
-    .base-archival-bar-button + .base-archival-bar-button {
+@media screen and (max-width: $mobile) {
+  .base-archival-bar-button + .base-archival-bar-button {
       margin-left: 0;
       margin-top: $spacing;
-    }
   }
 }
 </style>
