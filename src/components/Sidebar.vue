@@ -639,7 +639,7 @@ export default {
       height: 100%;
       width: 100%;
       z-index: map-get($zindex, loader);
-      background-color: rgba(255,255,255, 0.50);
+      background-color: $loading-background;
     }
   }
 

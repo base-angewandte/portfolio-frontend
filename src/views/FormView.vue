@@ -1366,7 +1366,7 @@ export default {
         height: 100%;
         min-height: 100vh;
         z-index: map-get($zindex, loader);
-        background-color: rgba(255,255,255, 0.50);
+        background-color: $loading-background;
 
         .loader {
           position: fixed;
