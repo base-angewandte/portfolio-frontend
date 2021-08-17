@@ -129,9 +129,9 @@
             <template v-if="props.item.archive_id">
               <div class="file-archived">
                 <base-icon
-                  name="link"
-                  :title="capitalizeString($t('notify.archiveMediad'))"
-                  :aria-title="capitalizeString($t('notify.archiveMediad'))"
+                  name="archive-arrow"
+                  :title="capitalizeString($t('archival.archived'))"
+                  :aria-title="capitalizeString($t('archival.archived'))"
                   :aria-description="publishedIconDescription(props.item.original)"
                   class="published-icon" />
               </div>

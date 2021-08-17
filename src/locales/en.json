@@ -224,6 +224,7 @@
     "quotaExceeded": "Unfortunately you exceeded your quota, because you have only {space} of space left. Please remove some files to enable uploading."
   },
   "archival": {
+    "archived": "archived",
     "fieldsMissingTitle": "Archive - Fields Missing",
     "fieldsMissingText": "Unfortunately, the following conditions for archival are not met:",
     "disclaimerText": "The files, including metadata, you have selected are permanently saved in the repository. You cannot delete the files after the process is complete. In addition, by clicking on “Archive File(s)” you accept the terms of use of the repository.",
