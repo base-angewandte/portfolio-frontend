@@ -94,6 +94,7 @@
           value-prop="source"
           class="license-dropdown" />
       </template>
+      <!-- eslint-disable -->
       <template
         v-slot:result-box="props">
         <BaseImageBox
@@ -112,7 +113,7 @@
           class="linked-base-box"
           @mouseenter.native="changeVideoHoverState($event, props.index, true)"
           @mouseleave.native="changeVideoHoverState($event, props.index, false)"
-          @select-triggered="filesSelected(props.item.id, $event, props.item.published)"
+          @select-triggered="filesSelected(props.item.id, $event, props.item.published, props.item.archive_URI)"
           @clicked="$emit('show-preview', props.item)">
           <div
             slot="top">
@@ -421,11 +422,16 @@ export default {
       }
     },
     // function triggered if medium selected
-    filesSelected(objId, sel, published) {
+    filesSelected(objId, selectAll, published, archiveUri) {
       // special case publish, for all others just update selectedFiles accordingly
       if (this.action !== 'publish') {
-        if (sel) {
-          this.selectedFiles.push(objId);
+        if (selectAll) {
+          // another special case: don't select files for archival if they were already archived
+          if (this.action === 'archiveMedia' && archiveUri) {
+            // skip this file
+          } else {
+            this.selectedFiles.push(objId);
+          }
         } else {
           this.selectedFiles = this.selectedFiles.filter((entryId) => entryId !== objId);
         }
@@ -434,8 +440,7 @@ export default {
         // easier than replacing the selected value for relevant item
         this.selectedFiles = this.selectedFiles.filter((file) => file.id !== objId);
         // check if file was selected and add it with opposite value
-        /* eslint-disable-next-line */
-        if (sel) {
+        if (selectAll) {
           this.selectedFiles.push({ id: objId, selected: !published });
         }
       }
@@ -558,8 +563,19 @@ export default {
       if (listType === 'files') {
         this.selectedFiles = [];
         if (selectAll) {
-          this.attachedList
-            .forEach((file) => this.filesSelected(file.id, selectAll, file.published));
+          // eslint-disable-next-line max-len
+          this.attachedList.forEach((file) => this.filesSelected(file.id, selectAll, file.published, file.archive_URI));
+          // If action is "Push to Archive" and all attached files are already archived,
+          // the count of selected files will be 0 after executing the filesSelected function.
+          // In this case, notify the user why Select All didn't do anything
+          if (this.action === 'archiveMedia' && this.selectedFiles.length === 0) {
+            this.$notify({
+              group: 'request-notifications',
+              title: this.$t('archival.titleAlreadyArchived'),
+              text: this.$t('archival.textAlreadyArchived'),
+              type: 'warning',
+            });
+          }
         }
       } else {
         this.selectedEntries = selectAll ? this[`${listType}List`].map((entry) => entry.id) : [];

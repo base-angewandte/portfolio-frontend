@@ -234,6 +234,8 @@
     "archiveMediaConsent": "I Accept the Terms of Use.",
     "generalError": "An error has occurred during archival. Please try again later.",
     "serviceUnavailable": "The archival service is currently unavailable.",
-    "internalServerError": "An internal server error has occurred while validating data."
+    "internalServerError": "An internal server error has occurred while validating data.",
+    "titleAlreadyArchived": "Archival",
+    "textAlreadyArchived": "Please select files that are not already archived."
   }
 }
