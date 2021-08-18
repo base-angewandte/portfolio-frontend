@@ -646,7 +646,7 @@ export default {
             // if necessary update emptyFieldsList
             if (this.emptyMappingFields[key]) {
               // if a value in contributors was deleted also remove it from empty fields list
-              if (originalDataObject[key].length > value.length) {
+              if (originalDataObject[key] && originalDataObject[key].length > value.length) {
                 this.$set(this.emptyMappingFields, key, this.emptyMappingFields[key]
                   .filter((id) => value.map((val) => val.source || val.label).includes(id)));
               }
