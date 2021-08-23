@@ -228,7 +228,15 @@ export default {
       prefetchedDropDownLists: {},
       // store previous form fields in a variable in case type is deleted inbetween
       previousFormFields: {},
-      // store previous contributor entries that did not have any roles assigned
+      // store previous contributor entries that did not have any roles assigned (this is necessary
+      // in order to be able to perfectly restore the valueList after switching a type back and
+      // forth (e.g. type: 'Album' - person is entered in special field 'authors' and in
+      // 'contributors' field without any roles assigned - on type switch (e.g. 'architectural
+      // model') contributors is assigned the role 'author' - if I then switch back to type 'album'
+      // i need the entry split again into special field 'authors' and 'contributors' without roles
+      // likewise special field entries that were only added to contributors on type switch should
+      // be removed again when switching back --> this variable makes it possible to distinguish
+      // between the two
       emptyMappingFields: {},
       /**
        * store if the currentItemId has changed (on switching between entries or page reload)
@@ -644,7 +652,7 @@ export default {
           if (newDataHasFieldContent || (!newDataHasFieldContent && originalDataHasFieldContent)
             || (xAttrs.field_type === 'group')) {
             // if necessary update emptyFieldsList
-            if (this.emptyMappingFields[key]) {
+            if (this.emptyMappingFields[key] && this.emptyMappingFields[key].length) {
               // if a value in contributors was deleted also remove it from empty fields list
               if (originalDataObject[key] && originalDataObject[key].length > value.length) {
                 this.$set(this.emptyMappingFields, key, this.emptyMappingFields[key]
@@ -652,6 +660,8 @@ export default {
               }
               // take care if roles are not empty anymore
               value.forEach((val) => {
+                // TODO: this needs to be adapted should there ever be other mapping fields other
+                // than contributors - roles
                 if (val.roles && val.roles.length
                   && this.emptyMappingFields[key].includes(val.source || val.label)) {
                   this.$set(this.emptyMappingFields, key, this.emptyMappingFields[key]
@@ -1192,15 +1202,31 @@ export default {
       // (needed for both sides of mapping)
       const commonFieldData = this.valueList.data[commonFieldName];
 
-      // check if there are contributor fields that dont have roles assigned
+      // check if there are contributor fields that dont have no spezialized field (e.g. 'roles')
+      // values assigned
       this.$set(this.emptyMappingFields, commonFieldName, [
+        // get previous emptyMappingField entries
         ...this.emptyMappingFields[commonFieldName] || [],
+        // and add the ones from the valueList that are currently 'empty fields' (e.g. no roles)
         ...commonFieldData
           .reduce((array, entry) => {
+            // take an identifier that is available (for externally fetched entries id attribute,
+            // for others the label string)
             const entryId = entry[idProp] || entry[labelProp];
+            // check if the 'special field' (e.g. 'roles') does not have data in it (since this
+            // is the whole purpose - to save fields that dont have 'special field' entries - so
+            // they can be restored when the 'type' is switched back (after a different type might
+            // have added a role (because otherwise empty 'general field' entries without 'special
+            // field' (e.g. roles) entries assigned will be deleted))
             if ((!entry[fieldProp] || !entry[fieldProp].length)
+              // and the emtpyMappingFields variable does not have an entry for that general field
+              // (e.g. contributors) already
               && (!this.emptyMappingFields[commonFieldName]
+                // or the entry of that general field (e.g. contributors) does not include an entry
+                // with the entry id
                 || !this.emptyMappingFields[commonFieldName].includes(entryId))) {
+              // then add a new entry to the 'general field' (e.g. contributors) array of the
+              // emptyMappingFields variable with the id of that entry
               return array.concat([entry[idProp] || entry[labelProp]]);
             }
             return array;
@@ -1302,7 +1328,9 @@ export default {
                   // remove entry from equivalent list
                   equivalentEntry[fieldProp].splice(fieldPropIndex, 1);
                   // after that also check if there are actually any roles left - if not
-                  // delete entry from common field
+                  // delete entry from common field (if! it is not in the emptyMappingFields
+                  // (= present in the general field (e.g. 'contributors') before the type
+                  // switch)
                   if (!equivalentEntry[fieldProp].length
                     && !this.emptyMappingFields[commonFieldName]
                       .includes(newFieldEntry.source || newFieldEntry.label)) {
