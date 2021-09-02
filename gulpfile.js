@@ -29,6 +29,9 @@ gulp.task('set-header', async function () {
       .on('end', function () { log('Header file set to: ' + res.data.latest) })
   } catch (e) {
     log.warn(`WARNING: header file could not be set and default ${process.env.VUE_APP_HEADER} (might be outdated) will be used!`)
+    if (!process.env.VUE_APP_HEADER_JSON) {
+      log.warn('ATTENTION: The variable \'VUE_APP_HEADER_JSON\' seems to be missing in your .env.local file! Please set it in order to be able to get the latest header file successfully.')
+    }
     log.error(e);
   }
 });
