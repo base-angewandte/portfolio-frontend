@@ -204,7 +204,11 @@ export default {
         const [width, url] = Object.entries(size)[0];
         return { [width]: getApiUrl(url) };
       }) : [];
-      if (this.assetFilePath) {
+      // check if file is already converted
+      // a) old version: no file path was in file data if not
+      // b) new version: check for response_code - 202 means it is still converting
+      if (this.assetFilePath
+        && (!this.assetObject.response_code || this.assetObject.response_code !== 202)) {
         this.showPreview = true;
         // if previews are available use the last converted size in array to set image size
         // size only width - set maxWidth instead of width to prevent strange effects
