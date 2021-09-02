@@ -284,7 +284,7 @@ export default {
      * Turn archival on/off based on environment var
      */
     isArchivalEnabled() {
-      return JSON.parse(process.env.VUE_APP_PHAIDRA_UPLOAD);
+      return JSON.parse(process.env.VUE_APP_ARCHIVE_UPLOAD);
     },
     /**
      * Returns an array with short file names (no path) + extension for currently selected files.
