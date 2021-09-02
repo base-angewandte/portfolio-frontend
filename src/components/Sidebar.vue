@@ -12,7 +12,7 @@
           :active="isNewForm"
           :text="$t('new')"
           :disabled="isLoading"
-          icon="sheet-plus"
+          icon="add-new-object"
           icon-size="large"
           class="base-row-button"
           button-style="row"

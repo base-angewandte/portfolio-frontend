@@ -66,7 +66,7 @@
         },
         {
           text: $t('form-view.offlineMedia'),
-          icon: 'hide',
+          icon: 'eye-hide',
           value: 'offline',
           display: 'all',
         },

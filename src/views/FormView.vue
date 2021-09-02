@@ -118,7 +118,7 @@
             ? parent.type.label[$i18n.locale] : ''"
           :show-thumbnails="false"
           entry-id="parentheader"
-          icon="sheet-empty" />
+          icon="file-object" />
       </div>
 
       <!-- HEADER ROW -->
