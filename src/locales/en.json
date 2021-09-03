@@ -103,7 +103,7 @@
     "publishSubtext": "These files will be cleared for or withheld from publication respectively.",
     "licenseButton": "Change License",
     "publishButton": "Change Release State",
-    "archiveButton": "View in Phaidra",
+    "archiveButton": "View in Archive",
     "deleteButton": "Delete",
     "deleteLinkedText": "Please select entries:",
     "deleteLinkedSubtext": "The link to these entries will be deleted.",
