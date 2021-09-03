@@ -115,29 +115,24 @@
           @mouseleave.native="changeVideoHoverState($event, props.index, false)"
           @select-triggered="filesSelected(props.item.id, $event, props.item.published, props.item.archive_URI)"
           @clicked="$emit('show-preview', props.item)">
-          <div
-            slot="top">
-            <template v-if="props.item.published">
-              <div class="file-published">
-                <base-icon
-                  name="eye"
-                  :title="capitalizeString($t('notify.publishd'))"
-                  :aria-title="capitalizeString($t('notify.publishd'))"
-                  :aria-description="publishedIconDescription(props.item.original)"
-                  class="published-icon" />
-              </div>
-            </template>
-            <template v-if="props.item.archive_id">
-              <div class="file-archived">
-                <base-icon
-                  name="archive-arrow"
-                  :title="capitalizeString($t('archival.archived'))"
-                  :aria-title="capitalizeString($t('archival.archived'))"
-                  :aria-description="publishedIconDescription(props.item.original)"
-                  class="published-icon" />
-              </div>
-            </template>
-          </div>
+          <template v-slot:top>
+            <div class="status-icons">
+              <base-icon
+                v-if="props.item.published"
+                name="eye"
+                :title="capitalizeString($t('notify.publishd'))"
+                :aria-title="capitalizeString($t('notify.publishd'))"
+                :aria-description="publishedIconDescription(props.item.original)"
+                class="status-icon" />
+              <base-icon
+                v-if="props.item.archive_id"
+                name="archive-arrow"
+                :title="capitalizeString($t('archival.archived'))"
+                :aria-title="capitalizeString($t('archival.archived'))"
+                :aria-description="publishedIconDescription(props.item.original)"
+                class="status-icon" />
+            </div>              
+          </template>
         </BaseImageBox>
       </template>
     </BaseResultBoxSection>
@@ -724,38 +719,22 @@ export default {
 .attachment-area {
   .linked-base-box {
     cursor: pointer;
-    .file-published {
+    .status-icons {
       height: $icon-max;
-      width: $icon-max;
+      max-width: 100%;
       position: absolute;
       border-radius: $icon-max/2;
       background: radial-gradient(closest-side,
         rgba(255,255,255,1) 50%,
         rgba(255,255,255,0) 100%);
-      right: -$spacing-small;
-      top: -$spacing-small;
+      right: 0;
+      top: 0;
+      padding: 0 $icon-medium;
       display: flex;
-      .published-icon {
+      .status-icon {
         height: $icon-medium;
-        max-width: $icon-medium;
-        margin: auto;
-      }
-    }
-    .file-archived {
-      height: $icon-max;
-      width: $icon-max;
-      position: absolute;
-      border-radius: $icon-max/2;
-      background: radial-gradient(closest-side,
-        rgba(255,255,255,1) 50%,
-        rgba(255,255,255,0) 100%);
-      right: $spacing-small*2;
-      top: -$spacing-small;
-      display: flex;
-      .published-icon {
-        height: $icon-medium;
-        max-width: $icon-medium;
-        margin: auto;
+        width: $icon-medium;
+        margin: $icon-medium 0 0 $icon-min/2;
       }
     }
   }
