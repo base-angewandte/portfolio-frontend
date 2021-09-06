@@ -114,7 +114,7 @@
           @mouseenter.native="changeVideoHoverState($event, props.index, true)"
           @mouseleave.native="changeVideoHoverState($event, props.index, false)"
           @select-triggered="filesSelected(props.item.id, $event, props.item.published, props.item.archive_URI)"
-          @clicked="$emit('show-preview', props.item)">
+          @clicked="onAttachmentClicked(props.selectActive, props.item)">
           <template v-slot:top>
             <div class="status-icons">
               <base-icon
@@ -709,6 +709,17 @@ export default {
     proceedToArchival() {
       this.showArchivalAgreementPopUp = false;
       this.saveFileMeta('archiveMedia');
+    },
+    /**
+     * Occurs when an attachment is clicked.
+     */
+    onAttachmentClicked(isSelectActive, item) {
+      // if the attachment area is expanded (active) and this attachment is archived
+      if (isSelectActive && item.archive_URI) {
+        // don't show any preview (#1496)
+      } else {
+        this.$emit('show-preview', item);
+      }
     },
   },
 };
