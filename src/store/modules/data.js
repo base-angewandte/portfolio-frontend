@@ -779,7 +779,7 @@ const actions = {
           },
         });
       // re-fetch entry data since it now contains the archive URI of the entry
-      // (which we need to display the "View in Phaidra" button immediately)
+      // (which we need to display the "View in Archive" button immediately)
       await dispatch('fetchEntryData', state.currentItemId);
       successArr = list;
     } catch (e) {

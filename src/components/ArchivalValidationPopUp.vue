@@ -69,10 +69,9 @@
       <base-button
         button-style="single"
         :text="$t('next')"
-        icon="archive-arrow"
+        icon="save-file-thin"
         icon-position="right"
         icon-size="small"
-        :disabled="!isFormFilled"
         class="base-archival-bar-button"
         @clicked="onNext" />
     </template>
@@ -117,42 +116,6 @@ export default {
       'getExtensionSchema',
       'getCurrentItemData',
     ]),
-    /**
-     * Return true if any single general property is empty.
-     * Used to enable the "Next" button only when all fields are filled.
-     */
-    isAnyGeneralPropertyEmpty() {
-      if (this.getArchivalErrors) {
-        // collect the property names into an array
-        const list = Object.keys(this.getArchivalErrors).filter((key) => key !== 'data');
-        // return true on first empty property found
-        return list.some((el) => this.isEmpty(this.reactive.valueList[el]));
-      }
-      return false;
-    },
-    /**
-     * Return true if any single extended property is empty.
-     * Used to enable the "Next" button only when all fields are filled.
-     */
-    isAnyExtendedPropertyEmpty() {
-      if (this.getArchivalErrors.data) {
-        // collect the property names into an array
-        const list = Object.keys(this.getArchivalErrors.data);
-        // return true on first empty property found
-        return list.some((el) => this.isEmpty(this.reactive.valueList.data[el]));
-      }
-      return false;
-    },
-    /**
-     * Return true if all fields on the pop-up mini-form are filled in, false otherwise.
-     * Used to enable the "Next" button conditionally.
-     */
-    isFormFilled() {
-      if (!this.isAnyGeneralPropertyEmpty && !this.isAnyExtendedPropertyEmpty) {
-        return true;
-      }
-      return false;
-    },
   },
   mounted() {
     // Create open API data (field structure) for both forms
@@ -206,31 +169,6 @@ export default {
         });
       }
       return formDataObj;
-    },
-    /**
-     * Returns true if argument v has an empty value.
-     * For example, it returns true if v is an array and it has no items,
-     * or if v is an empty string, or if v is null or undefined.
-     * v is expected to be string, object, array, null, or undefined.
-     * Any other types will return false (since, e.g., boolean type cannot be an empty value).
-     * @param {*} v The value to check; this can be a primitive or an object type
-     */
-    isEmpty(v) {
-      const type = Array.isArray(v) ? 'array' : typeof v;
-      switch (type) {
-      case 'null':
-        return true;
-      case 'undefined':
-        return true;
-      case 'object':
-        return !(v && Object.keys(v).length > 0);
-      case 'array':
-        return !(v.length > 0);
-      case 'string':
-        return !v;
-      default:
-        return false;
-      }
     },
   },
 };
