@@ -71,27 +71,24 @@
         @values-changed="handleInput($event)"
         @fetch-autocomplete="fetchAutocomplete" />
 
-      <transition-group
-        name="slide-fade-form">
-        <!-- SAVE ROW (only on mobile) -->
-        <BaseRow
-          v-if="!formIsLoading && formDataPresent"
-          key="mobile-save-row"
-          :unsaved-changes="unsavedChanges"
-          :is-saving="dataSaving"
-          :show-title="false"
-          class="mobile-save-row"
-          @save="saveForm"
-          @return="returnFromForm" />
+      <!-- SAVE ROW (only on mobile) -->
+      <BaseRow
+        v-if="!formIsLoading && formDataPresent"
+        key="mobile-save-row"
+        :unsaved-changes="unsavedChanges"
+        :is-saving="dataSaving"
+        :show-title="false"
+        class="mobile-save-row"
+        @save="saveForm"
+        @return="returnFromForm" />
 
-        <!-- ATTACHMENTS -->
-        <AttachmentArea
-          v-if="!formIsLoading && formDataPresent"
-          key="attachments"
-          @open-new-form="openNewForm"
-          @show-preview="$emit('show-preview', $event)"
-          @open-linked="goToLinked" />
-      </transition-group>
+      <!-- ATTACHMENTS -->
+      <AttachmentArea
+        v-if="!formIsLoading && formDataPresent"
+        key="attachments"
+        @open-new-form="openNewForm"
+        @show-preview="$emit('show-preview', $event)"
+        @open-linked="goToLinked" />
       <transition name="slide-child-form">
         <BaseForm
           v-if="showOverlay"
