@@ -634,10 +634,12 @@ export default {
           try {
             // save main form via injected method
             await this.saveMainForm(false);
+            this.runArchivalWizard();
           } catch (e) {
             console.error(e);
+          } finally {
+            this.$store.commit('data/hidePopUp');
           }
-          this.$store.commit('data/hidePopUp');
         },
         actionLeft: () => {
           this.$store.commit('data/hidePopUp');
