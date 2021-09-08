@@ -246,7 +246,7 @@ const mutations = {
     state.currentItemId = obj.id;
   },
   setCurrentItemData(state, obj) {
-    state.currentItemData = obj;
+    state.currentItemData = JSON.parse(JSON.stringify(obj));
   },
   deleteCurrentItem(state) {
     state.currentItemId = null;
@@ -850,7 +850,7 @@ const actions = {
     await Promise.all(Object.keys(data).map(async (key) => {
       const field = fields[key];
       const xAttrs = field ? field['x-attrs'] : {};
-      let values = data[key];
+      let values = JSON.parse(JSON.stringify(data[key]));
       // if the field does not exist in schema = this is not an allowed property -
       // or field (but only json fields not main schema ones!
       // (distinguishable by x-nullable property!)) does not contain any values return
