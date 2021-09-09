@@ -29,6 +29,7 @@
       <base-button
         button-style="single"
         :text="$t('cancel')"
+        :disabled="getIsArchivalBusy"
         icon="remove"
         icon-position="right"
         icon-size="small"
@@ -37,12 +38,20 @@
       <base-button
         button-style="single"
         :text="$t('archival.archiveWizardButton')"
-        icon="archive-arrow"
+        :icon="getIsArchivalBusy ? '' : 'archive-arrow'"
         icon-position="right"
         icon-size="small"
-        :disabled="!getArchiveMediaConsent"
+        :disabled="!getArchiveMediaConsent || getIsArchivalBusy"
         class="base-archival-bar-button"
-        @clicked="onNext" />
+        @clicked="onNext">
+        <template
+          v-if="getIsArchivalBusy"
+          slot="right-of-text">
+          <span class="base-upload-bar-loader">
+            <BaseLoader />
+          </span>
+        </template>
+      </base-button>
     </template>
   </base-pop-up>
 </template>
@@ -73,6 +82,7 @@ export default {
   computed: {
     ...mapGetters('data', [
       'getArchiveMediaConsent',
+      'getIsArchivalBusy',
     ]),
   },
   methods: {
@@ -118,6 +128,12 @@ export default {
 }
 .base-archival-bar-button {
   flex-basis: 100%;
+    .base-upload-bar-loader {
+      position: relative;
+      transform: scale(0.5);
+      margin-left: $spacing;
+      padding-left: $spacing;
+    }
 }
 .base-archival-bar-button + .base-archival-bar-button {
     margin-left: $spacing;
