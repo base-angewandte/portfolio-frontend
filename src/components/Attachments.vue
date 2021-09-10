@@ -60,7 +60,7 @@
           v-if="isArchivalEnabled"
           :text="$t('form-view.archiveMedia')"
           icon-size="large"
-          icon="archive-arrow"
+          icon="archive-sheets"
           button-style="single"
           @clicked="scope.setAction('archiveMedia')" />
         <BaseButton
@@ -100,7 +100,7 @@
         <BaseImageBox
           :key="props.item.id"
           :show-title="true"
-          :selectable="props.selectActive && (action !== 'archiveMedia' || !props.item.archive_URI)"
+          :selectable="isImageBoxSelectable(props.selectActive, props.item)"
           :selected="selectedFiles.map(file => file.id || file).includes(props.item.id)"
           :title="props.item.original ? getFileName(props.item.original) : props.item.id"
           :subtext="getLicenseLabel(props.item.license)"
@@ -126,9 +126,16 @@
                 class="status-icon" />
               <base-icon
                 v-if="props.item.archive_id"
-                name="archive-arrow"
+                name="archive-sheets"
                 :title="capitalizeString($t('archival.archived'))"
                 :aria-title="capitalizeString($t('archival.archived'))"
+                :aria-description="publishedIconDescription(props.item.original)"
+                class="status-icon" />
+              <base-icon
+                v-if="!props.item.archive_id && getArchivingMedia.includes(props.item.id)"
+                name="archive-arrow"
+                :title="capitalizeString($t('archival.submitted'))"
+                :aria-title="capitalizeString($t('archival.submitted'))"
                 :aria-description="publishedIconDescription(props.item.original)"
                 class="status-icon" />
             </div>              
@@ -271,9 +278,6 @@ export default {
     isConverting() {
       return this.attachedList.some((file) => !file.metadata);
     },
-    isArchiving() {
-      return this.attachedList.some((file) => file.archive_URI === '');
-    },
     licenses() {
       return this.$store.getters['data/getPrefetchedTypes']('medialicenses', 'source');
     },
@@ -285,6 +289,7 @@ export default {
       'getIsFormSaved',
       'getArchiveMediaConsent',
       'getIsArchivalBusy',
+      'getArchivingMedia',
     ]),
     /**
      * Turn archival on/off based on environment var
@@ -534,7 +539,8 @@ export default {
         this.timeout = null;
       }
       // request media data again in a minute if media are still converting
-      if (this.isConverting || this.isArchiving) {
+      // or in the "submitted for archival" state
+      if (this.isConverting || this.getArchivingMedia.length > 0) {
         this.timeout = setTimeout(() => {
           this.fetchMedia();
         }, 60000);
@@ -721,6 +727,16 @@ export default {
       } else {
         this.$emit('show-preview', item);
       }
+    },
+    /**
+     * Returns true if the image box is selectable for the item
+     * supplied as argument, false otherwise.
+     */
+    isImageBoxSelectable(isSelectActive, item) {
+      if (!isSelectActive) return false;
+      if (this.action === 'archiveMedia' && item.archive_URI) return false;
+      if (this.action === 'archiveMedia' && this.getArchivingMedia.includes(item.id)) return false;
+      return true;
     },
   },
 };

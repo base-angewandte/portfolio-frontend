@@ -38,7 +38,7 @@
       <base-button
         button-style="single"
         :text="$t('archival.archiveWizardButton')"
-        :icon="getIsArchivalBusy ? '' : 'archive-arrow'"
+        :icon="getIsArchivalBusy ? '' : 'archive-sheets'"
         icon-position="right"
         icon-size="small"
         :disabled="!getArchiveMediaConsent || getIsArchivalBusy"

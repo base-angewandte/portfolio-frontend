@@ -173,6 +173,8 @@ const state = {
   isArchivalBusy: false,
   // true if the validation for archival operation is currently in progress
   isValidatingForArchival: false,
+  // stores media asset IDs where an asynchronous archival operation is in progress
+  archivingMedia: [],
 };
 
 const getters = {
@@ -245,6 +247,9 @@ const getters = {
   },
   getIsValidatingForArchival(state) {
     return state.isValidatingForArchival;
+  },
+  getArchivingMedia(state) {
+    return state.archivingMedia;
   },
 };
 
@@ -380,6 +385,28 @@ const mutations = {
   },
   setIsValidatingForArchival(state, val) {
     state.isValidatingForArchival = val;
+  },
+  setArchivingMedia(state, list) {
+    state.archivingMedia = list;
+  },
+  /**
+   * This mutation updates the list of media asset IDs
+   * submitted for archival but not yet archived (#1495).
+  */
+  updateArchivingMedia(state) {
+    // get all currently archived media IDs
+    const archivedMediaIDs = state.linkedMedia
+      .filter((entry) => entry.archive_URI)
+      .map((entry) => entry.id);
+    // create a deep clone of the archivingMedia array
+    const updatedIDs = JSON.parse(JSON.stringify(state.archivingMedia));
+    // if *archived* IDs include any of the *archiving* IDs, remove the latter from the store
+    state.archivingMedia.forEach((id) => {
+      if (archivedMediaIDs.includes(id)) {
+        updatedIDs.pop(id);
+      }
+    });
+    state.archivingMedia = updatedIDs;
   },
 };
 
@@ -595,6 +622,10 @@ const actions = {
     } else {
       commit('setMedia', { list: [], replace: true });
     }
+    //  if there are media IDs submitted for archival but not confirmed as archived yet
+    if (state.archivingMedia.length > 0) {
+      commit('updateArchivingMedia');
+    }
   },
   addOrUpdateEntry({ commit }, data) {
     // eslint-disable-next-line no-async-promise-executor
@@ -796,6 +827,8 @@ const actions = {
             'Accept-Language': i18n.locale,
           },
         });
+      // update the state to indicate that media assets are submitted for archival
+      commit('setArchivingMedia', list);
       // re-fetch entry data since it now contains the archive URI of the entry
       // (which we need to display the "View in Archive" button immediately)
       await dispatch('fetchEntryData', state.currentItemId);
