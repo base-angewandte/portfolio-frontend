@@ -71,27 +71,24 @@
         @values-changed="handleInput($event)"
         @fetch-autocomplete="fetchAutocomplete" />
 
-      <transition-group
-        name="slide-fade-form">
-        <!-- SAVE ROW (only on mobile) -->
-        <BaseRow
-          v-if="!formIsLoading && formDataPresent"
-          key="mobile-save-row"
-          :unsaved-changes="unsavedChanges"
-          :is-saving="dataSaving"
-          :show-title="false"
-          class="mobile-save-row"
-          @save="saveForm"
-          @return="returnFromForm" />
+      <!-- SAVE ROW (only on mobile) -->
+      <BaseRow
+        v-if="!formIsLoading && formDataPresent"
+        key="mobile-save-row"
+        :unsaved-changes="unsavedChanges"
+        :is-saving="dataSaving"
+        :show-title="false"
+        class="mobile-save-row"
+        @save="saveForm"
+        @return="returnFromForm" />
 
-        <!-- ATTACHMENTS -->
-        <AttachmentArea
-          v-if="!formIsLoading && formDataPresent"
-          key="attachments"
-          @open-new-form="openNewForm"
-          @show-preview="$emit('show-preview', $event)"
-          @open-linked="goToLinked" />
-      </transition-group>
+      <!-- ATTACHMENTS -->
+      <AttachmentArea
+        v-if="!formIsLoading && formDataPresent"
+        key="attachments"
+        @open-new-form="openNewForm"
+        @show-preview="$emit('show-preview', $event)"
+        @open-linked="goToLinked" />
       <transition name="slide-child-form">
         <BaseForm
           v-if="showOverlay"
@@ -206,7 +203,6 @@ export default {
   },
   data() {
     return {
-      dataSaving: false,
       valueList: {},
       // original data object to compare (unsaved changes) or reset
       valueListOriginal: {},
@@ -342,6 +338,9 @@ export default {
     },
     fieldsList() {
       return { ...this.formFields, ...this.formFieldsExtension };
+    },
+    dataSaving() {
+      return this.$store.getters['data/getIsFormSaving'];
     },
   },
   watch: {
@@ -677,7 +676,7 @@ export default {
     async saveForm(routeToNewEntry = true) {
       // check if there is a title (only requirement for saving)
       if (this.valueList.title) {
-        this.dataSaving = true;
+        this.$store.commit('data/setIsFormSaving', true);
         const validData = await this.$store.dispatch('data/removeUnknownProps', { data: this.valueList, fields: this.formFields });
         try {
           // check if the route indicates an already saved entry or a new entry
@@ -732,7 +731,7 @@ export default {
             type: 'success',
           });
           this.valueListOriginal = { ...JSON.parse(JSON.stringify(this.valueList)) };
-          this.dataSaving = false;
+          this.$store.commit('data/setIsFormSaving', false);
           return true;
         } catch (e) {
           console.error(e);
@@ -742,7 +741,7 @@ export default {
             text: e.message,
             type: 'error',
           });
-          this.dataSaving = false;
+          this.$store.commit('data/setIsFormSaving', false);
           return false;
         }
       } else {

@@ -8,7 +8,7 @@
         :text="$tc('form-view.archiveButton')"
         :has-background-color="false"
         icon-size="large"
-        icon="archive-arrow"
+        icon="archive-sheets"
         button-style="single"
         @clicked="openArchiveUrl()" />
       <BaseButton
@@ -65,7 +65,7 @@ export default {
   },
   methods: {
     /**
-     * Triggered when the user clicks the "View in Phaidra" button.
+     * Triggered when the user clicks the "View in Archive" button.
      */
     openArchiveUrl() {
       const url = this.getCurrentItemData.archive_URI;

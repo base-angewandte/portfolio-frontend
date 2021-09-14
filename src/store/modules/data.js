@@ -167,8 +167,14 @@ const state = {
   archiveMediaConsent: false,
   // stores whether the currently loaded form is saved
   isFormSaved: true,
-  // true when there is an in-progress task related to archival
+  // true if there is an in progress save operation on the main form
+  isFormSaving: false,
+  // true when the long-term archival operation is in progress
   isArchivalBusy: false,
+  // true if the validation for archival operation is currently in progress
+  isValidatingForArchival: false,
+  // stores media asset IDs where an asynchronous archival operation is in progress
+  archivingMedia: [],
 };
 
 const getters = {
@@ -230,11 +236,20 @@ const getters = {
   getIsFormSaved(state) {
     return state.isFormSaved;
   },
+  getIsFormSaving(state) {
+    return state.isFormSaving;
+  },
   getArchiveMediaConsent(state) {
     return state.archiveMediaConsent;
   },
   getIsArchivalBusy(state) {
     return state.isArchivalBusy;
+  },
+  getIsValidatingForArchival(state) {
+    return state.isValidatingForArchival;
+  },
+  getArchivingMedia(state) {
+    return state.archivingMedia;
   },
 };
 
@@ -246,7 +261,7 @@ const mutations = {
     state.currentItemId = obj.id;
   },
   setCurrentItemData(state, obj) {
-    state.currentItemData = obj;
+    state.currentItemData = JSON.parse(JSON.stringify(obj));
   },
   deleteCurrentItem(state) {
     state.currentItemId = null;
@@ -353,6 +368,9 @@ const mutations = {
   setIsFormSaved(state, val) {
     state.isFormSaved = val;
   },
+  setIsFormSaving(state, val) {
+    state.isFormSaving = val;
+  },
   setArchiveMediaConsent(state, val) {
     state.archiveMediaConsent = val;
   },
@@ -364,6 +382,31 @@ const mutations = {
   },
   setIsArchivalBusy(state, val) {
     state.isArchivalBusy = val;
+  },
+  setIsValidatingForArchival(state, val) {
+    state.isValidatingForArchival = val;
+  },
+  setArchivingMedia(state, list) {
+    state.archivingMedia = list;
+  },
+  /**
+   * This mutation updates the list of media asset IDs
+   * submitted for archival but not yet archived (#1495).
+  */
+  updateArchivingMedia(state) {
+    // get all currently archived media IDs
+    const archivedMediaIDs = state.linkedMedia
+      .filter((entry) => entry.archive_URI)
+      .map((entry) => entry.id);
+    // create a deep clone of the archivingMedia array
+    const updatedIDs = JSON.parse(JSON.stringify(state.archivingMedia));
+    // if *archived* IDs include any of the *archiving* IDs, remove the latter from the store
+    state.archivingMedia.forEach((id) => {
+      if (archivedMediaIDs.includes(id)) {
+        updatedIDs.pop(id);
+      }
+    });
+    state.archivingMedia = updatedIDs;
   },
 };
 
@@ -579,6 +622,10 @@ const actions = {
     } else {
       commit('setMedia', { list: [], replace: true });
     }
+    //  if there are media IDs submitted for archival but not confirmed as archived yet
+    if (state.archivingMedia.length > 0) {
+      commit('updateArchivingMedia');
+    }
   },
   addOrUpdateEntry({ commit }, data) {
     // eslint-disable-next-line no-async-promise-executor
@@ -769,6 +816,8 @@ const actions = {
     let errorArr = [];
     const media = list.join(',');
     try {
+      // start showing busy state
+      commit('setIsArchivalBusy', true);
       await axios.get(`${portfolioApiUrl}archive_assets/media/${media}/`,
         {
           withCredentials: true,
@@ -778,8 +827,10 @@ const actions = {
             'Accept-Language': i18n.locale,
           },
         });
+      // update the state to indicate that media assets are submitted for archival
+      commit('setArchivingMedia', list);
       // re-fetch entry data since it now contains the archive URI of the entry
-      // (which we need to display the "View in Phaidra" button immediately)
+      // (which we need to display the "View in Archive" button immediately)
       await dispatch('fetchEntryData', state.currentItemId);
       successArr = list;
     } catch (e) {
@@ -790,6 +841,8 @@ const actions = {
       // this ensures that the user cannot send repeated requests
       // without seeing the wizard with the licensing agreement first.
       commit('setArchiveMediaConsent', false);
+      // stop showing busy state
+      commit('setIsArchivalBusy', false);
     }
     return [successArr, errorArr];
   },
@@ -800,7 +853,7 @@ const actions = {
   async validateArchivalData(context, selectedFiles) {
     try {
       // change state to indicate a long in-progress task
-      context.commit('setIsArchivalBusy', true);
+      context.commit('setIsValidatingForArchival', true);
       // prepare the url param
       const param = selectedFiles.join(',');
       // await the validation response from the api
@@ -842,7 +895,7 @@ const actions = {
       }
     } finally {
       // update state to indicate the end of the long in-progress task
-      context.commit('setIsArchivalBusy', false);
+      context.commit('setIsValidatingForArchival', false);
     }
   },
   async removeUnknownProps({ state, dispatch }, { data, fields }) {
@@ -850,7 +903,7 @@ const actions = {
     await Promise.all(Object.keys(data).map(async (key) => {
       const field = fields[key];
       const xAttrs = field ? field['x-attrs'] : {};
-      let values = data[key];
+      let values = JSON.parse(JSON.stringify(data[key]));
       // if the field does not exist in schema = this is not an allowed property -
       // or field (but only json fields not main schema ones!
       // (distinguishable by x-nullable property!)) does not contain any values return

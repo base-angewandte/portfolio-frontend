@@ -108,7 +108,7 @@ export default {
         infoStringArray.push(`${this.$t('license')}: ${getLangLabel(this.assetObject.license.label, this.$i18n.locale, true)}`);
       }
       if (this.assetObject.archive_URI && this.assetObject.archive_URI !== '') {
-        infoStringArray.push(`Phaidra-ID: ${this.assetObject.archive_id}`);
+        infoStringArray.push(`Archive-ID: ${this.assetObject.archive_id}`);
       }
       infoStringArray.push(`${this.$t('status')}: ${this.assetObject.published
         ? this.$t('public') : this.$t('private')}`);

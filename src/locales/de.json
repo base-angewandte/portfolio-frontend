@@ -98,7 +98,7 @@
     "publishSubtext": "Diese Dateien werden für Showroom freigegeben bzw. nicht in Showroom angezeigt.",
     "licenseButton": "Lizenz Ändern",
     "publishButton": "Freigabestatus ändern",
-    "archiveButton": "In Phaidra sehen",
+    "archiveButton": "Im Archiv ansehen",
     "deleteButton": "Löschen",
     "deleteLinkedText": "Bitte Einträge auswählen:",
     "deleteLinkedSubtext": "Die Verknüfung zu diesen Einträgen wird gelöscht.",
@@ -220,6 +220,7 @@
   },
   "archival": {
     "archived": "archiviert",
+    "submitted": "zur Archivierung eingereicht",
     "fieldsMissingTitle": "Archivierung - Fehlende Felder",
     "fieldsMissingText": "Leider sind die folgenden Bedingungen für die Archivierung nicht erfüllt:",
     "disclaimerText": "Die von Ihnen ausgewählten Dateien, einschließlich der Metadaten, werden dauerhaft im Repositorium gespeichert. Sie können die Dateien nach Abschluss des Vorgangs nicht mehr löschen. Wenn Sie auf „Datei(en) archivieren“ klicken, akzeptieren Sie außerdem die Nutzungsbedingungen des Repositoriums.",
