@@ -60,7 +60,7 @@
           v-if="isArchivalEnabled"
           :text="$t('form-view.archiveMedia')"
           icon-size="large"
-          icon="archive-arrow"
+          icon="archive-sheets"
           button-style="single"
           @clicked="scope.setAction('archiveMedia')" />
         <BaseButton
@@ -100,7 +100,7 @@
         <BaseImageBox
           :key="props.item.id"
           :show-title="true"
-          :selectable="props.selectActive && (action !== 'archiveMedia' || !props.item.archive_URI)"
+          :selectable="isImageBoxSelectable(props.selectActive, props.item)"
           :selected="selectedFiles.map(file => file.id || file).includes(props.item.id)"
           :title="props.item.original ? getFileName(props.item.original) : props.item.id"
           :subtext="getLicenseLabel(props.item.license)"
@@ -126,9 +126,16 @@
                 class="status-icon" />
               <base-icon
                 v-if="props.item.archive_id"
-                name="archive-arrow"
+                name="archive-sheets"
                 :title="capitalizeString($t('archival.archived'))"
                 :aria-title="capitalizeString($t('archival.archived'))"
+                :aria-description="publishedIconDescription(props.item.original)"
+                class="status-icon" />
+              <base-icon
+                v-if="!props.item.archive_id && getArchivingMedia.includes(props.item.id)"
+                name="archive-arrow"
+                :title="capitalizeString($t('archival.submitted'))"
+                :aria-title="capitalizeString($t('archival.submitted'))"
                 :aria-description="publishedIconDescription(props.item.original)"
                 class="status-icon" />
             </div>              
@@ -172,8 +179,16 @@
       </template>
     </BaseResultBoxSection>
 
+    <!-- ARCHIVAL UNSAVED POP-UP -->
+    <archival-unsaved-pop-up
+      v-if="showArchivalUnsavedPopUp"
+      :is-pop-up-open="showArchivalUnsavedPopUp"
+      @cancel-unsaved="this.showArchivalUnsavedPopUp = false"
+      @save-form="saveData()" />
+
     <!-- ARCHIVAL VALIDATION POP-UP -->
     <archival-validation-pop-up
+      ref="validationPopUp"
       v-if="showArchivalValidationPopUp"
       :is-pop-up-open="showArchivalValidationPopUp"
       @cancel-validation="cancelArchivalValidation"
@@ -193,11 +208,12 @@
 import { mapGetters } from 'vuex';
 import { userInfo } from '../mixins/userInfo';
 import { capitalizeString, getApiUrl, getLangLabel } from '../utils/commonUtils';
+import ArchivalUnsavedPopUp from './ArchivalUnsavedPopUp';
 import ArchivalValidationPopUp from './ArchivalValidationPopUp';
 import ArchivalAgreementPopUp from './ArchivalAgreementPopUp';
 
 export default {
-  components: { ArchivalValidationPopUp, ArchivalAgreementPopUp },
+  components: { ArchivalUnsavedPopUp, ArchivalValidationPopUp, ArchivalAgreementPopUp },
   mixins: [userInfo],
   // inject method used to save or discard the main form from child components of any depth
   inject: ['saveMainForm', 'discardMainForm'],
@@ -249,6 +265,8 @@ export default {
       entriesLoading: false,
       filesLoading: false,
       capitalizeString,
+      // show/hide the archival unsaved pop-up
+      showArchivalUnsavedPopUp: false,
       // show/hide the archival validation pop-up
       showArchivalValidationPopUp: false,
       // show/hide the archival licensing agreement pop-up
@@ -259,9 +277,6 @@ export default {
     // variable for checking if there are still unconverted files
     isConverting() {
       return this.attachedList.some((file) => !file.metadata);
-    },
-    isArchiving() {
-      return this.attachedList.some((file) => file.archive_URI === '');
     },
     licenses() {
       return this.$store.getters['data/getPrefetchedTypes']('medialicenses', 'source');
@@ -274,6 +289,7 @@ export default {
       'getIsFormSaved',
       'getArchiveMediaConsent',
       'getIsArchivalBusy',
+      'getArchivingMedia',
     ]),
     /**
      * Turn archival on/off based on environment var
@@ -377,6 +393,7 @@ export default {
         this.action = '';
         this.selectedFiles = [];
         this.licenseSelected = {};
+        this.showArchivalAgreementPopUp = false;
       }
       this.filesLoading = false;
     },
@@ -522,7 +539,8 @@ export default {
         this.timeout = null;
       }
       // request media data again in a minute if media are still converting
-      if (this.isConverting || this.isArchiving) {
+      // or in the "submitted for archival" state
+      if (this.isConverting || this.getArchivingMedia.length > 0) {
         this.timeout = setTimeout(() => {
           this.fetchMedia();
         }, 60000);
@@ -586,7 +604,7 @@ export default {
     async runArchivalWizard() {
       // if form is not saved, notify the user to save first
       if (!this.getIsFormSaved) {
-        this.openSaveBeforeArchivalPopUp();
+        this.showArchivalUnsavedPopUp = true;
       } else {
         // first set any previous archival validation outcome to void
         this.$store.commit('data/setArchivalValidationOutcome', null);
@@ -595,12 +613,15 @@ export default {
         if (this.getArchivalValidationOutcome) {
           switch (this.getArchivalValidationOutcome) {
           case 200:
+            this.showArchivalValidationPopUp = false;
             // display the agreement wizard page
             this.displayArchivalAgreement();
             break;
           case 400:
-            // display the validation wizard page
+            // display the validation popup
             this.showArchivalValidationPopUp = true;
+            // reload the popup's form if this is a revalidation
+            if (this.$refs.validationPopUp) this.$refs.validationPopUp.reloadForm();
             break;
           case 500:
             this.failArchivalValidation(this.$t('archival.internalServerError'));
@@ -619,32 +640,18 @@ export default {
       }
     },
     /**
-     * Open a "Save First" dialog box if user attempts to archive unsaved entry
+     * Saves the main form data from the "archival unsaved" pop-up
      */
-    openSaveBeforeArchivalPopUp() {
-      this.$store.commit('data/setPopUp', {
-        show: true,
-        header: this.$t('notify.archive'),
-        textTitle: this.$t('notify.saveBeforeArchive'),
-        textList: [],
-        icon: 'save-file',
-        buttonTextRight: this.$t('notify.saveChanges'),
-        buttonTextLeft: this.$t('cancel'),
-        actionRight: async () => {
-          try {
-            // save main form via injected method
-            await this.saveMainForm(false);
-            this.runArchivalWizard();
-          } catch (e) {
-            console.error(e);
-          } finally {
-            this.$store.commit('data/hidePopUp');
-          }
-        },
-        actionLeft: () => {
-          this.$store.commit('data/hidePopUp');
-        },
-      });
+    async saveData() {
+      try {
+        // save main form via injected method
+        await this.saveMainForm(false);
+        this.runArchivalWizard();
+      } catch (e) {
+        console.error(e);
+      } finally {
+        this.showArchivalUnsavedPopUp = false;
+      }
     },
     /**
      * Displays the agreement pop-up only if we have the filenames
@@ -690,6 +697,7 @@ export default {
      * Triggered when the user clicks "Cancel" on the archival agreement pop-up
      */
     cancelArchivalAgreement() {
+      this.showArchivalValidationPopUp = false;
       this.showArchivalAgreementPopUp = false;
     },
     /**
@@ -697,8 +705,6 @@ export default {
      * the missing archival fields on the archival validation pop-up and clicks "Next".
      */
     async validateArchivalFields() {
-      // Explicitly close the pop-up to destroy the current instance if one was already running
-      this.showArchivalValidationPopUp = false;
       // Wait for the main form to be saved
       await this.saveMainForm(false);
       // Initiate the archival routine again
@@ -709,7 +715,6 @@ export default {
      * (validation, licensing agreement) have been completed.
      */
     proceedToArchival() {
-      this.showArchivalAgreementPopUp = false;
       this.saveFileMeta('archiveMedia');
     },
     /**
@@ -722,6 +727,16 @@ export default {
       } else {
         this.$emit('show-preview', item);
       }
+    },
+    /**
+     * Returns true if the image box is selectable for the item
+     * supplied as argument, false otherwise.
+     */
+    isImageBoxSelectable(isSelectActive, item) {
+      if (!isSelectActive) return false;
+      if (this.action === 'archiveMedia' && item.archive_URI) return false;
+      if (this.action === 'archiveMedia' && this.getArchivingMedia.includes(item.id)) return false;
+      return true;
     },
   },
 };

@@ -8,7 +8,7 @@
         :text="$tc('form-view.archiveButton')"
         :has-background-color="false"
         icon-size="large"
-        icon="archive-arrow"
+        icon="archive-sheets"
         button-style="single"
         @clicked="openArchiveUrl()" />
       <BaseButton
