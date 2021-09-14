@@ -138,7 +138,7 @@
                 :aria-title="capitalizeString($t('archival.submitted'))"
                 :aria-description="publishedIconDescription(props.item.original)"
                 class="status-icon" />
-            </div>              
+            </div>
           </template>
         </BaseImageBox>
       </template>
@@ -748,21 +748,27 @@ export default {
   .linked-base-box {
     cursor: pointer;
     .status-icons {
-      height: $icon-max;
       max-width: 100%;
       position: absolute;
-      border-radius: $icon-max/2;
       background: radial-gradient(closest-side,
         rgba(255,255,255,1) 50%,
         rgba(255,255,255,0) 100%);
       right: 0;
-      top: 0;
-      padding: 0 $icon-medium;
+      top: -$spacing-small;
+      padding: $spacing-small $spacing-small;
       display: flex;
+      flex-direction: column;
       .status-icon {
         height: $icon-medium;
         width: $icon-medium;
-        margin: $icon-medium 0 0 $icon-min/2;
+        margin: $spacing-small/2 $spacing-small;
+
+        &:first-of-type {
+          margin-top: $spacing-small;
+        }
+        &:last-child {
+          margin-bottom: $spacing-small;
+        }
       }
     }
   }
