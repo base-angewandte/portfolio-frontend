@@ -12,6 +12,14 @@
         button-style="single"
         @clicked="openArchiveUrl()" />
       <BaseButton
+        v-if="getCurrentItemData && getCurrentItemData.archive_URI"
+        :text="$tc('archival.updateArchiveButton')"
+        :has-background-color="false"
+        icon-size="large"
+        icon="archive-arrow"
+        button-style="single"
+        @clicked="updateArchiveClicked()" />
+      <BaseButton
         :disabled="isNewForm"
         :text="isPublished ? $tc('offline') : $tc('publish')"
         :has-background-color="false"
@@ -73,6 +81,12 @@ export default {
         target: '_blank',
         href: url,
       }).click();
+    },
+    /**
+     * Triggered when the user clicks the "Update Archive" button.
+     */
+    updateArchiveClicked() {
+      this.$store.commit('data/setIsArchiveUpdate', true);
     },
   },
 };

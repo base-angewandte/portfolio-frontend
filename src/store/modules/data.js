@@ -160,6 +160,8 @@ const state = {
   windowWidth: null,
   // the status code returned by the back-end API after attempt to validate archival data
   archivalValidationOutcome: null,
+  // the status code returned by the back-end API after attempt to update archived data
+  archivalUpdateOutcome: null,
   // stores archival errors received from backend,
   // this property is populated only when archivalValidationOutcome=400
   archivalErrors: {},
@@ -175,6 +177,9 @@ const state = {
   isValidatingForArchival: false,
   // stores media asset IDs where an asynchronous archival operation is in progress
   archivingMedia: [],
+  // true if the "Update Archive" button was clicked and the update has no outcome yet;
+  // this becomes false if the update succeeds, or fails, or is cancelled by the user
+  isArchiveUpdate: false,
 };
 
 const getters = {
@@ -230,6 +235,9 @@ const getters = {
   getArchivalValidationOutcome(state) {
     return state.archivalValidationOutcome;
   },
+  getArchivalUpdateOutcome(state) {
+    return state.archivalUpdateOutcome;
+  },
   getArchivalErrors(state) {
     return state.archivalErrors;
   },
@@ -250,6 +258,9 @@ const getters = {
   },
   getArchivingMedia(state) {
     return state.archivingMedia;
+  },
+  getIsArchiveUpdate(state) {
+    return state.isArchiveUpdate;
   },
 };
 
@@ -377,6 +388,9 @@ const mutations = {
   setArchivalValidationOutcome(state, val) {
     state.archivalValidationOutcome = val;
   },
+  setArchivalUpdateOutcome(state, val) {
+    state.archivalUpdateOutcome = val;
+  },
   setArchivalErrors(state, obj) {
     state.archivalErrors = obj;
   },
@@ -407,6 +421,9 @@ const mutations = {
       }
     });
     state.archivingMedia = updatedIDs;
+  },
+  setIsArchiveUpdate(state, val) {
+    state.isArchiveUpdate = val;
   },
 };
 
@@ -806,10 +823,12 @@ const actions = {
     return [successArr, errorArr];
   },
   /**
-   * submitting files for archival or update
-   * @param context
-   * @param list
-   * @returns {Promise<[][]>}
+   * Send request to backend to submit files for archival.
+   * @param {Object} param0
+   * @param {Array} list Media asset IDs to be submitted for archival.
+   * @returns {Array} A result array containing two other arrays
+   * (1) IDs of media assets successfully submitted for archival
+   * (2) IDs of media assets that failed submission
    */
   async archiveFiles({ state, dispatch, commit }, list) {
     let successArr = [];
@@ -849,13 +868,14 @@ const actions = {
   /**
    * Validate archival data against the backend and update store with the outcome.
    * @param context
+   * @param mediaIds Media asset IDs of the entry to be validated.
    */
-  async validateArchivalData(context, selectedFiles) {
+  async validateArchivalData(context, mediaIds) {
     try {
       // change state to indicate a long in-progress task
       context.commit('setIsValidatingForArchival', true);
       // prepare the url param
-      const param = selectedFiles.join(',');
+      const param = mediaIds.join(',');
       // await the validation response from the api
       await axios.get(`${portfolioApiUrl}validate_assets/media/${param}/`,
         {
@@ -896,6 +916,58 @@ const actions = {
     } finally {
       // update state to indicate the end of the long in-progress task
       context.commit('setIsValidatingForArchival', false);
+    }
+  },
+  /**
+   * Send request to backend to update an entry's metadata in remote archive.
+   * @param {*} context
+   * @param {*} entryId ID of the entry whose metadata is to be updated.
+   */
+  async updateArchive(context) {
+    try {
+      // change state to indicate a long in-progress task
+      context.commit('setIsArchivalBusy', true);
+      // await the response from the api
+      await axios.put(`${portfolioApiUrl}archive/?entry=${state.currentItemId}/`,
+        {
+          withCredentials: true,
+          xsrfCookieName: 'csrftoken_portfolio',
+          xsrfHeaderName: 'X-CSRFToken',
+          headers: {
+            'Accept-Language': i18n.locale,
+          },
+        });
+      // if status code is in range 200-299
+      context.commit('setArchivalUpdateOutcome', 200);
+      context.commit('setArchivalErrors', {});
+    } catch (e) {
+      // on status code >= 300
+      if (e.response && e.response.status) {
+        switch (e.response.status) {
+        case 400:
+          // There are validation errors, update the store accordingly
+          context.commit('setArchivalUpdateOutcome', 400);
+          context.commit('setArchivalErrors', e.response.data);
+          break;
+        case 500:
+          // This status indicates data integrity errors on server
+          context.commit('setArchivalUpdateOutcome', 500);
+          break;
+        case 503:
+          // Service is unavailable
+          context.commit('setArchivalUpdateOutcome', 503);
+          break;
+        default:
+          // On any other unhandled status code
+          context.commit('setArchivalUpdateOutcome', e.response.status);
+          console.error(e.response.status);
+        }
+      } else {
+        console.error(e);
+      }
+    } finally {
+      // update state to indicate the end of the long in-progress task
+      context.commit('setIsArchivalBusy', false);
     }
   },
   async removeUnknownProps({ state, dispatch }, { data, fields }) {

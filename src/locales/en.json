@@ -237,6 +237,9 @@
     "serviceUnavailable": "The archival service is currently unavailable.",
     "internalServerError": "An internal server error has occurred while validating data.",
     "titleAlreadyArchived": "Archival",
-    "textAlreadyArchived": "Please select files that are not already archived."
+    "textAlreadyArchived": "Please select files that are not already archived.",
+    "updateArchiveButton": "Update archive",
+    "updateArchiveTitle": "Update archive",
+    "updateArchiveSuccessful": "The archived data was successfully updated."
   }
 }

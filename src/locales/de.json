@@ -232,6 +232,9 @@
     "serviceUnavailable": "Der Archivierungsdienst ist derzeit nicht verfügbar.",
     "internalServerError": "Bei der Validierung der Daten ist ein interner Serverfehler aufgetreten.",
     "titleAlreadyArchived": "Archivierung",
-    "textAlreadyArchived": "Bitte wählen Sie Dateien aus, die noch nicht archiviert sind."
+    "textAlreadyArchived": "Bitte wählen Sie Dateien aus, die noch nicht archiviert sind.",
+    "updateArchiveButton": "Archiv aktualisieren",
+    "updateArchiveTitle": "Archiv aktualisieren",
+    "updateArchiveSuccessful": "Die archivierten Daten wurden erfolgreich aktualisiert."
   }
 }
