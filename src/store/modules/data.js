@@ -180,6 +180,10 @@ const state = {
   // true if the "Update Archive" button was clicked and the update has no outcome yet;
   // this becomes false if the update succeeds, or fails, or is cancelled by the user
   isArchiveUpdate: false,
+  // the status of the archive, i.e. whether the entry or any of its attachments
+  // have been updated since the last archival. Valid values:
+  // true = changed; false = not changed; null = not applicable
+  isArchiveChanged: null,
 };
 
 const getters = {
@@ -261,6 +265,9 @@ const getters = {
   },
   getIsArchiveUpdate(state) {
     return state.isArchiveUpdate;
+  },
+  getIsArchiveChanged(state) {
+    return state.isArchiveChanged;
   },
 };
 
@@ -424,6 +431,9 @@ const mutations = {
   },
   setIsArchiveUpdate(state, val) {
     state.isArchiveUpdate = val;
+  },
+  setIsArchiveChanged(state, val) {
+    state.isArchiveChanged = val;
   },
 };
 
@@ -618,6 +628,11 @@ const actions = {
           }
           // also set parents if there are any
           commit('setLinkedParents', { list: entryData.parents });
+          // if this is an archived entry, fetch a flag with info on whether
+          // this entry or its attachments have changed since last archival
+          if (entryData.archive_URI) {
+            await dispatch('fetchIsArchiveChanged');
+          }
           resolve(adjustedEntry);
         }
       } catch (e) {
@@ -968,6 +983,28 @@ const actions = {
     } finally {
       // update state to indicate the end of the long in-progress task
       context.commit('setIsArchivalBusy', false);
+    }
+  },
+  /**
+   * Fetches a flag with info on whether the entry or its attachments
+   * have been changed since the last archival.
+   * @param {*} context
+   */
+  async fetchIsArchiveChanged(context) {
+    try {
+      // await the response from the api
+      const response = await axios.get(`${portfolioApiUrl}archive/is-changed?entry=${state.currentItemId}`,
+        {
+          withCredentials: true,
+          xsrfCookieName: 'csrftoken_portfolio',
+          xsrfHeaderName: 'X-CSRFToken',
+          headers: {
+            'Accept-Language': i18n.locale,
+          },
+        });
+      context.commit('setIsArchiveChanged', response.data);
+    } catch (e) {
+      console.log(e);
     }
   },
   async removeUnknownProps({ state, dispatch }, { data, fields }) {

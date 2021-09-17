@@ -12,7 +12,7 @@
         button-style="single"
         @clicked="openArchiveUrl()" />
       <BaseButton
-        v-if="getCurrentItemData && getCurrentItemData.archive_URI"
+        v-if="getIsArchiveChanged"
         :text="$tc('archival.updateArchiveButton')"
         :has-background-color="false"
         icon-size="large"
@@ -69,6 +69,7 @@ export default {
   computed: {
     ...mapGetters('data', [
       'getCurrentItemData',
+      'getIsArchiveChanged',
     ]),
   },
   methods: {
