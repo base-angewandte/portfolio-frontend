@@ -239,7 +239,7 @@
     "titleAlreadyArchived": "Archival",
     "textAlreadyArchived": "Please select files that are not already archived.",
     "updateArchiveButton": "Update archive",
-    "updateArchiveTitle": "Update archive",
-    "updateArchiveSuccessful": "The archived data was successfully updated."
+    "archiveUpdateTitle": "Update archive",
+    "archiveUpdateSuccessful": "The archived data was successfully updated."
   }
 }

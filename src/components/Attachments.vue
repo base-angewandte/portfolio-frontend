@@ -285,6 +285,7 @@ export default {
       'getCurrentItemData',
       'getCurrentMedia',
       'getArchivalValidationOutcome',
+      'getArchivalUpdateOutcome',
       'getArchivalErrors',
       'getIsFormSaved',
       'getArchiveMediaConsent',
@@ -684,8 +685,8 @@ export default {
         // inform the user of success
         this.$notify({
           group: 'request-notifications',
-          title: this.$t('archive.archiveUpdateTitle'),
-          text: this.$t('archive.archiveUpdateSuccessful'),
+          title: this.$t('archival.archiveUpdateTitle'),
+          text: this.$t('archival.archiveUpdateSuccessful'),
           type: 'success',
         });
         break;

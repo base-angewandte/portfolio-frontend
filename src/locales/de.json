@@ -234,7 +234,7 @@
     "titleAlreadyArchived": "Archivierung",
     "textAlreadyArchived": "Bitte wählen Sie Dateien aus, die noch nicht archiviert sind.",
     "updateArchiveButton": "Archiv aktualisieren",
-    "updateArchiveTitle": "Archiv aktualisieren",
-    "updateArchiveSuccessful": "Die archivierten Daten wurden erfolgreich aktualisiert."
+    "archiveUpdateTitle": "Archiv aktualisieren",
+    "archiveUpdateSuccessful": "Die archivierten Daten wurden erfolgreich aktualisiert."
   }
 }
