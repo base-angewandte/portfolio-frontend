@@ -943,7 +943,7 @@ const actions = {
       // change state to indicate a long in-progress task
       context.commit('setIsArchivalBusy', true);
       // await the response from the api
-      await axios.put(`${portfolioApiUrl}archive/?entry=${state.currentItemId}/`,
+      await axios.put(`${portfolioApiUrl}archive?entry=${state.currentItemId}`, '',
         {
           withCredentials: true,
           xsrfCookieName: 'csrftoken_portfolio',
