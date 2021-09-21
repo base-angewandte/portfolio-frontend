@@ -171,9 +171,9 @@ const state = {
   isFormSaved: true,
   // true if there is an in progress save operation on the main form
   isFormSaving: false,
-  // true when the long-term archival operation is in progress
+  // true while there is an in progress API request related to long-term archival
   isArchivalBusy: false,
-  // true if the validation for archival operation is currently in progress
+  // true while there is an in progress API request related to long-term archival validation
   isValidatingForArchival: false,
   // stores media asset IDs where an asynchronous archival operation is in progress
   archivingMedia: [],
@@ -632,6 +632,8 @@ const actions = {
           // this entry or its attachments have changed since last archival
           if (entryData.archive_URI) {
             await dispatch('fetchIsArchiveChanged');
+            // set the archival update outcome to null (since it's a new entry)
+            commit('setArchivalUpdateOutcome', null);
           }
           resolve(adjustedEntry);
         }
@@ -659,7 +661,7 @@ const actions = {
       commit('updateArchivingMedia');
     }
   },
-  addOrUpdateEntry({ commit }, data) {
+  addOrUpdateEntry({ commit, dispatch }, data) {
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
       try {
@@ -671,6 +673,11 @@ const actions = {
           const adjustedEntry = await adjustEntry(createdEntry);
           commit('setCurrentItemData', adjustedEntry);
           commit('setIsFormSaved', true);
+          // if this is an archived entry, fetch a flag with info on whether
+          // this entry or its attachments have changed since last archival
+          if (adjustedEntry.archive_URI) {
+            await dispatch('fetchIsArchiveChanged');
+          }
         }
         resolve(createdEntry.id);
       } catch (e) {
@@ -954,6 +961,7 @@ const actions = {
         });
       // if status code is in range 200-299
       context.commit('setArchivalUpdateOutcome', 200);
+      context.commit('setIsArchiveChanged', false);
       context.commit('setArchivalErrors', {});
     } catch (e) {
       // on status code >= 300

@@ -18,7 +18,15 @@
         icon-size="large"
         icon="archive-arrow"
         button-style="single"
-        @clicked="updateArchiveClicked()" />
+        @clicked="updateArchiveClicked()">
+        <template
+          v-if="getIsArchivalBusy"
+          slot="right-of-text">
+          <span class="archive-loader">
+            <BaseLoader />
+          </span>
+        </template>
+      </BaseButton>
       <BaseButton
         :disabled="isNewForm"
         :text="isPublished ? $tc('offline') : $tc('publish')"
@@ -69,6 +77,7 @@ export default {
   computed: {
     ...mapGetters('data', [
       'getCurrentItemData',
+      'getIsArchivalBusy',
       'getIsArchiveChanged',
     ]),
   },
@@ -92,3 +101,12 @@ export default {
   },
 };
 </script>
+
+<style lang="scss" scoped>
+.archive-loader {
+  position: relative;
+  transform: scale(0.5);
+  margin-left: $spacing;
+  padding-left: $spacing;
+}
+</style>
