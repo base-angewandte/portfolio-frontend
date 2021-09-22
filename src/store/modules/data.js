@@ -634,6 +634,9 @@ const actions = {
             await dispatch('fetchIsArchiveChanged');
             // set the archival update outcome to null (since it's a new entry)
             commit('setArchivalUpdateOutcome', null);
+          } else {
+            // set this flag to null for any entry that is not archived
+            commit('setIsArchiveChanged', null);
           }
           resolve(adjustedEntry);
         }
@@ -661,7 +664,7 @@ const actions = {
       commit('updateArchivingMedia');
     }
   },
-  addOrUpdateEntry({ commit, dispatch }, data) {
+  addOrUpdateEntry({ commit }, data) {
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
       try {
@@ -673,10 +676,10 @@ const actions = {
           const adjustedEntry = await adjustEntry(createdEntry);
           commit('setCurrentItemData', adjustedEntry);
           commit('setIsFormSaved', true);
-          // if this is an archived entry, fetch a flag with info on whether
-          // this entry or its attachments have changed since last archival
-          if (adjustedEntry.archive_URI) {
-            await dispatch('fetchIsArchiveChanged');
+          // if this is an archived entry, and if there are no assets pending archival
+          // update the store with advice that the remote archive needs update
+          if (adjustedEntry.archive_URI && state.archivingMedia.length === 0) {
+            commit('setIsArchiveChanged', true);
           }
         }
         resolve(createdEntry.id);

@@ -326,8 +326,7 @@ export default {
       return this.getIsArchiveUpdate;
     },
     /**
-     * Returns IDs of archived media assets. These are required to send the validation request
-     * to backend before sending the "update archive" request.
+     * Returns an array with the IDs of all archived media assets.
      */
     archivedMediaIds() {
       return this.attachedList
@@ -411,6 +410,13 @@ export default {
           // check if action was delete and if yes propagate to parent to update user quota
           if (action === 'delete') {
             this.$emit('files-deleted');
+          }
+          // if the license of any archived asset has changed, and if there are no assets
+          // pending archival, update the store with advice that the remote archive needs update
+          if (action === 'license' && this.archivedMediaIds.length > 0
+              && this.getArchivingMedia.length === 0
+              && this.archivedAssetsChangedLicense(successIds)) {
+            this.$store.commit('data/setIsArchiveChanged', true);
           }
         }
         // clear all variables after action
@@ -813,6 +819,13 @@ export default {
       if (this.action === 'archiveMedia' && item.archive_URI) return false;
       if (this.action === 'archiveMedia' && this.getArchivingMedia.includes(item.id)) return false;
       return true;
+    },
+    /**
+     * Returns true if the license of any *archived* media asset has changed,
+     * false otherwise. Takes as argument the media IDs that were actioned upon.
+     */
+    archivedAssetsChangedLicense(actionedMediaIds) {
+      return actionedMediaIds.some((item) => this.archivedMediaIds.includes(item));
     },
   },
 };
