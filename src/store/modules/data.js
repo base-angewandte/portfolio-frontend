@@ -269,6 +269,10 @@ const getters = {
   getIsArchiveChanged(state) {
     return state.isArchiveChanged;
   },
+  getIsArchivalEnabled() {
+    // when true, the buttons pertaining to the long-term archival feature become visible in the gui
+    return JSON.parse(process.env.VUE_APP_ARCHIVE_UPLOAD);
+  },
 };
 
 const mutations = {

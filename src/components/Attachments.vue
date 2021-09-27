@@ -57,7 +57,7 @@
         slot="option-buttons"
         slot-scope="scope">
         <BaseButton
-          v-if="isArchivalEnabled"
+          v-if="getIsArchivalEnabled"
           :text="$t('form-view.archiveMedia')"
           icon-size="large"
           icon="archive-sheets"
@@ -292,13 +292,8 @@ export default {
       'getIsArchivalBusy',
       'getArchivingMedia',
       'getIsArchiveUpdate',
+      'getIsArchivalEnabled',
     ]),
-    /**
-     * Turn archival on/off based on environment var
-     */
-    isArchivalEnabled() {
-      return JSON.parse(process.env.VUE_APP_ARCHIVE_UPLOAD);
-    },
     /**
      * Returns an array with short file names (no path) + extension for currently selected files.
      */

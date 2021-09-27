@@ -4,7 +4,7 @@
     @options-toggle="showOptions = $event">
     <template slot="options">
       <BaseButton
-        v-if="getCurrentItemData && getCurrentItemData.archive_URI"
+        v-if="getIsArchivalEnabled && getCurrentItemData && getCurrentItemData.archive_URI"
         :text="$tc('form-view.archiveButton')"
         :has-background-color="false"
         icon-size="large"
@@ -12,7 +12,7 @@
         button-style="single"
         @clicked="openArchiveUrl()" />
       <BaseButton
-        v-if="getIsArchiveChanged"
+        v-if="getIsArchivalEnabled && getIsArchiveChanged"
         :text="$tc('archival.updateArchiveButton')"
         :has-background-color="false"
         icon-size="large"
@@ -79,6 +79,7 @@ export default {
       'getCurrentItemData',
       'getIsArchivalBusy',
       'getIsArchiveChanged',
+      'getIsArchivalEnabled',
     ]),
   },
   methods: {
