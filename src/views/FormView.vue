@@ -1383,11 +1383,12 @@ export default {
       position: sticky;
       top: $header-height;
       z-index: map-get($zindex, form-header-row);
-      padding: $spacing 0 $spacing-small;
+      padding: $spacing 0 0;
       order: 0;
 
       &.form-head-shadow {
         box-shadow: 0 8px 8px -8px rgba(0,0,0,0.25);
+        padding-bottom: $spacing-small;
       }
 
       .base-row-parent {
@@ -1422,7 +1423,7 @@ export default {
       margin-top: -$spacing-small;
       order: 1;
       .base-form-options {
-        margin-bottom: $spacing-small;
+        margin: $spacing-small 0;
       }
 
       .form-loading-area {
