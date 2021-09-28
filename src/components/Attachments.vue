@@ -57,7 +57,7 @@
         slot="option-buttons"
         slot-scope="scope">
         <BaseButton
-          v-if="isArchivalEnabled"
+          v-if="getIsArchivalEnabled"
           :text="$t('form-view.archiveMedia')"
           icon-size="large"
           icon="archive-sheets"
@@ -183,8 +183,8 @@
     <archival-unsaved-pop-up
       v-if="showArchivalUnsavedPopUp"
       :is-pop-up-open="showArchivalUnsavedPopUp"
-      @cancel-unsaved="this.showArchivalUnsavedPopUp = false"
-      @save-form="saveData()" />
+      @cancel-unsaved="showArchivalUnsavedPopUp = false"
+      @save-form="saveDataBeforeArchival()" />
 
     <!-- ARCHIVAL VALIDATION POP-UP -->
     <archival-validation-pop-up
@@ -192,7 +192,7 @@
       v-if="showArchivalValidationPopUp"
       :is-pop-up-open="showArchivalValidationPopUp"
       @cancel-validation="cancelArchivalValidation"
-      @next-step="validateArchivalFields" />
+      @next-step="revalidateArchival" />
 
     <!-- ARCHIVAL LICENSING AGREEMENT POP-UP -->
     <archival-agreement-pop-up
@@ -285,18 +285,15 @@ export default {
       'getCurrentItemData',
       'getCurrentMedia',
       'getArchivalValidationOutcome',
+      'getArchivalUpdateOutcome',
       'getArchivalErrors',
       'getIsFormSaved',
       'getArchiveMediaConsent',
       'getIsArchivalBusy',
       'getArchivingMedia',
+      'getIsArchiveUpdate',
+      'getIsArchivalEnabled',
     ]),
-    /**
-     * Turn archival on/off based on environment var
-     */
-    isArchivalEnabled() {
-      return JSON.parse(process.env.VUE_APP_ARCHIVE_UPLOAD);
-    },
     /**
      * Returns an array with short file names (no path) + extension for currently selected files.
      */
@@ -317,6 +314,20 @@ export default {
         return null;
       }
     },
+    /**
+     * Guards for changes in the isArchiveUpdate store property
+     */
+    triggerArchiveUpdate() {
+      return this.getIsArchiveUpdate;
+    },
+    /**
+     * Returns an array with the IDs of all archived media assets.
+     */
+    archivedMediaIds() {
+      return this.attachedList
+        .filter((media) => media.archive_URI !== null)
+        .map((media) => media.id);
+    },
   },
   watch: {
     // if attached media list changes trigger function to re-fetch media from time to time
@@ -325,6 +336,13 @@ export default {
         this.checkConverting();
       },
       immediate: true,
+    },
+    // when there is a request triggered from the store to update archived data,
+    // run the same validation as for initial archival
+    triggerArchiveUpdate() {
+      if (this.getIsArchiveUpdate) {
+        this.runArchivalValidation();
+      }
     },
   },
   destroyed() {
@@ -365,12 +383,12 @@ export default {
           text: this.$t('notify.selectLicense'),
           type: 'error',
         });
-        // When action is archiveMedia, run the archival wizard.
-        // If the archival consent has been accepted, this means that all
-        // validation and agreement steps are already completed and in this case
-        // the wizard check will be skipped.
+        // When action is archiveMedia and the media archival consent has not yet been
+        // accepted, run the archival validation. If the archival consent has been
+        // accepted, this means that validation and agreement steps are already completed
+        // and it's ok to dispatch the archiveMedia action to store
       } else if (this.action === 'archiveMedia' && !this.getArchiveMediaConsent) {
-        this.runArchivalWizard();
+        this.runArchivalValidation();
       } else {
         // if all error checks pass actually do the action
         const [successIds, failIds] = await this.$store.dispatch('data/actionFiles', {
@@ -387,6 +405,13 @@ export default {
           // check if action was delete and if yes propagate to parent to update user quota
           if (action === 'delete') {
             this.$emit('files-deleted');
+          }
+          // if the license of any archived asset has changed, and if there are no assets
+          // pending archival, update the store with advice that the remote archive needs update
+          if (action === 'license' && this.archivedMediaIds.length > 0
+              && this.getArchivingMedia.length === 0
+              && this.archivedAssetsChangedLicense(successIds)) {
+            this.$store.commit('data/setIsArchiveChanged', true);
           }
         }
         // clear all variables after action
@@ -598,24 +623,30 @@ export default {
       return `${this.$t('form-view.file')} ${this.$t('form-view.filePublished', { file: this.getFileName(item) })}`;
     },
     /**
-     * Provides execution logic for the archival wizard
-     * so as to walk the user sequentially through all archival steps.
+     * Handles the request to validate data that is to be archived.
      */
-    async runArchivalWizard() {
+    async runArchivalValidation() {
       // if form is not saved, notify the user to save first
       if (!this.getIsFormSaved) {
         this.showArchivalUnsavedPopUp = true;
       } else {
         // first set any previous archival validation outcome to void
         this.$store.commit('data/setArchivalValidationOutcome', null);
+        // prepare the params required to validate archival data
+        const mediaIds = this.selectedFiles.length > 0 ? this.selectedFiles : this.archivedMediaIds;
         // obtain a new validation outcome
-        await this.$store.dispatch('data/validateArchivalData', this.selectedFiles);
+        await this.$store.dispatch('data/validateArchivalData', mediaIds);
         if (this.getArchivalValidationOutcome) {
           switch (this.getArchivalValidationOutcome) {
           case 200:
             this.showArchivalValidationPopUp = false;
-            // display the agreement wizard page
-            this.displayArchivalAgreement();
+            // if it's an archive update, proceed straight to update request
+            if (this.getIsArchiveUpdate) {
+              await this.updateArchive();
+            } else {
+              // else ask for consent to the licensing agreement
+              this.displayArchivalAgreement();
+            }
             break;
           case 400:
             // display the validation popup
@@ -624,29 +655,68 @@ export default {
             if (this.$refs.validationPopUp) this.$refs.validationPopUp.reloadForm();
             break;
           case 500:
-            this.failArchivalValidation(this.$t('archival.internalServerError'));
+            this.failArchival(this.$t('archival.internalServerError'));
             break;
           case 503:
-            this.failArchivalValidation(this.$t('archival.serviceUnavailable'));
+            this.failArchival(this.$t('archival.serviceUnavailable'));
             break;
           default:
             // unknown status code returned by the server
-            this.failArchivalValidation(this.$t('archival.generalError'));
+            this.failArchival(this.$t('archival.generalError'));
           }
         } else {
           // could not reasonably determine the validation outcome
-          this.failArchivalValidation(this.$t('archival.generalError'));
+          this.failArchival(this.$t('archival.generalError'));
         }
       }
     },
     /**
-     * Saves the main form data from the "archival unsaved" pop-up
+     * Handles the request to update already archived data in the remote archiving system.
      */
-    async saveData() {
+    async updateArchive() {
+      // first set any previous archival update outcome to void
+      this.$store.commit('data/setArchivalUpdateOutcome', null);
+      await this.$store.dispatch('data/updateArchive');
+      switch (this.getArchivalUpdateOutcome) {
+      case 200:
+        this.showArchivalValidationPopUp = false;
+        // change this store property to false to make it possible to trigger renewed
+        // requests for archive update
+        this.$store.commit('data/setIsArchiveUpdate', false);
+        // inform the user of success
+        this.$notify({
+          group: 'request-notifications',
+          title: this.$t('archival.archiveUpdateTitle'),
+          text: this.$t('archival.archiveUpdateSuccessful'),
+          type: 'success',
+        });
+        break;
+      case 400:
+        // display the validation popup
+        this.showArchivalValidationPopUp = true;
+        // reload the popup's form if this is a revalidation
+        if (this.$refs.validationPopUp) this.$refs.validationPopUp.reloadForm();
+        break;
+      case 500:
+        this.failArchival(this.$t('archival.internalServerError'));
+        break;
+      case 503:
+        this.failArchival(this.$t('archival.serviceUnavailable'));
+        break;
+      default:
+        // unknown status code returned by the server
+        this.failArchival(this.$t('archival.generalError'));
+      }
+    },
+    /**
+     * Saves the main form data from the "archival unsaved" pop-up
+     * and proceeds to archival validation.
+     */
+    async saveDataBeforeArchival() {
       try {
         // save main form via injected method
         await this.saveMainForm(false);
-        this.runArchivalWizard();
+        this.runArchivalValidation();
       } catch (e) {
         console.error(e);
       } finally {
@@ -680,12 +750,19 @@ export default {
       // Discard any unsaved changes (#1433)
       this.discardMainForm();
       this.showArchivalValidationPopUp = false;
+      // change this store property to false to make it possible to trigger renewed
+      // requests for archive update
+      this.$store.commit('data/setIsArchiveUpdate', false);
     },
     /**
-     * Notifies the user that validation of archival data has failed due to technical reasons
-     * like server unavailable, request timeout, internal server error.
+     * Notifies the user that the archival operation (validation or update)
+     * has failed due to technical reasons like server unavailable, request timeout,
+     * internal server error, etc
      */
-    failArchivalValidation(reason) {
+    failArchival(reason) {
+      // change this store property to false to make it possible to trigger renewed
+      // requests for archive update
+      this.$store.commit('data/setIsArchiveUpdate', false);
       this.$notify({
         group: 'request-notifications',
         title: this.$t('form-view.archiveMedia'),
@@ -701,14 +778,14 @@ export default {
       this.showArchivalAgreementPopUp = false;
     },
     /**
-     * Handles the request to validate archival fields after the user fills in
-     * the missing archival fields on the archival validation pop-up and clicks "Next".
+     * Handles the request to revalidate archival fields after the user fills in
+     * the missing fields on the archival validation pop-up and clicks "Next".
      */
-    async validateArchivalFields() {
+    async revalidateArchival() {
       // Wait for the main form to be saved
       await this.saveMainForm(false);
-      // Initiate the archival routine again
-      this.saveFileMeta('archiveMedia');
+      // Initiate the validation routine again
+      this.runArchivalValidation();
     },
     /**
      * Proceeds to the actual archival request after all the steps of the archival wizard
@@ -737,6 +814,13 @@ export default {
       if (this.action === 'archiveMedia' && item.archive_URI) return false;
       if (this.action === 'archiveMedia' && this.getArchivingMedia.includes(item.id)) return false;
       return true;
+    },
+    /**
+     * Returns true if the license of any *archived* media asset has changed,
+     * false otherwise. Takes as argument the media IDs that were actioned upon.
+     */
+    archivedAssetsChangedLicense(actionedMediaIds) {
+      return actionedMediaIds.some((item) => this.archivedMediaIds.includes(item));
     },
   },
 };

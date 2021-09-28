@@ -6,13 +6,29 @@
       <div
         class="base-form-options__options">
         <BaseButton
-          v-if="getCurrentItemData && getCurrentItemData.archive_URI"
+          v-if="getIsArchivalEnabled && getCurrentItemData && getCurrentItemData.archive_URI"
           :text="$tc('form-view.archiveButton')"
           :has-background-color="false"
           icon-size="large"
           icon="archive-sheets"
           button-style="single"
           @clicked="openArchiveUrl()" />
+        <BaseButton
+          v-if="getIsArchivalEnabled && getIsArchiveChanged"
+          :text="$tc('archival.updateArchiveButton')"
+          :has-background-color="false"
+          icon-size="large"
+          icon="archive-arrow"
+          button-style="single"
+          @clicked="updateArchiveClicked()">
+          <template
+            v-if="getIsArchivalBusy"
+            slot="right-of-text">
+          <span class="archive-loader">
+            <BaseLoader />
+          </span>
+          </template>
+        </BaseButton>
         <BaseButton
           :disabled="isNewForm"
           :text="isPublished ? $tc('offline') : $tc('publish')"
@@ -64,6 +80,9 @@ export default {
   computed: {
     ...mapGetters('data', [
       'getCurrentItemData',
+      'getIsArchivalBusy',
+      'getIsArchiveChanged',
+      'getIsArchivalEnabled',
     ]),
   },
   methods: {
@@ -77,6 +96,12 @@ export default {
         href: url,
       }).click();
     },
+    /**
+     * Triggered when the user clicks the "Update Archive" button.
+     */
+    updateArchiveClicked() {
+      this.$store.commit('data/setIsArchiveUpdate', true);
+    },
   },
 };
 </script>
@@ -86,5 +111,11 @@ export default {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+}
+.archive-loader {
+  position: relative;
+  transform: scale(0.5);
+  margin-left: $spacing;
+  padding-left: $spacing;
 }
 </style>

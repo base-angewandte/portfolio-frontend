@@ -160,6 +160,8 @@ const state = {
   windowWidth: null,
   // the status code returned by the back-end API after attempt to validate archival data
   archivalValidationOutcome: null,
+  // the status code returned by the back-end API after attempt to update archived data
+  archivalUpdateOutcome: null,
   // stores archival errors received from backend,
   // this property is populated only when archivalValidationOutcome=400
   archivalErrors: {},
@@ -169,12 +171,19 @@ const state = {
   isFormSaved: true,
   // true if there is an in progress save operation on the main form
   isFormSaving: false,
-  // true when the long-term archival operation is in progress
+  // true while there is an in progress API request related to long-term archival
   isArchivalBusy: false,
-  // true if the validation for archival operation is currently in progress
+  // true while there is an in progress API request related to long-term archival validation
   isValidatingForArchival: false,
   // stores media asset IDs where an asynchronous archival operation is in progress
   archivingMedia: [],
+  // true if the "Update Archive" button was clicked and the update has no outcome yet;
+  // this becomes false if the update succeeds, or fails, or is cancelled by the user
+  isArchiveUpdate: false,
+  // the status of the archive, i.e. whether the entry or any of its attachments
+  // have been updated since the last archival. Valid values:
+  // true = changed; false = not changed; null = not applicable
+  isArchiveChanged: null,
 };
 
 const getters = {
@@ -230,6 +239,9 @@ const getters = {
   getArchivalValidationOutcome(state) {
     return state.archivalValidationOutcome;
   },
+  getArchivalUpdateOutcome(state) {
+    return state.archivalUpdateOutcome;
+  },
   getArchivalErrors(state) {
     return state.archivalErrors;
   },
@@ -250,6 +262,16 @@ const getters = {
   },
   getArchivingMedia(state) {
     return state.archivingMedia;
+  },
+  getIsArchiveUpdate(state) {
+    return state.isArchiveUpdate;
+  },
+  getIsArchiveChanged(state) {
+    return state.isArchiveChanged;
+  },
+  getIsArchivalEnabled() {
+    // when true, the buttons pertaining to the long-term archival feature become visible in the gui
+    return JSON.parse(process.env.VUE_APP_ARCHIVE_UPLOAD);
   },
 };
 
@@ -377,6 +399,9 @@ const mutations = {
   setArchivalValidationOutcome(state, val) {
     state.archivalValidationOutcome = val;
   },
+  setArchivalUpdateOutcome(state, val) {
+    state.archivalUpdateOutcome = val;
+  },
   setArchivalErrors(state, obj) {
     state.archivalErrors = obj;
   },
@@ -407,6 +432,12 @@ const mutations = {
       }
     });
     state.archivingMedia = updatedIDs;
+  },
+  setIsArchiveUpdate(state, val) {
+    state.isArchiveUpdate = val;
+  },
+  setIsArchiveChanged(state, val) {
+    state.isArchiveChanged = val;
   },
 };
 
@@ -601,6 +632,16 @@ const actions = {
           }
           // also set parents if there are any
           commit('setLinkedParents', { list: entryData.parents });
+          // if this is an archived entry, fetch a flag with info on whether
+          // this entry or its attachments have changed since last archival
+          if (entryData.archive_URI) {
+            await dispatch('fetchIsArchiveChanged');
+            // set the archival update outcome to null (since it's a new entry)
+            commit('setArchivalUpdateOutcome', null);
+          } else {
+            // set this flag to null for any entry that is not archived
+            commit('setIsArchiveChanged', null);
+          }
           resolve(adjustedEntry);
         }
       } catch (e) {
@@ -639,6 +680,11 @@ const actions = {
           const adjustedEntry = await adjustEntry(createdEntry);
           commit('setCurrentItemData', adjustedEntry);
           commit('setIsFormSaved', true);
+          // if this is an archived entry, and if there are no assets pending archival
+          // update the store with advice that the remote archive needs update
+          if (adjustedEntry.archive_URI && state.archivingMedia.length === 0) {
+            commit('setIsArchiveChanged', true);
+          }
         }
         resolve(createdEntry.id);
       } catch (e) {
@@ -806,10 +852,12 @@ const actions = {
     return [successArr, errorArr];
   },
   /**
-   * submitting files for archival or update
-   * @param context
-   * @param list
-   * @returns {Promise<[][]>}
+   * Send request to backend to submit files for archival.
+   * @param {Object} param0
+   * @param {Array} list Media asset IDs to be submitted for archival.
+   * @returns {Array} A result array containing two other arrays
+   * (1) IDs of media assets successfully submitted for archival
+   * (2) IDs of media assets that failed submission
    */
   async archiveFiles({ state, dispatch, commit }, list) {
     let successArr = [];
@@ -849,13 +897,14 @@ const actions = {
   /**
    * Validate archival data against the backend and update store with the outcome.
    * @param context
+   * @param mediaIds Media asset IDs of the entry to be validated.
    */
-  async validateArchivalData(context, selectedFiles) {
+  async validateArchivalData(context, mediaIds) {
     try {
       // change state to indicate a long in-progress task
       context.commit('setIsValidatingForArchival', true);
       // prepare the url param
-      const param = selectedFiles.join(',');
+      const param = mediaIds.join(',');
       // await the validation response from the api
       await axios.get(`${portfolioApiUrl}validate_assets/media/${param}/`,
         {
@@ -896,6 +945,81 @@ const actions = {
     } finally {
       // update state to indicate the end of the long in-progress task
       context.commit('setIsValidatingForArchival', false);
+    }
+  },
+  /**
+   * Send request to backend to update an entry's metadata in remote archive.
+   * @param {*} context
+   * @param {*} entryId ID of the entry whose metadata is to be updated.
+   */
+  async updateArchive(context) {
+    try {
+      // change state to indicate a long in-progress task
+      context.commit('setIsArchivalBusy', true);
+      // await the response from the api
+      await axios.put(`${portfolioApiUrl}archive?entry=${state.currentItemId}`, '',
+        {
+          withCredentials: true,
+          xsrfCookieName: 'csrftoken_portfolio',
+          xsrfHeaderName: 'X-CSRFToken',
+          headers: {
+            'Accept-Language': i18n.locale,
+          },
+        });
+      // if status code is in range 200-299
+      context.commit('setArchivalUpdateOutcome', 200);
+      context.commit('setIsArchiveChanged', false);
+      context.commit('setArchivalErrors', {});
+    } catch (e) {
+      // on status code >= 300
+      if (e.response && e.response.status) {
+        switch (e.response.status) {
+        case 400:
+          // There are validation errors, update the store accordingly
+          context.commit('setArchivalUpdateOutcome', 400);
+          context.commit('setArchivalErrors', e.response.data);
+          break;
+        case 500:
+          // This status indicates data integrity errors on server
+          context.commit('setArchivalUpdateOutcome', 500);
+          break;
+        case 503:
+          // Service is unavailable
+          context.commit('setArchivalUpdateOutcome', 503);
+          break;
+        default:
+          // On any other unhandled status code
+          context.commit('setArchivalUpdateOutcome', e.response.status);
+          console.error(e.response.status);
+        }
+      } else {
+        console.error(e);
+      }
+    } finally {
+      // update state to indicate the end of the long in-progress task
+      context.commit('setIsArchivalBusy', false);
+    }
+  },
+  /**
+   * Fetches a flag with info on whether the entry or its attachments
+   * have been changed since the last archival.
+   * @param {*} context
+   */
+  async fetchIsArchiveChanged(context) {
+    try {
+      // await the response from the api
+      const response = await axios.get(`${portfolioApiUrl}archive/is-changed?entry=${state.currentItemId}`,
+        {
+          withCredentials: true,
+          xsrfCookieName: 'csrftoken_portfolio',
+          xsrfHeaderName: 'X-CSRFToken',
+          headers: {
+            'Accept-Language': i18n.locale,
+          },
+        });
+      context.commit('setIsArchiveChanged', response.data);
+    } catch (e) {
+      console.log(e);
     }
   },
   async removeUnknownProps({ state, dispatch }, { data, fields }) {
