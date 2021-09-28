@@ -183,7 +183,7 @@
     <archival-unsaved-pop-up
       v-if="showArchivalUnsavedPopUp"
       :is-pop-up-open="showArchivalUnsavedPopUp"
-      @cancel-unsaved="this.showArchivalUnsavedPopUp = false"
+      @cancel-unsaved="showArchivalUnsavedPopUp = false"
       @save-form="saveDataBeforeArchival()" />
 
     <!-- ARCHIVAL VALIDATION POP-UP -->
