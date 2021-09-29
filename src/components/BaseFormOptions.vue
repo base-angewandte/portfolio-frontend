@@ -5,30 +5,20 @@
     <template slot="options">
       <div
         class="base-form-options__options">
-        <BaseButton
+        <BaseDropButton
           v-if="getIsArchivalEnabled && getCurrentItemData && getCurrentItemData.archive_URI"
-          :text="$tc('form-view.archiveButton')"
-          :has-background-color="false"
-          icon-size="large"
-          icon="archive-sheets"
-          button-style="single"
-          @clicked="openArchiveUrl()" />
-        <BaseButton
-          v-if="getIsArchivalEnabled && getIsArchiveChanged"
-          :text="$tc('archival.updateArchiveButton')"
-          :has-background-color="false"
-          icon-size="large"
-          icon="archive-arrow"
-          button-style="single"
-          @clicked="updateArchiveClicked()">
+          :buttons="archivalDropButtons"
+          expand-button-label="Show more actions"
+          :primary-button="primaryArchivalButton"
+          @clicked="runArchivalAction">
           <template
             v-if="getIsArchivalBusy"
             slot="right-of-text">
-          <span class="archive-loader">
-            <BaseLoader />
-          </span>
+            <span class="archive-loader">
+              <BaseLoader />
+            </span>
           </template>
-        </BaseButton>
+        </BaseDropButton>
         <BaseButton
           :disabled="isNewForm"
           :text="isPublished ? $tc('offline') : $tc('publish')"
@@ -84,6 +74,30 @@ export default {
       'getIsArchiveChanged',
       'getIsArchivalEnabled',
     ]),
+    /**
+     * Returns buttons to populate the BaseDropButton component
+     */
+    archivalDropButtons() {
+      const dropButtons = [{
+        label: this.$tc('form-view.archiveButton'),
+        action: 'view-archive',
+        icon: 'archive-sheets',
+      }];
+      if (this.getIsArchiveChanged) {
+        dropButtons.push({
+          label: this.$tc('archival.updateArchiveButton'),
+          action: 'update-archive',
+          icon: 'archive-arrow',
+        });
+      }
+      return dropButtons;
+    },
+    /**
+     * Returns the primary button for the BaseDropButton component
+     */
+    primaryArchivalButton() {
+      return this.getIsArchiveChanged ? 'update-archive' : 'view-archive';
+    },
   },
   methods: {
     /**
@@ -99,8 +113,24 @@ export default {
     /**
      * Triggered when the user clicks the "Update Archive" button.
      */
-    updateArchiveClicked() {
+    onUpdateArchiveClicked() {
       this.$store.commit('data/setIsArchiveUpdate', true);
+    },
+    /**
+     * Perform an archival action depending on what button was clicked
+     * on the BaseDropButton component.
+     */
+    runArchivalAction(action) {
+      switch (action) {
+      case 'view-archive':
+        this.openArchiveUrl();
+        break;
+      case 'update-archive':
+        this.onUpdateArchiveClicked();
+        break;
+      default:
+        console.error('Unknown archival action');
+      }
     },
   },
 };
