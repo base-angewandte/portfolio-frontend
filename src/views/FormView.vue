@@ -347,11 +347,11 @@ export default {
       sessionStorage.removeItem('valueList');
       sessionStorage.removeItem('parent');
       if (val) {
+        this.resetForm();
+        await this.updateForm();
         if (this.valueList.type && this.valueList.type.length) {
           this.idChanged = true;
         }
-        this.resetForm();
-        await this.updateForm();
       } else {
         this.resetForm();
       }
