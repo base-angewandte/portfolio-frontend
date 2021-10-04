@@ -71,7 +71,7 @@
         icon-size="large"
         button-style="row"
         icon="sheet-empty"
-        align-text="left"
+        align-text="flex-start"
         class="file-list-button"
         @clicked="openEntrySelect" />
 
@@ -83,7 +83,7 @@
         :show-tooltip="!currentId ? true : false"
         icon-size="large"
         button-style="row"
-        align-text="left"
+        align-text="flex-start"
         class="file-list-button mobile-file-list-attach"
         icon="sheet-plus"
         @clicked="$emit('open-new-form')" />
@@ -97,7 +97,7 @@
           :show-tooltip="!currentId ? true : false"
           icon="camera"
           icon-size="large"
-          align-text="left"
+          align-text="flex-start"
           button-style="row"
           class="file-list-button mobile-file-list-attach"
           @clicked="openFileDialogue" />
