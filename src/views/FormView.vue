@@ -152,6 +152,7 @@ import axios from 'axios';
 import { attachmentHandlingMixin } from '@/mixins/attachmentHandling';
 import { entryHandlingMixin } from '@/mixins/entryHandling';
 import {
+  checkForLabel,
   getApiUrl,
   getLangLabel,
   hasFieldContent,
@@ -667,7 +668,7 @@ export default {
                 }
               });
             }
-            this.$set(originalDataObject, key, value);
+            this.$set(originalDataObject, key, checkForLabel(value));
           }
         }
       });

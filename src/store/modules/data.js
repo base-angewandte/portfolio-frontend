@@ -4,6 +4,7 @@ import axios from 'axios';
 import { i18n } from '@/plugins/i18n';
 import {
   sorting, capitalizeString, setLangLabels, getApiUrl, hasFieldContent, toTitleString,
+  checkForLabel,
 } from '@/utils/commonUtils';
 
 function transformTextData(data) {
@@ -40,27 +41,6 @@ function transformTextData(data) {
     });
   }
   return textData;
-}
-
-function checkForLabel(value) {
-  let newValue = value;
-  // check if value is array or object
-  if (newValue && typeof value === 'object') {
-    // check if value is array
-    if (newValue.length) {
-      newValue = newValue.map((entry) => checkForLabel(entry));
-    } else if (Object.keys(newValue).length) {
-      if (Object.keys(newValue).includes('label') && newValue.label.en) {
-        Vue.set(newValue, 'label', { ...newValue.label, ...{ en: toTitleString(newValue.label.en) } });
-      }
-      newValue = Object.entries(newValue)
-        .reduce((prev, [propKey, propValue]) => ({
-          ...prev,
-          ...{ [propKey]: checkForLabel(propValue) },
-        }), {});
-    }
-  }
-  return newValue;
 }
 
 function addEnglishTextStyling(object) {
@@ -1019,7 +999,7 @@ const actions = {
         });
       context.commit('setIsArchiveChanged', response.data);
     } catch (e) {
-      console.log(e);
+      console.error(e);
     }
   },
   async removeUnknownProps({ state, dispatch }, { data, fields }) {
