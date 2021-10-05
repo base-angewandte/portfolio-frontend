@@ -3,22 +3,27 @@
     :show-options="showOptions"
     @options-toggle="showOptions = $event">
     <template slot="options">
-      <BaseButton
-        :disabled="isNewForm"
-        :text="isPublished ? $tc('offline') : $tc('publish')"
-        :has-background-color="false"
-        icon-size="large"
-        icon="eye"
-        button-style="single"
-        @clicked="$emit('action-entry', isPublished ? 'offline' : 'publish')" />
-      <BaseButton
-        :disabled="isNewForm"
-        :text="$tc('delete')"
-        :has-background-color="false"
-        icon-size="large"
-        icon="waste-bin"
-        button-style="single"
-        @clicked="$emit('action-entry', 'delete')" />
+      <div
+        class="base-form-options__options">
+        <BaseButton
+          :disabled="isNewForm"
+          :text="isPublished ? $tc('offline') : $tc('publish')"
+          :has-background-color="false"
+          :button-text-wrap="false"
+          icon-size="large"
+          icon="eye"
+          button-style="single"
+          @clicked="$emit('action-entry', isPublished ? 'offline' : 'publish')" />
+        <BaseButton
+          :disabled="isNewForm"
+          :text="$tc('delete')"
+          :has-background-color="false"
+          :button-text-wrap="false"
+          icon-size="large"
+          icon="waste-bin"
+          button-style="single"
+          @clicked="$emit('action-entry', 'delete')" />
+      </div>
     </template>
   </BaseOptions>
 </template>
@@ -50,3 +55,11 @@ export default {
   },
 };
 </script>
+
+<style lang="scss" scoped>
+.base-form-options__options {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+</style>
