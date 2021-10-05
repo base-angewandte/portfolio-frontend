@@ -178,10 +178,9 @@ export default {
   ],
   provide() {
     // Provide properties/methods of the FormView to child components (currently,
-    // ArchivalValidationPopUp) since this child component needs access to data
-    // from the main form. This is to make it possible to reuse the same methods
-    // to handle user input and auto-suggestions for drop-down lists, and
-    // also to detect missing field data (#916).
+    // ArchivalValidationForm) since the latter is a smaller version of
+    // the main form. This is to make it possible to reuse the same methods
+    // to handle user input and auto-suggestions for drop-down lists (#916).
     const reactive = {};
     Object.defineProperty(reactive, 'fieldIsLoading', {
       enumerable: true,
@@ -1383,11 +1382,12 @@ export default {
       position: sticky;
       top: $header-height;
       z-index: map-get($zindex, form-header-row);
-      padding: $spacing 0 $spacing-small;
+      padding: $spacing 0 0;
       order: 0;
 
       &.form-head-shadow {
         box-shadow: 0 8px 8px -8px rgba(0,0,0,0.25);
+        padding-bottom: $spacing-small;
       }
 
       .base-row-parent {
@@ -1422,7 +1422,7 @@ export default {
       margin-top: -$spacing-small;
       order: 1;
       .base-form-options {
-        margin-bottom: $spacing-small;
+        margin: $spacing-small 0;
       }
 
       .form-loading-area {

@@ -230,8 +230,11 @@
     "archiveMediaConsent": "Nutzungsbedingungen akzeptieren",
     "generalError": "Bei der Archivierung ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
     "serviceUnavailable": "Der Archivierungsdienst ist derzeit nicht verfügbar.",
-    "internalServerError": "Bei der Validierung der Daten ist ein interner Serverfehler aufgetreten.",
+    "internalServerError": "Es ist ein interner Serverfehler aufgetreten.",
     "titleAlreadyArchived": "Archivierung",
-    "textAlreadyArchived": "Bitte wählen Sie Dateien aus, die noch nicht archiviert sind."
+    "textAlreadyArchived": "Bitte wählen Sie Dateien aus, die noch nicht archiviert sind.",
+    "updateArchiveButton": "Archiv aktualisieren",
+    "archiveUpdateTitle": "Archiv aktualisieren",
+    "archiveUpdateSuccessful": "Die archivierten Daten wurden erfolgreich aktualisiert."
   }
 }

@@ -4,6 +4,7 @@ import {
   BaseButton,
   BaseChipsBelow,
   BaseDatePanel,
+  BaseDropButton,
   BaseDropDownList,
   BaseFormFieldCreator,
   BaseImageBox,
@@ -51,6 +52,7 @@ Vue.use(BaseAutocompleteInput);
 Vue.use(BaseButton);
 Vue.use(BaseChipsBelow);
 Vue.use(BaseDatePanel);
+Vue.use(BaseDropButton);
 Vue.use(BaseDropDownList);
 Vue.use(BaseFormFieldCreator);
 Vue.use(BaseImageBox);
