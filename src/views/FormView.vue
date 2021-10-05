@@ -288,6 +288,11 @@ export default {
         && this.valueList.type[0].source !== this.valueListOriginal.type[0].source)) {
         return true;
       }
+      // special case data fields
+      if ((this.valueList.data && !this.valueListOriginal.data)
+        || (!this.valueList.data && this.valueListOriginal.data)) {
+        return true;
+      }
       // only check single fields as soon as form fields and values are loaded
       if (this.formFields && Object.keys(this.formFields).length) {
         // every value of formFields is compared - with Array.every it will stop automatically
