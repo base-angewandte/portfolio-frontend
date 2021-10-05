@@ -275,32 +275,41 @@ export default {
       if (JSON.stringify(this.valueList) === JSON.stringify(this.valueListOriginal)) {
         return false;
       }
-      // cover special cases that could lead to an unambigous result without recursive looping
+      // cover special cases that could lead to an ambiguous result without recursive looping
       // e.g. the case that data field does not exist yet in one of the valueLists
       if ((this.valueList.type && this.valueList.type.length
         && this.valueListOriginal.type && this.valueListOriginal.type.length
         && this.valueList.type[0].source !== this.valueListOriginal.type[0].source)) {
         return true;
       }
-      // every value of formFields is compared - with Array.every it will stop automatically
-      // as soon as comparison returns false and therefore only traverse through object
-      // until non-equal fields are found
-      const mainFieldsHaveChanges = !Object.entries(this.formFields)
-        .every(([key, value]) => this.compareDataValues(
-          this.valueList[key],
-          this.valueListOriginal[key],
-          value,
-        ));
-      if (!this.type || mainFieldsHaveChanges) {
-        return mainFieldsHaveChanges;
+      // only check single fields as soon as form fields and values are loaded
+      if (this.formFields && Object.keys(this.formFields).length) {
+        // every value of formFields is compared - with Array.every it will stop automatically
+        // as soon as comparison returns false and therefore only traverse through object
+        // until non-equal fields are found
+        const mainFieldsHaveChanges = !Object.entries(this.formFields)
+          .every(([key, value]) => this.compareDataValues(
+            this.valueList[key],
+            this.valueListOriginal[key],
+            value,
+          ));
+        if (!this.type || mainFieldsHaveChanges) {
+          return mainFieldsHaveChanges;
+        }
+        // check if data fields exist at all and are equal
+        if ((this.valueList.data && !this.valueListOriginal.data)
+          || (!this.valueList.data && this.valueListOriginal.data)) {
+          return true;
+        }
+        // if main fields dont have changes also iterate through data fields
+        return !Object.entries(this.formFieldsExtension)
+          .every(([key, value]) => this.compareDataValues(
+            this.valueList.data[key],
+            this.valueListOriginal.data[key],
+            value,
+          ));
       }
-      // if main fields dont have changes also iterate through data fields
-      return !Object.entries(this.formFieldsExtension)
-        .every(([key, value]) => this.compareDataValues(
-          this.valueList.data[key],
-          this.valueListOriginal.data[key],
-          value,
-        ));
+      return false;
     },
     locales() {
       return process.env.VUE_APP_LOCALES.split(',').map((langString) => langString.trim());
