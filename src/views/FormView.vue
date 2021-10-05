@@ -38,7 +38,7 @@
         name="fade-form">
         <!-- FORM EXTENSION -->
         <div
-          v-if="type && formDataPresent"
+          v-if="type && formDataPresent && formFieldsPresent && extensionFieldsPresent"
           key="extended-section">
           <BaseForm
             key="extended-form"
@@ -262,6 +262,12 @@ export default {
       return !this.currentItemId || (!!Object.keys(this.formFields).length
         && !!Object.keys(this.valueList).length
         && (!this.type || Object.keys(this.formFieldsExtension).length));
+    },
+    formFieldsPresent() {
+      return this.formFields && Object.keys(this.formFields).length;
+    },
+    extensionFieldsPresent() {
+      return this.formFieldsExtension && Object.keys(this.formFieldsExtension).length;
     },
     formFieldsExtension() {
       return this.$store.getters['data/getExtensionSchema'];
