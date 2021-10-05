@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "axios": "^0.21.1",
-    "base-ui-components": "^1.1.1",
+    "base-ui-components": "^1.1.2",
     "core-js": "^3.12.1",
     "messageformat": "^2.3.0",
     "normalize.css": "^8.0.1",

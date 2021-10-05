@@ -312,7 +312,7 @@ export default {
     },
     $route(to, from) {
       this.setInfoText();
-      if (from.name !== to.name) {
+      if (!(from.name === to.name || from.name.includes(to.name) || to.name.includes(from.name))) {
         // refetch sidebar data when switching from overview to form view and vice versa
         this.calculateDropDownsInline();
         this.calculateSidebarHeight();

@@ -23,6 +23,7 @@
           :disabled="isNewForm"
           :text="isPublished ? $tc('offline') : $tc('publish')"
           :has-background-color="false"
+          :button-text-wrap="false"
           icon-size="large"
           icon="eye"
           button-style="single"
@@ -31,6 +32,7 @@
           :disabled="isNewForm"
           :text="$tc('delete')"
           :has-background-color="false"
+          :button-text-wrap="false"
           icon-size="large"
           icon="waste-bin"
           button-style="single"
@@ -142,6 +144,7 @@ export default {
   flex-wrap: wrap;
   justify-content: center;
 }
+
 .archive-loader {
   position: relative;
   transform: scale(0.5);

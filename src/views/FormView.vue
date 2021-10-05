@@ -38,7 +38,7 @@
         name="fade-form">
         <!-- FORM EXTENSION -->
         <div
-          v-if="type && formDataPresent"
+          v-if="type && formDataPresent && formFieldsPresent && extensionFieldsPresent"
           key="extended-section">
           <BaseForm
             key="extended-form"
@@ -152,6 +152,7 @@ import axios from 'axios';
 import { attachmentHandlingMixin } from '@/mixins/attachmentHandling';
 import { entryHandlingMixin } from '@/mixins/entryHandling';
 import {
+  checkForLabel,
   getApiUrl,
   getLangLabel,
   hasFieldContent,
@@ -290,6 +291,12 @@ export default {
         && !!Object.keys(this.valueList).length
         && (!this.type || Object.keys(this.formFieldsExtension).length));
     },
+    formFieldsPresent() {
+      return this.formFields && Object.keys(this.formFields).length;
+    },
+    extensionFieldsPresent() {
+      return this.formFieldsExtension && Object.keys(this.formFieldsExtension).length;
+    },
     formFieldsExtension() {
       return this.$store.getters['data/getExtensionSchema'];
     },
@@ -302,32 +309,48 @@ export default {
       if (JSON.stringify(this.valueList) === JSON.stringify(this.valueListOriginal)) {
         return false;
       }
-      // cover special cases that could lead to an unambigous result without recursive looping
+      // cover special cases that could lead to an ambiguous result without recursive looping
       // e.g. the case that data field does not exist yet in one of the valueLists
       if ((this.valueList.type && this.valueList.type.length
         && this.valueListOriginal.type && this.valueListOriginal.type.length
         && this.valueList.type[0].source !== this.valueListOriginal.type[0].source)) {
         return true;
       }
-      // every value of formFields is compared - with Array.every it will stop automatically
-      // as soon as comparison returns false and therefore only traverse through object
-      // until non-equal fields are found
-      const mainFieldsHaveChanges = !Object.entries(this.formFields)
-        .every(([key, value]) => this.compareDataValues(
-          this.valueList[key],
-          this.valueListOriginal[key],
-          value,
-        ));
-      if (!this.type || mainFieldsHaveChanges) {
-        return mainFieldsHaveChanges;
+      // special case data fields
+      if ((this.valueList.data && !this.valueListOriginal.data)
+        || (!this.valueList.data && this.valueListOriginal.data)) {
+        return true;
       }
-      // if main fields dont have changes also iterate through data fields
-      return !Object.entries(this.formFieldsExtension)
-        .every(([key, value]) => this.compareDataValues(
-          this.valueList.data[key],
-          this.valueListOriginal.data[key],
-          value,
-        ));
+      // only check single fields as soon as form fields and values are loaded
+      if (this.formFields && Object.keys(this.formFields).length) {
+        // every value of formFields is compared - with Array.every it will stop automatically
+        // as soon as comparison returns false and therefore only traverse through object
+        // until non-equal fields are found
+        const mainFieldsHaveChanges = !Object.entries(this.formFields)
+          .every(([key, value]) => this.compareDataValues(
+            this.valueList[key],
+            this.valueListOriginal[key],
+            value,
+          ));
+        if (!this.type || mainFieldsHaveChanges) {
+          return mainFieldsHaveChanges;
+        }
+        // check if data fields exist at all and are equal
+        if ((this.valueList.data && !this.valueListOriginal.data)
+          || (!this.valueList.data && this.valueListOriginal.data)) {
+          return true;
+        }
+        if (this.valueList.data && this.valueListOriginal.data) {
+          // if main fields dont have changes also iterate through data fields
+          return !Object.entries(this.formFieldsExtension)
+            .every(([key, value]) => this.compareDataValues(
+              this.valueList.data[key],
+              this.valueListOriginal.data[key],
+              value,
+            ));
+        }
+      }
+      return false;
     },
     locales() {
       return process.env.VUE_APP_LOCALES.split(',').map((langString) => langString.trim());
@@ -378,11 +401,11 @@ export default {
       sessionStorage.removeItem('valueList');
       sessionStorage.removeItem('parent');
       if (val) {
+        this.resetForm();
+        await this.updateForm();
         if (this.valueList.type && this.valueList.type.length) {
           this.idChanged = true;
         }
-        this.resetForm();
-        await this.updateForm();
       } else {
         this.resetForm();
       }
@@ -667,7 +690,7 @@ export default {
                 }
               });
             }
-            this.$set(originalDataObject, key, value);
+            this.$set(originalDataObject, key, checkForLabel(value));
           }
         }
       });
