@@ -307,13 +307,15 @@ export default {
           || (!this.valueList.data && this.valueListOriginal.data)) {
           return true;
         }
-        // if main fields dont have changes also iterate through data fields
-        return !Object.entries(this.formFieldsExtension)
-          .every(([key, value]) => this.compareDataValues(
-            this.valueList.data[key],
-            this.valueListOriginal.data[key],
-            value,
-          ));
+        if (this.valueList.data && this.valueListOriginal.data) {
+          // if main fields dont have changes also iterate through data fields
+          return !Object.entries(this.formFieldsExtension)
+            .every(([key, value]) => this.compareDataValues(
+              this.valueList.data[key],
+              this.valueListOriginal.data[key],
+              value,
+            ));
+        }
       }
       return false;
     },
