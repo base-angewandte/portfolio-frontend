@@ -999,7 +999,7 @@ const actions = {
         });
       context.commit('setIsArchiveChanged', response.data);
     } catch (e) {
-      console.log(e);
+      console.error(e);
     }
   },
   async removeUnknownProps({ state, dispatch }, { data, fields }) {
