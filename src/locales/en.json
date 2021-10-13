@@ -209,5 +209,9 @@
     "done": "Done",
     "retry": "Try Again",
     "quotaExceeded": "Unfortunately you exceeded your quota, because you have only {space} of space left. Please remove some files to enable uploading."
+  },
+  "import": {
+    "importButtonTitle": "Import",
+    "searchCatalogueText": "Search the Library Catalogue"
   }
 }

@@ -62,6 +62,7 @@
       :class="['sidebar', { 'sidebar-full': !showForm, 'sidebar-hidden-mobile': showForm }]"
       @new-form="checkUnsavedChanges"
       @show-entry="checkUnsavedChanges"
+      @import-entries="checkUnsavedChanges"
       @update-publish-state="updateFormData" />
     <main
       v-if="showForm"
@@ -136,7 +137,7 @@ export default {
         this.$router.push('/new');
       }
     },
-    checkUnsavedChanges(id) {
+    checkUnsavedChanges(action, id) {
       const followUpAction = () => {
         // remove leftover stored values before entering new item;
         sessionStorage.removeItem('valueList');
@@ -144,7 +145,16 @@ export default {
         if (id) {
           this.routeToEntry(id);
         } else {
-          this.createNewForm();
+          switch (action) {
+          case 'goToNew':
+            this.createNewForm();
+            break;
+          case 'goToImport':
+            this.$router.push('/import');
+            break;
+          default:
+            console.error('An unknown route/action was requested.');
+          }
         }
       };
       if (this.$refs.view && this.$refs.view.unsavedChanges) {

@@ -203,5 +203,9 @@
     "done": "Fertig",
     "retry": "Erneut versuchen",
     "quotaExceeded": "Leider überschreitet dieser Upload Ihren verfügbaren Speicherplatz und Sie haben nur noch {space} übrig. Bitte entfernen Sie Dateien um den Upload zu ermöglichen."
+  },
+  "import": {
+    "importButtonTitle": "Importieren",
+    "searchCatalogueText": "Bibliothekskatalog durchsuchen"
   }
 }

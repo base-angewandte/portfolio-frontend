@@ -6,7 +6,9 @@
     <div
       ref="sidebarHead"
       :class="['sidebar-head', { 'sidebar-head-shadow': sidebarBelow }]">
-      <div :class="['base-row', { 'base-row-with-form': isNewForm || !!activeEntryId }]">
+      <div
+        :class="['base-row', { 'base-row-with-form':
+          isNewForm || !!activeEntryId || isImportPage }]">
         <BaseButton
           v-if="newEnabled"
           :active="isNewForm"
@@ -17,6 +19,14 @@
           class="base-row-button"
           button-style="row"
           @clicked="getNewForm" />
+        <BaseButton
+          :text="$t('import.importButtonTitle')"
+          :active="isImportPage"
+          icon="download"
+          icon-size="large"
+          class="base-row-button"
+          button-style="row"
+          @clicked="$emit('import-entries', 'goToImport')" />
         <BaseSearch
           v-model="filterString"
           :show-image="true"
@@ -259,6 +269,9 @@ export default {
     isNewForm() {
       return this.$route.name === 'newEntry';
     },
+    isImportPage() {
+      return this.$route.path === '/import';
+    },
     sortOptions() {
       return [
         {
@@ -344,7 +357,7 @@ export default {
   },
   methods: {
     showEntry(index) {
-      this.$emit('show-entry', this.listInt[index].id);
+      this.$emit('show-entry', 'goToEntry', this.listInt[index].id);
     },
     selectEntry(evt) {
       if (evt.selected) {
@@ -371,7 +384,7 @@ export default {
     getNewForm() {
       this.$store.commit('data/deleteCurrentItem');
       this.$store.commit('data/deleteParentItems');
-      this.$emit('new-form');
+      this.$emit('new-form', 'goToNew');
     },
     filterEntries(val, type) {
       if (type === 'type') {
@@ -590,10 +603,6 @@ export default {
     flex-direction: column;
     height: calc(100vh - #{$header-height} - #{$row-height-small} - 40px);
 
-    .search-bar {
-      border-left: $separation-line;
-    }
-
     .sidebar-head {
       position: sticky;
       z-index: map-get($zindex, dropdown);
@@ -608,6 +617,11 @@ export default {
       .sidebar-drop-downs {
         display: flex;
         justify-content: flex-end;
+      }
+
+      .base-row-button {
+        max-width: 100%;
+        border-right: $separation-line;
       }
     }
 
@@ -687,6 +701,7 @@ export default {
 
           .base-row-button {
             width: 100%;
+            border-right: none;
             border-bottom: $separation-line;
           }
         }
