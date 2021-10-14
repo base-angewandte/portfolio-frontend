@@ -12,26 +12,48 @@
         <BaseButton
           v-if="newEnabled"
           :active="isNewForm"
-          :text="$t('new')"
+          :text="isButtonMinimized ? '' : $t('new')"
           :disabled="isLoading"
           icon="sheet-plus"
           icon-size="large"
-          class="base-row-button"
+          :class="['base-row-button',
+                   {'minimized': isButtonMinimized},
+                   {'maximized': isButtonMaximized}]"
           button-style="row"
           @clicked="getNewForm" />
         <BaseButton
-          :text="$t('import.importButtonTitle')"
+          :text="isButtonMinimized ? '' : $t('import.importButtonTitle')"
           :active="isImportPage"
           icon="download"
           icon-size="large"
-          class="base-row-button"
+          :class="['base-row-button',
+                   {'minimized': isButtonMinimized},
+                   {'maximized': isButtonMaximized}]"
           button-style="row"
           @clicked="$emit('import-entries', 'goToImport')" />
+        <BaseButton
+          v-if="!isSearchExpanded"
+          text=""
+          icon="magnifier"
+          icon-size="large"
+          class="base-row-button search-button minimized"
+          style="border-right: none;"
+          button-style="row"
+          @clicked="expandOrCollapseSearch(true)" />
+        <!-- Searchbar is conditionally visible for desktop screens -->
+        <BaseSearch
+          v-if="isSearchExpanded"
+          v-model="filterString"
+          :show-image="true"
+          :placeholder="$t('search')"
+          class="search-bar-desktop"
+          @input-change="filterEntries($event, 'title')" />
+        <!-- Searchbar is always visible for medium and mobile screens -->
         <BaseSearch
           v-model="filterString"
           :show-image="true"
           :placeholder="$t('search')"
-          class="search-bar"
+          class="search-bar-mobile"
           @input-change="filterEntries($event, 'title')" />
       </div>
       <div class="sidebar-options-container">
@@ -245,6 +267,8 @@ export default {
       showDropDownsInline: true,
       // to have shadow when sidebar list below sidebar head
       sidebarBelow: false,
+      // used to horizontally collapse/expand the sidebar's search input
+      isSearchExpanded: true,
     };
   },
   computed: {
@@ -312,6 +336,26 @@ export default {
     isMobile() {
       return this.windowWidth && this.windowWidth <= 640;
     },
+    /**
+     * Returns true if sidebar head buttons such as 'New' or 'Import'
+     * are to be rendered in minimized state (i.e. without text and limited width).
+     */
+    isButtonMinimized() {
+      if (this.isSearchExpanded && this.$route.path !== '/') {
+        return true;
+      }
+      return false;
+    },
+    /**
+     * Returns true if sidebar head buttons such as 'New' or 'Import'
+     * are to be rendered in maximized state (i.e. with text and full width).
+     */
+    isButtonMaximized() {
+      if (!this.isSearchExpanded && this.$route.path !== '/') {
+        return true;
+      }
+      return false;
+    },
   },
   watch: {
     list(val) {
@@ -333,6 +377,7 @@ export default {
         if (this.$refs.pagination) {
           this.$refs.pagination.setStartEnd();
         }
+        this.expandOrCollapseSearch();
       }
     },
     windowWidth() {
@@ -351,6 +396,9 @@ export default {
     window.addEventListener('scroll', () => {
       this.checkContainerPosition();
     });
+  },
+  created() {
+    this.expandOrCollapseSearch();
   },
   updated() {
     this.calculateDropDownsInline();
@@ -591,6 +639,20 @@ export default {
           || this.$refs.menuContainer.scrollTop > 0;
       }
     },
+    /**
+     * Triggers a (horizontally) collapsed or an expanded state for the search input
+     * of the sidebar. When the forceExpand argument is set to true, the search input will be
+     * force expanded. Otherwise, it is minimized or expanded based on current route.
+     */
+    expandOrCollapseSearch(forceExpand = false) {
+      if (this.$route.path === '/') {
+        this.isSearchExpanded = true;
+      } else if (forceExpand) {
+        this.isSearchExpanded = true;
+      } else {
+        this.isSearchExpanded = false;
+      }
+    },
   },
 };
 </script>
@@ -622,6 +684,19 @@ export default {
       .base-row-button {
         max-width: 100%;
         border-right: $separation-line;
+      }
+
+      .minimized {
+        width: 3rem;
+        padding-left: 30px;
+      }
+
+      .maximized {
+        width: 100%;
+      }
+
+      .search-bar-mobile {
+        display: none;
       }
     }
 
@@ -679,6 +754,14 @@ export default {
   @media screen and (max-width: 1083px) {
     .menu-sidebar {
       height: calc(100vh - #{$header-height} - #{$row-height-small} - 131px);
+
+      .search-bar-desktop {
+        display: none;
+      }
+
+      .search-bar-mobile {
+        display: block;
+      }
     }
   }
 
@@ -705,6 +788,18 @@ export default {
             border-bottom: $separation-line;
           }
         }
+
+        .search-button {
+          display: none !important;
+        }
+
+        .search-bar-desktop {
+          display: none;
+        }
+
+        .search-bar-mobile {
+          display: block;
+        }
       }
     }
   }
@@ -719,11 +814,20 @@ export default {
       border-bottom: $separation-line;
     }
 
+    .search-button {
+      display: none !important;
+    }
+
     .menu-sidebar {
       height: calc(100vh - #{$header-height} - (2 * #{$spacing}));
 
-      .search-bar {
+      .search-bar-mobile {
+        display: block;
         border-left: none;
+      }
+
+      .search-bar-desktop {
+        display: none;
       }
     }
 
