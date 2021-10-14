@@ -828,6 +828,7 @@ export default {
 
 <style lang="scss" scoped>
 @import "../styles/variables.scss";
+
 .attachment-area {
   .linked-base-box {
     cursor: pointer;
@@ -845,7 +846,7 @@ export default {
       .status-icon {
         height: $icon-medium;
         width: $icon-medium;
-        margin: $spacing-small/2 $spacing-small;
+        margin: calc(#{$spacing-small} / 2) $spacing-small;
 
         &:first-of-type {
           margin-top: $spacing-small;
