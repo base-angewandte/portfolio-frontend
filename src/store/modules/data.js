@@ -680,9 +680,9 @@ const actions = {
           const adjustedEntry = await adjustEntry(createdEntry);
           commit('setCurrentItemData', adjustedEntry);
           commit('setIsFormSaved', true);
-          // if this is an archived entry, and if there are no assets pending archival
+          // if this is an archived entry,
           // update the store with advice that the remote archive needs update
-          if (adjustedEntry.archive_URI && state.archivingMedia.length === 0) {
+          if (adjustedEntry.archive_URI) {
             commit('setIsArchiveChanged', true);
           }
         }
