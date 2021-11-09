@@ -127,31 +127,7 @@
         :active-entry="activeEntry"
         :selected-list="selectedList"
         @clicked="showEntry"
-        @selected="selectEntry">
-        <template
-          v-slot:thumbnails="{ item }">
-          <base-icon
-            v-if="item.shared"
-            name="people"
-            class="base-menu-entry-thumbnail" />
-          <base-icon
-            v-if="item.published"
-            name="eye"
-            class="base-menu-entry-thumbnail" />
-          <base-icon
-            v-if="item.error"
-            name="attention"
-            class="base-menu-entry-thumbnail" />
-          <base-icon
-            v-if="item.has_media"
-            name="attachment"
-            class="base-menu-entry-thumbnail" />
-          <base-icon
-            v-if="item.archive_URI"
-            name="archive-sheets"
-            class="base-menu-entry-thumbnail" />
-        </template>
-      </BaseMenuList>
+        @selected="selectEntry" />
       <div
         v-else-if="!isLoading"
         class="no-entries">
@@ -683,12 +659,6 @@ export default {
     &:not(:first-of-type) {
       margin-left: $spacing;
     }
-  }
-
-  .base-menu-entry-thumbnail {
-    max-height: $icon-small;
-    width: $icon-small;
-    margin: 4px 6px;
   }
 
   // special width dictated by header / footer component
