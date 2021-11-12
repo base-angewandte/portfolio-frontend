@@ -20,13 +20,18 @@
     <BaseMenuList
       v-if="results && results.length && !isLoading"
       class="results-container"
-      :list="results"
+      :list="currentPageRecords"
       :selected="true" />
     <BaseTextList
       v-if="noResultsText"
       class="no-results-container"
       render-label-as="h4"
       :data="[{ label: noResultsText }]" />
+    <BasePagination
+      v-if="results && results.length && !isLoading"
+      :current="currentPage"
+      :total="pageCount"
+      @set-page="currentPage = $event" />
   </div>
 </template>
 
@@ -34,6 +39,7 @@
 import axios from 'axios';
 
 export default {
+  name: 'ImportView',
   data() {
     return {
       // true while fetching results from the api server
@@ -44,7 +50,34 @@ export default {
       results: [],
       // text to notify user when search retrieved no results
       noResultsText: '',
+      // number of records per page
+      recordsPerPage: 10,
+      // current page number
+      currentPage: 1,
     };
+  },
+  computed: {
+    /**
+     * Returns the subset of results that are to be displayed on the current page.
+     */
+    currentPageRecords() {
+      const records = Array.from(this.results);
+      const start = this.currentPage * this.recordsPerPage - this.recordsPerPage;
+      const end = start + this.recordsPerPage;
+      return records.slice(start, end);
+    },
+    /**
+     * Returns the total number of pages.
+     */
+    pageCount() {
+      if (this.results) {
+        if (this.results.length % this.recordsPerPage === 0) {
+          return this.results.length / this.recordsPerPage;
+        }
+        return Math.ceil(this.results.length / this.recordsPerPage);
+      }
+      return 0;
+    },
   },
   watch: {
     /**
@@ -62,21 +95,23 @@ export default {
      * Occurs when the search input changes.
      */
     runSearch() {
+      // clear/reset values pertaining to previous search
       this.noResultsText = '';
+      this.currentPage = 1;
 
       if (this.timeout) {
         clearTimeout(this.timeout);
       }
 
-      if (this.searchText.length >= 3) {
-        this.isLoading = true;
-        // let quick key strokes not trigger an api call
-        this.timeout = setTimeout(async () => {
+      // let quick key strokes not trigger an api call
+      this.timeout = setTimeout(async () => {
+        if (this.searchText.length >= 3) {
+          this.isLoading = true;
           this.fetchSearchResults();
-        }, 600);
-      } else {
-        this.results = [];
-      }
+        } else {
+          this.results = [];
+        }
+      }, 600);
     },
     /**
      * Retrieves search results from the API and populates
