@@ -668,7 +668,7 @@ const actions = {
       commit('updateArchivingMedia');
     }
   },
-  addOrUpdateEntry({ commit }, data) {
+  addOrUpdateEntry({ commit, dispatch }, data) {
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
       try {
@@ -680,10 +680,10 @@ const actions = {
           const adjustedEntry = await adjustEntry(createdEntry);
           commit('setCurrentItemData', adjustedEntry);
           commit('setIsFormSaved', true);
-          // if this is an archived entry,
-          // update the store with advice that the remote archive needs update
+          // if this is an archived entry, update the isArchiveChanged
+          // store property with advice received from the backend
           if (adjustedEntry.archive_URI) {
-            commit('setIsArchiveChanged', true);
+            await dispatch('fetchIsArchiveChanged');
           }
         }
         resolve(createdEntry.id);

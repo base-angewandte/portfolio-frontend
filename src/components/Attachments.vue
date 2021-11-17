@@ -417,7 +417,7 @@ export default {
           // advice that the remote archive needs update
           if (action === 'license' && this.archivedMediaIds.length > 0
               && this.archivedAssetsChangedLicense(successIds)) {
-            this.$store.commit('data/setIsArchiveChanged', true);
+            this.$store.dispatch('data/fetchIsArchiveChanged');
           }
         }
         // clear all variables after action
