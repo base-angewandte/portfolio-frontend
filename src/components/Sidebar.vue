@@ -127,7 +127,26 @@
         :active-entry="activeEntry"
         :selected-list="selectedList"
         @clicked="showEntry"
-        @selected="selectEntry" />
+        @selected="selectEntry">
+        <template
+          v-slot:thumbnails="{ item }">
+          <base-icon
+            v-if="item.shared"
+            name="people" />
+          <base-icon
+            v-if="item.published"
+            name="eye" />
+          <base-icon
+            v-if="item.error"
+            name="attention" />
+          <base-icon
+            v-if="item.has_media"
+            name="attachment" />
+          <base-icon
+            v-if="item.archive_URI"
+            name="archive-sheets" />
+        </template>
+      </BaseMenuList>
       <div
         v-else-if="!isLoading"
         class="no-entries">
@@ -154,6 +173,7 @@ import axios from 'axios';
 import { entryHandlingMixin } from '@/mixins/entryHandling';
 import { userInfo } from '@/mixins/userInfo';
 import { getLangLabel } from '@/utils/commonUtils';
+import { mapGetters } from 'vuex';
 
 export default {
   mixins: [entryHandlingMixin, userInfo],
@@ -299,6 +319,9 @@ export default {
     isMobile() {
       return this.windowWidth && this.windowWidth <= 640;
     },
+    ...mapGetters('data', [
+      'getCurrentItemData',
+    ]),
   },
   watch: {
     list(val) {
@@ -325,6 +348,17 @@ export default {
     windowWidth() {
       this.calculateSidebarHeight();
       this.fetchSidebarData();
+    },
+    getCurrentItemData(val) {
+      // whenever the active store entry gets an archive_URI,
+      // find the relevant menu entry in sidebar and set the archive_URI property
+      // so as to display the "archived" icon
+      if (val && val.archive_URI) {
+        const archivedEntryIndex = this.listInt.findIndex((entry) => entry.id === val.id);
+        if (this.listInt[archivedEntryIndex]) {
+          this.listInt[archivedEntryIndex].archive_URI = val.archive_URI;
+        }
+      }
     },
   },
   mounted() {
