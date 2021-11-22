@@ -22,6 +22,7 @@
           button-style="row"
           @clicked="getNewForm" />
         <BaseButton
+          v-if="importEnabled"
           :text="isButtonMinimized ? '' : $t('import.importButtonTitle')"
           :active="isImportPage"
           icon="download"
@@ -201,6 +202,14 @@ export default {
      * make optional for link entries functionality
      */
     newEnabled: {
+      type: Boolean,
+      default: true,
+    },
+    /**
+     * whether the import button is to be shown; e.g. this is not required
+     * when the sidebar instance is used on the "attach existing entries" pop-up
+     */
+    importEnabled: {
       type: Boolean,
       default: true,
     },
@@ -641,13 +650,12 @@ export default {
     },
     /**
      * Triggers a (horizontally) collapsed or an expanded state for the search input
-     * of the sidebar. When the forceExpand argument is set to true, the search input will be
-     * force expanded. Otherwise, it is minimized or expanded based on current route.
+     * of the sidebar.
      */
     expandOrCollapseSearch(forceExpand = false) {
-      if (this.$route.path === '/') {
-        this.isSearchExpanded = true;
-      } else if (forceExpand) {
+      // expand the search in the following cases: (a) we are on root page
+      // (b) import is disabled (c) forceExpand flag is true
+      if (this.$route.path === '/' || !this.importEnabled || forceExpand) {
         this.isSearchExpanded = true;
       } else {
         this.isSearchExpanded = false;
