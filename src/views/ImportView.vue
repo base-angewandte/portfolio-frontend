@@ -13,15 +13,29 @@
       :placeholder="$t('import.searchCatalogueText')"
       show-image
       @input-change="runSearch" />
-    <BaseLoader
-      v-if="isLoading"
-      loader-color="red"
-      class="loader" />
-    <BaseMenuList
-      v-if="results && results.length && !isLoading"
-      class="results-container"
-      :list="currentPageRecords"
-      :selected="true" />
+    <div class="results-container">
+      <BaseSelectOptions
+        v-if="results && results.length && !isLoading"
+        :list="currentPageRecords"
+        :selected-list="selectedIndexes"
+        :selected-number-text="$t(
+          'entriesSelected',
+          { type: $tc('notify.entry', selectedIndexes.length) }
+        )"
+        :select-text="$t('selectAll')"
+        :deselect-text="$t('selectNone')"
+        @selected="selectAll" />
+      <BaseLoader
+        v-if="isLoading"
+        loader-color="red"
+        class="loader" />
+      <BaseMenuList
+        v-if="results && results.length && !isLoading"
+        :list="currentPageRecords"
+        :selected-list="selectedIndexes"
+        :selected="true"
+        @selected="selectRecord($event)" />
+    </div>
     <BaseTextList
       v-if="noResultsText"
       class="no-results-container"
@@ -54,6 +68,8 @@ export default {
       recordsPerPage: 10,
       // current page number
       currentPage: 1,
+      // the indices of currently selected entries
+      selectedIndexes: [],
     };
   },
   computed: {
@@ -158,6 +174,36 @@ export default {
         };
         return entry;
       });
+    },
+    /**
+     * Select or deselect a single record.
+     */
+    selectRecord(evt) {
+      const rec = this.currentPageRecords[evt.index];
+      if (evt.selected) {
+        this.selectedIndexes.push(rec.id);
+      } else {
+        // deselect, i.e. remove the record id from the selection
+        this.selectedIndexes = this.selectedIndexes.filter((el) => el !== rec.id);
+      }
+    },
+    /**
+     * Select or deselect all records on the current page.
+     */
+    selectAll(val) {
+      // get all records ids from the current page into an array
+      const ids = this.currentPageRecords.map((rec) => rec.id);
+      if (val) {
+        // add all ids on current page to records that have been already selected
+        this.selectedIndexes = this.selectedIndexes.concat(ids);
+        // remove duplicate elements from the array;
+        // deduplication is necessary e.g. when some individual records
+        // were selected and then 'select all' was clicked
+        this.selectedIndexes = Array.from(new Set(this.selectedIndexes));
+      } else {
+        // remove deselected record ids from the selection
+        this.selectedIndexes = this.selectedIndexes.filter((id) => !ids.includes(id));
+      }
     },
   },
 };
