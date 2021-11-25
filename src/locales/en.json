@@ -212,6 +212,10 @@
   },
   "import": {
     "importButtonTitle": "Import",
-    "searchCatalogueText": "Search the Library Catalogue"
+    "searchCatalogueText": "Search the Library Catalogue",
+    "successText": "Import successful",
+    "successSubtext": "{count} entries were imported successfully.",
+    "failText": "Error during import",
+    "failSubtext": "Unfortunately import has failed due to the following reason: {error}."
   }
 }

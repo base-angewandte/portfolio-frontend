@@ -17,10 +17,10 @@
       <BaseSelectOptions
         v-if="results && results.length && !isLoading"
         :list="currentPageRecords"
-        :selected-list="selectedIndexes"
+        :selected-list="selectedRecords"
         :selected-number-text="$t(
           'entriesSelected',
-          { type: $tc('notify.entry', selectedIndexes.length) }
+          { type: $tc('notify.entry', selectedRecords.length) }
         )"
         :select-text="$t('selectAll')"
         :deselect-text="$t('selectNone')"
@@ -32,7 +32,7 @@
       <BaseMenuList
         v-if="results && results.length && !isLoading"
         :list="currentPageRecords"
-        :selected-list="selectedIndexes"
+        :selected-list="selectedIds"
         :selected="true"
         @selected="selectRecord($event)" />
     </div>
@@ -46,6 +46,24 @@
       :current="currentPage"
       :total="pageCount"
       @set-page="currentPage = $event" />
+    <div
+      v-if="results && results.length && !isLoading"
+      style="display: flex; padding: 16px; justify-content: center;">
+      <base-button
+        :text="$t('cancel')"
+        style="margin-right: 4px;"
+        icon="remove"
+        button-style="row"
+        icon-size="small"
+        @clicked="resetSearch" />
+      <base-button
+        :text="$t('import.importButtonTitle')"
+        :disabled="!selectedRecords.length"
+        icon="download"
+        button-style="row"
+        icon-size="small"
+        @clicked="onImport" />
+    </div>
   </div>
 </template>
 
@@ -68,8 +86,8 @@ export default {
       recordsPerPage: 10,
       // current page number
       currentPage: 1,
-      // the indices of currently selected entries
-      selectedIndexes: [],
+      // the currently selected records
+      selectedRecords: [],
     };
   },
   computed: {
@@ -93,6 +111,12 @@ export default {
         return Math.ceil(this.results.length / this.recordsPerPage);
       }
       return 0;
+    },
+    /**
+     * returns the ids of records that are currently selected
+     */
+    selectedIds() {
+      return this.selectedRecords.map((record) => record.id);
     },
   },
   watch: {
@@ -181,29 +205,91 @@ export default {
     selectRecord(evt) {
       const rec = this.currentPageRecords[evt.index];
       if (evt.selected) {
-        this.selectedIndexes.push(rec.id);
+        this.selectedRecords.push(rec);
       } else {
         // deselect, i.e. remove the record id from the selection
-        this.selectedIndexes = this.selectedIndexes.filter((el) => el !== rec.id);
+        this.selectedRecords = this.selectedRecords.filter((el) => el.id !== rec.id);
       }
     },
     /**
      * Select or deselect all records on the current page.
      */
     selectAll(val) {
-      // get all records ids from the current page into an array
-      const ids = this.currentPageRecords.map((rec) => rec.id);
       if (val) {
-        // add all ids on current page to records that have been already selected
-        this.selectedIndexes = this.selectedIndexes.concat(ids);
+        // add all records on current page to records that have been already selected
+        this.selectedRecords = this.selectedRecords.concat(this.currentPageRecords);
         // remove duplicate elements from the array;
         // deduplication is necessary e.g. when some individual records
         // were selected and then 'select all' was clicked
-        this.selectedIndexes = Array.from(new Set(this.selectedIndexes));
+        this.selectedRecords = Array.from(new Set(this.selectedRecords));
       } else {
+        // get all records ids from the current page into an array
+        const ids = this.currentPageRecords.map((rec) => rec.id);
         // remove deselected record ids from the selection
-        this.selectedIndexes = this.selectedIndexes.filter((id) => !ids.includes(id));
+        this.selectedRecords = this.selectedRecords.filter((rec) => !ids.includes(rec.id));
       }
+    },
+    /**
+     * Occurs when the "Import" button is clicked.
+     */
+    async onImport() {
+      this.isLoading = true;
+      await this.importSelected()
+        .then((entryIds) => {
+          // trigger update of sidebar
+          this.$emit('data-changed');
+          // reset the search
+          this.resetSearch();
+          // notify the user
+          this.$notify({
+            group: 'request-notifications',
+            title: this.$t('import.successText'),
+            text: this.$t('import.successSubtext', { count: entryIds.length }),
+            type: 'success',
+          });
+        }).catch((err) => {
+          this.$notify({
+            group: 'request-notifications',
+            title: this.$t('import.failText'),
+            text: this.$t('import.failSubtext', { error: err }),
+            type: 'error',
+          });
+        }).finally(() => {
+          this.isLoading = false;
+        });
+    },
+    /**
+     * Performs a batch import, i.e. creates new entries for each of the selected records.
+     */
+    async importSelected() {
+      return Promise.all(this.selectedRecords
+      // eslint-disable-next-line no-async-promise-executor
+        .map((record) => new Promise(async (resolve, reject) => {
+          try {
+            await this.$store.dispatch('data/addOrUpdateEntry', {
+              title: record.title,
+              subtitle: record.description,
+            }).then((id) => {
+              resolve(id);
+            }).catch((e) => {
+              console.error(e);
+              reject(e);
+            });
+          } catch (e) {
+            console.error(e);
+            reject(e);
+          }
+        })));
+    },
+    /**
+     * Resets the search controls and data to initial state.
+     * Occurs when the "Cancel" button is clicked or the import has completed.
+     */
+    resetSearch() {
+      this.searchText = '';
+      this.results = [];
+      this.noResultsText = '';
+      this.selectedRecords = [];
     },
   },
 };

@@ -206,6 +206,10 @@
   },
   "import": {
     "importButtonTitle": "Importieren",
-    "searchCatalogueText": "Bibliothekskatalog durchsuchen"
+    "searchCatalogueText": "Bibliothekskatalog durchsuchen",
+    "successText": "Importierung erfolgreich",
+    "successSubtext": "{count} Einträge wurden erfolgreich importiert.",
+    "failText": "Importfehler",
+    "failSubtext": "Leider ist der Import aus folgendem Grund fehlgeschlagen: {error}."
   }
 }
