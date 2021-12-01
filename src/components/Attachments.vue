@@ -321,6 +321,13 @@ export default {
       return this.getIsArchiveUpdate;
     },
     /**
+     * Returns an array of all media asset IDs belonging to the current entry.
+     */
+    mediaIds() {
+      return this.attachedList
+        .map((media) => media.id);
+    },
+    /**
      * Returns an array with the IDs of all archived media assets.
      */
     archivedMediaIds() {
@@ -406,12 +413,11 @@ export default {
           if (action === 'delete') {
             this.$emit('files-deleted');
           }
-          // if the license of any archived asset has changed, and if there are no assets
-          // pending archival, update the store with advice that the remote archive needs update
+          // if the license of any archived asset has changed, update the store with
+          // advice that the remote archive needs update
           if (action === 'license' && this.archivedMediaIds.length > 0
-              && this.getArchivingMedia.length === 0
               && this.archivedAssetsChangedLicense(successIds)) {
-            this.$store.commit('data/setIsArchiveChanged', true);
+            this.$store.dispatch('data/fetchIsArchiveChanged');
           }
         }
         // clear all variables after action
@@ -633,7 +639,7 @@ export default {
         // first set any previous archival validation outcome to void
         this.$store.commit('data/setArchivalValidationOutcome', null);
         // prepare the params required to validate archival data
-        const mediaIds = this.selectedFiles.length > 0 ? this.selectedFiles : this.archivedMediaIds;
+        const mediaIds = this.selectedFiles.length > 0 ? this.selectedFiles : this.mediaIds;
         // obtain a new validation outcome
         await this.$store.dispatch('data/validateArchivalData', mediaIds);
         if (this.getArchivalValidationOutcome) {
