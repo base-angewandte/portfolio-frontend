@@ -170,10 +170,10 @@
 
 <script>
 import axios from 'axios';
+import { mapGetters } from 'vuex';
 import { entryHandlingMixin } from '@/mixins/entryHandling';
 import { userInfo } from '@/mixins/userInfo';
 import { getLangLabel } from '@/utils/commonUtils';
-import { mapGetters } from 'vuex';
 
 export default {
   mixins: [entryHandlingMixin, userInfo],
