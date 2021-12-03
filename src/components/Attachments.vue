@@ -2,6 +2,7 @@
   <div class="attachment-area">
     <!-- ATTACHED ENTRIES -->
     <BaseResultBoxSection
+      v-if="linkedList.length"
       ref="linkedSection"
       :entry-list="linkedList"
       :message-text="$t('form-view.deleteLinkedText')"
@@ -144,6 +145,7 @@
 
     <!-- PARENT ENTRIES -->
     <BaseResultBoxSection
+      v-if="parentList.length"
       ref="parentSection"
       :entry-list="parentList"
       :message-text="$t('form-view.deleteLinkedText')"
