@@ -43,10 +43,14 @@
 
     <!-- ATTACHED FILES -->
     <BaseResultBoxSection
+      v-if="attachedList.length"
       ref="fileSection"
+      :key="resetOrderKey"
+      :draggable="true"
       :entry-list="attachedList"
       :message-text="$t('form-view.fileActionText')"
-      :message-subtext="$t('form-view.fileActionSubtext')"
+      :message-subtext="`${$t('form-view.fileActionSubtext')}
+        \n ${$t('form-view.fileActionSubtextDrag')}`"
       :header-text="$t('form-view.attachedFiles')"
       :edit-mode="editModeActive === 'file'"
       :is-loading="filesLoading"
@@ -78,6 +82,7 @@
         },
       ]"
       use-options-button-on="always"
+      @entries-changed="orderAction"
       @submit-action="checkFileActioning"
       @update:edit-mode="editModeActive = 'file'">
       <template #optionsMessageAreaAfter>
@@ -225,6 +230,8 @@ export default {
       filesLoading: false,
       // store the pending action in a variable until process finished
       pendingAction: '',
+      // key to reset component
+      resetOrderKey: 0,
       capitalizeString,
     };
   },
@@ -289,6 +296,31 @@ export default {
         // no further code execution is necessary until user input is done
       } else if (this.pendingAction !== 'license') {
         this.saveFileMeta();
+      }
+    },
+    /**
+     * action to order items, reset component if requests fails
+     * @param {Array} orderedList
+     * @returns {Promise<void>}
+     */
+    async orderAction(orderedList) {
+      const response = await this.$store.dispatch('data/orderFiles', {
+        action: 'order',
+        entryId: this.$route.params.id,
+        list: orderedList.map((item) => ({ id: item.id })),
+      });
+
+      if (response.error) {
+        // TODO: better solution
+        // increase key and render component again, to reset order
+        this.resetOrderKey += 1;
+
+        this.$notify({
+          group: 'request-notifications',
+          title: this.$t('notify.actionFailed', { action: this.$t('notify.order') }),
+          text: this.$t('notify.actionFailSubtextRetry', { toTitleCase: false }),
+          type: 'error',
+        });
       }
     },
     // function for using options (delete, change license, publish state) for files

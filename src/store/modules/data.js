@@ -645,6 +645,30 @@ const actions = {
     return { title: 'title' };
   },
   /**
+   * for ordering media files
+   * @param context: the store action context
+   * @param entryId: id of entry
+   * @param list: a list of media id's to process
+   * @returns {Promise<{error: boolean}>}
+   */
+  async orderFiles(context, { entryId, list }) {
+    let error = false;
+    try {
+      // TODO: replace with Portfolio_API
+      await axios.post(`${portfolioApiUrl}entry/${entryId}/media/order/fff`,
+        list.map((item) => ({ id: item.id })),
+        {
+          withCredentials: true,
+          xsrfCookieName: 'csrftoken_portfolio',
+          xsrfHeaderName: 'X-CSRFToken',
+        });
+    } catch (e) {
+      console.error(e);
+      error = true;
+    }
+    return { error };
+  },
+  /**
    * for deleting files or updating metainformation such as license or published state
    * @param context: the store action context
    * @param list: a list of media id's to process
