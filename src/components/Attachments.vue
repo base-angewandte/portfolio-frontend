@@ -56,11 +56,22 @@
       :edit-mode="editModeActive === 'file'"
       :is-loading="filesLoading"
       :selected-list.sync="selectedFiles"
+      :select-options-text="{
+        selectAll: $t('selectAll'),
+        selectNone: $t('selectNone'),
+        entriesSelected: $t('entriesSelected', { type: $tc('entry', selectedEntries.length) })
+      }"
       :action-buttons-config="[
         {
           text: $t('form-view.changeLicense'),
           icon: 'licence',
           value: 'license',
+          display: 'all',
+        },
+        {
+          text: $t('form-view.featureMedia'),
+          icon: 'subscribe',
+          value: 'feature',
           display: 'all',
         },
         {
@@ -126,19 +137,39 @@
           @mouseleave.native="changeVideoHoverState($event, props.index, false)"
           @select-triggered="props.entrySelected(props.item.id, $event, props.item.published)"
           @clicked="$emit('show-preview', props.item)">
-          <div
-            slot="top">
-            <template v-if="props.item.published">
-              <div class="file-published">
+          <template
+            slot="footerLeft">
+            <base-icon
+              v-if="props.item.featured"
+              name="subscribe"
+              :title="capitalizeString($t('notify.featured'))"
+              :aria-title="capitalizeString($t('notify.featured'))"
+              :aria-description="iconDescription('featured', props.item.original)"
+              class="status-icon" />
+          </template>
+          <template
+            slot="footer">
+            <template
+              v-if="props.item.published">
+              <div class="status-icons">
                 <base-icon
+                  v-if="props.item.archived"
+                  name="archive-sheets"
+                  :title="capitalizeString($t('notify.publishd'))"
+                  :aria-title="capitalizeString($t('notify.publishd'))"
+                  :aria-description="iconDescription('published', props.item.original)"
+                  class="status-icon" />
+
+                <base-icon
+                  v-if="props.item.published"
                   name="eye"
                   :title="capitalizeString($t('notify.publishd'))"
                   :aria-title="capitalizeString($t('notify.publishd'))"
-                  :aria-description="publishedIconDescription(props.item.original)"
-                  class="published-icon" />
+                  :aria-description="iconDescription('published', props.item.original)"
+                  class="status-icon" />
               </div>
             </template>
-          </div>
+          </template>
         </BaseImageBox>
       </template>
     </BaseResultBoxSection>
@@ -350,12 +381,33 @@ export default {
           text: this.$t('notify.selectLicense'),
           type: 'error',
         });
+        // check if a just a single file was selected if action is feature file
+        // if not inform user he should select just 1 file
+      } else if (this.pendingAction === 'feature' && this.selectedFiles.length > 1) {
+        this.$notify({
+          group: 'request-notifications',
+          title: this.$t('notify.actionFailed', { action: this.$t('notify.feature') }),
+          text: this.$t('notify.selectSingleForAction', {
+            action: this.$t('notify.featureFile', { toTitleCase: false }),
+          }),
+          type: 'error',
+        });
       } else {
+        // define value and set depending on pendingAction
+        let value = '';
+        if (this.pendingAction === 'license') {
+          value = this.licenseSelected;
+        }
+        if (this.pendingAction === 'feature') {
+          // check featured state of selected file and toggle state if already featured
+          value = !this.attachedList.find((obj) => obj.id === this.selectedFiles[0]).featured;
+        }
+
         // if all error checks pass actually do the action
         const [successIds, failIds] = await this.$store.dispatch('data/actionFiles', {
           list: this.selectedFiles,
           action: this.pendingAction,
-          value: this.licenseSelected,
+          value,
         });
         // and inform user of the fail / success
         this.informUser({
@@ -490,8 +542,8 @@ export default {
         }, 60000);
       }
     },
-    publishedIconDescription(item) {
-      return `${this.$t('form-view.file')} ${this.$t('form-view.filePublished', { file: this.getFileName(item) })}`;
+    iconDescription(state, item) {
+      return `${this.$t('form-view.file')} ${this.$t(`form-view.file${state[0].toUpperCase() + state.slice(1)}`, { file: this.getFileName(item) })}`;
     },
   },
 };
@@ -523,24 +575,16 @@ export default {
 
     .linked-base-box {
       cursor: pointer;
+    }
 
-      .file-published {
-        height: $icon-max;
-        width: $icon-max;
-        position: absolute;
-        border-radius: $icon-max/2;
-        background: radial-gradient(closest-side,
-          rgba(255,255,255,1) 50%,
-          rgba(255,255,255,0) 100%);
-        right: -$spacing-small;
-        top: -$spacing-small;
-        display: flex;
+    .status-icon {
+      height: $icon-medium;
+      max-width: $icon-medium;
+    }
 
-        .published-icon {
-          height: $icon-medium;
-          max-width: $icon-medium;
-          margin: auto;
-        }
+    .status-icons {
+      .status-icon {
+        margin-left: $spacing-small;
       }
     }
   }

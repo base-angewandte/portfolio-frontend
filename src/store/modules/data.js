@@ -672,7 +672,7 @@ const actions = {
    * for deleting files or updating metainformation such as license or published state
    * @param context: the store action context
    * @param list: a list of media id's to process
-   * @param action: the action to carry out ('delete' | 'license' | 'publish')
+   * @param action: the action to carry out ('delete' | 'license' | 'publish' | 'feature')
    * @param value: value of license to be set (not needed for other actions)
    * @returns {Promise<Array>}
    */
@@ -697,8 +697,11 @@ const actions = {
         } else {
           if (action === 'publish') {
             formData.append('published', true);
+          } else if (action === 'feature') {
+            formData.append('featured', value);
           } else if (action === 'offline') {
             formData.append('published', false);
+            formData.append('featured', false);
           } else if (action === 'license') {
             formData.append('license', value.source ? JSON.stringify(value) : null);
           } else {
