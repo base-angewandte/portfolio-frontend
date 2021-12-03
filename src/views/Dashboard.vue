@@ -38,12 +38,14 @@
         </div>
       </div>
     </BasePopUp>
+
     <BaseMediaPreview
       :show-preview="showPreview"
       :media-url="getFilePath(assetFilePath)"
+      :media-poster-url="assetObject !== null
+        && assetObject.type === 'v' ? getFilePath( assetObject.cover.jpg) : null"
       :download-url="assetObject !== null ? getFilePath( assetObject.original) : ''"
       :display-size="previewSize"
-      :previews="imagePreviews"
       :info-texts="{
         download: $t('form-view.download'),
         view: $t('form-view.view'),
