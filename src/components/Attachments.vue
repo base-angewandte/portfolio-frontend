@@ -60,38 +60,39 @@
         selectNone: $t('selectNone'),
         entriesSelected: $t('entriesSelected', { type: $tc('entry', selectedEntries.length) })
       }"
+      :show-action-button-boxes="true"
       :action-buttons-config="[
         {
           text: $t('form-view.changeLicense'),
           icon: 'licence',
           value: 'license',
-          display: 'all',
+          display: pendingAction === 'license' ? 'all' : 'top',
         },
         {
           text: $t('form-view.featureMedia'),
           icon: 'subscribe',
           value: 'feature',
-          display: 'all',
+          display: 'top',
         },
         {
           text: $t('form-view.publishMedia'),
           icon: 'eye',
           value: 'publish',
-          display: 'all',
+          display: 'top',
           disabled: !attachedList.filter((item) => !item.published).length,
         },
         {
           text: $t('form-view.offlineMedia'),
           icon: 'eye-hide',
           value: 'offline',
-          display: 'all',
+          display: 'top',
           disabled: !attachedList.filter((item) => item.published).length,
         },
         {
           text: $t('form-view.deleteMedia'),
           icon: 'waste-bin',
           value: 'delete',
-          display: 'all',
+          display: 'top',
         },
       ]"
       use-options-button-on="always"
@@ -110,13 +111,6 @@
             :placeholder="$t('form-view.selectLicense')"
             :language="$i18n.locale"
             value-prop="source" />
-          <BaseButton
-            :text="$t('form-view.licenseButton')"
-            icon-position="right"
-            icon="check-mark"
-            button-style="secondary"
-            class="license-button"
-            @clicked="saveFileMeta('license')" />
         </div>
       </template>
       <template
@@ -264,6 +258,8 @@ export default {
       filesLoading: false,
       // store the pending action in a variable until process finished
       pendingAction: '',
+      // store the pending action to follow up after for second or further function calls
+      pendingActionFollowUp: '',
       // store the original attached list (needed to reset order after request error)
       attachedListOriginal: [],
       capitalizeString,
@@ -329,9 +325,13 @@ export default {
         // if action is everything but license (and delete) continue with the action
         // for license the drop down appears as soon as pendingAction is set and
         // no further code execution is necessary until user input is done
-      } else if (this.pendingAction !== 'license') {
+      } else if (this.pendingAction !== 'license'
+      || this.pendingActionFollowUp === 'license') {
         this.saveFileMeta();
       }
+
+      // set pendingActionFollowUp to trigger saveFileMeta() on next function call
+      this.pendingActionFollowUp = this.pendingAction;
     },
     /**
      * action to order items, reset component if requests fails
@@ -423,6 +423,7 @@ export default {
         }
         // clear all variables after action
         this.pendingAction = '';
+        this.pendingActionFollowUp = '';
         this.selectedFiles = [];
         this.licenseSelected = {};
       }
