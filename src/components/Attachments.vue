@@ -49,8 +49,7 @@
       :draggable="true"
       :entry-list="attachedList"
       :message-text="$t('form-view.fileActionText')"
-      :message-subtext="`${$t('form-view.fileActionSubtext')}
-        \n ${$t('form-view.fileActionSubtextDrag')}`"
+      :message-subtext="$t('form-view.fileActionSubtext')"
       :header-text="$t('form-view.attachedFiles')"
       :edit-mode="editModeActive === 'file'"
       :is-loading="filesLoading"
@@ -100,6 +99,10 @@
       @submit-action="checkFileActioning"
       @update:edit-mode="editModeActive = 'file'">
       <template #optionsMessageAreaAfter>
+        <div
+          class="text-small">
+          {{ $t('form-view.fileActionSubtextDrag') }}
+        </div>
         <div
           v-if="pendingAction === 'license'"
           class="attachments__license-drop-down">
@@ -588,6 +591,10 @@ export default {
       .status-icon {
         margin-left: $spacing-small;
       }
+    }
+
+    .text-small {
+      font-size: $font-size-small;
     }
   }
 </style>
