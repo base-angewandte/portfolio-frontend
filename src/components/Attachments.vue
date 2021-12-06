@@ -306,10 +306,11 @@ export default {
      */
     checkFileActioning(act) {
       this.pendingAction = act;
-      // check if action is delete to add a confimation pop up before deleting
-      if (this.pendingAction === 'delete') {
-        // get all the data for selected file ids
-        const files = this.attachedList.filter((file) => this.selectedFiles.includes(file.id));
+      // get all the data for selected file ids
+      const files = this.attachedList.filter((file) => this.selectedFiles.includes(file.id));
+
+      // check if action is delete to add a confirmation pop up before deleting
+      if (files.length && this.pendingAction === 'delete') {
         // get specifically the filenames to display (or the id if file is still converting)
         const titles = files.map((entry) => (this.getFileName(entry.original) || entry.id)
           .replace(/</g, '\\<')
