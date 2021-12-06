@@ -78,12 +78,14 @@
           icon: 'eye',
           value: 'publish',
           display: 'all',
+          disabled: !attachedList.filter((item) => !item.published).length,
         },
         {
           text: $t('form-view.offlineMedia'),
           icon: 'eye-hide',
           value: 'offline',
           display: 'all',
+          disabled: !attachedList.filter((item) => item.published).length,
         },
         {
           text: $t('form-view.deleteMedia'),
