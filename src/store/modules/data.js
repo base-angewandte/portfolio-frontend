@@ -655,7 +655,7 @@ const actions = {
     let error = false;
     try {
       // TODO: replace with Portfolio_API
-      await axios.post(`${portfolioApiUrl}entry/${entryId}/media/order/fff`,
+      await axios.post(`${portfolioApiUrl}entry/${entryId}/media/order/`,
         list.map((item) => ({ id: item.id })),
         {
           withCredentials: true,

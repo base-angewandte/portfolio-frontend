@@ -46,7 +46,6 @@
     <BaseResultBoxSection
       v-if="attachedList.length"
       ref="fileSection"
-      :key="resetOrderKey"
       :draggable="true"
       :entry-list="attachedList"
       :message-text="$t('form-view.fileActionText')"
@@ -263,8 +262,8 @@ export default {
       filesLoading: false,
       // store the pending action in a variable until process finished
       pendingAction: '',
-      // key to reset component
-      resetOrderKey: 0,
+      // store the original attached list (needed to reset order after request error)
+      attachedListOriginal: [],
       capitalizeString,
     };
   },
@@ -280,7 +279,8 @@ export default {
   watch: {
     // if attached media list changes trigger function to re-fetch media from time to time
     attachedList: {
-      handler() {
+      handler(val) {
+        this.attachedListOriginal = val;
         this.checkConverting();
       },
       immediate: true,
@@ -344,9 +344,8 @@ export default {
       });
 
       if (response.error) {
-        // TODO: better solution
-        // increase key and render component again, to reset order
-        this.resetOrderKey += 1;
+        // reset order
+        this.$store.commit('data/setMedia', { list: this.attachedListOriginal, replace: true });
 
         this.$notify({
           group: 'request-notifications',
