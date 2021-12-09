@@ -216,6 +216,9 @@
     "successText": "Import successful",
     "successSubtext": "{count} entries were imported successfully.",
     "failText": "Error during import",
-    "failSubtext": "Unfortunately import has failed due to the following reason: {error}."
+    "failSubtext": "Unfortunately import has failed due to the following reason: {error}.",
+    "title": "Title",
+    "responsible": "Responsible",
+    "year": "Year"
   }
 }

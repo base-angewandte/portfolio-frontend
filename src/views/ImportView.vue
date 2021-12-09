@@ -29,12 +29,42 @@
         v-if="isLoading"
         loader-color="red"
         class="loader" />
-      <BaseMenuList
+      <SelectableAccordion
         v-if="results && results.length && !isLoading"
         :list="currentPageRecords"
         :selected-list="selectedIds"
-        :selected="true"
-        @selected="selectRecord($event)" />
+        @selected="selectRecord($event)">
+        <template v-slot="{ item }">
+          <table style="width: 100%">
+            <tbody>
+              <tr>
+                <td class="term-column">
+                  {{ $t('import.title') }}
+                </td>
+                <td class="definition-column">
+                  {{ item.title }}
+                </td>
+              </tr>
+              <tr>
+                <td class="term-column">
+                  {{ $t('import.responsible') }}
+                </td>
+                <td class="definition-column">
+                  {{ item.responsible }}
+                </td>
+              </tr>
+              <tr>
+                <td class="term-column">
+                  {{ $t('import.year') }}
+                </td>
+                <td class="definition-column">
+                  {{ item.year }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </template>
+      </SelectableAccordion>
     </div>
     <BaseTextList
       v-if="noResultsText"
@@ -48,7 +78,7 @@
       @set-page="currentPage = $event" />
     <div
       v-if="results && results.length && !isLoading"
-      style="display: flex; padding: 16px; justify-content: center;">
+      class="buttons-container">
       <base-button
         :text="$t('cancel')"
         style="margin-right: 4px;"
@@ -69,9 +99,13 @@
 
 <script>
 import axios from 'axios';
+import SelectableAccordion from '../components/SelectableAccordion';
 
 export default {
   name: 'ImportView',
+  components: {
+    SelectableAccordion,
+  },
   data() {
     return {
       // true while fetching results from the api server
@@ -138,6 +172,7 @@ export default {
       // clear/reset values pertaining to previous search
       this.noResultsText = '';
       this.currentPage = 1;
+      this.selectedRecords = [];
 
       if (this.timeout) {
         clearTimeout(this.timeout);
@@ -191,9 +226,14 @@ export default {
     processResults(results) {
       return results.map((res, index) => {
         const entry = {
+          // use dummy data for now
           id: index,
-          title: res.label,
-          description: res.source,
+          title: res.source,
+          subtitle: res.label.substring(0, res.label.indexOf('|'))
+            ? res.label.substring(0, res.label.indexOf('|'))
+            : res.label,
+          responsible: res.label,
+          year: '{ placeholder} ',
           sourceName: res.source_name,
         };
         return entry;
@@ -290,6 +330,7 @@ export default {
       this.results = [];
       this.noResultsText = '';
       this.selectedRecords = [];
+      this.currentPage = 1;
     },
   },
 };
@@ -320,6 +361,22 @@ export default {
 .no-results-container {
   margin: $spacing 0;
   text-align: center;
+}
+
+.buttons-container {
+  display: flex;
+  padding: $spacing;
+  justify-content: center;
+}
+
+.term-column {
+  width: 15%;
+  font-size: $font-size-small;
+}
+
+.definition-column {
+  font-size: $font-size-small;
+  color: $font-color-second;
 }
 
 @media screen and (max-width: $mobile) {

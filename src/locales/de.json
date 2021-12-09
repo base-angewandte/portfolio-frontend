@@ -210,6 +210,9 @@
     "successText": "Importierung erfolgreich",
     "successSubtext": "{count} Einträge wurden erfolgreich importiert.",
     "failText": "Importfehler",
-    "failSubtext": "Leider ist der Import aus folgendem Grund fehlgeschlagen: {error}."
+    "failSubtext": "Leider ist der Import aus folgendem Grund fehlgeschlagen: {error}.",
+    "title": "Titel",
+    "responsible": "Verantwortlicher",
+    "year": "Jahr"
   }
 }
