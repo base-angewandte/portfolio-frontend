@@ -151,7 +151,7 @@
             v-if="item.has_media"
             name="attachment" />
           <base-icon
-            v-if="item.archive_URI"
+            v-if="item.archive_URI && getIsArchivalEnabled"
             name="archive-sheets" />
         </template>
       </BaseMenuList>
@@ -166,7 +166,6 @@
         </p>
       </div>
     </div>
-
     <BasePagination
       v-if="pageTotal > 1"
       ref="pagination"
@@ -265,6 +264,9 @@ export default {
     };
   },
   computed: {
+    ...mapGetters('data', [
+      'getIsArchivalEnabled',
+    ]),
     showCheckbox() {
       return this.$store.state.data.showOptions;
     },

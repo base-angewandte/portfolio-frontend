@@ -21,7 +21,7 @@
         button-style="single"
         :text="$t('next')"
         :disabled="getIsValidatingForArchival || getIsFormSaving"
-        :icon="getIsValidatingForArchival || getIsFormSaving ? '' : 'save-file-thin'"
+        :icon="getIsValidatingForArchival || getIsFormSaving ? '' : 'save-file'"
         icon-position="right"
         icon-size="small"
         class="base-archival-bar-button"

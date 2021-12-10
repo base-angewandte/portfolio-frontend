@@ -22,7 +22,7 @@
       <base-button
         button-style="single"
         :text="$t('notify.saveChanges')"
-        :icon="getIsFormSaving ? '' : 'save-file-thin'"
+        :icon="getIsFormSaving ? '' : 'save-file'"
         icon-position="right"
         icon-size="small"
         class="base-archival-bar-button"
