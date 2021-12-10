@@ -36,7 +36,7 @@
 
       <!-- ADD FILES -->
       <!-- TODO: is this label really needed?
-      alternatively: should it be extended with a label text (accesibility?) -->
+      alternatively: should it be extended with a label text (accessibility?) -->
       <label
         class="file-select">
         <BaseDropBox
@@ -85,7 +85,7 @@
         :show-tooltip="!currentId ? true : false"
         icon-size="large"
         button-style="row"
-        align-text="left"
+        align-text="flex-start"
         class="file-list-button mobile-file-list-attach"
         icon="add-new-object"
         @clicked="$emit('open-new-form')" />
@@ -101,7 +101,7 @@
           :show-tooltip="!currentId ? true : false"
           icon="camera"
           icon-size="large"
-          align-text="left"
+          align-text="flex-start"
           button-style="row"
           class="file-list-button mobile-file-list-attach"
           @clicked="openFileDialogue" />

@@ -9,11 +9,11 @@ export const capitalizeString = (string) => {
     .map((partialString) => partialString.slice(0, 1).toUpperCase() + partialString.slice(1)).join(' ');
 };
 
-export const toTitleString = (string = '', language = 'en') => {
+export const toTitleString = (string = '', language) => {
   if (!string) {
     return '';
   }
-  const functionLang = i18n.locale || language;
+  const functionLang = language || i18n.locale || 'en';
   const sentenceIndicators = /[.!?:]$/;
   if (process.env.VUE_APP_EN_TITLE_CASING && functionLang === 'en' && string.search(sentenceIndicators) < 0) {
     /* this function was taken from:
@@ -21,7 +21,7 @@ export const toTitleString = (string = '', language = 'en') => {
     */
     const smallWords = /^(a|an|and|as|at|but|by|en|for|if|in|nor|of|on|or|per|the|to|v.?|vs.?|via)$/i;
     const alphanumericPattern = /([A-Za-z0-9\u00C0-\u00FF])/;
-    const wordSeparators = /([ :–—-])/;
+    const wordSeparators = /([ /:–—-])/;
 
     return string.split(wordSeparators)
       .map((current, index, array) => {
@@ -127,4 +127,41 @@ export const hasFieldContent = (fieldValues) => {
     hasContent = fieldValues === 0 || !!fieldValues || hasContent;
   }
   return hasContent;
+};
+
+/**
+ * function to check if provided value object has a label and language specific values therein
+ *
+ * @param {Object} value - the value object to check - in order for a title casing to be applied
+ * the object needs to contain the following structure:
+ *  {
+ *    label: {
+ *      en: 'Label to title case'),
+ *    },
+ *  },
+ * @returns {Object} - the same object with en label string title cased
+ */
+export const checkForLabel = (value) => {
+  let newValue = value;
+  // check if value is array or object
+  if (newValue && typeof value === 'object') {
+    // check if value is array
+    if (newValue.length) {
+      // if yes - go through every single item
+      newValue = newValue.map((entry) => checkForLabel(entry));
+      // else check if there the object has properties
+    } else if (Object.keys(newValue).length) {
+      // check if these properties include a label and if the label object has an 'en' property
+      if (Object.keys(newValue).includes('label') && newValue.label.en) {
+        Vue.set(newValue, 'label', { ...newValue.label, en: toTitleString(newValue.label.en, 'en') });
+      }
+      // also check if there are deeper nested object properties that need translation (e.g. roles)
+      newValue = Object.entries(newValue)
+        .reduce((prev, [propKey, propValue]) => ({
+          ...prev,
+          ...{ [propKey]: checkForLabel(propValue) },
+        }), {});
+    }
+  }
+  return newValue;
 };
