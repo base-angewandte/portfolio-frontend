@@ -308,7 +308,25 @@ export default {
           try {
             await this.$store.dispatch('data/addOrUpdateEntry', {
               title: record.title,
-              subtitle: record.description,
+              subtitle: record.subtitle,
+              type: {
+                source: 'http://base.uni-ak.ac.at/portfolio/taxonomy/scientific_publication',
+                label: { de: 'wissenschaftliche Veröffentlichung', en: 'Scientific Publication' },
+              },
+              data: {
+                authors: [
+                  {
+                    label: record.responsible,
+                    source: record.title,
+                    roles: [
+                      {
+                        source: 'http://base.uni-ak.ac.at/portfolio/vocabulary/author',
+                        label: { de: 'Autor*in', en: 'author' },
+                      },
+                    ],
+                  },
+                ],
+              },
             }).then((id) => {
               resolve(id);
             }).catch((e) => {
