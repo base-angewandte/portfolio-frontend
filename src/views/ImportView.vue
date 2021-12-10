@@ -17,7 +17,7 @@
       <BaseSelectOptions
         v-if="results && results.length && !isLoading"
         :list="currentPageRecords"
-        :selected-list="selectedRecords"
+        :selected-list="selectedIds"
         :selected-number-text="$t(
           'entriesSelected',
           { type: $tc('notify.entry', selectedRecords.length) }
