@@ -73,7 +73,7 @@
         icon-size="large"
         button-style="row"
         icon="file-object"
-        align-text="left"
+        align-text="flex-start"
         class="file-list-button"
         @clicked="openEntrySelect" />
 
