@@ -118,7 +118,8 @@
           <template
             slot="footer">
             <template
-              v-if="props.item.published || props.item.archive_id">
+              v-if="props.item.published || props.item.archive_id ||
+                getArchivingMedia.includes(props.item.id)">
               <div class="status-icons">
                 <base-icon
                   v-if="props.item.published"
