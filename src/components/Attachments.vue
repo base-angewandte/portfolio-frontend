@@ -71,8 +71,9 @@
           class="text-small">
           {{ $t('form-view.fileActionSubtextDrag') }}
         </div>
+
         <div
-          v-if="pendingAction === 'license'"
+          v-if="pendingAction === 'license' && selectedFiles.length"
           class="attachments__license-drop-down">
           <BaseDropDown
             v-model="licenseSelected"
@@ -82,6 +83,15 @@
             :placeholder="$t('form-view.selectLicense')"
             :language="$i18n.locale"
             value-prop="source" />
+
+          <BaseButton
+            :disabled="!Object.keys(licenseSelected).length"
+            :text="$t('form-view.licenseButton')"
+            icon-position="right"
+            icon="check-mark"
+            button-style="secondary"
+            class="license-button"
+            @clicked="saveFileMeta" />
         </div>
       </template>
       <template
@@ -310,7 +320,7 @@ export default {
           text: this.$t('form-view.changeLicense'),
           icon: 'licence',
           value: 'license',
-          display: this.pendingAction === 'license' && this.selectedFiles.length ? 'all' : 'top',
+          display: 'top',
           disabled: !this.selectedFiles.length,
         },
         {
@@ -1010,11 +1020,17 @@ export default {
       max-width: 100%;
 
       .license-button {
-        border: 1px solid #{$font-color-second};
+        font-size: $font-root-regular;
+        border: 1px solid #{$button-disabled-border-color};
         padding: $spacing-small $spacing-small !important;
+        min-height: 2rem;
         box-shadow: 0 0 4px 0 rgba(0,0,0,0.25);
 
-        &:hover {
+        &:enabled {
+          border: 1px solid #{$font-color-second};
+        }
+
+        &:hover:enabled {
           border: 1px solid #{$app-color};
         }
       }
