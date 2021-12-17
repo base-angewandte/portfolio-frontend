@@ -391,14 +391,25 @@ const mutations = {
   setIsValidatingForArchival(state, val) {
     state.isValidatingForArchival = val;
   },
-  setArchivingMedia(state, list) {
-    state.archivingMedia = list;
+  /**
+   * Add attachment IDs that are submitted for archival to the 'archivingMedia' property.
+   * This is only a non-persistent solution, see #1676.
+   * @param {*} state
+   * @param {*} list The list of attachments IDs to add
+   */
+  addArchivingMedia(state, list) {
+    list.forEach((item) => {
+      // make sure no duplicates are added
+      if (!state.archivingMedia.includes(item)) {
+        state.archivingMedia.push(item);
+      }
+    });
   },
   /**
-   * This mutation updates the list of media asset IDs
-   * submitted for archival but not yet archived (#1495).
+   * Remove from the 'archivingMedia' store property those attachment IDs
+   * that got archived (i.e. have an archive URI) #1495
   */
-  updateArchivingMedia(state) {
+  removeArchivingMedia(state) {
     // get all currently archived media IDs
     const archivedMediaIDs = state.linkedMedia
       .filter((entry) => entry.archive_URI)
@@ -645,7 +656,7 @@ const actions = {
     }
     //  if there are media IDs submitted for archival but not confirmed as archived yet
     if (state.archivingMedia.length > 0) {
-      commit('updateArchivingMedia');
+      commit('removeArchivingMedia');
     }
   },
   addOrUpdateEntry({ commit, dispatch }, data) {
@@ -885,7 +896,7 @@ const actions = {
           },
         });
       // update the state to indicate that media assets are submitted for archival
-      commit('setArchivingMedia', list);
+      commit('addArchivingMedia', list);
       // re-fetch entry data since it now contains the archive URI of the entry
       // (which we need to display the "View in Archive" button immediately)
       await dispatch('fetchEntryData', state.currentItemId);
