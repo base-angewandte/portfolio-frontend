@@ -50,6 +50,7 @@
         download: $t('form-view.download'),
         view: $t('form-view.view'),
       }"
+      :previews="imagePreviews"
       :additional-info="assetInfoText"
       @hide-preview="showPreview = false"
       @download="downloadFile" />
