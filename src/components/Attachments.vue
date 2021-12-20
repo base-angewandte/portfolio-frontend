@@ -74,7 +74,7 @@
 
         <div
           v-if="pendingAction === 'license' && selectedFiles.length"
-          class="attachments__license-drop-down">
+          class="attachments__license-drop-down-area">
           <BaseDropDown
             v-model="licenseSelected"
             :options="licenses"
@@ -82,6 +82,7 @@
             :label="$t('form-view.selectLicense')"
             :placeholder="$t('form-view.selectLicense')"
             :language="$i18n.locale"
+            class="attachments__license-drop-down"
             value-prop="source" />
 
           <BaseButton
@@ -1011,16 +1012,21 @@ export default {
 
   .attachment-area {
 
-    .attachments__license-drop-down {
+    .attachments__license-drop-down-area {
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-wrap: wrap;
       margin: $spacing auto 0 auto;
       text-align: left;
       max-width: 100%;
 
+      .attachments__license-drop-down {
+        max-width: 100%;
+      }
+
       .license-button {
-        font-size: $font-root-regular;
+        font-size: $font-size-regular;
         border: 1px solid #{$button-disabled-border-color};
         padding: $spacing-small $spacing-small !important;
         min-height: 2rem;
