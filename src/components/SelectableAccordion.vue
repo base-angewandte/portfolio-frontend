@@ -7,7 +7,9 @@
       :subtitle="item.subtitle"
       :is-selectable="true"
       :is-selected="internalList[index].selected"
-      @selected="selectItem(index, $event)">
+      :is-expanded="internalList[index].expanded"
+      @selected="selectItem(index, $event)"
+      @expanded="onExpanded(index, $event)">
       <slot
         :item="item" />
     </base-expand-row>
@@ -21,9 +23,7 @@ export default {
   props: {
     /**
      * The array of objects with which to populate the accordion.
-     * Each object is expected to have the following properties:
-     * - required: 'id'
-     * - optional: 'title', 'subtitle', 'selected', 'responsible', 'year'
+     * Each object is expected to have the following properties: 'id', 'title', 'subtitle'
      */
     list: {
       type: Array,
@@ -36,24 +36,33 @@ export default {
       type: Array,
       default: () => [],
     },
+    /**
+     * Specifies how the accordion should expand. Valid values:
+     * `single` - only one flap at a time can be open
+     * `multiple` - any number of flaps can be open
+     */
+    expandMode: {
+      type: String,
+      default: 'single',
+    },
   },
   data() {
     return {
-      // Stores internally necessary props in separate array to prevent issues with
-      // outside store mutations
+      // Stores info about whether each entry in accordeon is selected or expanded.
       internalList: [],
     };
   },
   watch: {
     list() {
-      this.setInternalVar();
+      this.internalList = [];
+      this.setInternalList();
     },
     selectedList() {
-      this.setInternalVar();
+      this.setInternalList();
     },
   },
   created() {
-    this.setInternalVar();
+    this.setInternalList();
   },
   methods: {
     selectItem(index, selected) {
@@ -67,12 +76,37 @@ export default {
        */
       this.$emit('selected', { index, selected });
     },
-    setInternalVar() {
-      this.internalList = this.list.map((entry) => ({
-        ...{
-          selected: entry.selected || this.selectedList.includes(entry.id),
-        },
-      }));
+    /**
+     * Fires when any of accordeon's flaps changes the expanded/collapsed state.
+     */
+    onExpanded(index, expanded) {
+      if (this.expandMode === 'single' && expanded === true) {
+        // collapse all rows except the current one
+        for (let i = 0; i < this.internalList.length; i += 1) {
+          if (i === index) {
+            this.$set(this.internalList[i], 'expanded', true);
+          } else {
+            this.$set(this.internalList[i], 'expanded', false);
+          }
+        }
+      } else {
+        this.$set(this.internalList[index], 'expanded', expanded);
+      }
+    },
+    /**
+     * Fires when the component is instantiated, or when `list` changes,
+     * or when `selectedList` changes. This method updates `internalList`
+     * to reflect the state that each accordion flap should be in: selected and/or expanded.
+     */
+    setInternalList() {
+      const temp = [];
+      for (let i = 0; i < this.list.length; i += 1) {
+        temp[i] = {
+          selected: this.selectedList.includes(this.list[i].id),
+          expanded: this.internalList[i] ? this.internalList[i].expanded : false,
+        };
+      }
+      this.internalList = temp;
     },
   },
 };

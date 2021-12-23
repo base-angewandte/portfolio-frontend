@@ -33,6 +33,7 @@
         v-if="results && results.length && !isLoading"
         :list="currentPageRecords"
         :selected-list="selectedIds"
+        :expand-mode="'single'"
         @selected="selectRecord($event)">
         <template v-slot="{ item }">
           <table style="width: 100%">
