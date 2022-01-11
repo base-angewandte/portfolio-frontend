@@ -221,8 +221,8 @@ export default {
     },
     /**
      * At the minimum, each search result retrieved from the API must have an id.
-     * This method takes the raw results and converts them to an internal format
-     * suitable for displaying them as a BaseMenuList (for now) component.
+     * This method takes the "raw" results and converts them to a structure
+     * suitable for displaying them as an accordion component.
      */
     processResults(results) {
       return results.map((res, index) => {
