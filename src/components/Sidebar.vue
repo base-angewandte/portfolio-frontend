@@ -130,7 +130,7 @@
         id="menu-list"
         key="menu-list"
         ref="menuList"
-        :selected="selectActive || showCheckbox"
+        :select-active="selectActive || showCheckbox"
         :list="listInt"
         :active-entry="activeEntry"
         :selected-list="selectedList"
@@ -334,7 +334,11 @@ export default {
   },
   watch: {
     list(val) {
-      this.listInt = [].concat(val);
+      this.listInt = val.map((entry) => ({
+        ...entry,
+        icon: entry.icon && entry.icon.includes('calendar-many')
+          ? 'calendar-many' : 'file-object',
+      }));
     },
     showCheckbox(val) {
       // delete selected when options menu is closed and reset select all
@@ -371,7 +375,11 @@ export default {
     },
   },
   mounted() {
-    this.listInt = this.list;
+    this.listInt = this.list.map((entry) => ({
+      ...entry,
+      icon: entry.icon && entry.icon.includes('calendar-many')
+        ? 'calendar-many' : 'file-object',
+    }));
     this.calculateSidebarHeight();
     this.$store.dispatch('data/fetchEntryTypes');
     this.fetchSidebarData();
@@ -523,7 +531,12 @@ export default {
           response = await this.dataRequest(offset);
         }
         this.listInt = response.results
-          .map((entry) => ({ ...entry, description: entry.type && entry.type.label ? getLangLabel(entry.type.label) : '' }));
+          .map((entry) => ({
+            ...entry,
+            description: entry.type && entry.type.label ? getLangLabel(entry.type.label) : '',
+            icon: entry.icon && entry.icon.includes('calendar-many')
+              ? 'calendar-many' : 'file-object',
+          }));
         this.entryNumber = response.count;
         if (!this.entryNumber) {
           this.setInfoText();
