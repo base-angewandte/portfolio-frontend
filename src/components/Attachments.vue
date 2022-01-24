@@ -403,13 +403,6 @@ export default {
       return this.getIsArchiveUpdate;
     },
     /**
-     * Returns an array of all media asset IDs belonging to the current entry.
-     */
-    mediaIds() {
-      return this.attachedList
-        .map((media) => media.id);
-    },
-    /**
      * Returns an array with the IDs of all archived media assets.
      */
     archivedMediaIds() {
@@ -814,10 +807,8 @@ export default {
       } else {
         // first set any previous archival validation outcome to void
         this.$store.commit('data/setArchivalValidationOutcome', null);
-        // prepare the params required to validate archival data
-        const mediaIds = this.selectedFiles.length > 0 ? this.selectedFiles : this.mediaIds;
         // obtain a new validation outcome
-        await this.$store.dispatch('data/validateArchivalData', mediaIds);
+        await this.$store.dispatch('data/validateArchivalData');
         if (this.getArchivalValidationOutcome) {
           switch (this.getArchivalValidationOutcome) {
           case 200:
