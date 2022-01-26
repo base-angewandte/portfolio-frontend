@@ -130,7 +130,7 @@
             slot="footer">
             <template
               v-if="props.item.published || props.item.archive_id ||
-                getArchivingMedia.includes(props.item.id)">
+                props.item.archival_in_progress">
               <div class="status-icons">
                 <base-icon
                   v-if="props.item.published"
@@ -148,7 +148,7 @@
                   class="status-icon" />
                 <base-icon
                   v-if="!props.item.archive_id && getIsArchivalEnabled
-                    && getArchivingMedia.includes(props.item.id)"
+                    && props.item.archival_in_progress"
                   name="archive-arrow"
                   :title="capitalizeString($t('archival.submitted'))"
                   :aria-title="capitalizeString($t('archival.submitted'))"
@@ -311,7 +311,6 @@ export default {
       'getIsFormSaved',
       'getArchiveMediaConsent',
       'getIsArchivalBusy',
-      'getArchivingMedia',
       'getIsArchiveUpdate',
       'getIsArchivalEnabled',
     ]),
@@ -367,7 +366,7 @@ export default {
           display: 'top',
           disabled: !this.attachedList
             .filter((file) => this.selectedFiles.includes(file.id))
-            .filter((file) => !file.archive_id).length,
+            .filter((file) => !(file.archive_id || file.archival_in_progress)).length,
         });
       }
 
@@ -415,6 +414,15 @@ export default {
     archivedMediaIds() {
       return this.attachedList
         .filter((media) => media.archive_URI !== null)
+        .map((media) => media.id);
+    },
+    /**
+     * Returns an array of all media assets IDs where archival is in progress
+     * (i.e. the file was submitted for archival but we don't have an archive URI yet)
+     */
+    archivingMediaIds() {
+      return this.attachedList
+        .filter((media) => media.archival_in_progress)
         .map((media) => media.id);
     },
   },
@@ -751,7 +759,7 @@ export default {
       }
       // request media data again in a minute if media are still converting
       // or in the "submitted for archival" state
-      if (this.isConverting || this.getArchivingMedia.length > 0) {
+      if (this.isConverting || this.archivingMediaIds.length > 0) {
         this.timeout = setTimeout(() => {
           this.fetchMedia();
         }, 60000);
@@ -986,15 +994,6 @@ export default {
       } else {
         this.$emit('show-preview', item);
       }
-    },
-    /**
-     * Returns true if the image box is selectable for the item
-     * supplied as argument, false otherwise.
-     */
-    isImageBoxSelectable(isSelectActive, item) {
-      if (!isSelectActive) return false;
-      if (this.pendingAction === 'archiveMedia' && item.archive_URI) return false;
-      return !(this.pendingAction === 'archiveMedia' && this.getArchivingMedia.includes(item.id));
     },
     /**
      * Returns true if the license of any *archived* media asset has changed,
