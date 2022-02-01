@@ -219,6 +219,10 @@
     "failSubtext": "Unfortunately import has failed due to the following reason: {error}.",
     "title": "Title",
     "responsible": "Responsible",
-    "year": "Year"
+    "year": "Year",
+    "clickordrag": "Click or Drag'n Drop",
+    "attachBibTex": "Attach BibTex file",
+    "invalidBibTex": "The BibTex file could not be read",
+    "invalidFileType": "Invalid file type"
   }
 }

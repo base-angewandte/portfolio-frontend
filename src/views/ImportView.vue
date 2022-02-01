@@ -7,12 +7,41 @@
       button-style="row"
       class="back-button"
       @clicked="$router.push('/')" />
+
     <BaseSearch
+      v-if="!isBibtexImportInProgress"
       v-model="searchText"
       label="SearchInput"
       :placeholder="$t('import.searchCatalogueText')"
       show-image
       @input-change="runSearch" />
+
+    <label>
+      <BaseDropBox
+        v-if="dropboxVisible"
+        :box-size="{ width: 'calc(100%)', height: '250px'} "
+        :icon="'sheet-plus'"
+        :text="$t('import.attachBibTex')"
+        :subtext="$t('import.clickordrag')"
+        class="drop-box"
+        @dropped-file="handleFileSelect($event)" />
+      <input
+        ref="fileInput"
+        type="file"
+        multiple
+        class="hide"
+        @click="resetInput"
+        @change="handleFileSelect">
+    </label>
+
+    <BibtexParser
+      v-if="!!filesToUpload.length"
+      :file-list="filesToUpload"
+      :enable-publishing="false"
+      @cancel="resetFiles"
+      @import-failed="onBibtexImportFailed($event)"
+      @success="onBibtexFilesParsed($event)" />
+
     <div class="results-container">
       <BaseSelectOptions
         v-if="results && results.length && !isLoading"
@@ -100,11 +129,13 @@
 
 <script>
 import axios from 'axios';
-import SelectableAccordion from '../components/SelectableAccordion';
+import BibtexParser from '@/components/BibtexParser';
+import SelectableAccordion from '@/components/SelectableAccordion';
 
 export default {
   name: 'ImportView',
   components: {
+    BibtexParser,
     SelectableAccordion,
   },
   data() {
@@ -123,6 +154,12 @@ export default {
       currentPage: 1,
       // the currently selected records
       selectedRecords: [],
+      // true if BibTex drop box is visible
+      dropboxVisible: true,
+      // bibtex files to upload
+      filesToUpload: [],
+      // true when import from bibtex file(s) is in progress
+      isBibtexImportInProgress: false,
     };
   },
   computed: {
@@ -162,6 +199,9 @@ export default {
       if (this.searchText.length === 0) {
         this.results = [];
         this.noResultsText = '';
+        this.dropboxVisible = true;
+      } else {
+        this.dropboxVisible = false;
       }
     },
   },
@@ -350,6 +390,53 @@ export default {
       this.noResultsText = '';
       this.selectedRecords = [];
       this.currentPage = 1;
+      this.isBibtexImportInProgress = false;
+      this.dropboxVisible = true;
+    },
+    handleFileSelect(e) {
+      const files = e.dataTransfer ? e.dataTransfer.files : e.target.files;
+      if (files && files.length) {
+        for (let i = 0; i < files.length; i += 1) {
+          this.filesToUpload.push(files[i]);
+        }
+      }
+    },
+    // reset file input value everytime the file dialogue is opened
+    resetInput() {
+      this.$refs.fileInput.value = '';
+    },
+    // when upload of files complete reset the variable
+    resetFiles() {
+      this.filesToUpload = [];
+    },
+    onBibtexImportFailed(reason) {
+      this.filesToUpload = [];
+      this.$notify({
+        group: 'request-notifications',
+        title: this.$t('import.failText'),
+        text: this.$t('import.failSubtext', { error: reason }),
+        type: 'error',
+      });
+      this.resetSearch();
+    },
+    onBibtexFilesParsed(data) {
+      this.filesToUpload = [];
+      this.results = this.processParsed(data);
+      this.dropboxVisible = false;
+      this.isBibtexImportInProgress = true;
+    },
+    processParsed(records) {
+      return records.map((res, index) => {
+        const entry = {
+          id: index,
+          title: res.entryTags.title ? res.entryTags.title : '',
+          subtitle: res.entryTags.keywords ? res.entryTags.keywords : '',
+          responsible: res.entryTags.author ? res.entryTags.author : '',
+          year: res.entryTags.year ? res.entryTags.year : '',
+          sourceName: 'BibTex File',
+        };
+        return entry;
+      });
     },
   },
 };
@@ -371,6 +458,10 @@ export default {
 .loader {
   top: 50%;
   transform: translateY(-50%);
+}
+
+.drop-box {
+  margin: $spacing 0;
 }
 
 .results-container {
