@@ -112,6 +112,9 @@ export default {
         ? this.$t('public') : this.$t('private')}`);
       return infoStringArray;
     },
+    importComplete() {
+      return this.$store.getters['data/getImportedIds'];
+    },
   },
   watch: {
     $route() {
@@ -119,6 +122,12 @@ export default {
         this.$store.commit('data/deleteCurrentItem');
       }
       this.$store.commit('data/setNewForm', this.$route.name === 'newEntry');
+    },
+    // upon successful import of entries, update the sidebar and open the topmost entry
+    async importComplete() {
+      await this.updateSidebarData(true);
+      const goToId = this.$refs.sidebar.listInt[0].id;
+      this.routeToEntry(goToId);
     },
   },
   mounted() {
@@ -250,7 +259,7 @@ export default {
       evt.preventDefault();
       // TODO: image zoom?
     },
-    updateSidebarData(alwaysUpdate) {
+    async updateSidebarData(alwaysUpdate) {
       if (!this.$refs.sidebar.entriesExist) {
         this.$refs.sidebar.resetFilters();
       }
@@ -270,7 +279,7 @@ export default {
               || (activeSidebarEntry.type
                 && getLangLabel(activeSidebarEntry.type.label, this.$i18n.locale)
                 !== this.$refs.view.type))))) {
-        this.$refs.sidebar.fetchSidebarData();
+        await this.$refs.sidebar.fetchSidebarData();
       }
     },
     updateFormData(published) {

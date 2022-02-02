@@ -317,8 +317,9 @@ export default {
       this.isLoading = true;
       await this.importSelected()
         .then((entryIds) => {
-          // trigger update of sidebar
-          this.$emit('data-changed');
+          // update the store about the import completed event
+          // so as to trigger update of sidebar etc. in relevant components
+          this.$store.commit('data/setImportedIds', entryIds);
           // reset the search
           this.resetSearch();
           // notify the user
@@ -328,14 +329,16 @@ export default {
             text: this.$t('import.successSubtext', { count: entryIds.length }),
             type: 'success',
           });
-        }).catch((err) => {
+        })
+        .catch((err) => {
           this.$notify({
             group: 'request-notifications',
             title: this.$t('import.failText'),
             text: this.$t('import.failSubtext', { error: err }),
             type: 'error',
           });
-        }).finally(() => {
+        })
+        .finally(() => {
           this.isLoading = false;
         });
     },

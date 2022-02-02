@@ -105,6 +105,8 @@ const state = {
   generalSchema: {},
   extensionSchema: {},
   windowWidth: null,
+  // stores the ids of entries imported from external sources (library catalog, bibtex)
+  importedIds: [],
 };
 
 const getters = {
@@ -153,6 +155,9 @@ const getters = {
       }
       return '';
     };
+  },
+  getImportedIds(state) {
+    return state.importedIds;
   },
 };
 
@@ -263,6 +268,9 @@ const mutations = {
   },
   setWindowWidth(state, val) {
     state.windowWidth = val;
+  },
+  setImportedIds(state, val) {
+    state.importedIds = val;
   },
 };
 
