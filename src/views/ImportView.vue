@@ -11,6 +11,7 @@
     <BaseSearch
       v-if="!isBibtexImportInProgress"
       v-model="searchText"
+      data-e2e-search-import-input
       label="SearchInput"
       :placeholder="$t('import.searchCatalogueText')"
       show-image
