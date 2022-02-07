@@ -49,5 +49,9 @@
   "resolutions": {
     "yargs-parser": "^18.1.2",
     "y18n": "^4.0.3"
+  },
+  "optionalDependencies": {
+    "geckodriver": "^3.0.1",
+    "nightwatch": "^2.0.5"
   }
 }
