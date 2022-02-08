@@ -12,7 +12,9 @@
     "build:analyze": "vue-cli-service build --report",
     "lint": "vue-cli-service lint",
     "preinstall": "npx npm-force-resolutions",
-    "postversion": "./docker-build-and-push.sh"
+    "postversion": "./docker-build-and-push.sh",
+    "test:local": "npx nightwatch --config ./test/e2e/nightwatch.conf",
+    "test:staging": "npx nightwatch --config ./test/e2e/nightwatch.conf --env staging"
   },
   "dependencies": {
     "axios": "^0.21.1",
