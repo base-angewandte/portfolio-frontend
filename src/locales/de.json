@@ -251,5 +251,20 @@
     "updateArchiveButton": "Archiv aktualisieren",
     "archiveUpdateTitle": "Archiv aktualisieren",
     "archiveUpdateSuccessful": "Die archivierten Daten wurden erfolgreich aktualisiert."
+  },
+  "import": {
+    "importButtonTitle": "Importieren",
+    "searchCatalogueText": "Bibliothekskatalog durchsuchen",
+    "successText": "Importierung erfolgreich",
+    "successSubtext": "{count} Einträge wurden erfolgreich importiert.",
+    "failText": "Importfehler",
+    "failSubtext": "Leider ist der Import aus folgendem Grund fehlgeschlagen: {error}.",
+    "title": "Titel",
+    "responsible": "Verantwortlicher",
+    "year": "Jahr",
+    "clickordrag": "Click oder Drag'n Drop",
+    "attachBibTex": "BibTex-Datei Hinzufügen",
+    "invalidBibTex": "Die BibTex-Datei konnte nicht gelesen werden",
+    "invalidFileType": "Ungültiger Dateityp"
   }
 }

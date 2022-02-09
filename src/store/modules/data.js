@@ -164,6 +164,8 @@ const state = {
   // have been updated since the last archival. Valid values:
   // true = changed; false = not changed; null = not applicable
   isArchiveChanged: null,
+  // stores the ids of entries imported from external sources (library catalog, bibtex)
+  importedIds: [],
 };
 
 const getters = {
@@ -252,6 +254,9 @@ const getters = {
   getIsArchivalEnabled() {
     // when true, the buttons pertaining to the long-term archival feature become visible in the gui
     return JSON.parse(process.env.VUE_APP_ARCHIVE_UPLOAD);
+  },
+  getImportedIds(state) {
+    return state.importedIds;
   },
 };
 
@@ -429,6 +434,9 @@ const mutations = {
   },
   setIsArchiveChanged(state, val) {
     state.isArchiveChanged = val;
+  },
+  setImportedIds(state, val) {
+    state.importedIds = val;
   },
 };
 
