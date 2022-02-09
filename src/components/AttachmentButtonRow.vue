@@ -11,11 +11,11 @@
         :box-size="{ width: 'calc(25% - 16rem / 19 / 2)' }"
         :text="$t('form-view.addExistingEntry')"
         :subtext="$t('form-view.clickordrag')"
-        icon="sheet-empty"
+        icon="file-object"
         drop-type="elements"
         drag-item-class="base-menu-list__list-entry"
         drop-element-name="menuEntry"
-        box-type="button"
+        render-element-as="button"
         class="file-box file-boxes-margin"
         @dropped-element="droppedEntries"
         @clicked="openEntrySelect" />
@@ -28,13 +28,15 @@
         :text="$t('form-view.addNewEntry')"
         :disabled="!currentId"
         :show-tooltip="!currentId ? true : false"
-        icon="sheet-empty"
+        icon="file-object"
         class="file-box file-boxes-margin"
-        box-type="button"
+        render-element-as="button"
         @clicked="$emit('open-new-form')"
         @onTooltip="$emit('open-new-form')" />
 
       <!-- ADD FILES -->
+      <!-- TODO: is this label really needed?
+      alternatively: should it be extended with a label text (accessibility?) -->
       <label
         class="file-select">
         <BaseDropBox
@@ -70,8 +72,8 @@
         :text="$t('form-view.addExistingEntry')"
         icon-size="large"
         button-style="row"
-        icon="sheet-empty"
-        align-text="flex-start"
+        icon="file-object"
+        align-text="left"
         class="file-list-button"
         @clicked="openEntrySelect" />
 
@@ -83,12 +85,14 @@
         :show-tooltip="!currentId ? true : false"
         icon-size="large"
         button-style="row"
-        align-text="flex-start"
+        align-text="left"
         class="file-list-button mobile-file-list-attach"
-        icon="sheet-plus"
+        icon="add-new-object"
         @clicked="$emit('open-new-form')" />
 
       <!-- ADD FILES -->
+      <!-- TODO: is this label really needed?
+      alternatively: should it be extended with a label text (accesibility?) -->
       <label class="file-select">
         <BaseButton
           key="mobile-addExisting"
@@ -97,7 +101,7 @@
           :show-tooltip="!currentId ? true : false"
           icon="camera"
           icon-size="large"
-          align-text="flex-start"
+          align-text="left"
           button-style="row"
           class="file-list-button mobile-file-list-attach"
           @clicked="openFileDialogue" />

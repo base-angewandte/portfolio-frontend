@@ -2,7 +2,6 @@
 import Vue from 'vue';
 import axios from 'axios';
 import { i18n } from '@/plugins/i18n';
-
 import {
   sorting, capitalizeString, setLangLabels, getApiUrl, hasFieldContent, toTitleString,
   checkForLabel,
@@ -77,8 +76,42 @@ function addEnglishTextStyling(object) {
   }, {});
 }
 
+async function adjustEntry(entryData) {
+  // Modifications of data received from backend needed:
+  // 1. adapt english style casing
+  const entryObj = Object.entries(entryData).reduce((prev, [key, value]) => {
+    const newVal = checkForLabel(value);
+    return { ...prev, ...{ [key]: newVal } };
+  }, {});
+    // 2. type needs to be array in logic here!
+  const objectType = entryData.type && entryData.type.source ? [entryData.type] : [];
+  // 3. Text needs to look different
+  const textData = entryData.texts && entryData.texts.length
+    ? await Promise.all(entryData.texts
+      .map((entry) => {
+        const textObj = {};
+        const { type } = entry;
+        // TODO: temporary hack - probably should fetch label for lang as well
+        if (entry.data) {
+          entry.data.forEach((language) => {
+            const langInternal = language.language.source.split('/').pop();
+            Vue.set(textObj, langInternal.toLowerCase(), language.text);
+          });
+        }
+        return ({ type, ...textObj });
+      })) : [];
+  return {
+    ...entryObj,
+    type: objectType,
+    texts: textData,
+  };
+}
+
 const state = {
   currentItemId: null,
+  // This is the most recently saved entry data in a format that BaseForm understands.
+  // Be aware that this structure is slightly different from the "raw" one received from backend.
+  currentItemData: null,
   parentItems: [],
   isNewForm: false,
   showOptions: false,
@@ -105,6 +138,32 @@ const state = {
   generalSchema: {},
   extensionSchema: {},
   windowWidth: null,
+  // the status code returned by the back-end API after attempt to validate archival data
+  archivalValidationOutcome: null,
+  // the status code returned by the back-end API after attempt to update archived data
+  archivalUpdateOutcome: null,
+  // stores archival errors received from backend,
+  // this property is populated only when archivalValidationOutcome=400
+  archivalErrors: {},
+  // true if the user has accepted the archival licensing agreement, false otherwise
+  archiveMediaConsent: false,
+  // stores whether the currently loaded form is saved
+  isFormSaved: true,
+  // true if there is an in progress save operation on the main form
+  isFormSaving: false,
+  // true while there is an in progress API request related to long-term archival
+  isArchivalBusy: false,
+  // true while there is an in progress API request related to long-term archival validation
+  isValidatingForArchival: false,
+  // stores media asset IDs where an asynchronous archival operation is in progress
+  archivingMedia: [],
+  // true if the "Update Archive" button was clicked and the update has no outcome yet;
+  // this becomes false if the update succeeds, or fails, or is cancelled by the user
+  isArchiveUpdate: false,
+  // the status of the archive, i.e. whether the entry or any of its attachments
+  // have been updated since the last archival. Valid values:
+  // true = changed; false = not changed; null = not applicable
+  isArchiveChanged: null,
 };
 
 const getters = {
@@ -154,17 +213,61 @@ const getters = {
       return '';
     };
   },
+  getCurrentItemData(state) {
+    return state.currentItemData;
+  },
+  getArchivalValidationOutcome(state) {
+    return state.archivalValidationOutcome;
+  },
+  getArchivalUpdateOutcome(state) {
+    return state.archivalUpdateOutcome;
+  },
+  getArchivalErrors(state) {
+    return state.archivalErrors;
+  },
+  getIsFormSaved(state) {
+    return state.isFormSaved;
+  },
+  getIsFormSaving(state) {
+    return state.isFormSaving;
+  },
+  getArchiveMediaConsent(state) {
+    return state.archiveMediaConsent;
+  },
+  getIsArchivalBusy(state) {
+    return state.isArchivalBusy;
+  },
+  getIsValidatingForArchival(state) {
+    return state.isValidatingForArchival;
+  },
+  getArchivingMedia(state) {
+    return state.archivingMedia;
+  },
+  getIsArchiveUpdate(state) {
+    return state.isArchiveUpdate;
+  },
+  getIsArchiveChanged(state) {
+    return state.isArchiveChanged;
+  },
+  getIsArchivalEnabled() {
+    // when true, the buttons pertaining to the long-term archival feature become visible in the gui
+    return JSON.parse(process.env.VUE_APP_ARCHIVE_UPLOAD);
+  },
 };
 
 const mutations = {
   setNewForm(state, val) {
     state.isNewForm = val;
   },
-  setCurrentItem(state, obj) {
+  setCurrentItemId(state, obj) {
     state.currentItemId = obj.id;
+  },
+  setCurrentItemData(state, obj) {
+    state.currentItemData = JSON.parse(JSON.stringify(obj));
   },
   deleteCurrentItem(state) {
     state.currentItemId = null;
+    state.currentItemData = null;
     state.linkedEntries = [];
     state.linkedMedia = [];
     state.linkedParents = [];
@@ -263,6 +366,69 @@ const mutations = {
   },
   setWindowWidth(state, val) {
     state.windowWidth = val;
+  },
+  setIsFormSaved(state, val) {
+    state.isFormSaved = val;
+  },
+  setIsFormSaving(state, val) {
+    state.isFormSaving = val;
+  },
+  setArchiveMediaConsent(state, val) {
+    state.archiveMediaConsent = val;
+  },
+  setArchivalValidationOutcome(state, val) {
+    state.archivalValidationOutcome = val;
+  },
+  setArchivalUpdateOutcome(state, val) {
+    state.archivalUpdateOutcome = val;
+  },
+  setArchivalErrors(state, obj) {
+    state.archivalErrors = obj;
+  },
+  setIsArchivalBusy(state, val) {
+    state.isArchivalBusy = val;
+  },
+  setIsValidatingForArchival(state, val) {
+    state.isValidatingForArchival = val;
+  },
+  /**
+   * Add attachment IDs that are submitted for archival to the 'archivingMedia' property.
+   * This is only a non-persistent solution, see #1676.
+   * @param {*} state
+   * @param {*} list The list of attachments IDs to add
+   */
+  addArchivingMedia(state, list) {
+    list.forEach((item) => {
+      // make sure no duplicates are added
+      if (!state.archivingMedia.includes(item)) {
+        state.archivingMedia.push(item);
+      }
+    });
+  },
+  /**
+   * Remove from the 'archivingMedia' store property those attachment IDs
+   * that got archived (i.e. have an archive URI) #1495
+  */
+  removeArchivingMedia(state) {
+    // get all currently archived media IDs
+    const archivedMediaIDs = state.linkedMedia
+      .filter((entry) => entry.archive_URI)
+      .map((entry) => entry.id);
+    // create a deep clone of the archivingMedia array
+    const updatedIDs = JSON.parse(JSON.stringify(state.archivingMedia));
+    // if *archived* IDs include any of the *archiving* IDs, remove the latter from the store
+    state.archivingMedia.forEach((id) => {
+      if (archivedMediaIDs.includes(id)) {
+        updatedIDs.pop(id);
+      }
+    });
+    state.archivingMedia = updatedIDs;
+  },
+  setIsArchiveUpdate(state, val) {
+    state.isArchiveUpdate = val;
+  },
+  setIsArchiveChanged(state, val) {
+    state.isArchiveChanged = val;
   },
 };
 
@@ -438,36 +604,11 @@ const actions = {
       try {
         entryData = await this.dispatch('PortfolioAPI/get', { kind: 'entry', id });
         if (entryData) {
-          // Modifications of data received from backend needed:
-          // 1. adapt english style casing
-          entryData = Object.entries(entryData).reduce((prev, [key, value]) => {
-            const newVal = checkForLabel(value);
-            return { ...prev, ...{ [key]: newVal } };
-          }, {});
-          // 2. type needs to be array in logic here!
-          const objectType = entryData.type && entryData.type.source ? [entryData.type] : [];
-          // 3. Text needs to look different
-          const textData = entryData.texts && entryData.texts.length
-            ? await Promise.all(entryData.texts
-              .map((entry) => {
-                const textObj = {};
-                const { type } = entry;
-                // TODO: temporary hack - probably should fetch label for lang as well
-                if (entry.data) {
-                  entry.data.forEach((language) => {
-                    const langInternal = language.language.source.split('/').pop();
-                    Vue.set(textObj, langInternal.toLowerCase(), language.text);
-                  });
-                }
-                return ({ type, ...textObj });
-              })) : [];
-
-          const adjustedEntry = {
-            ...entryData,
-            type: objectType,
-            texts: textData,
-          };
-          commit('setCurrentItem', adjustedEntry);
+          // this adjustment is necessary to be able to
+          // populate a BaseForm with existing values like 'texts'
+          const adjustedEntry = await adjustEntry(entryData);
+          commit('setCurrentItemId', adjustedEntry);
+          commit('setCurrentItemData', adjustedEntry);
           // use linked entry info already provided with response data
           commit('setLinked', { list: entryData.relations || [], replace: true });
           // and also fetch media data if flag set true
@@ -482,6 +623,16 @@ const actions = {
           }
           // also set parents if there are any
           commit('setLinkedParents', { list: entryData.parents });
+          // if this is an archived entry, fetch a flag with info on whether
+          // this entry or its attachments have changed since last archival
+          if (entryData.archive_URI) {
+            await dispatch('fetchIsArchiveChanged');
+            // set the archival update outcome to null (since it's a new entry)
+            commit('setArchivalUpdateOutcome', null);
+          } else {
+            // set this flag to null for any entry that is not archived
+            commit('setIsArchiveChanged', null);
+          }
           resolve(adjustedEntry);
         }
       } catch (e) {
@@ -503,14 +654,28 @@ const actions = {
     } else {
       commit('setMedia', { list: [], replace: true });
     }
+    //  if there are media IDs submitted for archival but not confirmed as archived yet
+    if (state.archivingMedia.length > 0) {
+      commit('removeArchivingMedia');
+    }
   },
-  addOrUpdateEntry({ commit }, data) {
+  addOrUpdateEntry({ commit, dispatch }, data) {
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
       try {
         const createdEntry = await this.dispatch('PortfolioAPI/post', { kind: 'entry', id: data.id, data });
         if (createdEntry) {
-          commit('setCurrentItem', createdEntry);
+          commit('setCurrentItemId', createdEntry);
+          // this adjustment is necessary to be able to
+          // populate a BaseForm with existing values like 'texts'
+          const adjustedEntry = await adjustEntry(createdEntry);
+          commit('setCurrentItemData', adjustedEntry);
+          commit('setIsFormSaved', true);
+          // if this is an archived entry, update the isArchiveChanged
+          // store property with advice received from the backend
+          if (adjustedEntry.archive_URI) {
+            await dispatch('fetchIsArchiveChanged');
+          }
         }
         resolve(createdEntry.id);
       } catch (e) {
@@ -625,10 +790,34 @@ const actions = {
     return { title: 'title' };
   },
   /**
+   * for ordering media files
+   * @param context: the store action context
+   * @param entryId: id of entry
+   * @param list: a list of media id's to process
+   * @returns {Promise<{error: boolean}>}
+   */
+  async orderFiles(context, { entryId, list }) {
+    let error = false;
+    try {
+      // TODO: replace with Portfolio_API
+      await axios.post(`${portfolioApiUrl}entry/${entryId}/media/order/`,
+        list.map((item) => ({ id: item.id })),
+        {
+          withCredentials: true,
+          xsrfCookieName: 'csrftoken_portfolio',
+          xsrfHeaderName: 'X-CSRFToken',
+        });
+    } catch (e) {
+      console.error(e);
+      error = true;
+    }
+    return { error };
+  },
+  /**
    * for deleting files or updating metainformation such as license or published state
    * @param context: the store action context
    * @param list: a list of media id's to process
-   * @param action: the action to carry out ('delete' | 'license' | 'publish')
+   * @param action: the action to carry out ('delete' | 'license' | 'publish' | 'feature')
    * @param value: value of license to be set (not needed for other actions)
    * @returns {Promise<Array>}
    */
@@ -636,7 +825,7 @@ const actions = {
     const axiosAction = action === 'delete' ? action : 'patch';
     const successArr = [];
     const errorArr = [];
-
+    if (action === 'archiveMedia') return context.dispatch('archiveFiles', list);
     // eslint-disable-next-line no-async-promise-executor
     await Promise.all(list.map((mediaId) => new Promise(async (resolve) => {
       const formData = new FormData();
@@ -652,7 +841,12 @@ const actions = {
             });
         } else {
           if (action === 'publish') {
-            formData.append('published', mediaId.selected);
+            formData.append('published', true);
+          } else if (action === 'feature') {
+            formData.append('featured', value);
+          } else if (action === 'offline') {
+            formData.append('published', false);
+            formData.append('featured', false);
           } else if (action === 'license') {
             formData.append('license', value.source ? JSON.stringify(value) : null);
           } else {
@@ -677,12 +871,183 @@ const actions = {
     })));
     return [successArr, errorArr];
   },
+  /**
+   * Send request to backend to submit files for archival.
+   * @param {Object} param0
+   * @param {Array} list Media asset IDs to be submitted for archival.
+   * @returns {Array} A result array containing two other arrays
+   * (1) IDs of media assets successfully submitted for archival
+   * (2) IDs of media assets that failed submission
+   */
+  async archiveFiles({ state, dispatch, commit }, list) {
+    let successArr = [];
+    let errorArr = [];
+    const media = list.join(',');
+    try {
+      // start showing busy state
+      commit('setIsArchivalBusy', true);
+      await axios.get(`${portfolioApiUrl}archive_assets/media/${media}/`,
+        {
+          withCredentials: true,
+          xsrfCookieName: 'csrftoken_portfolio',
+          xsrfHeaderName: 'X-CSRFToken',
+          headers: {
+            'Accept-Language': i18n.locale,
+          },
+        });
+      // update the state to indicate that media assets are submitted for archival
+      commit('addArchivingMedia', list);
+      // re-fetch entry data since it now contains the archive URI of the entry
+      // (which we need to display the "View in Archive" button immediately)
+      await dispatch('fetchEntryData', state.currentItemId);
+      successArr = list;
+    } catch (e) {
+      console.error(e);
+      errorArr = list;
+    } finally {
+      // Revoke archival consent after each archival attempt;
+      // this ensures that the user cannot send repeated requests
+      // without seeing the wizard with the licensing agreement first.
+      commit('setArchiveMediaConsent', false);
+      // stop showing busy state
+      commit('setIsArchivalBusy', false);
+    }
+    return [successArr, errorArr];
+  },
+  /**
+   * Validate archival data against the backend and update store with the outcome.
+   * @param context
+   * @param mediaIds Media asset IDs of the entry to be validated.
+   */
+  async validateArchivalData(context, mediaIds) {
+    try {
+      // change state to indicate a long in-progress task
+      context.commit('setIsValidatingForArchival', true);
+      // prepare the url param
+      const param = mediaIds.join(',');
+      // await the validation response from the api
+      await axios.get(`${portfolioApiUrl}validate_assets/media/${param}/`,
+        {
+          withCredentials: true,
+          xsrfCookieName: 'csrftoken_portfolio',
+          xsrfHeaderName: 'X-CSRFToken',
+          headers: {
+            'Accept-Language': i18n.locale,
+          },
+        });
+      // if status code is in range 200-299
+      context.commit('setArchivalValidationOutcome', 200);
+      context.commit('setArchivalErrors', {});
+    } catch (e) {
+      // on status code >= 300
+      if (e.response && e.response.status) {
+        switch (e.response.status) {
+        case 400:
+          // There are validation errors, update the store accordingly
+          context.commit('setArchivalValidationOutcome', 400);
+          context.commit('setArchivalErrors', e.response.data);
+          break;
+        case 500:
+          // This status indicates data integrity errors on server
+          context.commit('setArchivalValidationOutcome', 500);
+          break;
+        case 503:
+          // Service is unavailable
+          context.commit('setArchivalValidationOutcome', 503);
+          break;
+        default:
+          // On any other unhandled status code
+          console.error(e.response.status);
+        }
+      } else {
+        console.error(e);
+      }
+    } finally {
+      // update state to indicate the end of the long in-progress task
+      context.commit('setIsValidatingForArchival', false);
+    }
+  },
+  /**
+   * Send request to backend to update an entry's metadata in remote archive.
+   * @param {*} context
+   * @param {*} entryId ID of the entry whose metadata is to be updated.
+   */
+  async updateArchive(context) {
+    try {
+      // change state to indicate a long in-progress task
+      context.commit('setIsArchivalBusy', true);
+      // await the response from the api
+      await axios.put(`${portfolioApiUrl}archive?entry=${state.currentItemId}`, '',
+        {
+          withCredentials: true,
+          xsrfCookieName: 'csrftoken_portfolio',
+          xsrfHeaderName: 'X-CSRFToken',
+          headers: {
+            'Accept-Language': i18n.locale,
+          },
+        });
+      // if status code is in range 200-299
+      context.commit('setArchivalUpdateOutcome', 200);
+      context.commit('setIsArchiveChanged', false);
+      context.commit('setArchivalErrors', {});
+    } catch (e) {
+      // on status code >= 300
+      if (e.response && e.response.status) {
+        switch (e.response.status) {
+        case 400:
+          // There are validation errors, update the store accordingly
+          context.commit('setArchivalUpdateOutcome', 400);
+          context.commit('setArchivalErrors', e.response.data);
+          break;
+        case 500:
+          // This status indicates data integrity errors on server
+          context.commit('setArchivalUpdateOutcome', 500);
+          break;
+        case 503:
+          // Service is unavailable
+          context.commit('setArchivalUpdateOutcome', 503);
+          break;
+        default:
+          // On any other unhandled status code
+          context.commit('setArchivalUpdateOutcome', e.response.status);
+          console.error(e.response.status);
+        }
+      } else {
+        console.error(e);
+      }
+    } finally {
+      // update state to indicate the end of the long in-progress task
+      context.commit('setIsArchivalBusy', false);
+    }
+  },
+  /**
+   * Fetches a flag with info on whether the entry or its attachments
+   * have been changed since the last archival.
+   * @param {*} context
+   */
+  async fetchIsArchiveChanged(context) {
+    try {
+      // await the response from the api
+      const response = await axios.get(`${portfolioApiUrl}archive/is-changed?entry=${state.currentItemId}`,
+        {
+          withCredentials: true,
+          xsrfCookieName: 'csrftoken_portfolio',
+          xsrfHeaderName: 'X-CSRFToken',
+          headers: {
+            'Accept-Language': i18n.locale,
+          },
+        });
+      context.commit('setIsArchiveChanged', response.data);
+    } catch (e) {
+      console.error(e);
+    }
+  },
   async removeUnknownProps({ state, dispatch }, { data, fields }) {
     const newData = {};
     await Promise.all(Object.keys(data).map(async (key) => {
       const field = fields[key];
       const xAttrs = field ? field['x-attrs'] : {};
-      let values = data[key];
+      let values = JSON.parse(JSON.stringify(data[key]));
       // if the field does not exist in schema = this is not an allowed property -
       // or field (but only json fields not main schema ones!
       // (distinguishable by x-nullable property!)) does not contain any values return
@@ -717,7 +1082,7 @@ const actions = {
         // check if transformation is still necessary by checking for data property (only there
         // if data from db (on clone entries)
         const texts = tempValues && tempValues.length
-        && (!tempValues[0].data || !tempValues[0].data.length)
+          && (!tempValues[0].data || !tempValues[0].data.length)
           ? transformTextData(tempValues) : [].concat(tempValues);
         Vue.set(newData, key, texts);
         // special case single choice chips (saved as object in backend)
@@ -762,7 +1127,7 @@ const actions = {
         const arrayValues = await Promise.all(values
           .map((value) => dispatch('removeUnknownProps', { data: value, fields: field.items.properties })));
         Vue.set(newData, key, arrayValues || []);
-      // check if field is object
+        // check if field is object
       } else if (field.type === 'object' && typeof values === 'object' && !values.length) {
         const validProperties = {};
         // special case languages which is object because of languages but is

@@ -38,16 +38,19 @@
         </div>
       </div>
     </BasePopUp>
+
     <BaseMediaPreview
       :show-preview="showPreview"
       :media-url="getFilePath(assetFilePath)"
+      :media-poster-url="assetObject !== null
+        && assetObject.type === 'v' ? getFilePath( assetObject.cover.jpg) : null"
       :download-url="assetObject !== null ? getFilePath( assetObject.original) : ''"
       :display-size="previewSize"
-      :previews="imagePreviews"
       :info-texts="{
         download: $t('form-view.download'),
         view: $t('form-view.view'),
       }"
+      :previews="imagePreviews"
       :additional-info="assetInfoText"
       @hide-preview="showPreview = false"
       @download="downloadFile" />
@@ -106,6 +109,9 @@ export default {
       const infoStringArray = [];
       if (this.assetObject.license) {
         infoStringArray.push(`${this.$t('license')}: ${getLangLabel(this.assetObject.license.label, this.$i18n.locale, true)}`);
+      }
+      if (this.assetObject.archive_URI && this.assetObject.archive_URI !== '') {
+        infoStringArray.push(`Archive-ID: ${this.assetObject.archive_id}`);
       }
       infoStringArray.push(`${this.$t('status')}: ${this.assetObject.published
         ? this.$t('public') : this.$t('private')}`);
