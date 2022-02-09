@@ -15,7 +15,7 @@
       label="SearchInput"
       :placeholder="$t('import.searchCatalogueText')"
       show-image
-      @input-change="runSearch" />
+      @input="runSearch" />
 
     <label>
       <BaseDropBox
