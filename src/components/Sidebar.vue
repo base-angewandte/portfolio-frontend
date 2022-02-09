@@ -20,6 +20,7 @@
                    {'minimized': isButtonMinimized},
                    {'maximized': isButtonMaximized}]"
           button-style="row"
+          data-e2e-new-button
           @clicked="getNewForm" />
         <BaseButton
           v-if="importEnabled"
@@ -31,6 +32,7 @@
                    {'minimized': isButtonMinimized},
                    {'maximized': isButtonMaximized}]"
           button-style="row"
+          data-e2e-import-button
           @clicked="$emit('import-entries', 'goToImport')" />
         <BaseButton
           v-if="!isSearchExpanded"
@@ -40,6 +42,7 @@
           class="base-row-button search-button minimized"
           style="border-right: none;"
           button-style="row"
+          data-e2e-search-button
           @clicked="expandOrCollapseSearch(true)" />
         <!-- Searchbar is conditionally visible for desktop screens -->
         <BaseSearch
