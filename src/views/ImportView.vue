@@ -20,7 +20,7 @@
       <BaseDropBox
         v-if="dropboxVisible"
         :box-size="{ width: 'calc(100%)', height: '250px'} "
-        :icon="'sheet-plus'"
+        :icon="'add-new-object'"
         :text="$t('import.attachBibTex')"
         :subtext="$t('import.clickordrag')"
         class="drop-box"
