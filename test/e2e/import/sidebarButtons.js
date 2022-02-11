@@ -4,49 +4,53 @@
  * This suite tests the behaviour of buttons at the top of the application's sidebar ("New", "Import", and "Search") in conjunction with the "Import" feature.
  */
 
-const logOutButtonSelector = 'footer > ul > li:nth-child(1)';
-const sidebarImportButtonSelector = '[data-e2e-import-button]';
-const searchImportInputSelector = '[data-e2e-search-import-input]';
-const sidebarSearchButtonSelector = '[data-e2e-search-button]';
-const sidebarNewButtonSelector = '[data-e2e-new-button]';
+const logOutButton = 'footer > ul > li:nth-child(1)';
+const sidebarImportButton = '[data-e2e-import-button]';
+const importSearchBox = '[data-e2e-import-search-box]';
+const sidebarSearchButton = '[data-e2e-search-button]';
+const sidebarNewButton = '[data-e2e-new-button]';
 
 describe('Test sidebar buttons behaviour', function () {
+
+    this.tags = ['sidebar-buttons'];
 
     before(function (browser) {
         // Login to app
         browser.globals.login(browser);
     });
 
-    it('assert login successful', function (browser) {
+    it('after login, the logout button should be shown', function (browser) {
         browser
-            .assert.visible(logOutButtonSelector)
-            .assert.textContains(logOutButtonSelector, 'Log Out');
+            .assert.visible(logOutButton)
+            .assert.textContains(logOutButton, 'Log Out');
     });
 
-    it('assert import button visible', function (browser) {
+    it('after login, the import button should be visible', function (browser) {
         browser
-            .assert.visible(sidebarImportButtonSelector)
-            .assert.textContains(sidebarImportButtonSelector, 'Import');
+            .assert.visible(sidebarImportButton)
+            .assert.textContains(sidebarImportButton, 'Import');
     });
 
-    it('clicking the import button displays the import view', function (browser) {
+    it('clicking the sidebar import button should display the import view', function (browser) {
         browser
-            .click(sidebarImportButtonSelector)
-            .assert.visible(searchImportInputSelector);
+            .click(sidebarImportButton)
+            .assert.visible(importSearchBox)
+            .assert.urlContains('/import');
     });
 
-    it('clicking the sidebar search minimizes the "import" and "new" buttons', function (browser) {
+    it('clicking the sidebar search should minimize the "import" and "new" buttons', function (browser) {
         browser
-            .click(sidebarSearchButtonSelector)
-            .assert.hasClass(sidebarImportButtonSelector, 'minimized')
-            .assert.hasClass(sidebarNewButtonSelector, 'minimized');
+            .click(sidebarSearchButton)
+            .assert.hasClass(sidebarImportButton, 'minimized')
+            .assert.hasClass(sidebarNewButton, 'minimized');
     });
 
-    it('clicking the "new" button maximizes the "import" button and minimizes the "search" button', function (browser) {
+    it('clicking the "new" button should maximize the "import" button and minimize the "search" button', function (browser) {
         browser
-            .click(sidebarNewButtonSelector)
-            .assert.hasClass(sidebarImportButtonSelector, 'maximized')
-            .assert.hasClass(sidebarSearchButtonSelector, 'minimized');
+            .click(sidebarNewButton)
+            .assert.hasClass(sidebarImportButton, 'maximized')
+            .assert.hasClass(sidebarSearchButton, 'minimized')
+            .assert.urlContains('/new');
     });
 
 });

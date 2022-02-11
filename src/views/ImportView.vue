@@ -11,7 +11,7 @@
     <BaseSearch
       v-if="!isBibtexImportInProgress"
       v-model="searchText"
-      data-e2e-search-import-input
+      data-e2e-import-search-box
       label="SearchInput"
       :placeholder="$t('import.searchCatalogueText')"
       show-image
@@ -54,9 +54,11 @@
         )"
         :select-text="$t('selectAll')"
         :deselect-text="$t('selectNone')"
+        data-e2e-import-results-options
         @selected="selectAll" />
       <BaseLoader
         v-if="isLoading"
+        data-e2e-import-loading
         loader-color="red"
         class="loader" />
       <SelectableAccordion
@@ -64,6 +66,7 @@
         :list="currentPageRecords"
         :selected-list="selectedIds"
         :expand-mode="'single'"
+        data-e2e-import-results
         @selected="selectRecord($event)">
         <template v-slot="{ item }">
           <table style="width: 100%">
@@ -100,12 +103,14 @@
     <BaseTextList
       v-if="noResultsText"
       class="no-results-container"
+      data-e2e-import-noresults
       render-label-as="h4"
       :data="[{ label: noResultsText }]" />
     <BasePagination
       v-if="results && results.length && !isLoading"
       :current="currentPage"
       :total="pageCount"
+      data-e2e-import-results-pagination
       @set-page="currentPage = $event" />
     <div
       v-if="results && results.length && !isLoading"
@@ -116,6 +121,7 @@
         icon="remove"
         button-style="row"
         icon-size="small"
+        data-e2e-import-cancel
         @clicked="resetSearch" />
       <base-button
         :text="$t('import.importButtonTitle')"
@@ -123,6 +129,7 @@
         icon="download"
         button-style="row"
         icon-size="small"
+        data-e2e-import-run
         @clicked="onImport" />
     </div>
   </div>
