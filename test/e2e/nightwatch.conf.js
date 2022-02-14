@@ -19,7 +19,7 @@ module.exports = {
   src_folders: ['./import'],
 
   // See https://nightwatchjs.org/guide/working-with-page-objects/
-  page_objects_path: '',
+  page_objects_path: './test/e2e/page-objects/',
 
   // See https://nightwatchjs.org/guide/extending-nightwatch/#writing-custom-commands
   custom_commands_path: '',

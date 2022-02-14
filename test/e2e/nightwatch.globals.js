@@ -1,6 +1,7 @@
 /* eslint-disable */
 
 /**
+ * This file defines global variables used in automated testing with Nightwatch.js. 
  * Before attempting to run any e2e tests, the following LOCAL ONLY environment variables must be set in the *.env.local* file:
  * E2E_TESTING_USERNAME -- set this to the username of the portfolio account which will run automated tests
  * E2E_TESTING_PASSWORD -- set this to the password of the portfolio account which will run automated tests
@@ -12,11 +13,17 @@ require('dotenv').config({
 });
 
 module.exports = {
+
+    // these globals are the same regardless of the environment
+    appUsername: process.env.E2E_TESTING_USERNAME,
+    appPassword: process.env.E2E_TESTING_PASSWORD,
+    portfolioUrl: process.env.E2E_TESTING_URL,
+    dummyText: 'a1a1a1a1a1',
+    searchText: 'carl',
+
+    // these globals are specific to the 'default' (local) environment
     'default': {
         isLocal: true,
-        appUsername: process.env.E2E_TESTING_USERNAME,
-        appPassword: process.env.E2E_TESTING_PASSWORD,
-        portfolioUrl: process.env.E2E_TESTING_URL,
         portfolioAdminUrl: process.env.E2E_TESTING_ADMIN_URL,
         // on localhost, login to admin page first and then navigate to portfolio url
         login(browser) {
@@ -29,11 +36,9 @@ module.exports = {
         }
     },
 
+    // these globals are specific to the staging environment
     'staging': {
         isLocal: false,
-        appUsername: process.env.E2E_TESTING_USERNAME,
-        appPassword: process.env.E2E_TESTING_PASSWORD,
-        portfolioUrl: process.env.E2E_TESTING_URL,
         // on the staging server, login to portfolio app directly
         login(browser) {
             browser
