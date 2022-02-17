@@ -873,16 +873,13 @@ const actions = {
   /**
    * Validate archival data against the backend and update store with the outcome.
    * @param context
-   * @param mediaIds Media asset IDs of the entry to be validated.
    */
-  async validateArchivalData(context, mediaIds) {
+  async validateArchivalData(context) {
     try {
       // change state to indicate a long in-progress task
       context.commit('setIsValidatingForArchival', true);
-      // prepare the url param
-      const param = mediaIds.join(',');
       // await the validation response from the api
-      await axios.get(`${portfolioApiUrl}validate_assets/media/${param}/`,
+      await axios.get(`${portfolioApiUrl}archive/validate_entry?entry=${state.currentItemId}`,
         {
           withCredentials: true,
           xsrfCookieName: 'csrftoken_portfolio',
