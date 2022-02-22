@@ -244,7 +244,7 @@ export default {
     async fetchSearchResults() {
       try {
         const backendUrl = `${process.env.VUE_APP_BACKEND_BASE_URL}${process.env.VUE_APP_BACKEND_PREFIX}`;
-        const apiUrl = `${backendUrl}/autosuggest/v1/contributors/${encodeURI(this.searchText)}/`;
+        const apiUrl = encodeURI(`${backendUrl}/autosuggest/v1/bibrecs/any,contains,${this.searchText}/`);
         const response = await axios.get(apiUrl, {
           withCredentials: true,
           xsrfCookieName: 'csrftoken_portfolio',
@@ -274,18 +274,15 @@ export default {
      */
     processResults(results) {
       return results.map((res, index) => {
-        const entry = {
-          // use dummy data for now
+        const result = {
           id: index,
-          title: res.source,
-          subtitle: res.label.substring(0, res.label.indexOf('|'))
-            ? res.label.substring(0, res.label.indexOf('|'))
-            : res.label,
-          responsible: res.label,
-          year: '{ placeholder} ',
+          title: res.label.toString().substring(0, 255),
+          subtitle: res.author ? res.author.toString() : '',
+          responsible: res.author ? res.author.toString() : '',
+          year: '',
           sourceName: res.source_name,
         };
-        return entry;
+        return result;
       });
     },
     /**
@@ -364,20 +361,6 @@ export default {
               type: {
                 source: 'http://base.uni-ak.ac.at/portfolio/taxonomy/scientific_publication',
                 label: { de: 'wissenschaftliche Veröffentlichung', en: 'Scientific Publication' },
-              },
-              data: {
-                authors: [
-                  {
-                    label: record.responsible,
-                    source: record.title,
-                    roles: [
-                      {
-                        source: 'http://base.uni-ak.ac.at/portfolio/vocabulary/author',
-                        label: { de: 'Autor*in', en: 'author' },
-                      },
-                    ],
-                  },
-                ],
               },
             }).then((id) => {
               resolve(id);
