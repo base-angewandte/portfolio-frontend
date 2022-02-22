@@ -155,8 +155,6 @@ const state = {
   isArchivalBusy: false,
   // true while there is an in progress API request related to long-term archival validation
   isValidatingForArchival: false,
-  // stores media asset IDs where an asynchronous archival operation is in progress
-  archivingMedia: [],
   // true if the "Update Archive" button was clicked and the update has no outcome yet;
   // this becomes false if the update succeeds, or fails, or is cancelled by the user
   isArchiveUpdate: false,
@@ -241,9 +239,6 @@ const getters = {
   },
   getIsValidatingForArchival(state) {
     return state.isValidatingForArchival;
-  },
-  getArchivingMedia(state) {
-    return state.archivingMedia;
   },
   getIsArchiveUpdate(state) {
     return state.isArchiveUpdate;
@@ -395,39 +390,6 @@ const mutations = {
   },
   setIsValidatingForArchival(state, val) {
     state.isValidatingForArchival = val;
-  },
-  /**
-   * Add attachment IDs that are submitted for archival to the 'archivingMedia' property.
-   * This is only a non-persistent solution, see #1676.
-   * @param {*} state
-   * @param {*} list The list of attachments IDs to add
-   */
-  addArchivingMedia(state, list) {
-    list.forEach((item) => {
-      // make sure no duplicates are added
-      if (!state.archivingMedia.includes(item)) {
-        state.archivingMedia.push(item);
-      }
-    });
-  },
-  /**
-   * Remove from the 'archivingMedia' store property those attachment IDs
-   * that got archived (i.e. have an archive URI) #1495
-  */
-  removeArchivingMedia(state) {
-    // get all currently archived media IDs
-    const archivedMediaIDs = state.linkedMedia
-      .filter((entry) => entry.archive_URI)
-      .map((entry) => entry.id);
-    // create a deep clone of the archivingMedia array
-    const updatedIDs = JSON.parse(JSON.stringify(state.archivingMedia));
-    // if *archived* IDs include any of the *archiving* IDs, remove the latter from the store
-    state.archivingMedia.forEach((id) => {
-      if (archivedMediaIDs.includes(id)) {
-        updatedIDs.pop(id);
-      }
-    });
-    state.archivingMedia = updatedIDs;
   },
   setIsArchiveUpdate(state, val) {
     state.isArchiveUpdate = val;
@@ -661,10 +623,6 @@ const actions = {
       commit('setMedia', { list: data, replace: true });
     } else {
       commit('setMedia', { list: [], replace: true });
-    }
-    //  if there are media IDs submitted for archival but not confirmed as archived yet
-    if (state.archivingMedia.length > 0) {
-      commit('removeArchivingMedia');
     }
   },
   addOrUpdateEntry({ commit, dispatch }, data) {
@@ -903,8 +861,6 @@ const actions = {
             'Accept-Language': i18n.locale,
           },
         });
-      // update the state to indicate that media assets are submitted for archival
-      commit('addArchivingMedia', list);
       // re-fetch entry data since it now contains the archive URI of the entry
       // (which we need to display the "View in Archive" button immediately)
       await dispatch('fetchEntryData', state.currentItemId);
@@ -925,16 +881,13 @@ const actions = {
   /**
    * Validate archival data against the backend and update store with the outcome.
    * @param context
-   * @param mediaIds Media asset IDs of the entry to be validated.
    */
-  async validateArchivalData(context, mediaIds) {
+  async validateArchivalData(context) {
     try {
       // change state to indicate a long in-progress task
       context.commit('setIsValidatingForArchival', true);
-      // prepare the url param
-      const param = mediaIds.join(',');
       // await the validation response from the api
-      await axios.get(`${portfolioApiUrl}validate_assets/media/${param}/`,
+      await axios.get(`${portfolioApiUrl}archive/validate_entry?entry=${state.currentItemId}`,
         {
           withCredentials: true,
           xsrfCookieName: 'csrftoken_portfolio',
