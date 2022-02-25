@@ -84,7 +84,7 @@
                   {{ $t('import.responsible') }}
                 </td>
                 <td class="definition-column">
-                  {{ item.responsible }}
+                  {{ item.authors.toString() }}
                 </td>
               </tr>
               <tr>
@@ -95,6 +95,23 @@
                   {{ item.year }}
                 </td>
               </tr>
+              <!-- This info currently only for debugging ->
+              <tr>
+                <td class="term-column">
+                  Type
+                </td>
+                <td class="definition-column">
+                  {{ item.type }}
+                </td>
+              </tr>
+              <tr>
+                <td class="term-column">
+                  LAD24
+                </td>
+                <td class="definition-column">
+                  {{ item.lad24 }}
+                </td>
+              </tr> -->
             </tbody>
           </table>
         </template>
@@ -138,6 +155,7 @@
 <script>
 import axios from 'axios';
 import BibtexParser from '@/components/BibtexParser';
+import { getPortfolioAuthors, getPortfolioType } from '@/utils/primoMapper';
 import SelectableAccordion from '@/components/SelectableAccordion';
 
 export default {
@@ -278,9 +296,11 @@ export default {
           id: index,
           title: res.label.toString().substring(0, 255),
           subtitle: res.author ? res.author.toString() : '',
-          responsible: res.author ? res.author.toString() : '',
-          year: '',
-          sourceName: res.source_name,
+          authors: res.author ? res.author : '',
+          year: res.creationdate ? res.creationdate.toString() : '',
+          sourceName: res.sourceName ? res.sourceName.toString() : '',
+          type: res.type ? res.type.toString() : '',
+          lad24: res.lad24 ? res.lad24 : '',
         };
         return result;
       });
@@ -355,19 +375,14 @@ export default {
       // eslint-disable-next-line no-async-promise-executor
         .map((record) => new Promise(async (resolve, reject) => {
           try {
-            await this.$store.dispatch('data/addOrUpdateEntry', {
-              title: record.title,
-              subtitle: record.subtitle,
-              type: {
-                source: 'http://base.uni-ak.ac.at/portfolio/taxonomy/scientific_publication',
-                label: { de: 'wissenschaftliche Veröffentlichung', en: 'Scientific Publication' },
-              },
-            }).then((id) => {
-              resolve(id);
-            }).catch((e) => {
-              console.error(e);
-              reject(e);
-            });
+            await this.$store.dispatch('data/addOrUpdateEntry',
+              this.createPortfolioEntry(record))
+              .then((id) => {
+                resolve(id);
+              }).catch((e) => {
+                console.error(e);
+                reject(e);
+              });
           } catch (e) {
             console.error(e);
             reject(e);
@@ -425,12 +440,32 @@ export default {
           id: index,
           title: res.entryTags.title ? res.entryTags.title : '',
           subtitle: res.entryTags.keywords ? res.entryTags.keywords : '',
-          responsible: res.entryTags.author ? res.entryTags.author : '',
+          authors: res.entryTags.author ? res.entryTags.author : '',
           year: res.entryTags.year ? res.entryTags.year : '',
           sourceName: 'BibTex File',
         };
         return entry;
       });
+    },
+    /**
+     * Converts a library search result record into an object that represents
+     * a new entry in portfolio.
+     */
+    createPortfolioEntry(record) {
+      const entry = {};
+      entry.title = record.title;
+      entry.subtitle = record.subtitle;
+      entry.type = getPortfolioType(record.type);
+      if (entry.type) {
+        // assume data object is needed if type exists
+        const data = {};
+        // add authors, if any
+        const authors = getPortfolioAuthors(record.authors, record.lad24);
+        if (authors && authors.length) data.authors = authors;
+        // finally, set the data attribute
+        entry.data = data;
+      }
+      return entry;
     },
   },
 };
