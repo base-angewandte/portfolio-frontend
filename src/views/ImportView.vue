@@ -95,7 +95,7 @@
                   {{ item.year }}
                 </td>
               </tr>
-              <!-- This info currently only for debugging ->
+              <!-- This info currently only for debugging
               <tr>
                 <td class="term-column">
                   Type
@@ -155,7 +155,7 @@
 <script>
 import axios from 'axios';
 import BibtexParser from '@/components/BibtexParser';
-import { getPortfolioAuthors, getPortfolioType } from '@/utils/primoMapper';
+import createPortfolioEntry from '@/utils/primoMapper';
 import SelectableAccordion from '@/components/SelectableAccordion';
 
 export default {
@@ -376,7 +376,7 @@ export default {
         .map((record) => new Promise(async (resolve, reject) => {
           try {
             await this.$store.dispatch('data/addOrUpdateEntry',
-              this.createPortfolioEntry(record))
+              createPortfolioEntry(record))
               .then((id) => {
                 resolve(id);
               }).catch((e) => {
@@ -446,26 +446,6 @@ export default {
         };
         return entry;
       });
-    },
-    /**
-     * Converts a library search result record into an object that represents
-     * a new entry in portfolio.
-     */
-    createPortfolioEntry(record) {
-      const entry = {};
-      entry.title = record.title;
-      entry.subtitle = record.subtitle;
-      entry.type = getPortfolioType(record.type);
-      if (entry.type) {
-        // assume data object is needed if type exists
-        const data = {};
-        // add authors, if any
-        const authors = getPortfolioAuthors(record.authors, record.lad24);
-        if (authors && authors.length) data.authors = authors;
-        // finally, set the data attribute
-        entry.data = data;
-      }
-      return entry;
     },
   },
 };

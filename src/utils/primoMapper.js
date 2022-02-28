@@ -96,4 +96,38 @@ function getPortfolioAuthors(creator, lad24) {
   return authors;
 }
 
-export { getPortfolioAuthors, getPortfolioType };
+/**
+ * Mapping function that returns the portfolio entry's year, if one can be inferred.
+ * @param {*} strDate Maps to docs/{index}/pnx/display/creationdate of the Primo API response body
+ * @returns Boolean false if the date cannot be inferred, otherwise the 4-digit year value
+ */
+function getPortfolioYear(strDate) {
+  if (strDate && !Number.isNaN(strDate) && strDate.length === 4) return strDate;
+  return false;
+}
+
+/**
+ * Converts a library search result record into an object that represents
+ * a new entry in portfolio.
+ */
+function createPortfolioEntry(record) {
+  const entry = {};
+  entry.title = record.title;
+  entry.subtitle = record.subtitle;
+  entry.type = getPortfolioType(record.type);
+  if (entry.type) {
+    // assume data object is needed if type exists
+    const data = {};
+    // map authors, if any
+    const authors = getPortfolioAuthors(record.authors, record.lad24);
+    if (authors && authors.length) data.authors = authors;
+    // map year, if applicable
+    const year = getPortfolioYear(record.year);
+    if (year) data.date = year;
+    // finally, set the data attribute
+    entry.data = data;
+  }
+  return entry;
+}
+
+export { createPortfolioEntry as default };
