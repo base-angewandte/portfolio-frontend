@@ -31,7 +31,6 @@ describe('Test library import', function () {
         const page = browser.page.portfolioPage();
         page
             .setValue('@importSearchInput', browser.globals.dummyText)
-            .waitForElementVisible('@loadingSelector')
             .waitForElementVisible('@noResultsSelector')
             // no results found text should be visible
             .assert.textContains('@noResultsSelector', 'No Results Found')
