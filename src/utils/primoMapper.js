@@ -13,8 +13,8 @@ function getPortfolioType(primoType) {
   switch (primoType) {
   case 'book':
     return {
-      source: 'http://base.uni-ak.ac.at/portfolio/taxonomy/scientific_publication',
-      label: { de: 'wissenschaftliche Veröffentlichung', en: 'Scientific Publication' },
+      source: 'http://base.uni-ak.ac.at/portfolio/taxonomy/monograph',
+      label: { de: 'Monographie', en: 'Monograph' },
     };
   case 'journal':
     return {
