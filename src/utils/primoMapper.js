@@ -5,6 +5,13 @@
 */
 
 /**
+ * Mapping object for converting ISO 639-1 to 639-2, or vice versa.
+ */
+const isoLangs = {
+  aa: 'aar', ab: 'abk', af: 'afr', ak: 'aka', sq: 'alb', am: 'amh', ar: 'ara', an: 'arg', hy: 'hye', as: 'asm', av: 'ava', ae: 'ave', ay: 'aym', az: 'aze', ba: 'bak', bm: 'bam', eu: 'eus', be: 'bel', bn: 'ben', bh: 'bih', bi: 'bis', bo: 'tib', bs: 'bos', br: 'bre', bg: 'bul', my: 'mya', ca: 'cat', cs: 'cze', ch: 'cha', ce: 'che', zh: 'zho', cu: 'chu', cv: 'chv', kw: 'cor', co: 'cos', cr: 'cre', cy: 'wel', da: 'dan', de: 'ger', dv: 'div', nl: 'dut', dz: 'dzo', el: 'gre', en: 'eng', eo: 'epo', et: 'est', ee: 'ewe', fo: 'fao', fa: 'per', fj: 'fij', fi: 'fin', fr: 'fra', fy: 'fry', ff: 'ful', ka: 'geo', gd: 'gla', ga: 'gle', gl: 'glg', gv: 'glv', gn: 'grn', gu: 'guj', ht: 'hat', ha: 'hau', he: 'heb', hz: 'her', hi: 'hin', ho: 'hmo', hr: 'hrv', hu: 'hun', ig: 'ibo', is: 'ice', io: 'ido', ii: 'iii', iu: 'iku', ie: 'ile', ia: 'ina', id: 'ind', ik: 'ipk', it: 'ita', jv: 'jav', ja: 'jpn', kl: 'kal', kn: 'kan', ks: 'kas', kr: 'kau', kk: 'kaz', km: 'khm', ki: 'kik', rw: 'kin', ky: 'kir', kv: 'kom', kg: 'kon', ko: 'kor', kj: 'kua', ku: 'kur', lo: 'lao', la: 'lat', lv: 'lav', li: 'lim', ln: 'lin', lt: 'lit', lb: 'ltz', lu: 'lub', lg: 'lug', mk: 'mkd', mh: 'mah', ml: 'mal', mi: 'mri', mr: 'mar', ms: 'may', mg: 'mlg', mt: 'mlt', mn: 'mon', na: 'nau', nv: 'nav', nr: 'nbl', nd: 'nde', ng: 'ndo', ne: 'nep', nn: 'nno', nb: 'nob', no: 'nor', ny: 'nya', oc: 'oci', oj: 'oji', or: 'ori', om: 'orm', os: 'oss', pa: 'pan', pi: 'pli', pl: 'pol', pt: 'por', ps: 'pus', qu: 'que', rm: 'roh', ro: 'ron', rn: 'run', ru: 'rus', sg: 'sag', sa: 'san', si: 'sin', sk: 'slk', sl: 'slv', se: 'sme', sm: 'smo', sn: 'sna', sd: 'snd', so: 'som', st: 'sot', es: 'spa', sc: 'srd', sr: 'srp', ss: 'ssw', su: 'sun', sw: 'swa', sv: 'swe', ty: 'tah', ta: 'tam', tt: 'tat', te: 'tel', tg: 'tgk', tl: 'tgl', th: 'tha', ti: 'tir', to: 'ton', tn: 'tsn', ts: 'tso', tk: 'tuk', tr: 'tur', tw: 'twi', ug: 'uig', uk: 'ukr', ur: 'urd', uz: 'uzb', ve: 'ven', vi: 'vie', vo: 'vol', wa: 'wln', wo: 'wol', xh: 'xho', yi: 'yid', yo: 'yor', za: 'zha', zu: 'zul',
+};
+
+/**
  * Mapping function that returns the portfolio entry's type.
  * @param {string} primoType Maps to docs/{index}/pnx/display/type of the Primo API response body.
  * @returns An object that stands for entry's type in portfolio, or empty string if unmappable.
@@ -107,10 +114,60 @@ function getPortfolioYear(strDate) {
 }
 
 /**
+ * Mapping function that returns the portfolio entry's description.
+ * @param {*} desc Maps to docs/{index}/pnx/search/description of the Primo API response body
+ * @returns Boolean false if no description, otherwise a string value
+ */
+function getPortfolioDescription(desc) {
+  if (desc) {
+    return [
+      {
+        type: {
+          label: {
+            de: 'Beschreibung',
+            en: 'Description',
+          },
+          source: 'http://base.uni-ak.ac.at/portfolio/vocabulary/description',
+        },
+        data: [
+          {
+            language: {
+              source: 'http://base.uni-ak.ac.at/portfolio/languages/en',
+            },
+            text: desc.toString(),
+          },
+        ],
+      },
+    ];
+  }
+  return false;
+}
+
+/**
+ * Mapping function that returns the portfolio entry's language.
+ * @param {*} entryLangs Maps to docs/{index}/pnx/display/language of the Primo API response body
+ * @returns Boolean false if no language, otherwise a string value
+ */
+function getPortfolioLang(entryLangs, portfolioLangs) {
+  const retLangs = [];
+  entryLangs.toString().split(';').forEach((lang) => {
+    // eslint-disable-next-line no-restricted-syntax
+    for (const [key, value] of Object.entries(isoLangs)) {
+      if (lang === value) {
+        const portfolioLang = portfolioLangs
+          .find((l) => l.source.substring(l.source.length - 2, l.source.length) === key);
+        retLangs.push(portfolioLang);
+      }
+    }
+  });
+  return retLangs;
+}
+
+/**
  * Converts a library search result record into an object that represents
  * a new entry in portfolio.
  */
-function createPortfolioEntry(record) {
+function createPortfolioEntry(record, portfolioLangs) {
   const entry = {};
   entry.title = record.title;
   entry.subtitle = record.subtitle;
@@ -124,6 +181,12 @@ function createPortfolioEntry(record) {
     // map year, if applicable
     const year = getPortfolioYear(record.year);
     if (year) data.date = year;
+    // map description, if any
+    const texts = getPortfolioDescription(record.description);
+    if (texts) entry.texts = texts;
+    // map language, if any
+    const langList = getPortfolioLang(record.language, portfolioLangs);
+    if (langList) data.language = langList;
     // finally, set the data attribute
     entry.data = data;
   }

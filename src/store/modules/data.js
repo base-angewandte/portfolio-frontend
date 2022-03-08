@@ -164,6 +164,8 @@ const state = {
   isArchiveChanged: null,
   // stores the ids of entries imported from external sources (library catalog, bibtex)
   importedIds: [],
+  // ISO 639-1 list of languages
+  isoLanguages: [],
 };
 
 const getters = {
@@ -252,6 +254,9 @@ const getters = {
   },
   getImportedIds(state) {
     return state.importedIds;
+  },
+  getPortfolioLangs() {
+    return state.isoLanguages;
   },
 };
 
@@ -399,6 +404,9 @@ const mutations = {
   },
   setImportedIds(state, val) {
     state.importedIds = val;
+  },
+  setPortfolioLangs(state, val) {
+    state.isoLanguages = val;
   },
 };
 
@@ -1126,6 +1134,24 @@ const actions = {
   },
   addEnglishTitleCasing(context, object) {
     return addEnglishTextStyling(object);
+  },
+  async fetchIsoLanguages(context) {
+    try {
+      const url = `${process.env.VUE_APP_BACKEND_BASE_URL}/autosuggest/v1/languages`;
+      await axios.get(url,
+        {
+          withCredentials: true,
+          xsrfCookieName: 'csrftoken_portfolio',
+          xsrfHeaderName: 'X-CSRFToken',
+          headers: {
+            'Accept-Language': i18n.locale,
+          },
+        }).then((response) => {
+        context.commit('setPortfolioLangs', response.data);
+      });
+    } catch (e) {
+      console.error(e);
+    }
   },
 };
 

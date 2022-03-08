@@ -111,6 +111,22 @@
                 <td class="definition-column">
                   {{ item.lad24 }}
                 </td>
+              </tr>
+              <tr>
+                <td class="term-column">
+                  Description
+                </td>
+                <td class="definition-column">
+                  {{ item.description }}
+                </td>
+              </tr>
+              <tr>
+                <td class="term-column">
+                  Language
+                </td>
+                <td class="definition-column">
+                  {{ item.language }}
+                </td>
               </tr> -->
             </tbody>
           </table>
@@ -157,6 +173,7 @@ import axios from 'axios';
 import BibtexParser from '@/components/BibtexParser';
 import createPortfolioEntry from '@/utils/primoMapper';
 import SelectableAccordion from '@/components/SelectableAccordion';
+import { mapGetters } from 'vuex';
 
 export default {
   name: 'ImportView',
@@ -216,6 +233,9 @@ export default {
     selectedIds() {
       return this.selectedRecords.map((record) => record.id);
     },
+    ...mapGetters('data', [
+      'getPortfolioLangs',
+    ]),
   },
   watch: {
     /**
@@ -230,6 +250,9 @@ export default {
         this.dropboxVisible = false;
       }
     },
+  },
+  async created() {
+    await this.$store.dispatch('data/fetchIsoLanguages');
   },
   methods: {
     /**
@@ -295,12 +318,14 @@ export default {
         const result = {
           id: index,
           title: res.label.toString().substring(0, 255),
-          subtitle: res.author ? res.author.toString() : '',
+          subtitle: res.author ? res.author.toString().substring(0, 255) : '',
           authors: res.author ? res.author : '',
           year: res.creationdate ? res.creationdate.toString() : '',
           sourceName: res.sourceName ? res.sourceName.toString() : '',
           type: res.type ? res.type.toString() : '',
           lad24: res.lad24 ? res.lad24 : '',
+          description: res.description ? res.description : '',
+          language: res.language ? res.language : '',
         };
         return result;
       });
@@ -376,7 +401,7 @@ export default {
         .map((record) => new Promise(async (resolve, reject) => {
           try {
             await this.$store.dispatch('data/addOrUpdateEntry',
-              createPortfolioEntry(record))
+              createPortfolioEntry(record, this.getPortfolioLangs))
               .then((id) => {
                 resolve(id);
               }).catch((e) => {
