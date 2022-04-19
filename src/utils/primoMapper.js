@@ -33,6 +33,11 @@ function getPortfolioType(primoType) {
       source: 'http://base.uni-ak.ac.at/portfolio/taxonomy/article',
       label: { de: 'Artikel', en: 'Article' },
     };
+  case 'text_resource':
+    return {
+      source: 'http://base.uni-ak.ac.at/portfolio/taxonomy/online_newspaper_article',
+      label: { de: 'Onlinebeitrag', en: 'online newspaper article' },
+    };
   case 'image':
     return {
       source: 'http://base.uni-ak.ac.at/portfolio/taxonomy/image',
@@ -47,6 +52,11 @@ function getPortfolioType(primoType) {
     return {
       source: 'http://base.uni-ak.ac.at/portfolio/taxonomy/audio_recording',
       label: { de: 'Tonaufnahme', en: 'audio recording' },
+    };
+  case 'other':
+    return {
+      source: 'http://base.uni-ak.ac.at/portfolio/taxonomy/artistic_sound_image_data_medium',
+      label: { de: 'Künstlerischer Ton-/Bild-/Datenträger ', en: 'artistic sound/image/data medium' },
     };
   default:
     return null;
