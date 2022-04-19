@@ -86,6 +86,7 @@ In the `.env` file contained in the project folder the following variables can b
 | VUE_APP_BACKEND_PREFIX      | a prefix for the backend                                                                                                 |
 | VUE_APP_HEADER_URL_TERMS      | to link to terms and conditions                                                                                                                                                |
 | VUE_APP_HEADER_URL_NOTICE     | to link to site legal notice                                                                                                                              |
+| VUE_APP_HEADER_LOGOUT_REDIRECT_URL     | url to redirect after logout                                                                                                                |
 | VUE_APP_HEADER_JSON           | json file url where the latest header version is specified                                                                                                                                  |
 | VUE_APP_HEADER                | the complete header url, no need to set manually (will be overwritten!), can be set via `gulp set-header` (but is run automatically on project start up as well)                                                      |
 | VUE_APP_PREFIX            | the desired prefix of the application                                                                                                                        |
