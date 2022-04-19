@@ -53,6 +53,16 @@ function getPortfolioType(primoType) {
       source: 'http://base.uni-ak.ac.at/portfolio/taxonomy/audio_recording',
       label: { de: 'Tonaufnahme', en: 'audio recording' },
     };
+  case 'map':
+    return {
+      source: 'http://base.uni-ak.ac.at/portfolio/taxonomy/illustration',
+      label: { de: 'Illustration', en: 'illustration' },
+    };
+  case 'score':
+    return {
+      source: 'http://base.uni-ak.ac.at/portfolio/taxonomy/illustration',
+      label: { de: 'Illustration', en: 'illustration' },
+    };
   case 'other':
     return {
       source: 'http://base.uni-ak.ac.at/portfolio/taxonomy/artistic_sound_image_data_medium',
@@ -174,6 +184,93 @@ function getPortfolioLang(entryLangs, portfolioLangs) {
 }
 
 /**
+ * Return Boolean **true** if the portfolio type supplied as argument
+ * has an *authors* field to which equivalent data from Primo can be mapped; false otherwise.
+ * @param {*} portfolioType
+ * @returns
+ */
+function typeHasAuthor(portfolioType) {
+  switch (portfolioType) {
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/monograph':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/journal':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/article':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/working_paper':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/image':
+    return false;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/video':
+    return false;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/audio_recording':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/illustration':
+    return false;
+  default:
+    return false;
+  }
+}
+
+/**
+ * Return Boolean **true** if the portfolio type supplied as argument has a *date* field
+ * to which equivalent data from Primo can be mapped; false otherwise.
+ * @param {*} portfolioType
+ * @returns
+ */
+function typeHasYear(portfolioType) {
+  switch (portfolioType) {
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/monograph':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/journal':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/article':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/working_paper':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/image':
+    return false;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/video':
+    return false;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/audio_recording':
+    return false;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/illustration':
+    return false;
+  default:
+    return false;
+  }
+}
+
+/**
+ * Return Boolean **true** if the portfolio type supplied as argument has a *language* field
+ * to which equivalent data from Primo can be mapped; false otherwise.
+ * @param {*} portfolioType
+ * @returns
+ */
+function typeHasLang(portfolioType) {
+  switch (portfolioType) {
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/monograph':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/journal':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/article':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/working_paper':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/image':
+    return false;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/video':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/audio_recording':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/illustration':
+    return false;
+  default:
+    return false;
+  }
+}
+
+/**
  * Converts a library search result record into an object that represents
  * a new entry in portfolio.
  */
@@ -187,16 +284,25 @@ function createPortfolioEntry(record, portfolioLangs) {
     const data = {};
     // map authors, if any
     const authors = getPortfolioAuthors(record.authors, record.lad24);
-    if (authors && authors.length) data.authors = authors;
+    // workaround: add authors only to compabitble types in portfolio
+    if (authors && authors.length && typeHasAuthor(entry.type.source)) {
+      data.authors = authors;
+    }
     // map year, if applicable
     const year = getPortfolioYear(record.year);
-    if (year) data.date = year;
+    // workaround: add year only to compatible types in portfolio
+    if (year && typeHasYear(entry.type.source)) {
+      data.date = year;
+    }
     // map description, if any
     const texts = getPortfolioDescription(record.description);
     if (texts) entry.texts = texts;
     // map language, if any
     const langList = getPortfolioLang(record.language, portfolioLangs);
-    if (langList) data.language = langList;
+    // workaround: add lang only to compatible types in portfolio
+    if (langList && typeHasLang(entry.type.source)) {
+      data.language = langList;
+    }
     // finally, set the data attribute
     entry.data = data;
   }

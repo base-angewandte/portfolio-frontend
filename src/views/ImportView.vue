@@ -127,7 +127,15 @@
                 <td class="definition-column">
                   {{ item.language }}
                 </td>
-              </tr> -->
+              </tr>
+              <tr>
+                <td class="term-column">
+                  Subject
+                </td>
+                <td class="definition-column">
+                  {{ item.subtitle }}
+                </td>
+              </tr>-->
             </tbody>
           </table>
         </template>
@@ -318,7 +326,7 @@ export default {
         const result = {
           id: index,
           title: res.label.toString().substring(0, 255),
-          subtitle: res.author ? res.author.toString().substring(0, 255) : '',
+          subtitle: res.subject ? res.subject.toString().substring(0, 255) : '',
           authors: res.author ? res.author : '',
           year: res.creationdate ? res.creationdate.toString() : '',
           sourceName: res.sourceName ? res.sourceName.toString() : '',
