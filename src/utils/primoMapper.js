@@ -126,10 +126,10 @@ function getPortfolioAuthors(creator, lad24) {
 /**
  * Mapping function that returns the portfolio entry's year, if one can be inferred.
  * @param {*} strDate Maps to docs/{index}/pnx/display/creationdate of the Primo API response body
- * @returns Boolean false if the date cannot be inferred, otherwise the 4-digit year value
+ * @returns Boolean false if the year cannot be inferred, otherwise the year value
  */
 function getPortfolioYear(strDate) {
-  if (strDate && !Number.isNaN(strDate) && strDate.length === 4) return strDate;
+  if (strDate && strDate.match('^[0-9]{1,4}$')) return strDate;
   return false;
 }
 
