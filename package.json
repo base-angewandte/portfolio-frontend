@@ -53,6 +53,7 @@
     "y18n": "^4.0.3"
   },
   "optionalDependencies": {
+    "chromedriver": "^100.0.0",
     "geckodriver": "^3.0.1",
     "nightwatch": "^2.0.5"
   }
