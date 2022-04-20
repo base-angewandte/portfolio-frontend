@@ -35,6 +35,21 @@ module.exports = {
                 .navigateTo(browser.globals.portfolioUrl);
         }
     },
+    // these globals are specific to the 'chrome' (also local) environment.
+    // in fact, they are the same as default ones.
+    'chrome': {
+        isLocal: true,
+        portfolioAdminUrl: process.env.E2E_TESTING_ADMIN_URL,
+        // on localhost, login to admin page first and then navigate to portfolio url
+        login(browser) {
+            browser
+                .navigateTo(browser.globals.portfolioAdminUrl)
+                .setValue('#id_username', browser.globals.appUsername)
+                .setValue('#id_password', browser.globals.appPassword)
+                .click('.submit-row > input:nth-child(2)')
+                .navigateTo(browser.globals.portfolioUrl);
+        }
+    },
 
     // these globals are specific to the staging environment
     'staging': {

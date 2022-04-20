@@ -11,6 +11,8 @@ describe('Test sidebar buttons behaviour', function () {
     before(function (browser) {
         // Login to app
         browser.globals.login(browser);
+        // Ensure wide screen for this test
+        browser.setWindowSize(1500, 800);
     });
 
     it('after login, the logout button should be shown', function (browser) {

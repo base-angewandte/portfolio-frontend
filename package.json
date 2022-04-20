@@ -14,6 +14,7 @@
     "preinstall": "npx npm-force-resolutions",
     "postversion": "./docker-build-and-push.sh",
     "test:local": "npx nightwatch --config ./test/e2e/nightwatch.conf",
+    "test:local-chrome": "npx nightwatch --config ./test/e2e/nightwatch.conf --env chrome",
     "test:staging": "npx nightwatch --config ./test/e2e/nightwatch.conf --env staging"
   },
   "dependencies": {
