@@ -128,14 +128,22 @@
                   {{ item.language }}
                 </td>
               </tr>
-              <tr>
-                <td class="term-column">
-                  Subject
-                </td>
-                <td class="definition-column">
-                  {{ item.subtitle }}
-                </td>
-              </tr>-->
+            <tr>
+              <td class="term-column">
+                ISBN
+              </td>
+              <td class="definition-column">
+                {{ item.isbn }}
+              </td>
+            </tr>
+            <tr>
+              <td class="term-column">
+                Pages
+              </td>
+              <td class="definition-column">
+                {{ item.pages }}
+              </td>
+            </tr> -->
             </tbody>
           </table>
         </template>
@@ -334,6 +342,8 @@ export default {
           lad24: res.lad24 ? res.lad24 : '',
           description: res.description ? res.description : '',
           language: res.language ? res.language : '',
+          isbn: res.isbn ? res.isbn[0] : '',
+          pages: res.pages ? res.pages[0] : '',
         };
         return result;
       });

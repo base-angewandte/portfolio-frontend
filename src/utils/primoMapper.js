@@ -271,6 +271,64 @@ function typeHasLang(portfolioType) {
 }
 
 /**
+ * Return Boolean **true** if the portfolio type supplied as argument has the *ISBN* field
+ * to which equivalent data from Primo can be mapped; false otherwise.
+ * @param {*} portfolioType
+ * @returns
+ */
+function typeHasIsbn(portfolioType) {
+  switch (portfolioType) {
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/monograph':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/journal':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/article':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/working_paper':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/image':
+    return false;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/video':
+    return false;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/audio_recording':
+    return false;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/illustration':
+    return false;
+  default:
+    return false;
+  }
+}
+
+/**
+ * Return Boolean **true** if the portfolio type supplied as argument has the *Pages* field
+ * to which equivalent data from Primo can be mapped; false otherwise.
+ * @param {*} portfolioType
+ * @returns
+ */
+function typeHasPages(portfolioType) {
+  switch (portfolioType) {
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/monograph':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/journal':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/article':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/working_paper':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/image':
+    return false;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/video':
+    return false;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/audio_recording':
+    return false;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/illustration':
+    return false;
+  default:
+    return false;
+  }
+}
+
+/**
  * Converts a library search result record into an object that represents
  * a new entry in portfolio.
  */
@@ -303,6 +361,10 @@ function createPortfolioEntry(record, portfolioLangs) {
     if (langList && typeHasLang(entry.type.source)) {
       data.language = langList;
     }
+    // map isbn
+    if (record.isbn && typeHasIsbn(entry.type.source)) data.isbn = record.isbn;
+    // map pages info
+    if (record.pages && typeHasPages(entry.type.source)) data.pages = record.pages;
     // finally, set the data attribute
     entry.data = data;
   }
