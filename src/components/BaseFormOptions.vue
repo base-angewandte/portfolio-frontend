@@ -29,7 +29,7 @@
         </BaseDropButton>
 
         <BaseButton
-          v-if="!isPublished && !showroomId"
+          v-if="!isPublished || !showroomId"
           :disabled="isNewForm"
           :text="$tc('publish')"
           :has-background-color="false"
