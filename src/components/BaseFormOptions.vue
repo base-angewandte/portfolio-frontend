@@ -29,7 +29,7 @@
         </BaseDropButton>
 
         <BaseButton
-          v-if="!isPublished"
+          v-if="!isPublished && !showroomId"
           :disabled="isNewForm"
           :text="$tc('publish')"
           :has-background-color="false"
@@ -40,7 +40,7 @@
           @clicked="$emit('action-entry', 'publish')" />
 
         <BaseDropButton
-          v-if="isPublished"
+          v-if="isPublished && showroomId"
           :disabled="isNewForm"
           :buttons="[{
             label: $tc('offline'),
@@ -86,6 +86,10 @@ export default {
       default: false,
     },
     formType: {
+      type: String,
+      default: '',
+    },
+    showroomId: {
       type: String,
       default: '',
     },

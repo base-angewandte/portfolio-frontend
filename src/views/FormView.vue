@@ -13,6 +13,7 @@
         :is-new-form="$store.state.data.isNewForm"
         :is-published="valueList.published"
         :default-expanded="false"
+        :showroom-id="showroomId"
         class="base-form-options"
         @action-entry="actionEntry" />
       <div
