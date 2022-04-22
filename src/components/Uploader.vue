@@ -1,36 +1,24 @@
 <template>
-  <BasePopUp
+  <BaseUploadPopUp
+    ref="uploadPopUp"
     :show="!!fileList.length"
-    :title="$t('upload.title')"
-    @close="cancelUpload()">
-    <transition-group name="list-complete">
-      <div
-        v-if="userQuotaExceeded"
-        key="user-warning"
-        class="base-uploader-user-warning">
-        <FailIcon
-          class="icon base-uploader-user-warning-icon" />
-        {{ $t('upload.quotaExceeded', { space: convertDiskSpace(userSpace) }) }}
-      </div>
-      <div
-        key="upload-area"
-        class="popup-upload-area">
-        <transition-group
-          name="bar-move"
-          class="transition">
-          <BaseProgressBar
-            v-for="(file, index) of fileList"
-            :key="file.name"
-            :progress="uploadPercentage[index]"
-            :file-name="file.name"
-            :file-size="userQuotaExceeded ? convertDiskSpace(file.size) : ''"
-            :status="getStatus(file.name)"
-            :show-remove="isInitial"
-            class="upload-bar"
-            @remove-item="removeFile(index)" />
-        </transition-group>
-      </div>
-    </transition-group>
+    :cancel-text="$t('cancel')"
+    :upload-text="{
+      title: 'upload.title',
+      upload: 'upload.upload',
+      done: 'upload.done',
+      retry: 'upload.retry',
+      quotaExceeded: 'upload.quotaExceeded',
+    }"
+    :current-status="currentStatus"
+    :file-list="fileList"
+    :rejected-files="rejectedFiles"
+    :user-space="userSpace"
+    :upload-percentage="uploadPercentage"
+    :uploaded-files="uploadedFiles"
+    @cancelUpload="cancelUpload"
+    @removeFile="removeFile"
+    @startUpload="startUpload">
     <div
       key="popup-text"
       class="popup-text">
@@ -55,52 +43,19 @@
         :is-disabled="!isInitial"
         class="upload-dropdown" />
     </div>
-    <template
-      slot="button-row">
-      <BaseButton
-        v-if="isInitial || isFailed"
-        :text="$t('cancel')"
-        :icon="'remove'"
-        :icon-position="'right'"
-        :icon-size="'small'"
-        class="base-upload-bar-button"
-        @clicked="cancelUpload" />
-      <!-- @event buttonRight -->
-      <BaseButton
-        ref="uploadButton"
-        :text="buttonText"
-        :icon="!isSaving && !isFailed ? 'check-mark' : ''"
-        :icon-position="'right'"
-        :icon-size="'small'"
-        :disabled="isSaving || userQuotaExceeded"
-        class="base-upload-bar-button"
-        @clicked="startUpload">
-        <template
-          v-if="isSaving"
-          slot="right-of-text">
-          <span class="base-upload-bar-loader">
-            <BaseLoader />
-          </span>
-        </template>
-      </BaseButton>
-    </template>
-  </BasePopUp>
+  </BaseUploadPopUp>
 </template>
 
 <script>
 import axios from 'axios';
-import FailIcon from '../assets/icons/attention.svg?inline';
-import { convertSpace } from '../utils/commonUtils';
 
-const STATUS_INITIAL = 0;
-const STATUS_SAVING = 1;
-const STATUS_SUCCESS = 2;
-const STATUS_FAILED = 3;
+const STATUS_INITIAL = 'initial';
+const STATUS_SAVING = 'saving';
+const STATUS_SUCCESS = 'success';
+const STATUS_FAILED = 'failed';
 
 export default {
-  components: {
-    FailIcon,
-  },
+  components: {},
   props: {
     fileList: {
       type: Array,
@@ -164,12 +119,12 @@ export default {
   },
   updated() {
     if (this.isSuccess) {
-      this.$refs.uploadButton.$el.focus();
+      this.$refs.uploadPopUp.$refs.uploadButton.$el.focus();
     }
   },
   methods: {
     async startUpload() {
-      // check if all files were sucessfully uploaded already
+      // check if all files were successfully uploaded already
       if (this.uploadedFiles.length && !this.rejectedFiles.length) {
         this.$emit('success');
       } else {
@@ -284,33 +239,12 @@ export default {
     removeFile(index) {
       this.fileList.splice(index, 1);
     },
-    convertDiskSpace(bytes) {
-      return convertSpace(bytes, true);
-    },
   },
 };
 </script>
 
 <style lang="scss" scoped>
   @import "../styles/variables.scss";
-
-  .base-uploader-user-warning {
-    color: #ff4444;
-    fill: #ff4444;
-    margin-bottom: $spacing;
-    display: flex;
-    align-items: center;
-
-    .icon {
-      max-height: $icon-large;
-      width: $icon-large;
-
-      &.base-uploader-user-warning-icon {
-        margin-right: $spacing-small;
-        flex: 0 0 auto;
-      }
-    }
-  }
 
   .popup-text {
     display: flex;
@@ -325,67 +259,5 @@ export default {
 
   .popup-text > div:first-of-type {
     margin-right: $spacing;
-  }
-
-  .files-popup-input-field {
-    margin-bottom: $spacing;
-  }
-
-  .popup-upload-area {
-    max-height: ($row-height-small + $spacing) * 10;
-    overflow-y: auto;
-
-    .upload-bar:not(:last-child) {
-      margin-bottom: $spacing;
-    }
-  }
-
-  .base-upload-bar-button {
-    flex-basis: 100%;
-
-    .base-upload-bar-loader {
-      position: relative;
-      transform: scale(0.5);
-      margin-left: $spacing;
-      padding-left: $spacing;
-    }
-  }
-
-  .base-upload-bar-button + .base-upload-bar-button {
-    margin-left: $spacing;
-  }
-
-  .list-complete-enter, .list-complete-leave-to {
-    opacity: 0;
-    transform: translateY(-30px);
-  }
-
-  .list-complete-leave-active {
-    position: absolute;
-  }
-
-  .list-complete-move {
-    transition: all 500ms;
-  }
-
-  .transition {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .bar-move-leave-active {
-    opacity: 0;
-    transition: all 300ms;
-  }
-
-  @media screen and (max-width: $mobile) {
-    .popup-upload-area {
-      max-height: ($row-height-small + $spacing) * 5;
-    }
-
-    .base-upload-bar-button + .base-upload-bar-button {
-      margin-left: 0;
-      margin-top: $spacing;
-    }
   }
 </style>

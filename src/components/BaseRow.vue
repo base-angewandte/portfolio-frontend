@@ -5,7 +5,7 @@
       class="base-row-header">
       <BaseMenuEntry
         :entry-id="'asingleentry'"
-        :icon="'sheet-empty'"
+        :icon="'file-object'"
         :title="showOverlay ? '' : title"
         :title-bold="true"
         :is-activatable="false"

@@ -86,6 +86,7 @@ In the `.env` file contained in the project folder the following variables can b
 | VUE_APP_BACKEND_PREFIX      | a prefix for the backend                                                                                                 |
 | VUE_APP_HEADER_URL_TERMS      | to link to terms and conditions                                                                                                                                                |
 | VUE_APP_HEADER_URL_NOTICE     | to link to site legal notice                                                                                                                              |
+| VUE_APP_HEADER_LOGOUT_REDIRECT_URL     | url to redirect after logout                                                                                                                |
 | VUE_APP_HEADER_JSON           | json file url where the latest header version is specified                                                                                                                                  |
 | VUE_APP_HEADER                | the complete header url, no need to set manually (will be overwritten!), can be set via `gulp set-header` (but is run automatically on project start up as well)                                                      |
 | VUE_APP_PREFIX            | the desired prefix of the application                                                                                                                        |
@@ -94,6 +95,8 @@ In the `.env` file contained in the project folder the following variables can b
 | VUE_APP_DEFAULT_LOCALE        | a default language if one should be set (else the browser language will be used)                                                                            |
 | VUE_APP_EN_TITLE_CASING        | as per default with locale set to english, all text except complete sentences will be title-cased. Set false to turn this behaviour off.                                                                            |
 | VUE_DEFAULT_LISTS  | Please dont edit this value directly but via [default_lists.json](config/default_lists.json) in the `/config` folder. It contains all default values for customizable drop down lists - this is set via `gulp set-default-lists` (run automatically on project start up). As per default the JSON file contains:<br><br>CONTRIBUTORS_DEFAULT*: a default displayed for all contributor fields (Contributors and Roles (e.g. authors, architects)<br><br>LOCATION_DEFAULT*: a default displayed for the location input field <br><br>required attributes for each default entry: label, optional: source, additional|
+| VUE_APP_ARCHIVE_UPLOAD | Enables or disables long-term archival of assets in the application. When this variable is set to **true**, the "Push to Archive" button becomes available in the attachment area of an entry. |
+| VUE_APP_SHOWROOM_URL          | url to showroom page                                                                                                                                     |
 
 (*if there are any other dynamic autocomplete fields in the future, defaults can be added as {backend property name}_DEFAULT as well)
 

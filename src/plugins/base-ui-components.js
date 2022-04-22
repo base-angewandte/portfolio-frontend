@@ -4,6 +4,7 @@ import {
   BaseButton,
   BaseChipsBelow,
   BaseDatePanel,
+  BaseDropButton,
   BaseDropDownList,
   BaseFormFieldCreator,
   BaseImageBox,
@@ -33,6 +34,7 @@ import {
   BasePopUp,
   BaseSelectOptions,
   BaseUploadBar,
+  BaseUploadPopUp,
   BaseBoxTooltip,
   BaseChip,
   BaseDateInput,
@@ -44,6 +46,7 @@ import {
   BaseProgressBar,
   BaseSwitchButton,
 } from 'base-ui-components';
+// TODO: import component css separately!
 import 'base-ui-components/dist/base-ui-components-common.css';
 import 'base-ui-components/dist/base-ui-components.css';
 
@@ -51,6 +54,7 @@ Vue.use(BaseAutocompleteInput);
 Vue.use(BaseButton);
 Vue.use(BaseChipsBelow);
 Vue.use(BaseDatePanel);
+Vue.use(BaseDropButton);
 Vue.use(BaseDropDownList);
 Vue.use(BaseFormFieldCreator);
 Vue.use(BaseImageBox);
@@ -80,6 +84,7 @@ Vue.use(BaseMenuList);
 Vue.use(BasePopUp);
 Vue.use(BaseSelectOptions);
 Vue.use(BaseUploadBar);
+Vue.use(BaseUploadPopUp);
 Vue.use(BaseBoxTooltip);
 Vue.use(BaseChip);
 Vue.use(BaseDateInput);

@@ -10,25 +10,19 @@
           <BaseButton
             :text="$t('returnHome')"
             background-color="rgb(240, 240, 240)"
+            icon="home"
+            icon-size="large"
+            icon-position="right"
             class="info-button"
-            @clicked="returnToBase">
-            <template
-              slot="right-of-text">
-              <HomeIcon
-                class="info-button-icon" />
-            </template>
-          </BaseButton>
+            @clicked="returnToBase" />
           <BaseButton
             :text="$t('refresh')"
             background-color="rgb(240, 240, 240)"
+            icon="refresh"
+            icon-size="large"
+            icon-position="right"
             class="info-button"
-            @clicked="refreshPage">
-            <template
-              slot="right-of-text">
-              <RefreshIcon
-                class="info-button-icon" />
-            </template>
-          </BaseButton>
+            @clicked="refreshPage" />
         </div>
       </div>
     </div>
@@ -36,14 +30,7 @@
 </template>
 
 <script>
-import HomeIcon from '../assets/icons/home.svg?inline';
-import RefreshIcon from '../assets/icons/refresh.svg?inline';
-
 export default {
-  components: {
-    HomeIcon,
-    RefreshIcon,
-  },
   methods: {
     refreshPage() {
       window.location.href = `${process.env.VUE_APP_PREFIX}/`;

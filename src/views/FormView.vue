@@ -13,6 +13,7 @@
         :is-new-form="$store.state.data.isNewForm"
         :is-published="valueList.published"
         :default-expanded="false"
+        :showroom-id="showroomId"
         class="base-form-options"
         @action-entry="actionEntry" />
       <div
@@ -71,27 +72,24 @@
         @values-changed="handleInput($event)"
         @fetch-autocomplete="fetchAutocomplete" />
 
-      <transition-group
-        name="slide-fade-form">
-        <!-- SAVE ROW (only on mobile) -->
-        <BaseRow
-          v-if="!formIsLoading && formDataPresent"
-          key="mobile-save-row"
-          :unsaved-changes="unsavedChanges"
-          :is-saving="dataSaving"
-          :show-title="false"
-          class="mobile-save-row"
-          @save="saveForm"
-          @return="returnFromForm" />
+      <!-- SAVE ROW (only on mobile) -->
+      <BaseRow
+        v-if="!formIsLoading && formDataPresent"
+        key="mobile-save-row"
+        :unsaved-changes="unsavedChanges"
+        :is-saving="dataSaving"
+        :show-title="false"
+        class="mobile-save-row"
+        @save="saveForm"
+        @return="returnFromForm" />
 
-        <!-- ATTACHMENTS -->
-        <AttachmentArea
-          v-if="!formIsLoading && formDataPresent"
-          key="attachments"
-          @open-new-form="openNewForm"
-          @show-preview="$emit('show-preview', $event)"
-          @open-linked="goToLinked" />
-      </transition-group>
+      <!-- ATTACHMENTS -->
+      <AttachmentArea
+        v-if="!formIsLoading && formDataPresent"
+        key="attachments"
+        @open-new-form="openNewForm"
+        @show-preview="$emit('show-preview', $event)"
+        @open-linked="goToLinked" />
       <transition name="slide-child-form">
         <BaseForm
           v-if="showOverlay"
@@ -118,7 +116,7 @@
             ? parent.type.label[$i18n.locale] : ''"
           :show-thumbnails="false"
           entry-id="parentheader"
-          icon="sheet-empty" />
+          icon="file-object" />
       </div>
 
       <!-- HEADER ROW -->
@@ -180,9 +178,32 @@ export default {
     attachmentHandlingMixin,
     entryHandlingMixin,
   ],
+  provide() {
+    // Provide properties/methods of the FormView to child components (currently,
+    // ArchivalValidationForm) since the latter is a smaller version of
+    // the main form. This is to make it possible to reuse the same methods
+    // to handle user input and auto-suggestions for drop-down lists (#916).
+    const reactive = {};
+    Object.defineProperty(reactive, 'fieldIsLoading', {
+      enumerable: true,
+      get: () => this.fieldIsLoading,
+    });
+    Object.defineProperty(reactive, 'valueList', {
+      enumerable: true,
+      get: () => this.valueList,
+    });
+    return {
+      dropDownListsMain: this.dropDownListsInt,
+      fetchAutocompleteMain: this.fetchAutocomplete,
+      handleInputMain: this.handleInput,
+      saveMainForm: this.saveForm,
+      discardMainForm: this.discardUnsavedChanges,
+      localesMain: this.locales,
+      reactive,
+    };
+  },
   data() {
     return {
-      dataSaving: false,
       valueList: {},
       // original data object to compare (unsaved changes) or reset
       valueListOriginal: {},
@@ -204,7 +225,15 @@ export default {
       prefetchedDropDownLists: {},
       // store previous form fields in a variable in case type is deleted inbetween
       previousFormFields: {},
-      // store previous contributor entries that did not have any roles assigned
+      // store previous contributor entries that did not have any roles assigned (this is necessary
+      // in order to be able to perfectly restore the valueList after switching a type back and
+      // forth (e.g. type: 'Album' - person is entered in special field 'authors' and in
+      // 'contributors' field without any roles assigned - on type switch (e.g. 'architectural
+      // model') contributors is assigned the role 'author' - if I then switch back to type 'album'
+      // i need the entry split again into special field 'authors' and 'contributors' without roles
+      // likewise special field entries that were only added to contributors on type switch should
+      // be removed again when switching back --> this variable makes it possible to distinguish
+      // between the two
       emptyMappingFields: {},
       /**
        * store if the currentItemId has changed (on switching between entries or page reload)
@@ -332,6 +361,12 @@ export default {
     },
     fieldsList() {
       return { ...this.formFields, ...this.formFieldsExtension };
+    },
+    dataSaving() {
+      return this.$store.getters['data/getIsFormSaving'];
+    },
+    showroomId() {
+      return this.valueList.showroom_id ? this.valueList.showroom_id : '';
     },
   },
   watch: {
@@ -463,6 +498,11 @@ export default {
     dropDownFieldsList() {
       this.setDefaultDropDownLists();
       this.setDropDownValues();
+    },
+    // watch for unsaved changes and update the store property
+    // isFormSaved with the opposite Boolean value
+    unsavedChanges() {
+      this.$store.commit('data/setIsFormSaved', !this.unsavedChanges);
     },
   },
   async beforeCreate() {
@@ -637,14 +677,16 @@ export default {
           if (newDataHasFieldContent || (!newDataHasFieldContent && originalDataHasFieldContent)
             || (xAttrs.field_type === 'group')) {
             // if necessary update emptyFieldsList
-            if (this.emptyMappingFields[key]) {
+            if (this.emptyMappingFields[key] && this.emptyMappingFields[key].length) {
               // if a value in contributors was deleted also remove it from empty fields list
-              if (originalDataObject[key].length > value.length) {
+              if (originalDataObject[key] && originalDataObject[key].length > value.length) {
                 this.$set(this.emptyMappingFields, key, this.emptyMappingFields[key]
                   .filter((id) => value.map((val) => val.source || val.label).includes(id)));
               }
               // take care if roles are not empty anymore
               value.forEach((val) => {
+                // TODO: this needs to be adapted should there ever be other mapping fields other
+                // than contributors - roles
                 if (val.roles && val.roles.length
                   && this.emptyMappingFields[key].includes(val.source || val.label)) {
                   this.$set(this.emptyMappingFields, key, this.emptyMappingFields[key]
@@ -660,7 +702,7 @@ export default {
     async saveForm(routeToNewEntry = true) {
       // check if there is a title (only requirement for saving)
       if (this.valueList.title) {
-        this.dataSaving = true;
+        this.$store.commit('data/setIsFormSaving', true);
         const validData = await this.$store.dispatch('data/removeUnknownProps', { data: this.valueList, fields: this.formFields });
         try {
           // check if the route indicates an already saved entry or a new entry
@@ -715,7 +757,7 @@ export default {
             type: 'success',
           });
           this.valueListOriginal = { ...JSON.parse(JSON.stringify(this.valueList)) };
-          this.dataSaving = false;
+          this.$store.commit('data/setIsFormSaving', false);
           return true;
         } catch (e) {
           console.error(e);
@@ -725,7 +767,7 @@ export default {
             text: e.message,
             type: 'error',
           });
-          this.dataSaving = false;
+          this.$store.commit('data/setIsFormSaving', false);
           return false;
         }
       } else {
@@ -789,6 +831,14 @@ export default {
       this.$router.push(`/entry/${id}`);
     },
     async actionEntry(action) {
+      if (action === 'openInShowroom') {
+        window.open(
+          `${process.env.VUE_APP_SHOWROOM_URL}/${this.showroomId}`,
+          '_blank',
+        );
+        return;
+      }
+
       if (!(action === 'publish' && this.unsavedChanges)) {
         this.confirmAction({ action, entries: [].concat(this.valueList) });
       } else {
@@ -1185,15 +1235,31 @@ export default {
       // (needed for both sides of mapping)
       const commonFieldData = this.valueList.data[commonFieldName];
 
-      // check if there are contributor fields that dont have roles assigned
+      // check if there are contributor fields that dont have no spezialized field (e.g. 'roles')
+      // values assigned
       this.$set(this.emptyMappingFields, commonFieldName, [
+        // get previous emptyMappingField entries
         ...this.emptyMappingFields[commonFieldName] || [],
+        // and add the ones from the valueList that are currently 'empty fields' (e.g. no roles)
         ...commonFieldData
           .reduce((array, entry) => {
+            // take an identifier that is available (for externally fetched entries id attribute,
+            // for others the label string)
             const entryId = entry[idProp] || entry[labelProp];
+            // check if the 'special field' (e.g. 'roles') does not have data in it (since this
+            // is the whole purpose - to save fields that dont have 'special field' entries - so
+            // they can be restored when the 'type' is switched back (after a different type might
+            // have added a role (because otherwise empty 'general field' entries without 'special
+            // field' (e.g. roles) entries assigned will be deleted))
             if ((!entry[fieldProp] || !entry[fieldProp].length)
+              // and the emtpyMappingFields variable does not have an entry for that general field
+              // (e.g. contributors) already
               && (!this.emptyMappingFields[commonFieldName]
+                // or the entry of that general field (e.g. contributors) does not include an entry
+                // with the entry id
                 || !this.emptyMappingFields[commonFieldName].includes(entryId))) {
+              // then add a new entry to the 'general field' (e.g. contributors) array of the
+              // emptyMappingFields variable with the id of that entry
               return array.concat([entry[idProp] || entry[labelProp]]);
             }
             return array;
@@ -1295,7 +1361,9 @@ export default {
                   // remove entry from equivalent list
                   equivalentEntry[fieldProp].splice(fieldPropIndex, 1);
                   // after that also check if there are actually any roles left - if not
-                  // delete entry from common field
+                  // delete entry from common field (if! it is not in the emptyMappingFields
+                  // (= present in the general field (e.g. 'contributors') before the type
+                  // switch)
                   if (!equivalentEntry[fieldProp].length
                     && !this.emptyMappingFields[commonFieldName]
                       .includes(newFieldEntry.source || newFieldEntry.label)) {
@@ -1325,6 +1393,14 @@ export default {
           default: formFields[fieldName]['x-attrs'][defaultProp],
         }));
     },
+    /**
+     * Discard any unsaved changes and revert to the most recently saved values.
+     */
+    discardUnsavedChanges() {
+      this.formIsLoading = true;
+      this.valueList = JSON.parse(JSON.stringify(this.valueListOriginal));
+      this.formIsLoading = false;
+    },
   },
 };
 </script>
@@ -1341,11 +1417,12 @@ export default {
       position: sticky;
       top: $header-height;
       z-index: map-get($zindex, form-header-row);
-      padding: $spacing 0 $spacing-small;
+      padding: $spacing 0 0;
       order: 0;
 
       &.form-head-shadow {
         box-shadow: 0 8px 8px -8px rgba(0,0,0,0.25);
+        padding-bottom: $spacing-small;
       }
 
       .base-row-parent {
@@ -1380,7 +1457,7 @@ export default {
       margin-top: -$spacing-small;
       order: 1;
       .base-form-options {
-        margin-bottom: $spacing-small;
+        margin: $spacing-small 0;
       }
 
       .form-loading-area {
@@ -1389,7 +1466,7 @@ export default {
         height: 100%;
         min-height: 100vh;
         z-index: map-get($zindex, loader);
-        background-color: rgba(255,255,255, 0.50);
+        background-color: $loading-background;
 
         .loader {
           position: fixed;

@@ -12,7 +12,7 @@
           :active="isNewForm"
           :text="$t('new')"
           :disabled="isLoading"
-          icon="sheet-plus"
+          icon="add-new-object"
           icon-size="large"
           class="base-row-button"
           button-style="row"
@@ -22,17 +22,25 @@
           :show-image="true"
           :placeholder="$t('search')"
           class="search-bar"
-          @input-change="filterEntries($event, 'title')" />
+          @input="filterEntries($event, 'title')" />
       </div>
       <div class="sidebar-options-container">
         <BaseOptions
           ref="baseOptions"
-          :always-show-options-button="true"
           :show-options="showCheckbox"
           :options-hidden="optionsDisabled"
-          :show-after-options-inline="showDropDownsInline"
+          :use-options-button-on="'always'"
+          :show-after-options-below="true"
+          :options-button-icon="{
+            show: 'options-menu',
+            hide: 'options-menu',
+          }"
+          :options-button-text="{
+            show: 'options',
+            hide: 'options',
+          }"
           align-options="left"
-          @options-toggle="toggleSidebarOptions">
+          @update:show-options="toggleSidebarOptions">
           <template slot="afterOptions">
             <div
               ref="afterOptions"
@@ -122,12 +130,31 @@
         id="menu-list"
         key="menu-list"
         ref="menuList"
-        :selected="selectActive || showCheckbox"
+        :select-active="selectActive || showCheckbox"
         :list="listInt"
         :active-entry="activeEntry"
         :selected-list="selectedList"
         @clicked="showEntry"
-        @selected="selectEntry" />
+        @selected="selectEntry">
+        <template
+          v-slot:thumbnails="{ item }">
+          <base-icon
+            v-if="item.shared"
+            name="people" />
+          <base-icon
+            v-if="item.published"
+            name="eye" />
+          <base-icon
+            v-if="item.error"
+            name="attention" />
+          <base-icon
+            v-if="item.has_media"
+            name="attachment" />
+          <base-icon
+            v-if="item.archive_URI && getIsArchivalEnabled"
+            name="archive-sheets" />
+        </template>
+      </BaseMenuList>
       <div
         v-else-if="!isLoading"
         class="no-entries">
@@ -139,7 +166,6 @@
         </p>
       </div>
     </div>
-
     <BasePagination
       v-if="pageTotal > 1"
       ref="pagination"
@@ -151,6 +177,7 @@
 
 <script>
 import axios from 'axios';
+import { mapGetters } from 'vuex';
 import { entryHandlingMixin } from '@/mixins/entryHandling';
 import { userInfo } from '@/mixins/userInfo';
 import { getLangLabel } from '@/utils/commonUtils';
@@ -232,12 +259,14 @@ export default {
       entriesExist: false,
       noEntriesTitle: '',
       noEntriesSubtext: '',
-      showDropDownsInline: true,
       // to have shadow when sidebar list below sidebar head
       sidebarBelow: false,
     };
   },
   computed: {
+    ...mapGetters('data', [
+      'getIsArchivalEnabled',
+    ]),
     showCheckbox() {
       return this.$store.state.data.showOptions;
     },
@@ -299,10 +328,17 @@ export default {
     isMobile() {
       return this.windowWidth && this.windowWidth <= 640;
     },
+    ...mapGetters('data', [
+      'getCurrentItemData',
+    ]),
   },
   watch: {
     list(val) {
-      this.listInt = [].concat(val);
+      this.listInt = val.map((entry) => ({
+        ...entry,
+        icon: entry.icon && entry.icon.includes('calendar-many')
+          ? 'calendar-many' : 'file-object',
+      }));
     },
     showCheckbox(val) {
       // delete selected when options menu is closed and reset select all
@@ -326,9 +362,24 @@ export default {
       this.calculateSidebarHeight();
       this.fetchSidebarData();
     },
+    getCurrentItemData(val) {
+      // whenever the active store entry gets an archive_URI,
+      // find the relevant menu entry in sidebar and set the archive_URI property
+      // so as to display the "archived" icon
+      if (val && val.archive_URI) {
+        const archivedEntryIndex = this.listInt.findIndex((entry) => entry.id === val.id);
+        if (this.listInt[archivedEntryIndex]) {
+          this.listInt[archivedEntryIndex].archive_URI = val.archive_URI;
+        }
+      }
+    },
   },
   mounted() {
-    this.listInt = this.list;
+    this.listInt = this.list.map((entry) => ({
+      ...entry,
+      icon: entry.icon && entry.icon.includes('calendar-many')
+        ? 'calendar-many' : 'file-object',
+    }));
     this.calculateSidebarHeight();
     this.$store.dispatch('data/fetchEntryTypes');
     this.fetchSidebarData();
@@ -480,7 +531,12 @@ export default {
           response = await this.dataRequest(offset);
         }
         this.listInt = response.results
-          .map((entry) => ({ ...entry, description: entry.type && entry.type.label ? getLangLabel(entry.type.label) : '' }));
+          .map((entry) => ({
+            ...entry,
+            description: entry.type && entry.type.label ? getLangLabel(entry.type.label) : '',
+            icon: entry.icon && entry.icon.includes('calendar-many')
+              ? 'calendar-many' : 'file-object',
+          }));
         this.entryNumber = response.count;
         if (!this.entryNumber) {
           this.setInfoText();
@@ -632,7 +688,7 @@ export default {
       height: 100%;
       width: 100%;
       z-index: map-get($zindex, loader);
-      background-color: rgba(255,255,255, 0.50);
+      background-color: $loading-background;
     }
   }
 
