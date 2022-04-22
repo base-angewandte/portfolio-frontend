@@ -31,13 +31,13 @@
         <BaseButton
           v-if="!isPublished || !showroomId"
           :disabled="isNewForm"
-          :text="$tc('publish')"
+          :text="isPublished ? $tc('offline') : $tc('publish')"
           :has-background-color="false"
           :button-text-wrap="false"
           icon-size="large"
           icon="eye"
           button-style="single"
-          @clicked="$emit('action-entry', 'publish')" />
+          @clicked="$emit('action-entry', isPublished ? 'offline' : 'publish')" />
 
         <BaseDropButton
           v-if="isPublished && showroomId"
