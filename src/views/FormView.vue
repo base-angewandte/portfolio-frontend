@@ -364,6 +364,9 @@ export default {
     dataSaving() {
       return this.$store.getters['data/getIsFormSaving'];
     },
+    showroomId() {
+      return this.valueList.showroom_id ? this.valueList.showroom_id : '';
+    },
   },
   watch: {
     formFields() {
@@ -827,6 +830,14 @@ export default {
       this.$router.push(`/entry/${id}`);
     },
     async actionEntry(action) {
+      if (action === 'openInShowroom') {
+        window.open(
+          `${process.env.VUE_APP_SHOWROOM_URL}/${this.showroomId}`,
+          '_blank',
+        );
+        return;
+      }
+
       if (!(action === 'publish' && this.unsavedChanges)) {
         this.confirmAction({ action, entries: [].concat(this.valueList) });
       } else {

@@ -110,6 +110,7 @@
     "licenseButton": "Change License",
     "publishButton": "Change Release State",
     "archiveButton": "View in Archive",
+    "showroomButton": "View in Showroom",
     "deleteButton": "Delete",
     "deleteLinkedText": "Please select entries:",
     "deleteLinkedSubtext": "The link to these entries will be deleted.",
