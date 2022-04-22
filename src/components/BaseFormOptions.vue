@@ -29,7 +29,7 @@
         </BaseDropButton>
 
         <BaseButton
-          v-if="!isPublished || !!showroomId"
+          v-if="!isPublished || !showroomId"
           :disabled="isNewForm"
           :text="isPublished ? $tc('offline') : $tc('publish')"
           :has-background-color="false"
@@ -39,7 +39,7 @@
           button-style="single"
           @clicked="$emit('action-entry', isPublished ? 'offline' : 'publish')" />
 
-        <!--BaseDropButton
+        <BaseDropButton
           v-if="isPublished && showroomId"
           :disabled="isNewForm"
           :buttons="[{
@@ -52,7 +52,7 @@
             icon: 'share',
           }]"
           primary-button="offline"
-          @clicked="$emit('action-entry', $event)" /-->
+          @clicked="$emit('action-entry', $event)" />
 
         <BaseButton
           :disabled="isNewForm"
