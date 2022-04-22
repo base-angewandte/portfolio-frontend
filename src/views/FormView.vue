@@ -366,7 +366,7 @@ export default {
       return this.$store.getters['data/getIsFormSaving'];
     },
     showroomId() {
-      return this.valueList.showroom_id ? this.valueList.showroom_id : '';
+      return !!this.valueList.showroom_id ? this.valueList.showroom_id : '';
     },
   },
   watch: {
