@@ -128,22 +128,22 @@
                   {{ item.language }}
                 </td>
               </tr>
-            <tr>
-              <td class="term-column">
-                ISBN
-              </td>
-              <td class="definition-column">
-                {{ item.isbn }}
-              </td>
-            </tr>
-            <tr>
-              <td class="term-column">
-                Pages
-              </td>
-              <td class="definition-column">
-                {{ item.pages }}
-              </td>
-            </tr> -->
+              <tr>
+                <td class="term-column">
+                  ISBN
+                </td>
+                <td class="definition-column">
+                  {{ item.isbn }}
+                </td>
+              </tr>
+              <tr>
+                <td class="term-column">
+                  Pages
+                </td>
+                <td class="definition-column">
+                  {{ item.pages }}
+                </td>
+              </tr> -->
             </tbody>
           </table>
         </template>

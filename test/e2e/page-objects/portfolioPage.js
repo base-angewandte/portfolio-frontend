@@ -32,6 +32,10 @@ module.exports = {
             selector: '.success.notification',
             suppressNotFoundErrors: true
         },
+        closeNotificationButton: {
+            selector: '.notification-close',
+            suppressNotFoundErrors: true
+        },
         // Import-specific
         importSearchBox: {
             selector: '[data-e2e-import-search-box]',
@@ -91,6 +95,27 @@ module.exports = {
         },
         selectedEntriesCount: {
             selector: '[data-e2e-import-results-options] .base-select-options__number-selected',
+            suppressNotFoundErrors: true
+        },
+        // specific to a page that contains the entry's form
+        titleSelector: {
+            selector: 'input[id="title_0_main"]',
+            suppressNotFoundErrors: true
+        },
+        subtitleSelector: { 
+            selector: 'input[id="subtitle_1_main"]',
+            suppressNotFoundErrors: true
+        },
+        dateSelector: {
+            selector: 'input[id="Date-date_3_extended"]',
+            suppressNotFoundErrors: true 
+        },
+        isbnSelector: {
+            selector: 'input[id="isbn_5_extended"]',
+            suppressNotFoundErrors: true
+        },
+        pagesSelector: {
+            selector: 'input[id="pages_10_extended"]',
             suppressNotFoundErrors: true
         },
     },
