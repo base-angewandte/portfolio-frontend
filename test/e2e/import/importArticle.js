@@ -32,11 +32,11 @@
         const page = browser.page.portfolioPage();
         page
             .setValue('@importSearchInput', searchValue)
-            .waitForElementVisible('@resultsAccordion')
+            .waitForElementVisible('@resultsAccordion', 12000)
             .click('@firstCheckBox')
             .click('@runImportButton')
             .assert.visible('@successNotification')
-            .click('@closeNotificationButton')
+            .click('@closeNotificationButton');
     });
 
     it('after importing 1 entry of type article, the portfolio entry type should be article', function(browser) {

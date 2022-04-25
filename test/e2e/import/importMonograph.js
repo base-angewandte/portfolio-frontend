@@ -33,7 +33,7 @@
         const page = browser.page.portfolioPage();
         page
             .setValue('@importSearchInput', searchValue)
-            .waitForElementVisible('@resultsAccordion')
+            .waitForElementVisible('@resultsAccordion', 12000)
             .click('@firstCheckBox')
             .click('@runImportButton')
             .assert.visible('@successNotification')

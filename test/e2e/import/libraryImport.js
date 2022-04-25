@@ -31,7 +31,7 @@ describe('Test library import', function () {
         const page = browser.page.portfolioPage();
         page
             .setValue('@importSearchInput', browser.globals.dummyText)
-            .waitForElementVisible('@noResultsSelector')
+            .waitForElementVisible('@noResultsSelector', 12000)
             // no results found text should be visible
             .assert.textContains('@noResultsSelector', 'No Results Found')
             // results accordion, options, and pagination should not be present
@@ -47,7 +47,7 @@ describe('Test library import', function () {
             // accordion and options should be present
             .waitForElementVisible('@loadingSelector')
             .waitForElementVisible('@resultBoxOptions')
-            .waitForElementVisible('@resultsAccordion')
+            .waitForElementVisible('@resultsAccordion', 12000)
             .assert.elementPresent('@resultBoxOptions')
             .assert.elementPresent('@resultsAccordion')
             // 'no results found' div should not be present
@@ -77,7 +77,7 @@ describe('Test library import', function () {
         page
             .setValue('@importSearchInput', browser.globals.searchText)
             // wait for results
-            .waitForElementVisible('@resultsAccordion')
+            .waitForElementVisible('@resultsAccordion', 12000)
             .click('@clearIconSelector')
             .assert.not.elementPresent('@resultBoxOptions')
             .assert.not.elementPresent('@resultsAccordion')
@@ -89,7 +89,7 @@ describe('Test library import', function () {
         const page = browser.page.portfolioPage();
         page
             .setValue('@importSearchInput', browser.globals.searchText)
-            .waitForElementVisible('@resultsAccordion')
+            .waitForElementVisible('@resultsAccordion', 12000)
             .click('@selectAllButton')
             .assert.selected('@checkBoxes', 'All check boxes are selected.')
             .assert.textContains('@selectAllButton', 'Select None', '"Select All" changed to "Select None".')
@@ -101,7 +101,7 @@ describe('Test library import', function () {
         const page = browser.page.portfolioPage();
         page
             .setValue('@importSearchInput', browser.globals.searchText)
-            .waitForElementVisible('@resultsAccordion')
+            .waitForElementVisible('@resultsAccordion', 12000)
             .click('@selectAllButton')
             .click('@selectNoneButton')
             .assert.not.selected('@checkBoxes', 'No check boxes are selected.')
@@ -115,7 +115,7 @@ describe('Test library import', function () {
         const page = browser.page.portfolioPage();
         page
             .setValue('@importSearchInput', browser.globals.searchText)
-            .waitForElementVisible('@resultsAccordion')
+            .waitForElementVisible('@resultsAccordion', 12000)
             .click('@firstCheckBox')
             .click('@runImportButton')
             .assert.visible('@successNotification')
@@ -128,7 +128,7 @@ describe('Test library import', function () {
         page
             .click('@sidebarImportButton')
             .setValue('@importSearchInput', browser.globals.searchText)
-            .waitForElementVisible('@resultsAccordion')
+            .waitForElementVisible('@resultsAccordion', 12000)
             .click('@selectAllButton')
             .click('@runImportButton')
             .assert.visible('@successNotification')
