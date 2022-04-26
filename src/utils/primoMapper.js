@@ -197,7 +197,7 @@ function typeHasAuthor(portfolioType) {
     return true;
   case 'http://base.uni-ak.ac.at/portfolio/taxonomy/article':
     return true;
-  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/working_paper':
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/online_newspaper_article':
     return true;
   case 'http://base.uni-ak.ac.at/portfolio/taxonomy/image':
     return false;
@@ -207,6 +207,8 @@ function typeHasAuthor(portfolioType) {
     return true;
   case 'http://base.uni-ak.ac.at/portfolio/taxonomy/illustration':
     return false;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/artistic_sound_image_data_medium':
+    return true;
   default:
     return false;
   }
@@ -226,7 +228,7 @@ function typeHasYear(portfolioType) {
     return true;
   case 'http://base.uni-ak.ac.at/portfolio/taxonomy/article':
     return true;
-  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/working_paper':
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/online_newspaper_article':
     return true;
   case 'http://base.uni-ak.ac.at/portfolio/taxonomy/image':
     return false;
@@ -235,6 +237,39 @@ function typeHasYear(portfolioType) {
   case 'http://base.uni-ak.ac.at/portfolio/taxonomy/audio_recording':
     return false;
   case 'http://base.uni-ak.ac.at/portfolio/taxonomy/illustration':
+    return false;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/artistic_sound_image_data_medium':
+    return false;
+  default:
+    return false;
+  }
+}
+
+/**
+ * Return Boolean **true** if the portfolio type supplied as argument has a *date_location* field
+ * to which equivalent data from Primo can be mapped; false otherwise.
+ * @param {*} portfolioType
+ * @returns
+ */
+function typeHasDateLocation(portfolioType) {
+  switch (portfolioType) {
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/monograph':
+    return false;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/journal':
+    return false;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/article':
+    return false;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/online_newspaper_article':
+    return false;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/image':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/video':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/audio_recording':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/illustration':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/artistic_sound_image_data_medium':
     return false;
   default:
     return false;
@@ -255,7 +290,7 @@ function typeHasLang(portfolioType) {
     return true;
   case 'http://base.uni-ak.ac.at/portfolio/taxonomy/article':
     return true;
-  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/working_paper':
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/online_newspaper_article':
     return true;
   case 'http://base.uni-ak.ac.at/portfolio/taxonomy/image':
     return false;
@@ -265,6 +300,8 @@ function typeHasLang(portfolioType) {
     return true;
   case 'http://base.uni-ak.ac.at/portfolio/taxonomy/illustration':
     return false;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/artistic_sound_image_data_medium':
+    return true;
   default:
     return false;
   }
@@ -284,7 +321,7 @@ function typeHasIsbn(portfolioType) {
     return true;
   case 'http://base.uni-ak.ac.at/portfolio/taxonomy/article':
     return true;
-  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/working_paper':
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/online_newspaper_article':
     return true;
   case 'http://base.uni-ak.ac.at/portfolio/taxonomy/image':
     return false;
@@ -294,6 +331,8 @@ function typeHasIsbn(portfolioType) {
     return false;
   case 'http://base.uni-ak.ac.at/portfolio/taxonomy/illustration':
     return false;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/artistic_sound_image_data_medium':
+    return true;
   default:
     return false;
   }
@@ -313,7 +352,7 @@ function typeHasPages(portfolioType) {
     return true;
   case 'http://base.uni-ak.ac.at/portfolio/taxonomy/article':
     return true;
-  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/working_paper':
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/online_newspaper_article':
     return true;
   case 'http://base.uni-ak.ac.at/portfolio/taxonomy/image':
     return false;
@@ -323,6 +362,8 @@ function typeHasPages(portfolioType) {
     return false;
   case 'http://base.uni-ak.ac.at/portfolio/taxonomy/illustration':
     return false;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/artistic_sound_image_data_medium':
+    return true;
   default:
     return false;
   }
@@ -351,6 +392,12 @@ function createPortfolioEntry(record, portfolioLangs) {
     // workaround: add year only to compatible types in portfolio
     if (year && typeHasYear(entry.type.source)) {
       data.date = year;
+    }
+    // some portfolio types store date as part of a 'date_location' structure
+    if (year && typeHasDateLocation(entry.type.source)) {
+      const dateLocationArr = [];
+      dateLocationArr.push({ date: year });
+      data.date_location = dateLocationArr;
     }
     // map description, if any
     const texts = getPortfolioDescription(record.description);

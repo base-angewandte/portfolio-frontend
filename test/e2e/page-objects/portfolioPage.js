@@ -110,6 +110,10 @@ module.exports = {
             selector: 'input[id="Date-date_3_extended"]',
             suppressNotFoundErrors: true 
         },
+        dateLocationSelector: {
+            selector: 'input[id="Date-date_0_date_location_5_0_extended_date_location"]',
+            suppressNotFoundErrors: true
+        },
         isbnSelector: {
             selector: 'input[id="isbn_5_extended"]',
             suppressNotFoundErrors: true
