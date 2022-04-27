@@ -48,6 +48,7 @@ describe('Test sidebar buttons behaviour', function () {
     it('clicking the "new" button should maximize the "import" button and minimize the "search" button', function (browser) {
         const page = browser.page.portfolioPage();
         page
+            .pause(5000)
             .click('@sidebarNewButton')
             .assert.hasClass('@sidebarImportButton', 'maximized')
             .assert.hasClass('@sidebarSearchButton', 'minimized')
