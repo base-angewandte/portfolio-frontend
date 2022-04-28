@@ -134,41 +134,63 @@ function getPortfolioYear(strDate) {
 }
 
 /**
- * Mapping function that returns the portfolio entry's description.
+ * Mapping function that returns the portfolio entry's primary language, or false.
+ * @param {*} input The Primo value to process
+ * @returns Boolean false if no language, otherwise a string value
+ */
+function getPrimaryLang(input) {
+  const retLangs = [];
+  input.toString().split(';').forEach((lang) => {
+    // eslint-disable-next-line no-restricted-syntax
+    for (const [key, value] of Object.entries(isoLangs)) {
+      if (lang === value) {
+        retLangs.push(key);
+      }
+    }
+  });
+  return retLangs.length > 0 ? retLangs[0] : false;
+}
+
+/**
+ * Mapping function that returns the portfolio entry's description
  * @param {*} desc Maps to docs/{index}/pnx/search/description of the Primo API response body
+ * @param {*} primoLangs Maps to docs/{index}/pnx/display/language of the Primo API response body
  * @returns Boolean false if no description, otherwise a string value
  */
-function getPortfolioDescription(desc) {
+function getPortfolioDescription(desc, primoLangs) {
   if (desc) {
-    return [
-      {
-        type: {
-          label: {
-            de: 'Beschreibung',
-            en: 'Description',
-          },
-          source: 'http://base.uni-ak.ac.at/portfolio/vocabulary/description',
-        },
-        data: [
-          {
-            language: {
-              source: 'http://base.uni-ak.ac.at/portfolio/languages/en',
+    const lang = getPrimaryLang(primoLangs);
+    if (lang === 'de' || lang === 'en') {
+      return [
+        {
+          type: {
+            label: {
+              de: 'Beschreibung',
+              en: 'Description',
             },
-            text: desc.toString(),
+            source: 'http://base.uni-ak.ac.at/portfolio/vocabulary/description',
           },
-        ],
-      },
-    ];
+          data: [
+            {
+              language: {
+                source: `http://base.uni-ak.ac.at/portfolio/languages/${lang}`,
+              },
+              text: desc.toString(),
+            },
+          ],
+        },
+      ];
+    }
   }
   return false;
 }
 
 /**
- * Mapping function that returns the portfolio entry's language.
+ * Mapping function that returns the portfolio entry's languages.
  * @param {*} entryLangs Maps to docs/{index}/pnx/display/language of the Primo API response body
- * @returns Boolean false if no language, otherwise a string value
+ * @returns Boolean false if no language, otherwise an array value
  */
-function getPortfolioLang(entryLangs, portfolioLangs) {
+function getPortfolioLangs(entryLangs, portfolioLangs) {
   const retLangs = [];
   entryLangs.toString().split(';').forEach((lang) => {
     // eslint-disable-next-line no-restricted-syntax
@@ -400,10 +422,10 @@ function createPortfolioEntry(record, portfolioLangs) {
       data.date_location = dateLocationArr;
     }
     // map description, if any
-    const texts = getPortfolioDescription(record.description);
+    const texts = getPortfolioDescription(record.description, record.language);
     if (texts) entry.texts = texts;
     // map language, if any
-    const langList = getPortfolioLang(record.language, portfolioLangs);
+    const langList = getPortfolioLangs(record.language, portfolioLangs);
     // workaround: add lang only to compatible types in portfolio
     if (langList && typeHasLang(entry.type.source)) {
       data.language = langList;
