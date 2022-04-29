@@ -424,6 +424,13 @@ function createPortfolioEntry(record, portfolioLangs) {
     // map description, if any
     const texts = getPortfolioDescription(record.description, record.language);
     if (texts) entry.texts = texts;
+    // map description to notes if language is not "de" or "en"
+    if (record.description && record.language) {
+      const primaryLang = getPrimaryLang(record.language);
+      if (primaryLang && (primaryLang !== 'de' && primaryLang !== 'en')) {
+        entry.notes = record.description.toString();
+      }
+    }
     // map language, if any
     const langList = getPortfolioLangs(record.language, portfolioLangs);
     // workaround: add lang only to compatible types in portfolio
