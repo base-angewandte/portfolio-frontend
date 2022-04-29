@@ -5,11 +5,216 @@
 */
 
 /**
- * Mapping object for converting ISO 639-1 to 639-2, or vice versa.
+ * This array is used to look up ISO language codes in 639-2 and 639-1 formats.
+ * Note that for some languages there are two 639-2 code values for the same 639-1 code
+ * (e.g. ro => rum,ron)
  */
-const isoLangs = {
-  aa: 'aar', ab: 'abk', af: 'afr', ak: 'aka', sq: 'alb', am: 'amh', ar: 'ara', an: 'arg', hy: 'hye', as: 'asm', av: 'ava', ae: 'ave', ay: 'aym', az: 'aze', ba: 'bak', bm: 'bam', eu: 'eus', be: 'bel', bn: 'ben', bh: 'bih', bi: 'bis', bo: 'tib', bs: 'bos', br: 'bre', bg: 'bul', my: 'mya', ca: 'cat', cs: 'cze', ch: 'cha', ce: 'che', zh: 'zho', cu: 'chu', cv: 'chv', kw: 'cor', co: 'cos', cr: 'cre', cy: 'wel', da: 'dan', de: 'ger', dv: 'div', nl: 'dut', dz: 'dzo', el: 'gre', en: 'eng', eo: 'epo', et: 'est', ee: 'ewe', fo: 'fao', fa: 'per', fj: 'fij', fi: 'fin', fr: 'fra', fy: 'fry', ff: 'ful', ka: 'geo', gd: 'gla', ga: 'gle', gl: 'glg', gv: 'glv', gn: 'grn', gu: 'guj', ht: 'hat', ha: 'hau', he: 'heb', hz: 'her', hi: 'hin', ho: 'hmo', hr: 'hrv', hu: 'hun', ig: 'ibo', is: 'ice', io: 'ido', ii: 'iii', iu: 'iku', ie: 'ile', ia: 'ina', id: 'ind', ik: 'ipk', it: 'ita', jv: 'jav', ja: 'jpn', kl: 'kal', kn: 'kan', ks: 'kas', kr: 'kau', kk: 'kaz', km: 'khm', ki: 'kik', rw: 'kin', ky: 'kir', kv: 'kom', kg: 'kon', ko: 'kor', kj: 'kua', ku: 'kur', lo: 'lao', la: 'lat', lv: 'lav', li: 'lim', ln: 'lin', lt: 'lit', lb: 'ltz', lu: 'lub', lg: 'lug', mk: 'mkd', mh: 'mah', ml: 'mal', mi: 'mri', mr: 'mar', ms: 'may', mg: 'mlg', mt: 'mlt', mn: 'mon', na: 'nau', nv: 'nav', nr: 'nbl', nd: 'nde', ng: 'ndo', ne: 'nep', nn: 'nno', nb: 'nob', no: 'nor', ny: 'nya', oc: 'oci', oj: 'oji', or: 'ori', om: 'orm', os: 'oss', pa: 'pan', pi: 'pli', pl: 'pol', pt: 'por', ps: 'pus', qu: 'que', rm: 'roh', ro: 'ron', rn: 'run', ru: 'rus', sg: 'sag', sa: 'san', si: 'sin', sk: 'slk', sl: 'slv', se: 'sme', sm: 'smo', sn: 'sna', sd: 'snd', so: 'som', st: 'sot', es: 'spa', sc: 'srd', sr: 'srp', ss: 'ssw', su: 'sun', sw: 'swa', sv: 'swe', ty: 'tah', ta: 'tam', tt: 'tat', te: 'tel', tg: 'tgk', tl: 'tgl', th: 'tha', ti: 'tir', to: 'ton', tn: 'tsn', ts: 'tso', tk: 'tuk', tr: 'tur', tw: 'twi', ug: 'uig', uk: 'ukr', ur: 'urd', uz: 'uzb', ve: 'ven', vi: 'vie', vo: 'vol', wa: 'wln', wo: 'wol', xh: 'xho', yi: 'yid', yo: 'yor', za: 'zha', zu: 'zul',
-};
+const isoLangs = [
+  { '639-1': 'aa', '639-2': 'aar' },
+  { '639-1': 'ab', '639-2': 'abk' },
+  { '639-1': 'af', '639-2': 'afr' },
+  { '639-1': 'ak', '639-2': 'aka' },
+  { '639-1': 'sq', '639-2': 'alb' },
+  { '639-1': 'sq', '639-2': 'sqi' },
+  { '639-1': 'am', '639-2': 'amh' },
+  { '639-1': 'ar', '639-2': 'ara' },
+  { '639-1': 'an', '639-2': 'arg' },
+  { '639-1': 'hy', '639-2': 'hye' },
+  { '639-1': 'hy', '639-2': 'arm' },
+  { '639-1': 'as', '639-2': 'asm' },
+  { '639-1': 'av', '639-2': 'ava' },
+  { '639-1': 'ae', '639-2': 'ave' },
+  { '639-1': 'ay', '639-2': 'aym' },
+  { '639-1': 'az', '639-2': 'aze' },
+  { '639-1': 'ba', '639-2': 'bak' },
+  { '639-1': 'bm', '639-2': 'bam' },
+  { '639-1': 'eu', '639-2': 'eus' },
+  { '639-1': 'eu', '639-2': 'baq' },
+  { '639-1': 'be', '639-2': 'bel' },
+  { '639-1': 'bn', '639-2': 'ben' },
+  { '639-1': 'bh', '639-2': 'bih' },
+  { '639-1': 'bi', '639-2': 'bis' },
+  { '639-1': 'bo', '639-2': 'tib' },
+  { '639-1': 'bo', '639-2': 'bod' },
+  { '639-1': 'bs', '639-2': 'bos' },
+  { '639-1': 'br', '639-2': 'bre' },
+  { '639-1': 'bg', '639-2': 'bul' },
+  { '639-1': 'my', '639-2': 'mya' },
+  { '639-1': 'my', '639-2': 'bur' },
+  { '639-1': 'ca', '639-2': 'cat' },
+  { '639-1': 'cs', '639-2': 'cze' },
+  { '639-1': 'cs', '639-2': 'ces' },
+  { '639-1': 'ch', '639-2': 'cha' },
+  { '639-1': 'ce', '639-2': 'che' },
+  { '639-1': 'zh', '639-2': 'zho' },
+  { '639-1': 'zh', '639-2': 'chi' },
+  { '639-1': 'cu', '639-2': 'chu' },
+  { '639-1': 'cv', '639-2': 'chv' },
+  { '639-1': 'kw', '639-2': 'cor' },
+  { '639-1': 'co', '639-2': 'cos' },
+  { '639-1': 'cr', '639-2': 'cre' },
+  { '639-1': 'cy', '639-2': 'wel' },
+  { '639-1': 'cy', '639-2': 'cym' },
+  { '639-1': 'da', '639-2': 'dan' },
+  { '639-1': 'de', '639-2': 'ger' },
+  { '639-1': 'de', '639-2': 'deu' },
+  { '639-1': 'dv', '639-2': 'div' },
+  { '639-1': 'nl', '639-2': 'dut' },
+  { '639-1': 'nl', '639-2': 'nld' },
+  { '639-1': 'dz', '639-2': 'dzo' },
+  { '639-1': 'el', '639-2': 'gre' },
+  { '639-1': 'el', '639-2': 'ell' },
+  { '639-1': 'en', '639-2': 'eng' },
+  { '639-1': 'eo', '639-2': 'epo' },
+  { '639-1': 'et', '639-2': 'est' },
+  { '639-1': 'ee', '639-2': 'ewe' },
+  { '639-1': 'fo', '639-2': 'fao' },
+  { '639-1': 'fa', '639-2': 'per' },
+  { '639-1': 'fa', '639-2': 'fas' },
+  { '639-1': 'fj', '639-2': 'fij' },
+  { '639-1': 'fi', '639-2': 'fin' },
+  { '639-1': 'fr', '639-2': 'fra' },
+  { '639-1': 'fr', '639-2': 'fre' },
+  { '639-1': 'fy', '639-2': 'fry' },
+  { '639-1': 'ff', '639-2': 'ful' },
+  { '639-1': 'ka', '639-2': 'geo' },
+  { '639-1': 'ka', '639-2': 'kat' },
+  { '639-1': 'gd', '639-2': 'gla' },
+  { '639-1': 'ga', '639-2': 'gle' },
+  { '639-1': 'gl', '639-2': 'glg' },
+  { '639-1': 'gv', '639-2': 'glv' },
+  { '639-1': 'gn', '639-2': 'grn' },
+  { '639-1': 'gu', '639-2': 'guj' },
+  { '639-1': 'ht', '639-2': 'hat' },
+  { '639-1': 'ha', '639-2': 'hau' },
+  { '639-1': 'he', '639-2': 'heb' },
+  { '639-1': 'hz', '639-2': 'her' },
+  { '639-1': 'hi', '639-2': 'hin' },
+  { '639-1': 'ho', '639-2': 'hmo' },
+  { '639-1': 'hr', '639-2': 'hrv' },
+  { '639-1': 'hu', '639-2': 'hun' },
+  { '639-1': 'ig', '639-2': 'ibo' },
+  { '639-1': 'is', '639-2': 'ice' },
+  { '639-1': 'is', '639-2': 'isl' },
+  { '639-1': 'io', '639-2': 'ido' },
+  { '639-1': 'ii', '639-2': 'iii' },
+  { '639-1': 'iu', '639-2': 'iku' },
+  { '639-1': 'ie', '639-2': 'ile' },
+  { '639-1': 'ia', '639-2': 'ina' },
+  { '639-1': 'id', '639-2': 'ind' },
+  { '639-1': 'ik', '639-2': 'ipk' },
+  { '639-1': 'it', '639-2': 'ita' },
+  { '639-1': 'jv', '639-2': 'jav' },
+  { '639-1': 'ja', '639-2': 'jpn' },
+  { '639-1': 'kl', '639-2': 'kal' },
+  { '639-1': 'kn', '639-2': 'kan' },
+  { '639-1': 'ks', '639-2': 'kas' },
+  { '639-1': 'kr', '639-2': 'kau' },
+  { '639-1': 'kk', '639-2': 'kaz' },
+  { '639-1': 'km', '639-2': 'khm' },
+  { '639-1': 'ki', '639-2': 'kik' },
+  { '639-1': 'rw', '639-2': 'kin' },
+  { '639-1': 'ky', '639-2': 'kir' },
+  { '639-1': 'kv', '639-2': 'kom' },
+  { '639-1': 'kg', '639-2': 'kon' },
+  { '639-1': 'ko', '639-2': 'kor' },
+  { '639-1': 'kj', '639-2': 'kua' },
+  { '639-1': 'ku', '639-2': 'kur' },
+  { '639-1': 'lo', '639-2': 'lao' },
+  { '639-1': 'la', '639-2': 'lat' },
+  { '639-1': 'lv', '639-2': 'lav' },
+  { '639-1': 'li', '639-2': 'lim' },
+  { '639-1': 'ln', '639-2': 'lin' },
+  { '639-1': 'lt', '639-2': 'lit' },
+  { '639-1': 'lb', '639-2': 'ltz' },
+  { '639-1': 'lu', '639-2': 'lub' },
+  { '639-1': 'lg', '639-2': 'lug' },
+  { '639-1': 'mk', '639-2': 'mkd' },
+  { '639-1': 'mk', '639-2': 'mac' },
+  { '639-1': 'mh', '639-2': 'mah' },
+  { '639-1': 'ml', '639-2': 'mal' },
+  { '639-1': 'mi', '639-2': 'mri' },
+  { '639-1': 'mi', '639-2': 'mao' },
+  { '639-1': 'mr', '639-2': 'mar' },
+  { '639-1': 'ms', '639-2': 'may' },
+  { '639-1': 'ms', '639-2': 'msa' },
+  { '639-1': 'mg', '639-2': 'mlg' },
+  { '639-1': 'mt', '639-2': 'mlt' },
+  { '639-1': 'mn', '639-2': 'mon' },
+  { '639-1': 'na', '639-2': 'nau' },
+  { '639-1': 'nv', '639-2': 'nav' },
+  { '639-1': 'nr', '639-2': 'nbl' },
+  { '639-1': 'nd', '639-2': 'nde' },
+  { '639-1': 'ng', '639-2': 'ndo' },
+  { '639-1': 'ne', '639-2': 'nep' },
+  { '639-1': 'nn', '639-2': 'nno' },
+  { '639-1': 'nb', '639-2': 'nob' },
+  { '639-1': 'no', '639-2': 'nor' },
+  { '639-1': 'ny', '639-2': 'nya' },
+  { '639-1': 'oc', '639-2': 'oci' },
+  { '639-1': 'oj', '639-2': 'oji' },
+  { '639-1': 'or', '639-2': 'ori' },
+  { '639-1': 'om', '639-2': 'orm' },
+  { '639-1': 'os', '639-2': 'oss' },
+  { '639-1': 'pa', '639-2': 'pan' },
+  { '639-1': 'pi', '639-2': 'pli' },
+  { '639-1': 'pl', '639-2': 'pol' },
+  { '639-1': 'pt', '639-2': 'por' },
+  { '639-1': 'ps', '639-2': 'pus' },
+  { '639-1': 'qu', '639-2': 'que' },
+  { '639-1': 'rm', '639-2': 'roh' },
+  { '639-1': 'ro', '639-2': 'ron' },
+  { '639-1': 'ro', '639-2': 'rum' },
+  { '639-1': 'rn', '639-2': 'run' },
+  { '639-1': 'ru', '639-2': 'rus' },
+  { '639-1': 'sg', '639-2': 'sag' },
+  { '639-1': 'sa', '639-2': 'san' },
+  { '639-1': 'si', '639-2': 'sin' },
+  { '639-1': 'sk', '639-2': 'slk' },
+  { '639-1': 'sk', '639-2': 'slo' },
+  { '639-1': 'sl', '639-2': 'slv' },
+  { '639-1': 'se', '639-2': 'sme' },
+  { '639-1': 'sm', '639-2': 'smo' },
+  { '639-1': 'sn', '639-2': 'sna' },
+  { '639-1': 'sd', '639-2': 'snd' },
+  { '639-1': 'so', '639-2': 'som' },
+  { '639-1': 'st', '639-2': 'sot' },
+  { '639-1': 'es', '639-2': 'spa' },
+  { '639-1': 'sc', '639-2': 'srd' },
+  { '639-1': 'sr', '639-2': 'srp' },
+  { '639-1': 'ss', '639-2': 'ssw' },
+  { '639-1': 'su', '639-2': 'sun' },
+  { '639-1': 'sw', '639-2': 'swa' },
+  { '639-1': 'sv', '639-2': 'swe' },
+  { '639-1': 'ty', '639-2': 'tah' },
+  { '639-1': 'ta', '639-2': 'tam' },
+  { '639-1': 'tt', '639-2': 'tat' },
+  { '639-1': 'te', '639-2': 'tel' },
+  { '639-1': 'tg', '639-2': 'tgk' },
+  { '639-1': 'tl', '639-2': 'tgl' },
+  { '639-1': 'th', '639-2': 'tha' },
+  { '639-1': 'ti', '639-2': 'tir' },
+  { '639-1': 'to', '639-2': 'ton' },
+  { '639-1': 'tn', '639-2': 'tsn' },
+  { '639-1': 'ts', '639-2': 'tso' },
+  { '639-1': 'tk', '639-2': 'tuk' },
+  { '639-1': 'tr', '639-2': 'tur' },
+  { '639-1': 'tw', '639-2': 'twi' },
+  { '639-1': 'ug', '639-2': 'uig' },
+  { '639-1': 'uk', '639-2': 'ukr' },
+  { '639-1': 'ur', '639-2': 'urd' },
+  { '639-1': 'uz', '639-2': 'uzb' },
+  { '639-1': 've', '639-2': 'ven' },
+  { '639-1': 'vi', '639-2': 'vie' },
+  { '639-1': 'vo', '639-2': 'vol' },
+  { '639-1': 'wa', '639-2': 'wln' },
+  { '639-1': 'wo', '639-2': 'wol' },
+  { '639-1': 'xh', '639-2': 'xho' },
+  { '639-1': 'yi', '639-2': 'yid' },
+  { '639-1': 'yo', '639-2': 'yor' },
+  { '639-1': 'za', '639-2': 'zha' },
+  { '639-1': 'zu', '639-2': 'zul' },
+];
 
 /**
  * Mapping function that returns the portfolio entry's type.
@@ -135,19 +340,19 @@ function getPortfolioYear(strDate) {
 
 /**
  * Mapping function that returns the portfolio entry's primary language, or false.
- * @param {*} input The Primo value to process
- * @returns Boolean false if no language, otherwise a string value
+ * @param {*} input The Primo value to process, e.g. ["eng;ger"]
+ * @returns Boolean false if no language, otherwise the language string value in ISO 639-1 format
  */
 function getPrimaryLang(input) {
   const retLangs = [];
-  input.toString().split(';').forEach((lang) => {
-    // eslint-disable-next-line no-restricted-syntax
-    for (const [key, value] of Object.entries(isoLangs)) {
-      if (lang === value) {
-        retLangs.push(key);
-      }
-    }
-  });
+  input
+    .toString()
+    .split(';')
+    .forEach((lang) => {
+      isoLangs.forEach((obj) => {
+        if (obj['639-2'] === lang) retLangs.push(obj['639-1']);
+      });
+    });
   return retLangs.length > 0 ? retLangs[0] : false;
 }
 
@@ -193,14 +398,13 @@ function getPortfolioDescription(desc, primoLangs) {
 function getPortfolioLangs(entryLangs, portfolioLangs) {
   const retLangs = [];
   entryLangs.toString().split(';').forEach((lang) => {
-    // eslint-disable-next-line no-restricted-syntax
-    for (const [key, value] of Object.entries(isoLangs)) {
-      if (lang === value) {
+    isoLangs.forEach((isoLang) => {
+      if (lang === isoLang['639-2']) {
         const portfolioLang = portfolioLangs
-          .find((l) => l.source.substring(l.source.length - 2, l.source.length) === key);
+          .find((l) => l.source.substring(l.source.length - 2, l.source.length) === isoLang['639-1']);
         retLangs.push(portfolioLang);
       }
-    }
+    });
   });
   return retLangs;
 }
