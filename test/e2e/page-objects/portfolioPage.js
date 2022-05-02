@@ -122,6 +122,10 @@ module.exports = {
             selector: 'input[id="pages_10_extended"]',
             suppressNotFoundErrors: true
         },
+        notesSelector: {
+            selector: 'textarea[id="notes_1_main2"]',
+            suppressNotFoundErrors: true
+        },
     },
     commands: [{
         // for future use
