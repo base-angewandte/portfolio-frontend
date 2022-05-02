@@ -271,7 +271,32 @@ function getPortfolioType(primoType) {
   case 'other':
     return {
       source: 'http://base.uni-ak.ac.at/portfolio/taxonomy/artistic_sound_image_data_medium',
-      label: { de: 'Künstlerischer Ton-/Bild-/Datenträger ', en: 'artistic sound/image/data medium' },
+      label: { de: 'Künstlerischer Ton-/Bild-/Datenträger', en: 'artistic sound/image/data medium' },
+    };
+  case 'dissertations':
+    return {
+      source: 'http://base.uni-ak.ac.at/portfolio/taxonomy/doctoral_dissertation',
+      label: { de: 'Dissertation', en: 'doctoral dissertation' },
+    };
+  case 'ebook':
+    return {
+      source: 'http://base.uni-ak.ac.at/portfolio/taxonomy/monograph',
+      label: { de: 'Monographie', en: 'Monograph' },
+    };
+  case 'ejournal':
+    return {
+      source: 'http://base.uni-ak.ac.at/portfolio/taxonomy/journal',
+      label: { de: 'Zeitschrift', en: 'journal' },
+    };
+  case 'microform':
+    return {
+      source: 'http://base.uni-ak.ac.at/portfolio/taxonomy/artistic_sound_image_data_medium',
+      label: { de: 'Künstlerischer Ton-/Bild-/Datenträger', en: 'artistic sound/image/data medium' },
+    };
+  case 'schriftenreihe':
+    return {
+      source: 'http://base.uni-ak.ac.at/portfolio/taxonomy/series_monographic_series',
+      label: { de: 'Schriftenreihe/Buchreihe', en: 'series/monographic series' },
     };
   default:
     return null;
@@ -435,6 +460,10 @@ function typeHasAuthor(portfolioType) {
     return false;
   case 'http://base.uni-ak.ac.at/portfolio/taxonomy/artistic_sound_image_data_medium':
     return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/doctoral_dissertation':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/series_monographic_series':
+    return true;
   default:
     return false;
   }
@@ -466,6 +495,10 @@ function typeHasYear(portfolioType) {
     return false;
   case 'http://base.uni-ak.ac.at/portfolio/taxonomy/artistic_sound_image_data_medium':
     return false;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/doctoral_dissertation':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/series_monographic_series':
+    return true;
   default:
     return false;
   }
@@ -496,6 +529,10 @@ function typeHasDateLocation(portfolioType) {
   case 'http://base.uni-ak.ac.at/portfolio/taxonomy/illustration':
     return true;
   case 'http://base.uni-ak.ac.at/portfolio/taxonomy/artistic_sound_image_data_medium':
+    return false;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/doctoral_dissertation':
+    return false;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/series_monographic_series':
     return false;
   default:
     return false;
@@ -528,6 +565,10 @@ function typeHasLang(portfolioType) {
     return false;
   case 'http://base.uni-ak.ac.at/portfolio/taxonomy/artistic_sound_image_data_medium':
     return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/doctoral_dissertation':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/series_monographic_series':
+    return true;
   default:
     return false;
   }
@@ -559,6 +600,10 @@ function typeHasIsbn(portfolioType) {
     return false;
   case 'http://base.uni-ak.ac.at/portfolio/taxonomy/artistic_sound_image_data_medium':
     return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/doctoral_dissertation':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/series_monographic_series':
+    return true;
   default:
     return false;
   }
@@ -589,6 +634,10 @@ function typeHasPages(portfolioType) {
   case 'http://base.uni-ak.ac.at/portfolio/taxonomy/illustration':
     return false;
   case 'http://base.uni-ak.ac.at/portfolio/taxonomy/artistic_sound_image_data_medium':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/doctoral_dissertation':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/series_monographic_series':
     return true;
   default:
     return false;
