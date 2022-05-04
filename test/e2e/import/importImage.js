@@ -9,9 +9,10 @@
     this.tags = ['import-image'];
 
     // search value used in this test
-    const searchValue = "Memphis Medium ... Medium, voller Geschmack niedrige Werte Rauchen gefährdet die Gesundheit";
+    const searchValue = "wien rieger albert";
     // the testing (positive) values that are expected
-    const titleText = 'Memphis Medium ... Medium, voller Geschmack niedrige Werte Rauchen gefährdet die Gesundheit,Memphis Medium ... Medium, voller Geschmack - niedrige Werte Rauchen gefährdet die Gesundheit';
+    const titleText = 'Wien';
+    const subtitleText = 'Altkarte$$QAltkarte';
  
     before(function (browser) {
         // Login to app
@@ -48,6 +49,22 @@
             .assert.elementPresent('@titleSelector')
             .assert.valueEquals('@titleSelector', titleText)
     });
+
+    it('after importing 1 entry, the subtitle should be populated', function(browser) {
+        const page = browser.page.portfolioPage();
+        page
+            .assert.elementPresent('@subtitleSelector')
+            .assert.valueEquals('@subtitleSelector', subtitleText)
+    });
+
+    it('after importing 1 entry, a contributor with author role should be added', function(browser) {
+        const page = browser.page.portfolioPage();
+        page
+            .assert.elementPresent('.base-chips-below-list-item')
+            .assert.attributeEquals('.base-chips-below-list-item', 'name', 'Rieger, Albert, 1834-1905 [KünstlerIn]')
+            .assert.elementPresent('div[id^="http"][id$="author"]');
+    });
+
 
 
 });

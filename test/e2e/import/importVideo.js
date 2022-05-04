@@ -9,10 +9,12 @@
     this.tags = ['import-video'];
 
     // search value used in this test
-    const searchValue = " 36 actividades para mejorar el español de los negocios Material videográfico del libro ";
+    const searchValue = "Divina.com lapidi dantesche a Firenze";
     // the testing (positive) values that are expected
-    const titleText = '36 actividades para mejorar el español de los negocios Material videográfico del libro';
-    const dateText = '1998';
+    const titleText = 'Divina.com lapidi dantesche a Firenze = the Dante plaques in Florence : mixed media event in 36 parts for voice, ensemble, live electronics and video';
+    const subtitleText = 'DVD-Video$$QDVD-Video';
+    const dateText = '2016';
+    const authorText = 'Lombardi, Daniele, 1946- [KomponistIn]. [DirigentIn]';
 
     before(function (browser) {
         // Login to app
@@ -50,6 +52,13 @@
             .assert.valueEquals('@titleSelector', titleText)
     });
 
+    it('after importing 1 entry, the subtitle should be populated', function(browser) {
+        const page = browser.page.portfolioPage();
+        page
+            .assert.elementPresent('@subtitleSelector')
+            .assert.valueEquals('@subtitleSelector', subtitleText)
+    });
+
     it('after importing 1 entry, the date should be populated', function(browser) {
         const page = browser.page.portfolioPage();
         page
@@ -60,7 +69,15 @@
     it('after importing 1 entry, the language should be populated', function(browser) {
         const page = browser.page.portfolioPage();
         page
-        .assert.elementPresent('div[id^="http"][id$="es"]');
+        .assert.elementPresent('div[id^="http"][id$="it"]');
+    });
+
+    it('after importing 1 entry, a contributor with author role should be added', function(browser) {
+        const page = browser.page.portfolioPage();
+        page
+            .assert.elementPresent('.base-chips-below-list-item')
+            .assert.attributeEquals('.base-chips-below-list-item', 'name', authorText)
+            .assert.elementPresent('div[id^="http"][id$="author"]');
     });
 
 });

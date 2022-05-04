@@ -662,6 +662,16 @@ function createPortfolioEntry(record, portfolioLangs) {
     if (authors && authors.length && typeHasAuthor(entry.type.source)) {
       data.authors = authors;
     }
+    // if type = image, video, or illustration,
+    // then add author(s) as contributors with 'author' role
+    if (authors && authors.length && (
+      entry.type.source === 'http://base.uni-ak.ac.at/portfolio/taxonomy/image'
+      || entry.type.source === 'http://base.uni-ak.ac.at/portfolio/taxonomy/video'
+      || entry.type.source === 'http://base.uni-ak.ac.at/portfolio/taxonomy/illustration'
+    )
+    ) {
+      data.contributors = authors;
+    }
     // map year, if applicable
     const year = getPortfolioYear(record.year);
     // workaround: add year only to compatible types in portfolio
