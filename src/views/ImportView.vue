@@ -187,7 +187,8 @@
 <script>
 import axios from 'axios';
 import BibtexParser from '@/components/BibtexParser';
-import createPortfolioEntry from '@/utils/primoMapper';
+import createEntryFromPrimo from '@/utils/primoMapper';
+import createEntryFromBibtex from '@/utils/bibtexMapper';
 import SelectableAccordion from '@/components/SelectableAccordion';
 import { mapGetters } from 'vuex';
 
@@ -337,7 +338,7 @@ export default {
           subtitle: res.subject ? res.subject.toString().substring(0, 255) : '',
           authors: res.author ? res.author : '',
           year: res.creationdate ? res.creationdate.toString() : '',
-          sourceName: res.sourceName ? res.sourceName.toString() : '',
+          sourceName: 'primo',
           type: res.type ? res.type.toString() : '',
           lad24: res.lad24 ? res.lad24 : '',
           description: res.description ? res.description : '',
@@ -418,8 +419,22 @@ export default {
       // eslint-disable-next-line no-async-promise-executor
         .map((record) => new Promise(async (resolve, reject) => {
           try {
-            await this.$store.dispatch('data/addOrUpdateEntry',
-              createPortfolioEntry(record, this.getPortfolioLangs))
+            // initially, the portfolio entry to be created is an empty object
+            let entry = {};
+            // to create the entry, send the record to its respective mapper method;
+            // 'primo' and 'bibtex' are valid values for sourceName
+            switch (record.sourceName) {
+            case 'primo':
+              entry = createEntryFromPrimo(record, this.getPortfolioLangs);
+              break;
+            case 'bibtex':
+              entry = createEntryFromBibtex(record);
+              break;
+            default:
+              console.error('Unknown record type');
+            }
+            // dispatch the entry to the store for posting to API
+            await this.$store.dispatch('data/addOrUpdateEntry', entry)
               .then((id) => {
                 resolve(id);
               }).catch((e) => {
@@ -477,18 +492,36 @@ export default {
       this.dropboxVisible = false;
       this.isBibtexImportInProgress = true;
     },
-    processParsed(records) {
-      return records.map((res, index) => {
-        const entry = {
+    processParsed(bibRecords) {
+      return bibRecords.map((bibRecord, index) => {
+        const item = {
           id: index,
-          title: res.entryTags.title ? res.entryTags.title : '',
-          subtitle: res.entryTags.keywords ? res.entryTags.keywords : '',
-          authors: res.entryTags.author ? res.entryTags.author : '',
-          year: res.entryTags.year ? res.entryTags.year : '',
-          sourceName: 'BibTex File',
+          title: this.getValue(bibRecord.entryTags, 'title')
+            ? this.getValue(bibRecord.entryTags, 'title') : '',
+          subtitle: this.getValue(bibRecord.entryTags, 'keywords')
+            ? this.getValue(bibRecord.entryTags, 'keywords') : '',
+          authors: this.getValue(bibRecord.entryTags, 'author')
+            ? this.getValue(bibRecord.entryTags, 'author') : '',
+          year: this.getValue(bibRecord.entryTags, 'year')
+            ? this.getValue(bibRecord.entryTags, 'year') : '',
+          sourceName: 'bibtex',
+          type: bibRecord.entryType.toLowerCase(),
         };
-        return entry;
+        return item;
       });
+    },
+    /**
+    * Return an object key's value regardless of the key's case.
+    * See also https://stackoverflow.com/questions/12484386/access-javascript-property-case-insensitively
+    * @param {Object} object
+    * @param {string} key
+    * @return {any} value
+    */
+    getValue(object, key) {
+      const asLowercase = key.toLowerCase();
+      return object[Object.keys(object)
+        .find((k) => k.toLowerCase() === asLowercase)
+      ];
     },
   },
 };

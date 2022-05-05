@@ -648,7 +648,7 @@ function typeHasPages(portfolioType) {
  * Converts a library search result record into an object that represents
  * a new entry in portfolio.
  */
-function createPortfolioEntry(record, portfolioLangs) {
+function createEntryFromPrimo(record, portfolioLangs) {
   const entry = {};
   entry.title = record.title;
   entry.subtitle = record.subtitle;
@@ -710,4 +710,4 @@ function createPortfolioEntry(record, portfolioLangs) {
   return entry;
 }
 
-export { createPortfolioEntry as default };
+export { createEntryFromPrimo as default };
