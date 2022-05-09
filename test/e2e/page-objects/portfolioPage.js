@@ -45,6 +45,10 @@ module.exports = {
             selector: '[data-e2e-import-search-box] input',
             suppressNotFoundErrors: true
         },
+        importDropBox: {
+            selector: '.base-box-button',
+            suppressNotFoundErrors: true,
+        },
         loadingSelector: {
             selector: '[data-e2e-import-loading]',
             suppressNotFoundErrors: true
