@@ -13,6 +13,7 @@
         :is-new-form="$store.state.data.isNewForm"
         :is-published="valueList.published"
         :default-expanded="false"
+        :showroom-id="showroomId"
         class="base-form-options"
         @action-entry="actionEntry" />
       <div
@@ -242,6 +243,8 @@ export default {
        * idChanged is true)
        */
       idChanged: false,
+      // variable to count requests to get showroom_id after publishing entry
+      counter: 0,
     };
   },
   computed: {
@@ -363,6 +366,9 @@ export default {
     },
     dataSaving() {
       return this.$store.getters['data/getIsFormSaving'];
+    },
+    showroomId() {
+      return this.valueList.showroom_id ? this.valueList.showroom_id : '';
     },
   },
   watch: {
@@ -499,6 +505,22 @@ export default {
     // isFormSaved with the opposite Boolean value
     unsavedChanges() {
       this.$store.commit('data/setIsFormSaved', !this.unsavedChanges);
+    },
+    // watch for published state and showroom_id
+    // fetch or reset showroom_id
+    valueList: {
+      handler(val) {
+        if (!val.showroom_id && val.published) {
+          this.counter = 0;
+          this.fetchShowroomId();
+        }
+
+        if (!val.published) {
+          this.valueList.showroom_id = null;
+        }
+      },
+      immediate: true,
+      deep: true,
     },
   },
   async beforeCreate() {
@@ -827,6 +849,14 @@ export default {
       this.$router.push(`/entry/${id}`);
     },
     async actionEntry(action) {
+      if (action === 'openInShowroom') {
+        window.open(
+          `${process.env.VUE_APP_SHOWROOM_URL}/${this.showroomId}`,
+          '_blank',
+        );
+        return;
+      }
+
       if (!(action === 'publish' && this.unsavedChanges)) {
         this.confirmAction({ action, entries: [].concat(this.valueList) });
       } else {
@@ -1388,6 +1418,27 @@ export default {
       this.formIsLoading = true;
       this.valueList = JSON.parse(JSON.stringify(this.valueListOriginal));
       this.formIsLoading = false;
+    },
+    /**
+     * Try several times to get the entry data and set the showroom_id
+     *
+     * @param {number} attempts - amount of attempts
+     * @param {number} delay - delay in ms
+     */
+    async fetchShowroomId(attempts = 3, delay = 10000) {
+      try {
+        const entry = await this.$store.dispatch('PortfolioAPI/get', { kind: 'entry', id: this.currentItemId });
+        this.valueList.showroom_id = entry.showroom_id;
+      } catch (e) {
+        console.warn(`showroom_id could not be fetched after ${this.counter} requests.`);
+      }
+
+      if (!this.valueList.showroom_id && this.counter < attempts) {
+        setTimeout(() => {
+          this.fetchShowroomId();
+        }, delay);
+        this.counter += 1;
+      }
     },
   },
 };

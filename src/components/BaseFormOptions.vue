@@ -27,7 +27,9 @@
             </span>
           </template>
         </BaseDropButton>
+
         <BaseButton
+          v-if="!isPublished || !showroomId"
           :disabled="isNewForm"
           :text="isPublished ? $tc('offline') : $tc('publish')"
           :has-background-color="false"
@@ -36,6 +38,22 @@
           icon="eye"
           button-style="single"
           @clicked="$emit('action-entry', isPublished ? 'offline' : 'publish')" />
+
+        <BaseDropButton
+          v-if="isPublished && showroomId"
+          :disabled="isNewForm"
+          :buttons="[{
+            label: $tc('offline'),
+            action: 'offline',
+            icon: 'eye',
+          }, {
+            label: $tc('form-view.showroomButton'),
+            action: 'openInShowroom',
+            icon: 'share',
+          }]"
+          primary-button="offline"
+          @clicked="$emit('action-entry', $event)" />
+
         <BaseButton
           :disabled="isNewForm"
           :text="$tc('delete')"
@@ -68,6 +86,10 @@ export default {
       default: false,
     },
     formType: {
+      type: String,
+      default: '',
+    },
+    showroomId: {
       type: String,
       default: '',
     },
