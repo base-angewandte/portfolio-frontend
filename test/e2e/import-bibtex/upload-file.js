@@ -6,7 +6,7 @@
 
  describe('Test Bibtex file upload', function () {
 
-    this.tags = ['upload-file'];
+    this.tags = ['upload-bibtex'];
 
     before(function (browser) {
         // Login to app
@@ -57,17 +57,16 @@
             .click('@selectAllButton')
             .assert.selected('@checkBoxes', 'All check boxes are selected.')
             .assert.textContains('@selectAllButton', 'Select None', '"Select All" changed to "Select None".')
-            .assert.textContains('@selectedEntriesCount', '2', 'Number of selected entries is 2.')
+            .assert.textContains('@selectedEntriesCount', '8', 'Number of selected entries is 8.')
             .assert.enabled('@runImportButton', '"Import" button is enabled.');
     });
 
-    it('after clicking cancel, the results should be cleared', function (browser) {
+    it('after clicking import, the success notification should appear', function(browser) {
         const page = browser.page.portfolioPage();
-        page
-            .click('@cancelImportButton')
-            .assert.not.elementPresent('@resultBoxOptions')
-            .assert.not.elementPresent('@resultsAccordion')
-            .assert.not.elementPresent('@resultsPagination')
+        page            
+            .click('@runImportButton')
+            .assert.visible('@successNotification')
+            .click('@closeNotificationButton');
     });
 
 });
