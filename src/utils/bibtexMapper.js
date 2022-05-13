@@ -70,6 +70,47 @@ function getPortfolioType(bibtexType) {
   }
 }
 
+function getKeywords(value) {
+  const retVal = [];
+  if (value.includes(',')) {
+    const arr = value.split(',');
+    arr.forEach((val) => {
+      retVal.push({
+        label: {
+          de: val,
+          en: val,
+        },
+      });
+    });
+  } else if (value.length) {
+    retVal.push({
+      label: {
+        de: value,
+        en: value,
+      },
+    });
+  }
+  return retVal;
+}
+
+function getAuthor(value) {
+  if (value) {
+    return [{
+      label: value,
+      roles: [
+        {
+          source: 'http://base.uni-ak.ac.at/portfolio/vocabulary/author',
+          label: {
+            de: 'Autor*in',
+            en: 'Author',
+          },
+        },
+      ],
+    }];
+  }
+  return null;
+}
+
 /**
  * Returns an object that represents a portfolio entry
  * (e.g. it is ready to be posted to the entry creation api in portfolio)
@@ -77,8 +118,37 @@ function getPortfolioType(bibtexType) {
 function createEntryFromBibtex(record) {
   const entry = {};
   entry.title = record.title;
-  entry.subtitle = record.keywords;
+  const keywords = getKeywords(record.keywords);
+  if (keywords) entry.keywords = keywords;
   entry.type = getPortfolioType(record.type);
+  if (entry.type) {
+    // data object is needed if type exists
+    const data = {};
+    // map authors, if any
+    const authors = getAuthor(record.authors);
+    // conference type does not have authors
+    if (authors && entry.type.source !== 'http://base.uni-ak.ac.at/portfolio/taxonomy/conference') {
+      data.authors = authors;
+    }
+    // map year
+    if (record.year && entry.type.source !== 'http://base.uni-ak.ac.at/portfolio/taxonomy/conference') {
+      data.date = record.year;
+    }
+    // map isbn
+    if (record.isbn && entry.type.source !== 'http://base.uni-ak.ac.at/portfolio/taxonomy/conference') {
+      data.isbn = record.isbn;
+    }
+    // map doi
+    if (record.doi && entry.type.source !== 'http://base.uni-ak.ac.at/portfolio/taxonomy/conference') {
+      data.doi = record.doi;
+    }
+    // map pages
+    if (record.pages && entry.type.source !== 'http://base.uni-ak.ac.at/portfolio/taxonomy/conference') {
+      data.pages = record.pages;
+    }
+    // finally, set the data attribute
+    entry.data = data;
+  }
   return entry;
 }
 

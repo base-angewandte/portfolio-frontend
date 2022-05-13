@@ -138,10 +138,26 @@
               </tr>
               <tr>
                 <td class="term-column">
+                  DOI
+                </td>
+                <td class="definition-column">
+                  {{ item.doi }}
+                </td>
+              </tr>
+              <tr>
+                <td class="term-column">
                   Pages
                 </td>
                 <td class="definition-column">
                   {{ item.pages }}
+                </td>
+              </tr>
+              <tr>
+                <td class="term-column">
+                  Keywords
+                </td>
+                <td class="definition-column">
+                  {{ item.keywords }}
                 </td>
               </tr> -->
             </tbody>
@@ -498,12 +514,18 @@ export default {
           id: index,
           title: this.getValue(bibRecord.entryTags, 'title')
             ? this.getValue(bibRecord.entryTags, 'title') : '',
-          subtitle: this.getValue(bibRecord.entryTags, 'keywords')
+          keywords: this.getValue(bibRecord.entryTags, 'keywords')
             ? this.getValue(bibRecord.entryTags, 'keywords') : '',
           authors: this.getValue(bibRecord.entryTags, 'author')
             ? this.getValue(bibRecord.entryTags, 'author') : '',
           year: this.getValue(bibRecord.entryTags, 'year')
             ? this.getValue(bibRecord.entryTags, 'year') : '',
+          pages: this.getValue(bibRecord.entryTags, 'pages')
+            ? this.getValue(bibRecord.entryTags, 'pages') : '',
+          isbn: this.getValue(bibRecord.entryTags, 'isbn')
+            ? this.getValue(bibRecord.entryTags, 'isbn') : '',
+          doi: this.getValue(bibRecord.entryTags, 'doi')
+            ? this.getValue(bibRecord.entryTags, 'doi') : '',
           sourceName: 'bibtex',
           type: bibRecord.entryType.toLowerCase(),
         };
