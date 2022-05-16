@@ -35,7 +35,7 @@ function getPortfolioType(bibtexType) {
       source: 'http://base.uni-ak.ac.at/portfolio/taxonomy/conference_proceedings',
       label: { de: 'Tagungsband', en: 'conference proceedings' },
     };
-  case 'chapter':
+  case 'inbook':
     return {
       source: 'http://base.uni-ak.ac.at/portfolio/taxonomy/chapter',
       label: { de: 'Beitrag in Sammelband', en: 'chapter' },
