@@ -526,6 +526,10 @@ export default {
             ? this.getValue(bibRecord.entryTags, 'isbn') : '',
           doi: this.getValue(bibRecord.entryTags, 'doi')
             ? this.getValue(bibRecord.entryTags, 'doi') : '',
+          description: this.getValue(bibRecord.entryTags, 'abstract')
+            ? this.getValue(bibRecord.entryTags, 'abstract') : '',
+          note: this.getValue(bibRecord.entryTags, 'note')
+            ? this.getValue(bibRecord.entryTags, 'note') : '',
           sourceName: 'bibtex',
           type: bibRecord.entryType.toLowerCase(),
         };

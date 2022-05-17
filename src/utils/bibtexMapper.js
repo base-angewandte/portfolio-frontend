@@ -111,6 +111,26 @@ function getAuthor(value) {
   return null;
 }
 
+function getDescription(value) {
+  return [{
+    type: {
+      source: 'http://base.uni-ak.ac.at/portfolio/vocabulary/abstract',
+      label: {
+        de: 'Abstract',
+        en: 'Abstract',
+      },
+    },
+    data: [
+      {
+        language: {
+          source: 'http://base.uni-ak.ac.at/portfolio/languages/en',
+        },
+        text: value,
+      },
+    ],
+  }];
+}
+
 /**
  * Returns an object that represents a portfolio entry
  * (e.g. it is ready to be posted to the entry creation api in portfolio)
@@ -148,6 +168,11 @@ function createEntryFromBibtex(record) {
     }
     // finally, set the data attribute
     entry.data = data;
+    // map description, if any
+    const texts = getDescription(record.description);
+    if (texts) entry.texts = texts;
+    // map notes, if any
+    if (record.note) entry.notes = record.note;
   }
   return entry;
 }
