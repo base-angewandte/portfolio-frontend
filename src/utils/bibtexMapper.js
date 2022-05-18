@@ -55,6 +55,11 @@ function getPortfolioType(bibtexType) {
       source: 'http://base.uni-ak.ac.at/portfolio/taxonomy/master_thesis',
       label: { de: 'Masterarbeit', en: 'master thesis' },
     };
+  case 'misc':
+    return {
+      source: 'http://base.uni-ak.ac.at/portfolio/taxonomy/manuscript',
+      label: { de: 'Manuskript', en: 'manuscript' },
+    };
   case 'phdthesis':
     return {
       source: 'http://base.uni-ak.ac.at/portfolio/taxonomy/doctoral_dissertation',
@@ -64,6 +69,16 @@ function getPortfolioType(bibtexType) {
     return {
       source: 'http://base.uni-ak.ac.at/portfolio/taxonomy/conference_proceedings',
       label: { de: 'Tagungsband', en: 'conference proceedings' },
+    };
+  case 'techreport':
+    return {
+      source: 'http://base.uni-ak.ac.at/portfolio/taxonomy/review',
+      label: { de: 'Rezension', en: 'review' },
+    };
+  case 'unpublished':
+    return {
+      source: 'http://base.uni-ak.ac.at/portfolio/taxonomy/working_paper',
+      label: { de: 'Arbeitspapier', en: 'working paper' },
     };
   default:
     return null;
