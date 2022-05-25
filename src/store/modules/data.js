@@ -1137,7 +1137,7 @@ const actions = {
   },
   async fetchIsoLanguages(context) {
     try {
-      const url = `${process.env.VUE_APP_BACKEND_BASE_URL}/autosuggest/v1/languages`;
+      const url = `${process.env.VUE_APP_BACKEND_BASE_URL}${process.env.VUE_APP_BACKEND_PREFIX}/autosuggest/v1/languages`;
       await axios.get(url,
         {
           withCredentials: true,
