@@ -110,6 +110,7 @@
     "licenseButton": "Change License",
     "publishButton": "Change Release State",
     "archiveButton": "View in Archive",
+    "showroomButton": "View in Showroom",
     "deleteButton": "Delete",
     "deleteLinkedText": "Please select entries:",
     "deleteLinkedSubtext": "The link to these entries will be deleted.",
@@ -257,5 +258,20 @@
     "updateArchiveButton": "Update archive",
     "archiveUpdateTitle": "Update archive",
     "archiveUpdateSuccessful": "The archived data was successfully updated."
+  },
+  "import": {
+    "importButtonTitle": "Import",
+    "searchCatalogueText": "Search the Library Catalogue",
+    "successText": "Import successful",
+    "successSubtext": "{count} entries were imported successfully.",
+    "failText": "Error during import",
+    "failSubtext": "Unfortunately import has failed due to the following reason: {error}.",
+    "title": "Title",
+    "responsible": "Responsible",
+    "year": "Year",
+    "clickordrag": "Click or Drag'n Drop",
+    "attachBibTex": "Attach BibTex file",
+    "invalidBibTex": "The BibTex file could not be read",
+    "invalidFileType": "Invalid file type"
   }
 }

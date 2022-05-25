@@ -162,6 +162,10 @@ const state = {
   // have been updated since the last archival. Valid values:
   // true = changed; false = not changed; null = not applicable
   isArchiveChanged: null,
+  // stores the ids of entries imported from external sources (library catalog, bibtex)
+  importedIds: [],
+  // ISO 639-1 list of languages
+  isoLanguages: [],
 };
 
 const getters = {
@@ -247,6 +251,12 @@ const getters = {
   getIsArchivalEnabled() {
     // when true, the buttons pertaining to the long-term archival feature become visible in the gui
     return JSON.parse(process.env.VUE_APP_ARCHIVE_UPLOAD);
+  },
+  getImportedIds(state) {
+    return state.importedIds;
+  },
+  getPortfolioLangs() {
+    return state.isoLanguages;
   },
 };
 
@@ -391,6 +401,12 @@ const mutations = {
   },
   setIsArchiveChanged(state, val) {
     state.isArchiveChanged = val;
+  },
+  setImportedIds(state, val) {
+    state.importedIds = val;
+  },
+  setPortfolioLangs(state, val) {
+    state.isoLanguages = val;
   },
 };
 
@@ -1118,6 +1134,24 @@ const actions = {
   },
   addEnglishTitleCasing(context, object) {
     return addEnglishTextStyling(object);
+  },
+  async fetchIsoLanguages(context) {
+    try {
+      const url = `${process.env.VUE_APP_BACKEND_BASE_URL}/autosuggest/v1/languages`;
+      await axios.get(url,
+        {
+          withCredentials: true,
+          xsrfCookieName: 'csrftoken_portfolio',
+          xsrfHeaderName: 'X-CSRFToken',
+          headers: {
+            'Accept-Language': i18n.locale,
+          },
+        }).then((response) => {
+        context.commit('setPortfolioLangs', response.data);
+      });
+    } catch (e) {
+      console.error(e);
+    }
   },
 };
 

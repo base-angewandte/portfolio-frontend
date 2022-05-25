@@ -6,22 +6,58 @@
     <div
       ref="sidebarHead"
       :class="['sidebar-head', { 'sidebar-head-shadow': sidebarBelow }]">
-      <div :class="['base-row', { 'base-row-with-form': isNewForm || !!activeEntryId }]">
+      <div
+        :class="['base-row', { 'base-row-with-form':
+          isNewForm || !!activeEntryId || isImportPage }]">
         <BaseButton
           v-if="newEnabled"
           :active="isNewForm"
-          :text="$t('new')"
+          :text="isButtonMinimized ? '' : $t('new')"
           :disabled="isLoading"
           icon="add-new-object"
           icon-size="large"
-          class="base-row-button"
+          :class="['base-row-button',
+                   {'minimized': isButtonMinimized},
+                   {'maximized': isButtonMaximized}]"
           button-style="row"
+          data-e2e-new-button
           @clicked="getNewForm" />
+        <BaseButton
+          v-if="importEnabled"
+          :text="isButtonMinimized ? '' : $t('import.importButtonTitle')"
+          :active="isImportPage"
+          icon="download"
+          icon-size="large"
+          :class="['base-row-button',
+                   {'minimized': isButtonMinimized},
+                   {'maximized': isButtonMaximized}]"
+          button-style="row"
+          data-e2e-import-button
+          @clicked="$emit('import-entries', 'goToImport')" />
+        <BaseButton
+          v-if="!isSearchExpanded"
+          text=""
+          icon="magnifier"
+          icon-size="large"
+          class="base-row-button search-button minimized"
+          style="border-right: none;"
+          button-style="row"
+          data-e2e-search-button
+          @clicked="expandOrCollapseSearch(true)" />
+        <!-- Searchbar is conditionally visible for desktop screens -->
+        <BaseSearch
+          v-if="isSearchExpanded"
+          v-model="filterString"
+          :show-image="true"
+          :placeholder="$t('search')"
+          class="search-bar-desktop"
+          @input="filterEntries($event, 'title')" />
+        <!-- Searchbar is always visible for medium and mobile screens -->
         <BaseSearch
           v-model="filterString"
           :show-image="true"
           :placeholder="$t('search')"
-          class="search-bar"
+          class="search-bar-mobile"
           @input="filterEntries($event, 'title')" />
       </div>
       <div class="sidebar-options-container">
@@ -200,6 +236,14 @@ export default {
       default: true,
     },
     /**
+     * whether the import button is to be shown; e.g. this is not required
+     * when the sidebar instance is used on the "attach existing entries" pop-up
+     */
+    importEnabled: {
+      type: Boolean,
+      default: true,
+    },
+    /**
      * need to set from outside for link entries functionality
      */
     selectActive: {
@@ -261,6 +305,8 @@ export default {
       noEntriesSubtext: '',
       // to have shadow when sidebar list below sidebar head
       sidebarBelow: false,
+      // used to horizontally collapse/expand the sidebar's search input
+      isSearchExpanded: true,
     };
   },
   computed: {
@@ -287,6 +333,9 @@ export default {
     },
     isNewForm() {
       return this.$route.name === 'newEntry';
+    },
+    isImportPage() {
+      return this.$route.path === '/import';
     },
     sortOptions() {
       return [
@@ -331,6 +380,26 @@ export default {
     ...mapGetters('data', [
       'getCurrentItemData',
     ]),
+    /**
+     * Returns true if sidebar head buttons such as 'New' or 'Import'
+     * are to be rendered in minimized state (i.e. without text and limited width).
+     */
+    isButtonMinimized() {
+      if (this.isSearchExpanded && this.$route.path !== '/') {
+        return true;
+      }
+      return false;
+    },
+    /**
+     * Returns true if sidebar head buttons such as 'New' or 'Import'
+     * are to be rendered in maximized state (i.e. with text and full width).
+     */
+    isButtonMaximized() {
+      if (!this.isSearchExpanded && this.$route.path !== '/') {
+        return true;
+      }
+      return false;
+    },
   },
   watch: {
     list(val) {
@@ -356,6 +425,7 @@ export default {
         if (this.$refs.pagination) {
           this.$refs.pagination.setStartEnd();
         }
+        this.expandOrCollapseSearch();
       }
     },
     windowWidth() {
@@ -390,12 +460,15 @@ export default {
       this.checkContainerPosition();
     });
   },
+  created() {
+    this.expandOrCollapseSearch();
+  },
   updated() {
     this.calculateDropDownsInline();
   },
   methods: {
     showEntry(index) {
-      this.$emit('show-entry', this.listInt[index].id);
+      this.$emit('show-entry', 'goToEntry', this.listInt[index].id);
     },
     selectEntry(evt) {
       if (evt.selected) {
@@ -422,7 +495,7 @@ export default {
     getNewForm() {
       this.$store.commit('data/deleteCurrentItem');
       this.$store.commit('data/deleteParentItems');
-      this.$emit('new-form');
+      this.$emit('new-form', 'goToNew');
     },
     filterEntries(val, type) {
       if (type === 'type') {
@@ -634,6 +707,19 @@ export default {
           || this.$refs.menuContainer.scrollTop > 0;
       }
     },
+    /**
+     * Triggers a (horizontally) collapsed or an expanded state for the search input
+     * of the sidebar.
+     */
+    expandOrCollapseSearch(forceExpand = false) {
+      // expand the search in the following cases: (a) we are on root page
+      // (b) import is disabled (c) forceExpand flag is true
+      if (this.$route.path === '/' || !this.importEnabled || forceExpand) {
+        this.isSearchExpanded = true;
+      } else {
+        this.isSearchExpanded = false;
+      }
+    },
   },
 };
 </script>
@@ -645,10 +731,6 @@ export default {
     display: flex;
     flex-direction: column;
     height: calc(100vh - #{$header-height} - #{$row-height-small} - 40px);
-
-    .search-bar {
-      border-left: $separation-line;
-    }
 
     .sidebar-head {
       position: sticky;
@@ -664,6 +746,24 @@ export default {
       .sidebar-drop-downs {
         display: flex;
         justify-content: flex-end;
+      }
+
+      .base-row-button {
+        max-width: 100%;
+        border-right: $separation-line;
+      }
+
+      .minimized {
+        width: 3rem;
+        padding-left: 30px;
+      }
+
+      .maximized {
+        width: 100%;
+      }
+
+      .search-bar-mobile {
+        display: none;
       }
     }
 
@@ -721,6 +821,14 @@ export default {
   @media screen and (max-width: 1083px) {
     .menu-sidebar {
       height: calc(100vh - #{$header-height} - #{$row-height-small} - 131px);
+
+      .search-bar-desktop {
+        display: none;
+      }
+
+      .search-bar-mobile {
+        display: block;
+      }
     }
   }
 
@@ -743,8 +851,21 @@ export default {
 
           .base-row-button {
             width: 100%;
+            border-right: none;
             border-bottom: $separation-line;
           }
+        }
+
+        .search-button {
+          display: none !important;
+        }
+
+        .search-bar-desktop {
+          display: none;
+        }
+
+        .search-bar-mobile {
+          display: block;
         }
       }
     }
@@ -760,11 +881,20 @@ export default {
       border-bottom: $separation-line;
     }
 
+    .search-button {
+      display: none !important;
+    }
+
     .menu-sidebar {
       height: calc(100vh - #{$header-height} - (2 * #{$spacing}));
 
-      .search-bar {
+      .search-bar-mobile {
+        display: block;
         border-left: none;
+      }
+
+      .search-bar-desktop {
+        display: none;
       }
     }
 
