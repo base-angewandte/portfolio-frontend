@@ -202,11 +202,11 @@
 
 <script>
 import axios from 'axios';
+import { mapGetters } from 'vuex';
 import BibtexParser from '@/components/BibtexParser';
 import createEntryFromPrimo from '@/utils/primoMapper';
 import createEntryFromBibtex from '@/utils/bibtexMapper';
 import SelectableAccordion from '@/components/SelectableAccordion';
-import { mapGetters } from 'vuex';
 
 export default {
   name: 'ImportView',
