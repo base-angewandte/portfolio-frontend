@@ -159,6 +159,14 @@
                 <td class="definition-column">
                   {{ item.keywords }}
                 </td>
+              </tr>
+              <tr>
+                <td class="term-column">
+                  Is part of
+                </td>
+                <td class="definition-column">
+                  {{ item.isPartOf }}
+                </td>
               </tr> -->
             </tbody>
           </table>
@@ -361,6 +369,7 @@ export default {
           language: res.language ? res.language : '',
           isbn: res.isbn ? res.isbn[0] : '',
           pages: res.pages ? res.pages[0] : '',
+          isPartOf: res.ispartof ? res.ispartof.toString() : '',
         };
         return result;
       });

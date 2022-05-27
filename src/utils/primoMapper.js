@@ -645,6 +645,55 @@ function typeHasPages(portfolioType) {
 }
 
 /**
+ * Return Boolean **true** if the portfolio type supplied as argument has the *Published In* fields
+ * to which equivalent data from Primo can be mapped; false otherwise.
+ * @param {*} portfolioType
+ * @returns
+ */
+function typeHasPublishedIn(portfolioType) {
+  switch (portfolioType) {
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/monograph':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/journal':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/article':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/online_newspaper_article':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/image':
+    return false;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/video':
+    return false;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/audio_recording':
+    return false;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/illustration':
+    return false;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/artistic_sound_image_data_medium':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/doctoral_dissertation':
+    return true;
+  case 'http://base.uni-ak.ac.at/portfolio/taxonomy/series_monographic_series':
+    return true;
+  default:
+    return false;
+  }
+}
+
+/**
+ * Mapping function that returns the portfolio's entry "Published in" field.
+ * This structure is common to all mapped types except audio_recording.
+ * @param {*} isPartOf Maps to pnx/display/ispartof field in Primo
+ * @returns The array structure containing the "Published in" field
+ */
+function getPublishedIn(isPartOf) {
+  return isPartOf ? [
+    {
+      title: isPartOf,
+    },
+  ] : '';
+}
+
+/**
  * Converts a library search result record into an object that represents
  * a new entry in portfolio.
  */
@@ -704,6 +753,13 @@ function createEntryFromPrimo(record, portfolioLangs) {
     if (record.isbn && typeHasIsbn(entry.type.source)) data.isbn = record.isbn;
     // map pages info
     if (record.pages && typeHasPages(entry.type.source)) data.pages = record.pages;
+    // map the "published in" title
+    const publishedIn = getPublishedIn(record.isPartOf);
+    if (publishedIn && typeHasPublishedIn(entry.type.source)) data.published_in = publishedIn;
+    // workaround: the audio recording type has different structure for "published in"
+    if (record.isPartOf && entry.type.source === 'http://base.uni-ak.ac.at/portfolio/taxonomy/audio_recording') {
+      data.published_in = record.isPartOf;
+    }
     // finally, set the data attribute
     entry.data = data;
   }
