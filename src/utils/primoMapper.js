@@ -694,6 +694,34 @@ function getPublishedIn(isPartOf) {
 }
 
 /**
+ * Mapping function that returns the portfolio entry's "Contributors" field
+ * @param {*} list Maps to pnx/display/contributor in Primo
+ * @returns The array structure corresponding to "Contributors" in portfolio
+ */
+function getContributors(list) {
+  const retVal = [];
+  if (list && list.length) {
+    list.forEach((contributor) => {
+      retVal.push(
+        {
+          label: contributor,
+          roles: [
+            {
+              source: 'http://base.uni-ak.ac.at/portfolio/vocabulary/contribution',
+              label: {
+                en: 'Contribution',
+                de: 'Beitrag',
+              },
+            },
+          ],
+        },
+      );
+    });
+  }
+  return retVal;
+}
+
+/**
  * Converts a library search result record into an object that represents
  * a new entry in portfolio.
  */
@@ -759,6 +787,14 @@ function createEntryFromPrimo(record, portfolioLangs) {
     // workaround: the audio recording type has different structure for "published in"
     if (record.isPartOf && entry.type.source === 'http://base.uni-ak.ac.at/portfolio/taxonomy/audio_recording') {
       data.published_in = record.isPartOf;
+    }
+    // map the contributors
+    const contributors = getContributors(record.contributors);
+    // append to already existing contributors, if any
+    if (data.contributors) {
+      data.contributors.concat(contributors);
+    } else {
+      data.contributors = contributors;
     }
     // finally, set the data attribute
     entry.data = data;

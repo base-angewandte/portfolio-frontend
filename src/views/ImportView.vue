@@ -167,6 +167,14 @@
                 <td class="definition-column">
                   {{ item.isPartOf }}
                 </td>
+              </tr>
+              <tr>
+                <td class="term-column">
+                  Contributors
+                </td>
+                <td class="definition-column">
+                  {{ item.contributors }}
+                </td>
               </tr> -->
             </tbody>
           </table>
@@ -370,6 +378,7 @@ export default {
           isbn: res.isbn ? res.isbn[0] : '',
           pages: res.pages ? res.pages[0] : '',
           isPartOf: res.ispartof ? res.ispartof.toString() : '',
+          contributors: res.contributors ? res.contributors : '',
         };
         return result;
       });
