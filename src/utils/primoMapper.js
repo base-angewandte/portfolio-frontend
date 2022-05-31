@@ -334,9 +334,10 @@ function getAuthorObject(authorLabel, lad24 = 0) {
  * Mapping function that returns the portfolio entry's authors.
  * @param {*} creator Maps to docs/{index}/pnx/display/creator of the Primo API response body
  * @param {*} lad24 Maps to docs/{index}/pnx/addata/lad24 of the Primo API response body
+ * @param {*} lds16 Maps to docs/{index}/pnx/display/lds16 of the Primo API response body
  * @returns
  */
-function getPortfolioAuthors(creator, lad24) {
+function getPortfolioAuthors(creator, lad24, lds16) {
   const authors = [];
   // if there is only one creator, look up this creator's GND in lad24
   // and return the author with the GND included.
@@ -349,6 +350,18 @@ function getPortfolioAuthors(creator, lad24) {
         authors.push(getAuthorObject(item));
       });
     }
+  } else if (lds16) {
+    const author = {
+      label: lds16,
+      roles: [{
+        source: 'http://base.uni-ak.ac.at/portfolio/vocabulary/author',
+        label: {
+          de: 'Autor*in',
+          en: 'Author',
+        },
+      }],
+    };
+    authors.push(author);
   }
   return authors;
 }
@@ -734,7 +747,7 @@ function createEntryFromPrimo(record, portfolioLangs) {
     // assume data object is needed if type exists
     const data = {};
     // map authors, if any
-    const authors = getPortfolioAuthors(record.authors, record.lad24);
+    const authors = getPortfolioAuthors(record.authors, record.lad24, record.lds16);
     // workaround: add authors only to compabitble types in portfolio
     if (authors && authors.length && typeHasAuthor(entry.type.source)) {
       data.authors = authors;

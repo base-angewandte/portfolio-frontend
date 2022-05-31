@@ -114,6 +114,14 @@
               </tr>
               <tr>
                 <td class="term-column">
+                  LDS16
+                </td>
+                <td class="definition-column">
+                  {{ item.lds16 }}
+                </td>
+              </tr>
+              <tr>
+                <td class="term-column">
                   Description
                 </td>
                 <td class="definition-column">
@@ -373,6 +381,7 @@ export default {
           sourceName: 'primo',
           type: res.type ? res.type.toString() : '',
           lad24: res.lad24 ? res.lad24 : '',
+          lds16: res.lds16 ? res.lds16.toString() : '',
           description: res.description ? res.description : '',
           language: res.language ? res.language : '',
           isbn: res.isbn ? res.isbn[0] : '',
