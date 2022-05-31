@@ -147,6 +147,32 @@ function getDescription(value) {
 }
 
 /**
+ * Mapping function that returns the portfolio's entry "Published in" field.
+ * @param {*} journal Maps to 'journal' field in the bibtex record
+ * @returns The array structure containing the "Published in" field
+ */
+function getPublishedIn(journal) {
+  return journal ? [
+    {
+      title: journal,
+    },
+  ] : '';
+}
+
+/**
+ * Maps volume and number from bibtex into a single portfolio field
+ * @param {*} volume The 'volume' field in the bibtex record
+ * @param {*} number The 'number' field in the bibtex record
+ * @returns the value to be written to "Volume/issue" field
+ */
+function getVolumeIssue(volume, number) {
+  if (volume && number) return `${volume } / ${ number}`;
+  if (volume) return volume;
+  if (number) return number;
+  return '';
+}
+
+/**
  * Returns an object that represents a portfolio entry
  * (e.g. it is ready to be posted to the entry creation api in portfolio)
  */
@@ -180,6 +206,16 @@ function createEntryFromBibtex(record) {
     // map pages
     if (record.pages && entry.type.source !== 'http://base.uni-ak.ac.at/portfolio/taxonomy/conference') {
       data.pages = record.pages;
+    }
+    // map the "published in" title
+    const publishedIn = getPublishedIn(record.journal);
+    if (publishedIn && entry.type.source !== 'http://base.uni-ak.ac.at/portfolio/taxonomy/conference') {
+      data.published_in = publishedIn;
+    }
+    // map volume and number
+    if (entry.type.source !== 'http://base.uni-ak.ac.at/portfolio/taxonomy/conference') {
+      const volumeIssue = getVolumeIssue(record.volume, record.number);
+      if (volumeIssue) data.volume = volumeIssue;
     }
     // finally, set the data attribute
     entry.data = data;

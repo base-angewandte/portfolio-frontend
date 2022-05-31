@@ -548,6 +548,12 @@ export default {
             ? this.getValue(bibRecord.entryTags, 'abstract') : '',
           note: this.getValue(bibRecord.entryTags, 'note')
             ? this.getValue(bibRecord.entryTags, 'note') : '',
+          journal: this.getValue(bibRecord.entryTags, 'journal')
+            ? this.getValue(bibRecord.entryTags, 'journal') : '',
+          volume: this.getValue(bibRecord.entryTags, 'volume')
+            ? this.getValue(bibRecord.entryTags, 'volume') : '',
+          number: this.getValue(bibRecord.entryTags, 'number')
+            ? this.getValue(bibRecord.entryTags, 'number') : '',
           sourceName: 'bibtex',
           type: bibRecord.entryType.toLowerCase(),
         };
