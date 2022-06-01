@@ -12,7 +12,6 @@
     const searchValue = "Andres Segovia Mein Gitarrenbuch"
     // the testing (positive) values that are expected
     const titleText = 'Mein Gitarrenbuch eine Anleitung für das Gitarrespiel';
-    const subtitleText = 'Gitarrespiel,Gitarre ; Instrumentaltechnik,Gitarrenspiel';
     const dateText = '1980';
     const isbnText = '3451189933';
     const pagesText = '63 S., zahlr. Ill., Notenbeisp., 27 cm'
@@ -51,13 +50,6 @@
         page
             .assert.elementPresent('@titleSelector')
             .assert.valueEquals('@titleSelector', titleText)
-    });
-
-    it('after importing 1 entry of type monograph, the subtitle should be populated', function(browser) {
-        const page = browser.page.portfolioPage();
-        page
-            .assert.elementPresent('@subtitleSelector')
-            .assert.valueEquals('@subtitleSelector', subtitleText)
     });
 
     it('after importing 1 entry of type monograph, the date should be populated', function(browser) {

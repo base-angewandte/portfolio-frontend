@@ -375,7 +375,7 @@ export default {
         const result = {
           id: index,
           title: res.label.toString().substring(0, 255),
-          subtitle: res.subject ? res.subject.toString().substring(0, 255) : '',
+          subject: res.subject ? res.subject.toString().substring(0, 255) : '',
           authors: res.author ? res.author : '',
           year: res.creationdate ? res.creationdate.toString() : '',
           sourceName: 'primo',

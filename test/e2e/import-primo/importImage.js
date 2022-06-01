@@ -12,7 +12,6 @@
     const searchValue = "wien rieger albert";
     // the testing (positive) values that are expected
     const titleText = 'Wien';
-    const subtitleText = 'Altkarte$$QAltkarte';
  
     before(function (browser) {
         // Login to app
@@ -48,13 +47,6 @@
         page
             .assert.elementPresent('@titleSelector')
             .assert.valueEquals('@titleSelector', titleText)
-    });
-
-    it('after importing 1 entry, the subtitle should be populated', function(browser) {
-        const page = browser.page.portfolioPage();
-        page
-            .assert.elementPresent('@subtitleSelector')
-            .assert.valueEquals('@subtitleSelector', subtitleText)
     });
 
     it('after importing 1 entry, a contributor with author role should be added', function(browser) {

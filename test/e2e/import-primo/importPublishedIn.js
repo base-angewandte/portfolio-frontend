@@ -12,7 +12,6 @@
     const searchValue = "contextualizing praying bodies";
     // the testing (positive) values that are expected
     const titleText = 'Contextualizing Praying Bodies Gestures and the Military';
-    const subtitleText = '';
     const dateText = '2021';
     const publishedInText = 'Enthalten in: Throwing gestures / edited by Florian Bettel, Irina Kaldrack, Konrad Strutz ; with contributions from Florian Bettel [und 14 weitere], Wien : Verlag für moderne Kunst, [2021], Seite 79-88  . - ISBN:9783903572256 390357225X'
 
@@ -50,13 +49,6 @@
         page
             .assert.elementPresent('@titleSelector')
             .assert.valueEquals('@titleSelector', titleText)
-    });
-
-    it('after importing 1 entry of type article, the subtitle should be populated', function(browser) {
-        const page = browser.page.portfolioPage();
-        page
-            .assert.elementPresent('@subtitleSelector')
-            .assert.valueEquals('@subtitleSelector', subtitleText)
     });
 
     it('after importing 1 entry of type article, the date should be populated', function(browser) {

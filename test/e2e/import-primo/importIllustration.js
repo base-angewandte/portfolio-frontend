@@ -12,7 +12,6 @@
     const searchValue = "Rumänien Moldawien Autokarte";
     // the testing (positive) values that are expected
     const titleText = 'Rumänien Moldawien Autokarte ; Citypläne, Ortsregister mit Postleitzahlen, touristische Informationen = Romania Moldova,Rumänien - Moldawien Autokarte ; Citypläne, Ortsregister mit Postleitzahlen, touristische Informationen = Romania - Moldova';
-    const subtitleText = 'Rumänien ; Straßenkarte ; Karte,Moldawien ; Straßenkarte ; Karte';
     const dateText = '2005';
 
     before(function (browser) {
@@ -49,13 +48,6 @@
         page
             .assert.elementPresent('@titleSelector')
             .assert.valueEquals('@titleSelector', titleText)
-    });
-
-    it('after importing 1 entry, the subtitle should be populated', function(browser) {
-        const page = browser.page.portfolioPage();
-        page
-            .assert.elementPresent('@subtitleSelector')
-            .assert.valueEquals('@subtitleSelector', subtitleText)
     });
 
     it('after importing 1 entry, the date should be populated', function(browser) {

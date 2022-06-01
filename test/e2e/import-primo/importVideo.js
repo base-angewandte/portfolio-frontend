@@ -12,7 +12,6 @@
     const searchValue = "Divina.com lapidi dantesche a Firenze";
     // the testing (positive) values that are expected
     const titleText = 'Divina.com lapidi dantesche a Firenze = the Dante plaques in Florence : mixed media event in 36 parts for voice, ensemble, live electronics and video';
-    const subtitleText = 'DVD-Video$$QDVD-Video';
     const dateText = '2016';
     const authorText = 'Lombardi, Daniele, 1946- [KomponistIn]. [DirigentIn]';
 
@@ -50,13 +49,6 @@
         page
             .assert.elementPresent('@titleSelector')
             .assert.valueEquals('@titleSelector', titleText)
-    });
-
-    it('after importing 1 entry, the subtitle should be populated', function(browser) {
-        const page = browser.page.portfolioPage();
-        page
-            .assert.elementPresent('@subtitleSelector')
-            .assert.valueEquals('@subtitleSelector', subtitleText)
     });
 
     it('after importing 1 entry, the date should be populated', function(browser) {

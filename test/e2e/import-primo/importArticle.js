@@ -12,7 +12,6 @@
     const searchValue = "Compromise or complement? Exploring the interactions between sustainable and resilient supply chain management";
     // the testing (positive) values that are expected
     const titleText = 'Compromise or complement? Exploring the interactions between sustainable and resilient supply chain management';
-    const subtitleText = '';
     const dateText = '2017';
     const pagesText = '<b>Medium: </b>Online-Ressource'
 
@@ -50,13 +49,6 @@
         page
             .assert.elementPresent('@titleSelector')
             .assert.valueEquals('@titleSelector', titleText)
-    });
-
-    it('after importing 1 entry of type article, the subtitle should be populated', function(browser) {
-        const page = browser.page.portfolioPage();
-        page
-            .assert.elementPresent('@subtitleSelector')
-            .assert.valueEquals('@subtitleSelector', subtitleText)
     });
 
     it('after importing 1 entry of type article, the date should be populated', function(browser) {

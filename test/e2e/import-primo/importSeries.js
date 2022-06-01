@@ -12,7 +12,6 @@
     const searchValue = "Gmundner GeoStudien geologisch, angewandt, interessant,Gmundner Geo-Studien geologisch, angewandt, interessant";
     // the testing (positive) values that are expected
     const titleText = 'Gmundner GeoStudien geologisch, angewandt, interessant,Gmundner Geo-Studien geologisch, angewandt, interessant';
-    const subtitleText = 'Geologie';
     const pagesText = '30 cm'
     const descText = 'Adresse d. Verl.: A-4810 Gmunden, Kammerhofgasse 8';
 
@@ -50,13 +49,6 @@
         page
             .assert.elementPresent('@titleSelector')
             .assert.valueEquals('@titleSelector', titleText)
-    });
-
-    it('after importing 1 entry, the subtitle should be populated', function(browser) {
-        const page = browser.page.portfolioPage();
-        page
-            .assert.elementPresent('@subtitleSelector')
-            .assert.valueEquals('@subtitleSelector', subtitleText)
     });
 
     it('after importing 1 entry, the pages field should be populated', function(browser) {

@@ -4,7 +4,7 @@
       v-for="(item, index) in list"
       :key="item.id"
       :title="item.title"
-      :subtitle="item.subtitle"
+      :subtitle="item.subject"
       :is-selectable="true"
       :is-selected="internalList[index].selected"
       :is-expanded="internalList[index].expanded"

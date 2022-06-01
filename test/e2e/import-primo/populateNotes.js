@@ -13,7 +13,6 @@
     const searchValue = "Educaţia istorică între discursul politic şi identitar în Republica Moldova,Educaţia istorică - între discursul politic şi identitar în Republica Moldova";
     // the testing (positive) values that are expected
     const titleText = 'Educaţia istorică între discursul politic şi identitar în Republica Moldova,Educaţia istorică - între discursul politic şi identitar în Republica Moldova';
-    const subtitleText = 'Moldawien ; Geschichte ; Unterricht ; Geschichte,Moldawien ; Schulbuch ; Geschichte ; Evaluation ; Geschichte 2005-2008';
     const dateText = '2010';
     const pagesText = '363 S., Ill.';
     const descText = 'Literaturverz. S. 133 - 168';
@@ -52,13 +51,6 @@
         page
             .assert.elementPresent('@titleSelector')
             .assert.valueEquals('@titleSelector', titleText)
-    });
-
-    it('after importing 1 entry, the subtitle should be populated', function(browser) {
-        const page = browser.page.portfolioPage();
-        page
-            .assert.elementPresent('@subtitleSelector')
-            .assert.valueEquals('@subtitleSelector', subtitleText)
     });
 
     it('after importing 1 entry, the date should be populated', function(browser) {

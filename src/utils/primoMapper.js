@@ -735,13 +735,43 @@ function getContributors(list) {
 }
 
 /**
+ * Mapping function that returns the portfolio entry's keywords.
+ * @param {*} value Maps to pnx/display/subject in Primo
+ * @returns the "keywords" field structure, or an empty array
+ */
+function getKeywords(value) {
+  const keywords = [];
+  if (value.includes(';')) {
+    const arr = value.split(';');
+    // remove duplicates
+    const unique = [...new Set(arr)];
+    unique.forEach((val) => {
+      keywords.push({
+        label: {
+          de: val,
+          en: val,
+        },
+      });
+    });
+  } else if (value.length) {
+    keywords.push({
+      label: {
+        de: value,
+        en: value,
+      },
+    });
+  }
+  return keywords;
+}
+
+/**
  * Converts a library search result record into an object that represents
  * a new entry in portfolio.
  */
 function createEntryFromPrimo(record, portfolioLangs) {
   const entry = {};
   entry.title = record.title;
-  entry.subtitle = record.subtitle;
+  entry.keywords = getKeywords(record.subject);
   entry.type = getPortfolioType(record.type);
   if (entry.type) {
     // assume data object is needed if type exists

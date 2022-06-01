@@ -12,7 +12,6 @@
     const searchValue = "Iter italicum accedunt alia itinera, on CDROM";
     // the testing (positive) values that are expected
     const titleText = 'Iter italicum accedunt alia itinera, on CDROM ; ; a database of uncatalogued or incompletely catalogued humanistic manuscripts of the Renaissance in Italian and other libraries,Iter italicum accedunt alia itinera, on CD-ROM ; ; a database of uncatalogued';
-    const subtitleText = 'Humanismus ; Handschrift ; Katalog ; CD-ROM,Renaissance ; Handschrift ; Katalog ; CD-ROM,Handschrift ; Geschichte 1420-1600 ; Katalog ; CD-ROM';
 
     before(function (browser) {
         // Login to app
@@ -49,14 +48,6 @@
             .assert.elementPresent('@titleSelector')
             .assert.valueEquals('@titleSelector', titleText)
     });
-
-    it('after importing 1 entry, the subtitle should be populated', function(browser) {
-        const page = browser.page.portfolioPage();
-        page
-            .assert.elementPresent('@subtitleSelector')
-            .assert.valueEquals('@subtitleSelector', subtitleText)
-    });
-
 
 });
 

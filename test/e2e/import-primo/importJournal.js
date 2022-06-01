@@ -12,7 +12,6 @@
     const searchValue = "Ecology news / Österreichisches Ökologie-Institut für Angewandte Umweltforschung";
     // the testing (positive) values that are expected
     const titleText = 'Ecology news / Österreichisches Ökologie-Institut für Angewandte Umweltforschung,Ecology news / Österreichisches ÖkologieInstitut für Angewandte Umweltforschung,Ecology news / Österreichisches Ökologie-Institut für Angewandte Umweltforschung Sponsoringpos';
-    const subtitleText = '';
     const dateText = '';
     const pagesText = '21 x 29 cm';
 
@@ -50,13 +49,6 @@
         page
             .assert.elementPresent('@titleSelector')
             .assert.valueEquals('@titleSelector', titleText)
-    });
-
-    it('after importing 1 entry of type journal, the subtitle should be populated', function(browser) {
-        const page = browser.page.portfolioPage();
-        page
-            .assert.elementPresent('@subtitleSelector')
-            .assert.valueEquals('@subtitleSelector', subtitleText)
     });
 
     it('after importing 1 entry of type journal, the date should be populated', function(browser) {

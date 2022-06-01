@@ -12,7 +12,6 @@
     const searchValue = "Funktion, Aufbau und Bedeutung betrieblicher Entgeltmodelle eine personalwirtschaftlichsystemische Analyse exemplarisch angewandt am EFQMModell";
     // the testing (positive) values that are expected
     const titleText = 'Funktion, Aufbau und Bedeutung betrieblicher Entgeltmodelle eine personalwirtschaftlichsystemische Analyse exemplarisch angewandt am EFQMModell,Funktion, Aufbau und Bedeutung betrieblicher Entgeltmodelle eine personalwirtschaftlich-systemische Analyse exe';
-    const subtitleText = 'Lohnsystem ; Organisation ; Qualitätsmanagement';
     const dateText = '1997';
     const pagesText = '238 Bl.'
 
@@ -50,13 +49,6 @@
         page
             .assert.elementPresent('@titleSelector')
             .assert.valueEquals('@titleSelector', titleText)
-    });
-
-    it('after importing 1 entry, the subtitle should be populated', function(browser) {
-        const page = browser.page.portfolioPage();
-        page
-            .assert.elementPresent('@subtitleSelector')
-            .assert.valueEquals('@subtitleSelector', subtitleText)
     });
 
     it('after importing 1 entry, the date should be populated', function(browser) {
