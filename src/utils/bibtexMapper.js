@@ -85,11 +85,30 @@ function getPortfolioType(bibtexType) {
   }
 }
 
+/**
+ * Maps the keywords of bibtex record to portfolio "keywords"
+ * @param {*} value The comma-, or semicolon- separated value from the bibtex record
+ * @returns The keywords array
+ */
 function getKeywords(value) {
   const retVal = [];
   if (value.includes(',')) {
     const arr = value.split(',');
-    arr.forEach((val) => {
+    // remove duplicates
+    const unique = [...new Set(arr)];
+    unique.forEach((val) => {
+      retVal.push({
+        label: {
+          de: val,
+          en: val,
+        },
+      });
+    });
+  } else if (value.includes(';')) {
+    const arr = value.split(';');
+    // remove duplicates
+    const unique = [...new Set(arr)];
+    unique.forEach((val) => {
       retVal.push({
         label: {
           de: val,
