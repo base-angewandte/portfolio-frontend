@@ -165,7 +165,9 @@ export default {
             this.createNewForm();
             break;
           case 'goToImport':
-            this.$router.push('/import');
+            if (this.$route.name !== 'importEntries') {
+              this.$router.push('/import');
+            }
             break;
           default:
             console.error('An unknown route/action was requested.');
