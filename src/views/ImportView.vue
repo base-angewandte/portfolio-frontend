@@ -232,6 +232,9 @@ import createEntryFromPrimo from '@/utils/primoMapper';
 import createEntryFromBibtex from '@/utils/bibtexMapper';
 import SelectableAccordion from '@/components/SelectableAccordion';
 
+const { CancelToken } = axios;
+let cancel;
+
 export default {
   name: 'ImportView',
   components: {
@@ -343,6 +346,10 @@ export default {
       try {
         const backendUrl = `${process.env.VUE_APP_BACKEND_BASE_URL}${process.env.VUE_APP_BACKEND_PREFIX}`;
         const apiUrl = encodeURI(`${backendUrl}/autosuggest/v1/bibrecs/any,contains,${this.searchText}/`);
+        // cancel previous request if there is any
+        if (cancel) {
+          cancel('a new request has started');
+        }
         const response = await axios.get(apiUrl, {
           withCredentials: true,
           xsrfCookieName: 'csrftoken_portfolio',
@@ -350,6 +357,10 @@ export default {
           headers: {
             'Accept-Language': this.$i18n.locale,
           },
+          /* eslint-disable-next-line */
+          cancelToken: new CancelToken(((c) => {
+            cancel = c;
+          })),
         });
         this.results = this.processResults(response.data);
         this.noResultsText = response.data.length ? '' : this.$t('form.noResult');
@@ -358,6 +369,8 @@ export default {
         // on status code >= 300
         if (e.response && e.response.status) {
           console.error(`Error fetching search results. HTTP status code: ${e.response.status}`);
+        } else if (axios.isCancel(e)) {
+          console.warn('Request cancelled:', e.message);
         } else {
           console.error(e);
         }
