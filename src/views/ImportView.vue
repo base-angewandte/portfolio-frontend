@@ -59,7 +59,6 @@
       <BaseLoader
         v-if="isLoading"
         data-e2e-import-loading
-        loader-color="red"
         class="loader" />
       <SelectableAccordion
         v-if="results && results.length && !isLoading"
@@ -613,8 +612,8 @@ export default {
 }
 
 .loader {
-  top: 50%;
-  transform: translateY(-50%);
+  color: $app-color;
+  margin: 25vh 0 0 0;
 }
 
 .drop-box {
