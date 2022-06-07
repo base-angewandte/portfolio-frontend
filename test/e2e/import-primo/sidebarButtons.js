@@ -45,10 +45,17 @@ describe('Test sidebar buttons behaviour', function () {
             .assert.hasClass('@sidebarNewButton', 'minimized');
     });
 
+    it('when sidebar search loses focus and has empty text, the "import" and "new" buttons should be expanded', function (browser) {
+        const page = browser.page.portfolioPage();
+        page
+            .click('@importSearchInput')
+            .assert.hasClass('@sidebarImportButton', 'maximized')
+            .assert.hasClass('@sidebarNewButton', 'maximized');
+    });
+
     it('clicking the "new" button should maximize the "import" button and minimize the "search" button', function (browser) {
         const page = browser.page.portfolioPage();
         page
-            .pause(5000)
             .click('@sidebarNewButton')
             .assert.hasClass('@sidebarImportButton', 'maximized')
             .assert.hasClass('@sidebarSearchButton', 'minimized')

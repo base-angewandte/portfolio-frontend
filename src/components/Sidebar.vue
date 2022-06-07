@@ -47,10 +47,12 @@
         <!-- Searchbar is conditionally visible for desktop screens -->
         <BaseSearch
           v-if="isSearchExpanded"
+          id="sidebarSearchInput"
           v-model="filterString"
           :show-image="true"
           :placeholder="$t('search')"
           class="search-bar-desktop"
+          @blur="onSearchInputBlur()"
           @input="filterEntries($event, 'title')" />
         <!-- Searchbar is always visible for medium and mobile screens -->
         <BaseSearch
@@ -716,8 +718,21 @@ export default {
       // (b) import is disabled (c) forceExpand flag is true
       if (this.$route.path === '/' || !this.importEnabled || forceExpand) {
         this.isSearchExpanded = true;
+        // set focus on the search input
+        this.$nextTick(() => {
+          document.querySelector('#sidebarSearchInput').focus();
+        });
       } else {
         this.isSearchExpanded = false;
+      }
+    },
+    /**
+     * Occurs when the sidebar search input loses focus
+     */
+    onSearchInputBlur() {
+      // collapse search input if text is empty
+      if (!this.filterString.length) {
+        this.expandOrCollapseSearch();
       }
     },
   },
@@ -755,7 +770,6 @@ export default {
 
       .minimized {
         width: 3rem;
-        padding-left: 30px;
       }
 
       .maximized {

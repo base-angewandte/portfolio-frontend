@@ -23,6 +23,10 @@ module.exports = {
             selector: '[data-e2e-search-button]',
             suppressNotFoundErrors: true
         },
+        sidebarSearchInput: {
+            selector: '#sidebarSearchInput',
+            suppressNotFoundErrors: true
+        },
         sidebarNewButton: {
             selector: '[data-e2e-new-button]',
             suppressNotFoundErrors: true
