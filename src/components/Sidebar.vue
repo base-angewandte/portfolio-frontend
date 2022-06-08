@@ -720,7 +720,10 @@ export default {
         this.isSearchExpanded = true;
         // set focus on the search input
         this.$nextTick(() => {
-          document.querySelector('#sidebarSearchInput').focus();
+          const inputEl = document.querySelector('#sidebarSearchInput');
+          if (inputEl) {
+            inputEl.focus();
+          }
         });
       } else {
         this.isSearchExpanded = false;
