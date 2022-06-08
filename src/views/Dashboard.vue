@@ -39,20 +39,16 @@
       </div>
     </BasePopUp>
 
-    <BaseMediaPreview
+    <BaseMediaCarousel
       :show-preview="showPreview"
-      :media-url="getFilePath(assetFilePath)"
-      :media-poster-url="assetObject !== null
-        && assetObject.type === 'v' ? getFilePath( assetObject.cover.jpg) : null"
-      :download-url="assetObject !== null ? getFilePath( assetObject.original) : ''"
-      :display-size="previewSize"
+      :initial-slide="initialPreviewSlide"
+      :items="mediaPreviewData"
+      :autoplay-media="true"
       :info-texts="{
         download: $t('form-view.download'),
         view: $t('form-view.view'),
       }"
-      :previews="imagePreviews"
-      :additional-info="assetInfoText"
-      @hide-preview="showPreview = false"
+      @hide="showPreview = false"
       @download="downloadFile" />
 
     <h2
@@ -71,7 +67,7 @@
       class="form-view">
       <router-view
         ref="view"
-        @show-preview="loadPreview"
+        @show-preview="openMediaPreview"
         @data-changed="updateSidebarData" />
     </main>
   </div>
@@ -87,10 +83,10 @@ export default {
   },
   data() {
     return {
+      // show baseMediaCarousel
       showPreview: false,
-      previewSize: {},
-      imagePreviews: [],
-      assetObject: null,
+      // slide to open if preview is enabled
+      initialPreviewSlide: null,
     };
   },
   computed: {
@@ -100,22 +96,15 @@ export default {
     showPopUp() {
       return this.$store.state.data.popUp.show;
     },
-    assetFilePath() {
-      return this.assetObject !== null ? this.assetObject.playlist || this.assetObject.mp3
-        || this.assetObject.pdf || this.assetObject.original : '';
-    },
-    assetInfoText() {
-      if (this.assetObject === null) return [];
-      const infoStringArray = [];
-      if (this.assetObject.license) {
-        infoStringArray.push(`${this.$t('license')}: ${getLangLabel(this.assetObject.license.label, this.$i18n.locale, true)}`);
-      }
-      if (this.assetObject.archive_URI && this.assetObject.archive_URI !== '') {
-        infoStringArray.push(`Archive-ID: ${this.assetObject.archive_id}`);
-      }
-      infoStringArray.push(`${this.$t('status')}: ${this.assetObject.published
-        ? this.$t('public') : this.$t('private')}`);
-      return infoStringArray;
+    /**
+     * media preview items to display
+     *
+     * @returns {*[]} - filtered array
+     */
+    mediaPreviewData() {
+      // filter still processing files beforehand
+      return this.serializeMediaPreviewData(this.$store.state.data.linkedMedia)
+        .filter((item) => !item.processing);
     },
   },
   watch: {
@@ -196,51 +185,6 @@ export default {
       }
       this.$store.commit('data/hidePopUp');
     },
-    loadPreview(fileData) {
-      this.assetObject = null;
-      // reset media variables on new image load
-      this.previewSize = null;
-      this.imagePreviews = [];
-
-      this.assetObject = fileData;
-      this.imagePreviews = fileData.previews ? fileData.previews.map((size) => {
-        const [width, url] = Object.entries(size)[0];
-        return { [width]: getApiUrl(url) };
-      }) : [];
-      // check if file is already converted
-      // a) old version: no file path was in file data if not
-      // b) new version: check for response_code - 202 means it is still converting
-      if (this.assetFilePath
-        && (!this.assetObject.response_code || this.assetObject.response_code !== 202)) {
-        this.showPreview = true;
-        // if previews are available use the last converted size in array to set image size
-        // size only width - set maxWidth instead of width to prevent strange effects
-        if (fileData.previews && fileData.previews.length) {
-          this.previewSize = {
-            maxWidth: '100%',
-          };
-          const imageHeight = fileData.metadata && fileData.metadata.ImageHeight
-            ? fileData.metadata.ImageHeight.val : null;
-          const imageWidth = fileData.metadata && fileData.metadata.ImageWidth
-            ? fileData.metadata.ImageWidth.val : null;
-          if (imageWidth && imageWidth > imageHeight && imageWidth < window.innerWidth) {
-            this.previewSize = { ...this.previewSize, maxWidth: `${fileData.metadata.ImageWidth.val}px` };
-          } else if (imageHeight && imageHeight > imageWidth && imageHeight < window.innerHeight) {
-            this.previewSize = { ...this.previewSize, maxHeight: `${fileData.metadata.ImageHeight.val}px` };
-          }
-        } else {
-          // previewSize not required for audio, video and pdf
-        }
-        // landing here if file is not fully converted yet
-      } else {
-        this.$notify({
-          group: 'request-notifications',
-          title: this.$t('notify.displayImage'),
-          text: this.$t('notify.notConverted'),
-          type: 'error',
-        });
-      }
-    },
     scrollAction(evt) {
       // disable page scrolling
       evt.preventDefault();
@@ -300,8 +244,127 @@ export default {
         });
       }
     },
-    getFilePath(path) {
-      return getApiUrl(path);
+    /**
+     * get media title from source url
+     * @param source
+     * @returns {string}
+     */
+    mediaTitle(source) {
+      const match = source.match(/([^/]+)$/);
+      return match ? decodeURI(match[1]) : '';
+    },
+    /**
+     * add baseUrl to media sources
+     *
+     * @param {Array} previews - array with media objects
+     * @returns {*} - modified array with media objects
+     */
+    mediaPreviews(previews) {
+      return previews.map((elem) => {
+        const key = Object.keys(elem);
+        const withBaseUrl = [];
+        withBaseUrl[key] = getApiUrl(elem[key]);
+        return withBaseUrl;
+      });
+    },
+    /**
+     * set info text for media item footer
+     *
+     * @param {Object} item - media object
+     * @returns {*[]}
+     */
+    mediaInfoText(item) {
+      if (item === null) return [];
+      const infoStringArray = [];
+      if (item.license) {
+        infoStringArray.push(`${this.$t('license')}: ${getLangLabel(item.license.label, this.$i18n.locale, true)}`);
+      }
+      if (item.archive_URI && item.archive_URI !== '') {
+        infoStringArray.push(`Archive-ID: ${item.archive_id}`);
+      }
+      infoStringArray.push(`${this.$t('status')}: ${item.published
+        ? this.$t('public') : this.$t('private')}`);
+      return infoStringArray;
+    },
+    /**
+     * serialize data for media preview
+     *   add mediaUrl, previews, displaySize, title, processing state
+     *
+     * @param {Array} data - array with preview objects
+     * @returns {Array} - modified data
+     */
+    serializeMediaPreviewData(data) {
+      // add baseUrl to src for local development
+      const baseUrl = process.env.VUE_APP_BACKEND_BASE_URL;
+
+      return data.map((item) => {
+        let obj;
+
+        // audio
+        if (item.type === 'a') {
+          obj = {
+            mediaUrl: `${baseUrl}${item.mp3}`,
+          };
+        }
+
+        // image
+        if (item.type === 'i') {
+          obj = {
+            mediaUrl: `${baseUrl}${item.original}`,
+            previews: this.mediaPreviews(item.previews),
+            displaySize: {
+              // use largest preview image size and set to max-width to respect intrinsic size
+              'max-width': `${parseInt(Object.keys(item.previews.slice(-1)[0]), 10)}px`,
+            },
+          };
+        }
+
+        // video
+        if (item.type === 'v') {
+          obj = {
+            mediaPosterUrl: `${baseUrl}${item.poster}`,
+            mediaUrl: `${baseUrl}${item.playlist}`,
+          };
+        }
+
+        // document or undefined
+        if (item.type === 'd' || item.type === 'x') {
+          obj = {
+            mediaUrl: `${baseUrl}${item.original}`,
+          };
+        }
+
+        return {
+          id: item.id,
+          title: this.mediaTitle(item.original),
+          additionalInfo: this.mediaInfoText(item),
+          processing: item.response_code !== 200,
+          ...obj,
+        };
+      });
+    },
+    /**
+     * open media in preview carousel
+     *
+     * @param {Object} fileData - media item to open
+     */
+    openMediaPreview(fileData) {
+      console.log(fileData.response_code);
+      // if file is already converted
+      // a) check for response_code - 202 means it is still converting
+      if (fileData.response_code === 202) {
+        this.$notify({
+          group: 'request-notifications',
+          title: this.$t('notify.displayImage'),
+          text: this.$t('notify.notConverted'),
+          type: 'error',
+        });
+        return;
+      }
+      // otherwise find array id depending on media.id
+      this.initialPreviewSlide = this.mediaPreviewData.findIndex((item) => item.id === fileData.id);
+      // and open preview
+      this.showPreview = true;
     },
   },
 };
