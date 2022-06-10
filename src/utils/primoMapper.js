@@ -351,17 +351,15 @@ function getPortfolioAuthors(creator, lad24, lds16) {
       });
     }
   } else if (lds16) {
-    const author = {
-      label: lds16,
-      roles: [{
-        source: 'http://base.uni-ak.ac.at/portfolio/vocabulary/author',
-        label: {
-          de: 'Autor*in',
-          en: 'Author',
-        },
-      }],
-    };
-    authors.push(author);
+    // if creator is empty, populate author(s) from lds16
+    const chunks = lds16.split(';');
+    if (chunks.length > 1) {
+      chunks.forEach((item) => {
+        authors.push(getAuthorObject(item));
+      });
+    } else {
+      authors.push(getAuthorObject(lds16));
+    }
   }
   return authors;
 }
