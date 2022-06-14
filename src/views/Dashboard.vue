@@ -324,6 +324,8 @@ export default {
           obj = {
             mediaPosterUrl: `${baseUrl}${item.poster}`,
             mediaUrl: `${baseUrl}${item.playlist}`,
+            displaySize: { 'max-width': '1200px', width: '100%' },
+            hlsStartLevel: 2,
           };
         }
 
