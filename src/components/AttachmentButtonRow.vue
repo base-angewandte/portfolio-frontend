@@ -39,6 +39,14 @@
       alternatively: should it be extended with a label text (accessibility?) -->
       <label
         class="file-select">
+        <input
+          ref="fileInput"
+          :disabled="!currentId"
+          type="file"
+          multiple
+          class="file-select-input hide"
+          @click="resetInput"
+          @change="handleFileSelect">
         <BaseDropBox
           key="addFile"
           :box-size="{ width: 'calc(100%)' }"
@@ -48,16 +56,9 @@
           :disabled="!currentId"
           :show-tooltip="!currentId ? true : false"
           icon="camera"
+          class="file-select-dropbox"
           @dropped-file="handleFileSelect($event)"
           @clicked="checkEntrySaved" />
-        <input
-          ref="fileInput"
-          :disabled="!currentId"
-          type="file"
-          multiple
-          class="hide"
-          @click="resetInput"
-          @change="handleFileSelect">
       </label>
     </div>
 
@@ -332,6 +333,12 @@ export default {
 
     .file-select {
       width: 50%;
+    }
+
+    .file-select-input {
+      &:focus + .file-select-dropbox {
+        color: $app-color;
+      }
     }
   }
 
