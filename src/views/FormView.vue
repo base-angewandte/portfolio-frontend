@@ -1462,6 +1462,13 @@ export default {
       &.form-head-shadow {
         box-shadow: 0 8px 8px -8px rgba(0,0,0,0.25);
         padding-bottom: $spacing-small;
+
+        // enlarge element to fully overlay lower elements (eg. baseResultBoxSection)
+        @media screen and (min-width: $mobile-min-width) {
+          margin: 0 -3px;
+          padding-left: 3px;
+          padding-right: 3px;
+        }
       }
 
       .base-row-parent {
