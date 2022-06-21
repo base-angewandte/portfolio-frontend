@@ -29,6 +29,7 @@
       <input
         ref="fileInput"
         type="file"
+        accept=".bib"
         multiple
         class="hide"
         @click="resetInput"
