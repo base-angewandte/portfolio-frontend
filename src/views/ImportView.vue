@@ -550,14 +550,17 @@ export default {
     },
     processParsed(bibRecords) {
       return bibRecords.map((bibRecord, index) => {
+        // use a regex to remove { and } from e.g. title
+        const pattern = /{|}/g;
         const item = {
           id: index,
+          // also trim long titles to 255 chars max
           title: this.getValue(bibRecord.entryTags, 'title')
-            ? this.getValue(bibRecord.entryTags, 'title') : '',
+            ? this.getValue(bibRecord.entryTags, 'title').replace(pattern, '').substring(0, 255) : '',
           keywords: this.getValue(bibRecord.entryTags, 'keywords')
-            ? this.getValue(bibRecord.entryTags, 'keywords') : '',
+            ? this.getValue(bibRecord.entryTags, 'keywords').replace(pattern, '') : '',
           authors: this.getValue(bibRecord.entryTags, 'author')
-            ? this.getValue(bibRecord.entryTags, 'author') : '',
+            ? this.getValue(bibRecord.entryTags, 'author').replace(pattern, '') : '',
           year: this.getValue(bibRecord.entryTags, 'year')
             ? this.getValue(bibRecord.entryTags, 'year') : '',
           pages: this.getValue(bibRecord.entryTags, 'pages')
@@ -567,9 +570,9 @@ export default {
           doi: this.getValue(bibRecord.entryTags, 'doi')
             ? this.getValue(bibRecord.entryTags, 'doi') : '',
           description: this.getValue(bibRecord.entryTags, 'abstract')
-            ? this.getValue(bibRecord.entryTags, 'abstract') : '',
+            ? this.getValue(bibRecord.entryTags, 'abstract').replace(pattern, '') : '',
           note: this.getValue(bibRecord.entryTags, 'note')
-            ? this.getValue(bibRecord.entryTags, 'note') : '',
+            ? this.getValue(bibRecord.entryTags, 'note').replace(pattern, '') : '',
           journal: this.getValue(bibRecord.entryTags, 'journal')
             ? this.getValue(bibRecord.entryTags, 'journal') : '',
           volume: this.getValue(bibRecord.entryTags, 'volume')
