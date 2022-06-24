@@ -3,175 +3,101 @@
     id="menu-sidebar"
     :style="calcStyle"
     class="menu-sidebar">
-    <div
-      ref="sidebarHead"
-      :class="['sidebar-head', { 'sidebar-head-shadow': sidebarBelow }]">
-      <div :class="['base-row', { 'base-row-with-form': isNewForm || !!activeEntryId }]">
+    <BaseEntrySelector
+      ref="menuSidebarEntries"
+      :active-entry="activeEntry"
+      :entries="listInt"
+      :entries-selectable.sync="entriesSelectable"
+      :entries-total="entryNumber"
+      :entries-per-page="entriesPerPage"
+      :entry-types="entryTypes"
+      :entry-types-config="filterTypeConfig"
+      :sort-config="sortConfig"
+      :sort-options="sortOptions"
+      :height="'100%'"
+      :is-loading="isLoading"
+      :language="$i18n.locale"
+      :options-hidden="optionsDisabled"
+      class="base-entry-selector"
+      @fetch-entries="fetchEntries"
+      @entry-clicked="showEntry"
+      @selected-changed="selectEntry">
+      <template
+        slot="head">
+        <div
+          :class="['base-row', { 'base-row-with-form': isNewForm || !!activeEntryId }]">
+          <BaseButton
+            v-if="newEnabled"
+            :active="isNewForm"
+            :text="$t('new')"
+            :disabled="isLoading"
+            icon="add-new-object"
+            icon-size="large"
+            class="base-row-button"
+            button-style="row"
+            @clicked="getNewForm" />
+          <BaseSearch
+            v-model="filterString"
+            :show-image="true"
+            :placeholder="$t('search')"
+            class="search-bar"
+            @input="filterEntries($event, 'title')" />
+        </div>
+      </template>
+      <template
+        slot="option-actions">
         <BaseButton
-          v-if="newEnabled"
-          :active="isNewForm"
-          :text="$t('new')"
+          :text="$tc('publish', 2)"
           :disabled="isLoading"
-          icon="add-new-object"
+          :has-background-color="false"
           icon-size="large"
-          class="base-row-button"
-          button-style="row"
-          @clicked="getNewForm" />
-        <BaseSearch
-          v-model="filterString"
-          :show-image="true"
-          :placeholder="$t('search')"
-          class="search-bar"
-          @input="filterEntries($event, 'title')" />
-      </div>
-      <div class="sidebar-options-container">
-        <BaseOptions
-          ref="baseOptions"
-          :show-options="showCheckbox"
-          :options-hidden="optionsDisabled"
-          :use-options-button-on="'always'"
-          :show-after-options-below="true"
-          :options-button-icon="{
-            show: 'options-menu',
-            hide: 'options-menu',
-          }"
-          :options-button-text="{
-            show: 'options',
-            hide: 'options',
-          }"
-          align-options="left"
-          @update:show-options="toggleSidebarOptions">
-          <template slot="afterOptions">
-            <div
-              ref="afterOptions"
-              class="sidebar-drop-downs">
-              <BaseDropDown
-                v-model="sortParam"
-                :placeholder="$t('dropdown.sortBy')"
-                :label="$t('dropdown.sortBy')"
-                :options="sortOptions"
-                :with-spacing="false"
-                class="sidebar-dropdown"
-                @value-selected="fetchSidebarData" />
-              <BaseDropDown
-                v-model="filterType"
-                :label="$t('dropdown.filterByType')"
-                :options="entryTypes"
-                :language="$i18n.locale"
-                :with-spacing="false"
-                value-prop="source"
-                align-drop-down="right"
-                class="sidebar-dropdown"
-                @value-selected="filterEntries($event, 'type')" />
-            </div>
-          </template>
-          <template
-            slot="options">
-            <BaseButton
-              :text="$tc('publish', 2)"
-              :disabled="isLoading"
-              :has-background-color="false"
-              icon-size="large"
-              icon="eye"
-              button-style="single"
-              @clicked="handleAction('publish')" />
-            <BaseButton
-              :text="$tc('offline', 2)"
-              :disabled="isLoading"
-              :has-background-color="false"
-              icon-size="large"
-              icon="forbidden"
-              button-style="single"
-              @clicked="handleAction('offline')" />
-            <BaseButton
-              :text="$tc('duplicate', 2)"
-              :disabled="isLoading"
-              :has-background-color="false"
-              icon-size="large"
-              icon="duplicate"
-              button-style="single"
-              @clicked="duplicateEntries" />
-            <BaseButton
-              :text="$tc('delete', 2)"
-              :disabled="isLoading"
-              :has-background-color="false"
-              icon-size="large"
-              icon="waste-bin"
-              button-style="single"
-              @clicked="handleAction('delete')" />
-          </template>
-        </BaseOptions>
-      </div>
-
-      <BaseSelectOptions
-        v-if="showCheckbox"
-        :selected-number-text="$t(
-          'entriesSelected',
-          { type: $tc('notify.entry', selectedMenuEntries.length) }
-        )"
-        :select-text="$t('selectAll')"
-        :deselect-text="$t('selectNone')"
-        :list="listInt"
-        :selected-list="selectedMenuEntries"
-        @selected="changeAllSelectState" />
-    </div>
-
-    <div
-      ref="menuContainer"
-      class="base-menu-container">
-      <div
-        v-if="isLoading"
-        class="loading-area">
-        <BaseLoader />
-      </div>
-
-      <BaseMenuList
-        v-if="listInt.length"
-        id="menu-list"
-        key="menu-list"
-        ref="menuList"
-        :select-active="selectActive || showCheckbox"
-        :list="listInt"
-        :active-entry="activeEntry"
-        :selected-list="selectedList"
-        @clicked="showEntry"
-        @selected="selectEntry">
-        <template
-          v-slot:thumbnails="{ item }">
-          <base-icon
-            v-if="item.shared"
-            name="people" />
-          <base-icon
-            v-if="item.published"
-            name="eye" />
-          <base-icon
-            v-if="item.error"
-            name="attention" />
-          <base-icon
-            v-if="item.has_media"
-            name="attachment" />
-          <base-icon
-            v-if="item.archive_URI && getIsArchivalEnabled"
-            name="archive-sheets" />
-        </template>
-      </BaseMenuList>
-      <div
-        v-else-if="!isLoading"
-        class="no-entries">
-        <p class="no-entries-title">
-          {{ noEntriesTitle }}
-        </p>
-        <p class="no-entries-subtext">
-          {{ noEntriesSubtext }}
-        </p>
-      </div>
-    </div>
-    <BasePagination
-      v-if="pageTotal > 1"
-      ref="pagination"
-      :total="pageTotal"
-      :current="pageNumber"
-      @set-page="setPage" />
+          icon="eye"
+          button-style="single"
+          @clicked="handleAction('publish')" />
+        <BaseButton
+          :text="$tc('offline', 2)"
+          :disabled="isLoading"
+          :has-background-color="false"
+          icon-size="large"
+          icon="forbidden"
+          button-style="single"
+          @clicked="handleAction('offline')" />
+        <BaseButton
+          :text="$tc('duplicate', 2)"
+          :disabled="isLoading"
+          :has-background-color="false"
+          icon-size="large"
+          icon="duplicate"
+          button-style="single"
+          @clicked="duplicateEntries" />
+        <BaseButton
+          :text="$tc('delete', 2)"
+          :disabled="isLoading"
+          :has-background-color="false"
+          icon-size="large"
+          icon="waste-bin"
+          button-style="single"
+          @clicked="handleAction('delete')" />
+      </template>
+      <template
+        v-slot:thumbnails="{ item }">
+        <base-icon
+          v-if="item.shared"
+          name="people" />
+        <base-icon
+          v-if="item.published"
+          name="eye" />
+        <base-icon
+          v-if="item.error"
+          name="attention" />
+        <base-icon
+          v-if="item.has_media"
+          name="attachment" />
+        <base-icon
+          v-if="item.archive_URI && getIsArchivalEnabled"
+          name="archive-sheets" />
+      </template>
+    </BaseEntrySelector>
   </div>
 </template>
 
@@ -229,10 +155,16 @@ export default {
         return [];
       },
     },
+    /**
+     * define if already linked entries should be excluded (done in BE)
+     */
     excludeLinked: {
       type: Boolean,
       default: false,
     },
+    /**
+     * to disable the options button (eg. in popUps)
+     */
     optionsDisabled: {
       type: Boolean,
       default: false,
@@ -248,9 +180,29 @@ export default {
       isLoading: false,
       timeout: null,
       filterString: '',
+      // TODO: harmonize filterTypeConfig / filterType
+      filterTypeConfig: {
+        label: this.$t('dropdown.allTypes'),
+        default: {
+          label: {
+            de: this.$t('dropdown.allTypes'),
+            en: this.$t('dropdown.allTypes'),
+          },
+          source: '',
+        },
+        valuePropertyName: 'source',
+      },
       filterType: {
         label: this.$t('dropdown.allTypes'),
         source: '',
+      },
+      sortConfig: {
+        label: this.$t('dropdown.date_modified'),
+        default: {
+          label: this.$t('dropdown.date_modified'),
+          value: 'date_modified',
+        },
+        valuePropertyName: 'date_modified',
       },
       sortParam: {
         label: this.$t('dropdown.date_modified'),
@@ -261,15 +213,15 @@ export default {
       noEntriesSubtext: '',
       // to have shadow when sidebar list below sidebar head
       sidebarBelow: false,
+
+      sidebarMenuHeight: '0px',
+      entriesSelectable: false,
     };
   },
   computed: {
     ...mapGetters('data', [
       'getIsArchivalEnabled',
     ]),
-    showCheckbox() {
-      return this.$store.state.data.showOptions;
-    },
     activeEntry() {
       if (!this.hideActive && this.activeEntryId) {
         return this.listInt.map((entry) => entry.id).indexOf(this.activeEntryId);
@@ -281,9 +233,6 @@ export default {
     },
     calcStyle() {
       return this.height ? { height: this.height } : {};
-    },
-    pageTotal() {
-      return this.entriesPerPage ? Math.ceil(this.entryNumber / this.entriesPerPage) : 0;
     },
     isNewForm() {
       return this.$route.name === 'newEntry';
@@ -319,9 +268,6 @@ export default {
     entryTypes() {
       return this.$store.getters['data/getEntryTypes'];
     },
-    selectedList() {
-      return this.selectedMenuEntries.map((entry) => entry.id);
-    },
     windowWidth() {
       return this.$store.state.data.windowWidth;
     },
@@ -340,21 +286,16 @@ export default {
           ? 'calendar-many' : 'file-object',
       }));
     },
-    showCheckbox(val) {
-      // delete selected when options menu is closed and reset select all
-      if (!val) {
-        this.selectedMenuEntries = [];
-      }
-    },
     $route(to, from) {
       this.setInfoText();
       if (!(from.name === to.name || from.name.includes(to.name) || to.name.includes(from.name))) {
         // refetch sidebar data when switching from overview to form view and vice versa
-        this.calculateDropDownsInline();
         this.calculateSidebarHeight();
         this.fetchSidebarData();
-        if (this.$refs.pagination) {
-          this.$refs.pagination.setStartEnd();
+
+        if (this.$refs.menuSidebarEntries
+          && this.$refs.menuSidebarEntries.$refs.pagination) {
+          this.$refs.menuSidebarEntries.$refs.pagination.setStartEnd();
         }
       }
     },
@@ -383,41 +324,25 @@ export default {
     this.calculateSidebarHeight();
     this.$store.dispatch('data/fetchEntryTypes');
     this.fetchSidebarData();
-    this.$refs.menuContainer.addEventListener('scroll', () => {
-      this.checkContainerPosition();
-    });
-    window.addEventListener('scroll', () => {
-      this.checkContainerPosition();
-    });
-  },
-  updated() {
-    this.calculateDropDownsInline();
+
+    if (this.selectActive) {
+      this.entriesSelectable = true;
+    }
   },
   methods: {
-    showEntry(index) {
-      this.$emit('show-entry', this.listInt[index].id);
+    fetchEntries(request) {
+      this.sortParam = request.sort;
+      this.filterType = request.type;
+      this.pageNumber = request.page;
+      this.fetchSidebarData();
+    },
+    showEntry(id) {
+      this.$emit('show-entry', id);
     },
     selectEntry(evt) {
-      if (evt.selected) {
-        this.selectedMenuEntries.push(this.listInt[evt.index]);
-      } else {
-        this.selectedMenuEntries = this.selectedMenuEntries
-          .filter((entry) => entry.id !== this.listInt[evt.index].id);
-      }
+      this.selectedMenuEntries = evt;
       // TODO: check if selectedEntries should also be handled internally
       this.$emit('selected-changed', this.selectedMenuEntries);
-    },
-    changeAllSelectState(selected) {
-      if (selected) {
-        // add all visible entries to selected list
-        this.selectedMenuEntries = this.selectedMenuEntries.concat(this.listInt);
-        // deduplicate by creating set and convert back to array
-        this.selectedMenuEntries = [...new Set(this.selectedMenuEntries)];
-      } else {
-        const listIntIds = this.listInt.map((entry) => entry.id);
-        this.selectedMenuEntries = this.selectedMenuEntries
-          .filter((entry) => !listIntIds.includes(entry.id));
-      }
     },
     getNewForm() {
       this.$store.commit('data/deleteCurrentItem');
@@ -440,14 +365,10 @@ export default {
       }
       this.pageNumber = 1;
     },
-    setPage(number) {
-      this.pageNumber = number;
-      this.fetchSidebarData();
-    },
     async duplicateEntries() {
       if (this.selectedMenuEntries.length) {
         this.isLoading = true;
-        // dispatch selected entries to be duplicated and sucessfully duplicated ids are returned
+        // dispatch selected entries to be duplicated and successfully duplicated ids are returned
         const { routingIds, failedTitles } = await this.$store.dispatch('data/duplicateEntries', [].concat(this.selectedMenuEntries));
         const duplicatedNumber = routingIds.length;
         // if entries could not be duplicated inform user about it
@@ -459,12 +380,13 @@ export default {
           entryCount: 0,
           listEntries: true,
         });
-        // if any entries were sucessfully duplicated route to the new entry
+        // if any entries were successfully duplicated route to the new entry
         if (duplicatedNumber) {
           this.selectedMenuEntries = [];
           await this.fetchSidebarData();
           await this.$router.push(`/entry/${routingIds.pop()}`);
         }
+        this.entriesSelectable = false;
         this.isLoading = false;
       } else {
         this.$notify({
@@ -492,9 +414,8 @@ export default {
         .some((entry) => entry.id === this.activeEntryId);
       await this.actionEntries(action);
       this.selectedMenuEntries = [];
+      this.entriesSelectable = false;
       await this.fetchSidebarData();
-
-      this.$store.commit('data/setOptions', false);
       // if the form was open and the item was selected for deletion a redirect to dashboard
       // will be done
       if (action === 'delete') {
@@ -511,14 +432,8 @@ export default {
         this.$emit('update-publish-state', action === 'publish');
       }
     },
-    toggleSidebarOptions() {
-      const { menuList } = this.$refs;
-      if (menuList) {
-        this.$refs.menuList.entryProps.forEach((entry) => this.$set(entry, 'selected', false));
-      }
-      this.$store.commit('data/setOptions', !this.showCheckbox);
-    },
     async fetchSidebarData() {
+      this.calculateSidebarHeight();
       this.isLoading = true;
       try {
         let offset = (this.pageNumber - 1) * this.entriesPerPage;
@@ -579,15 +494,22 @@ export default {
       return response;
     },
     calculateSidebarHeight() {
-      let sidebarHeight = this.$refs.menuContainer.clientHeight;
+      const { menuSidebarEntries } = this.$refs;
+
+      // get available height of baseEntrySelectors body container
+      this.sidebarMenuHeight = menuSidebarEntries.$refs.body
+        ? menuSidebarEntries.$refs.body.clientHeight
+        : 0;
+
       // if pagination element is not present yet (on initial render) deduct height and spacing
       // from sidebar height
-      if (!this.$refs.pagination) {
-        sidebarHeight = sidebarHeight - 48 - 16;
+      if (!menuSidebarEntries.$refs.pagination) {
+        this.sidebarMenuHeight = this.sidebarMenuHeight - 48 - 16;
       }
+
       // hardcoded because unfortunately no other possibility found
       const entryHeight = this.isMobile ? 48 : 57;
-      const numberOfEntries = Math.floor(sidebarHeight / entryHeight);
+      const numberOfEntries = Math.floor(this.sidebarMenuHeight / entryHeight);
       this.entriesPerPage = numberOfEntries > 4 ? numberOfEntries : 4;
     },
     setInfoText() {
@@ -612,28 +534,6 @@ export default {
         source: '',
       };
     },
-    calculateDropDownsInline() {
-      const children = this.$refs.baseOptions.$children;
-      // get all child elements that are not options (= should be inline with options button)
-      // and calculate sum of width
-      const childElementsWidth = children
-        .filter((child) => child.$el.className.includes('base-options-button') || child.$el.className.includes('sidebar-dropdown'))
-        .reduce((prev, curr) => prev + curr.$el.clientWidth, 0);
-      // need to know margin of drop down element as well since not included in width
-      const margin = parseFloat(getComputedStyle(children[children.length - 1].$el).marginLeft.replace('px', ''));
-      // check if all elements fit in one row - else set inline false
-      this.showDropDownsInline = this.$refs.baseOptions.$el.clientWidth
-        > childElementsWidth + margin;
-    },
-    checkContainerPosition() {
-      if (this.listInt.length && this.$refs.sidebarHead) {
-        // check sidebar head position for whole page scroll and menuContainer position
-        // for container scrolling
-        this.sidebarBelow = (this.isMobile && this.optionsVisible
-          && this.$refs.sidebarHead.offsetTop > 0)
-          || this.$refs.menuContainer.scrollTop > 0;
-      }
-    },
   },
 };
 </script>
@@ -649,72 +549,6 @@ export default {
     .search-bar {
       border-left: $separation-line;
     }
-
-    .sidebar-head {
-      position: sticky;
-      z-index: map-get($zindex, dropdown);
-      padding-top: $spacing;
-      background-color: $background-color;
-      flex: 0 0 auto;
-
-      &.sidebar-head-shadow {
-        box-shadow: 0 8px 8px -8px rgba(0,0,0,0.25);
-      }
-
-      .sidebar-drop-downs {
-        display: flex;
-        justify-content: flex-end;
-      }
-    }
-
-    .sidebar-options-container {
-      padding-bottom: $spacing-small;
-    }
-  }
-
-  .base-menu-container {
-    position: relative;
-    flex: 1 1 auto;
-    overflow-y: auto;
-    overflow-x: hidden;
-    min-height: $row-height-large;
-
-    #menu-list {
-      height: 100%;
-    }
-
-    .loading-area {
-      position: absolute;
-      height: 100%;
-      width: 100%;
-      z-index: map-get($zindex, loader);
-      background-color: $loading-background;
-    }
-  }
-
-  .no-entries {
-    height: 100%;
-    width: 100%;
-    padding-top: 50px;
-
-    .no-entries-title, .no-entries-subtext {
-      text-align: center;
-      color: $font-color-second;
-      margin-bottom: $spacing;
-      padding: 0 $spacing-large;
-    }
-
-    .no-entries-title {
-      font-size: $font-size-large;
-    }
-  }
-
-  .sidebar-dropdown {
-    max-width: 50%;
-
-    &:not(:first-of-type) {
-      margin-left: $spacing;
-    }
   }
 
   // special width dictated by header / footer component
@@ -728,33 +562,19 @@ export default {
     .menu-sidebar {
       height: calc(100vh - #{$header-height} - #{$row-height-small} - 131px);
 
-      .sidebar-head {
-        & .sidebar-drop-downs {
-          flex-wrap: wrap;
+      .base-row-with-form {
+        height: auto;
+        flex-wrap: wrap;
 
-          .sidebar-dropdown {
-            max-width: 100%;
-          }
-        }
-
-        .base-row-with-form {
-          height: auto;
-          flex-wrap: wrap;
-
-          .base-row-button {
-            width: 100%;
-            border-bottom: $separation-line;
-          }
+        .base-row-button {
+          width: 100%;
+          border-bottom: $separation-line;
         }
       }
     }
   }
 
   @media screen and (max-width: $mobile) {
-    .base-menu-entry {
-      display: block;
-    }
-
     .base-row-button {
       width: 100%;
       border-bottom: $separation-line;
@@ -765,19 +585,6 @@ export default {
 
       .search-bar {
         border-left: none;
-      }
-    }
-
-    .options-row {
-      flex-wrap: wrap;
-      justify-content: center;
-
-      .options {
-        flex-basis: 100%;
-
-        .options-button {
-          width: 100%;
-        }
       }
     }
   }

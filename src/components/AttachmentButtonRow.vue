@@ -129,6 +129,7 @@
       :title="$t('form-view.selectentries')"
       :button-right-text="$t('form-view.linkselected')"
       :button-left-text="$t('cancel')"
+      :button-right-disabled="!(selectedEntries && selectedEntries.length)"
       @button-left="showEntryPopUp = false"
       @button-right="getSelectedIdsAndLink(selectedEntries)"
       @close="showEntryPopUp = false">

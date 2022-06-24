@@ -114,7 +114,6 @@ const state = {
   currentItemData: null,
   parentItems: [],
   isNewForm: false,
-  showOptions: false,
   popUp: {
     show: false,
     header: '',
@@ -266,9 +265,6 @@ const mutations = {
     state.linkedEntries = [];
     state.linkedMedia = [];
     state.linkedParents = [];
-  },
-  setOptions(state, val) {
-    state.showOptions = val;
   },
   setPopUp(state, data) {
     state.popUp = { ...state.popUp, ...data };
@@ -712,7 +708,6 @@ const actions = {
         resolve();
       }
     })));
-    commit('setOptions', false);
     return { routingIds: addedArr, failedTitles: errorArr };
   },
   async modifyEntries({ state, dispatch }, { prop, value }) {
