@@ -180,7 +180,6 @@ export default {
       isLoading: false,
       timeout: null,
       filterString: '',
-      // TODO: harmonize filterTypeConfig / filterType
       filterTypeConfig: {
         label: this.$t('dropdown.allTypes'),
         default: {
@@ -192,22 +191,16 @@ export default {
         },
         valuePropertyName: 'source',
       },
-      filterType: {
-        label: this.$t('dropdown.allTypes'),
-        source: '',
-      },
       sortConfig: {
         label: this.$t('dropdown.date_modified'),
         default: {
           label: this.$t('dropdown.date_modified'),
           value: 'date_modified',
         },
-        valuePropertyName: 'date_modified',
+        valuePropertyName: 'value',
       },
-      sortParam: {
-        label: this.$t('dropdown.date_modified'),
-        value: 'date_modified',
-      },
+      filterType: {},
+      sortParam: {},
       entriesExist: false,
       noEntriesTitle: '',
       noEntriesSubtext: '',
