@@ -45,6 +45,7 @@
   "selectAll": "Select All",
   "selectNone": "Select None",
   "entriesSelected": "{type} Selected",
+  "maxEntries": "Maximum Number Reached",
   "form": {
     "Add": "Add {value}",
     "select": "Select",

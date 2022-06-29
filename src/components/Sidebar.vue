@@ -10,6 +10,20 @@
       :entries-selectable.sync="entriesSelectable"
       :entries-total="entryNumber"
       :entries-per-page="entriesPerPage"
+      :entry-selector-text="{
+        selectAll: $t('selectAll'),
+        selectNone: $t('selectNone'),
+        entriesSelected: $t('entriesSelected',
+                            { type: $tc('notify.entry', selectedMenuEntries.length) || 0 }),
+        noEntriesTitle: $t('noMatchingEntriesTitle'),
+        noEntriesSubtext: $t('noMatchingEntriesSubtext'),
+        search: $t('search'),
+        options: {
+          show: $t('options'),
+          hide: $t('options')
+        },
+        maxEntriesReached: $t('maxEntries'),
+      }"
       :entry-types="entryTypes"
       :entry-types-config="filterTypeConfig"
       :sort-config="sortConfig"
@@ -204,8 +218,6 @@ export default {
       entriesExist: false,
       noEntriesTitle: '',
       noEntriesSubtext: '',
-      // to have shadow when sidebar list below sidebar head
-      sidebarBelow: false,
 
       sidebarMenuHeight: '0px',
       entriesSelectable: false,
