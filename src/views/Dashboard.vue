@@ -43,7 +43,6 @@
       :show-preview="showPreview"
       :initial-slide="initialPreviewSlide"
       :items="mediaPreviewData"
-      :autoplay-media="true"
       :info-texts="{
         download: $t('form-view.download'),
         view: $t('form-view.view'),
