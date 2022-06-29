@@ -14,7 +14,7 @@
         selectAll: $t('selectAll'),
         selectNone: $t('selectNone'),
         entriesSelected: $t('entriesSelected',
-                            { type: $tc('notify.entry', selectedMenuEntries.length) || 0 }),
+                            { type: $tc('entry', selectedMenuEntries.length) || 0 }),
         noEntriesTitle: $t('noMatchingEntriesTitle'),
         noEntriesSubtext: $t('noMatchingEntriesSubtext'),
         search: $t('search'),
