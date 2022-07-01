@@ -1,6 +1,7 @@
 <template>
   <div
     id="menu-sidebar"
+    ref="menuSidebar"
     :style="calcStyle"
     class="menu-sidebar">
     <BaseEntrySelector
@@ -60,38 +61,41 @@
       </template>
       <template
         slot="option-actions">
-        <BaseButton
-          :text="$tc('publish', 2)"
-          :disabled="isLoading"
-          :has-background-color="false"
-          icon-size="large"
-          icon="eye"
-          button-style="single"
-          @clicked="handleAction('publish')" />
-        <BaseButton
-          :text="$tc('offline', 2)"
-          :disabled="isLoading"
-          :has-background-color="false"
-          icon-size="large"
-          icon="forbidden"
-          button-style="single"
-          @clicked="handleAction('offline')" />
-        <BaseButton
-          :text="$tc('duplicate', 2)"
-          :disabled="isLoading"
-          :has-background-color="false"
-          icon-size="large"
-          icon="duplicate"
-          button-style="single"
-          @clicked="duplicateEntries" />
-        <BaseButton
-          :text="$tc('delete', 2)"
-          :disabled="isLoading"
-          :has-background-color="false"
-          icon-size="large"
-          icon="waste-bin"
-          button-style="single"
-          @clicked="handleAction('delete')" />
+        <div
+          ref="optionButtons">
+          <BaseButton
+            :text="$tc('publish', 2)"
+            :disabled="isLoading"
+            :has-background-color="false"
+            icon-size="large"
+            icon="eye"
+            button-style="single"
+            @clicked="handleAction('publish')" />
+          <BaseButton
+            :text="$tc('offline', 2)"
+            :disabled="isLoading"
+            :has-background-color="false"
+            icon-size="large"
+            icon="forbidden"
+            button-style="single"
+            @clicked="handleAction('offline')" />
+          <BaseButton
+            :text="$tc('duplicate', 2)"
+            :disabled="isLoading"
+            :has-background-color="false"
+            icon-size="large"
+            icon="duplicate"
+            button-style="single"
+            @clicked="duplicateEntries" />
+          <BaseButton
+            :text="$tc('delete', 2)"
+            :disabled="isLoading"
+            :has-background-color="false"
+            icon-size="large"
+            icon="waste-bin"
+            button-style="single"
+            @clicked="handleAction('delete')" />
+        </div>
       </template>
       <template
         v-slot:thumbnails="{ item }">
@@ -500,17 +504,21 @@ export default {
     },
     calculateSidebarHeight() {
       const { menuSidebarEntries } = this.$refs;
-
-      // get available height of baseEntrySelectors body container
-      this.sidebarMenuHeight = menuSidebarEntries.$refs.body
-        ? menuSidebarEntries.$refs.body.clientHeight
+      const sidebarHeight = this.$refs.menuSidebar.clientHeight;
+      const sidebarHeadHeight = menuSidebarEntries.$refs.head
+        ? menuSidebarEntries.$refs.head.clientHeight
+        : 0;
+      const optionsButtonsHeight = this.$refs.optionButtons
+        ? this.$refs.optionButtons.clientHeight
         : 0;
 
-      // if pagination element is not present yet (on initial render) deduct height and spacing
-      // from sidebar height
-      if (!menuSidebarEntries.$refs.pagination) {
-        this.sidebarMenuHeight = this.sidebarMenuHeight - 48 - 16;
-      }
+      // calculate usable content height for entries in sidebar,
+      // taking expanded options height into account.
+      this.sidebarMenuHeight = sidebarHeight - sidebarHeadHeight
+        + optionsButtonsHeight;
+
+      // deduct height and spacing for pagination element from sidebar height
+      this.sidebarMenuHeight = this.sidebarMenuHeight - 48 - 16;
 
       // hardcoded because unfortunately no other possibility found
       const entryHeight = this.isMobile ? 48 : 57;
