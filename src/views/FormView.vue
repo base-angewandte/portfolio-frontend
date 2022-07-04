@@ -150,6 +150,7 @@
 
 <script>
 import axios from 'axios';
+import { mapGetters } from 'vuex';
 import { attachmentHandlingMixin } from '@/mixins/attachmentHandling';
 import { entryHandlingMixin } from '@/mixins/entryHandling';
 import {
@@ -248,6 +249,9 @@ export default {
     };
   },
   computed: {
+    ...mapGetters({
+      user: 'PortfolioAPI/user',
+    }),
     currentItemId() {
       return this.$route.params.id;
     },
@@ -372,6 +376,15 @@ export default {
     },
   },
   watch: {
+    // watch user to set him in the default drop down when data arrived
+    // necessary here too since user data could arrive after default lists data
+    user(val) {
+      // both data need to be present in order to set default lists - user AND other default data
+      if (val && val.uuid && this.dropDownFieldsList && this.dropDownFieldsList.length) {
+        this.setDefaultDropDownLists();
+        this.setDropDownValues();
+      }
+    },
     formFields() {
       this.formIsLoading = false;
     },
@@ -497,9 +510,12 @@ export default {
         this.$emit('data-changed', true);
       }
     },
-    dropDownFieldsList() {
-      this.setDefaultDropDownLists();
-      this.setDropDownValues();
+    dropDownFieldsList(val) {
+      // both data need to be present in order to set default lists - user AND other default data
+      if (val && val.length && this.user && this.user.uuid) {
+        this.setDefaultDropDownLists();
+        this.setDropDownValues();
+      }
     },
     // watch for unsaved changes and update the store property
     // isFormSaved with the opposite Boolean value
@@ -1064,7 +1080,6 @@ export default {
     },
     setDefaultDropDownLists() {
       const defaultDropDownObject = {};
-      const user = this.$store.getters['PortfolioAPI/user'];
       const defaultLists = JSON.parse(process.env.VUE_APP_DEFAULT_LISTS);
       this.dropDownFieldsList.forEach((field) => {
         // only get new if not already set
@@ -1077,12 +1092,12 @@ export default {
             const dropDownList = [...defaults];
             // special case contributors - add user
             // - but also check first if necessary user attributes exist
-            if (user.name && user.uuid
+            if (this.user.name && this.user.uuid
               && ((field.equivalent === 'contributors') || field.name === 'contributors')) {
               // set user
               dropDownList.unshift({
-                label: user.name,
-                source: user.uuid,
+                label: this.user.name,
+                source: this.user.uuid,
                 additional: this.$t('form.myself'),
               });
             }
