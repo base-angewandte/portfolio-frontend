@@ -77,7 +77,7 @@ export default {
       this.$emit('selected', { index, selected });
     },
     /**
-     * Fires when any of accordeon's flaps changes the expanded/collapsed state.
+     * Fires when any of accordion's flaps changes the expanded/collapsed state.
      */
     onExpanded(index, expanded) {
       if (this.expandMode === 'single' && expanded === true) {

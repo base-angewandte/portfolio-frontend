@@ -27,7 +27,7 @@
           :text="isButtonMinimized ? '' : $t('import.importButtonTitle')"
           :active="isImportPage"
           icon="download"
-          icon-size="large"
+          icon-size="small"
           :class="['base-row-button',
                    {'minimized': isButtonMinimized},
                    {'maximized': isButtonMaximized}]"

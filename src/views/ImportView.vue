@@ -1,25 +1,26 @@
 <template>
   <div class="import-page">
-    <BaseButton
-      :text="$t('back')"
-      icon="arrow-left"
-      icon-size="small"
-      button-style="row"
-      class="back-button"
-      @clicked="$router.push('/')" />
+    <!-- HEADER ROW -->
+    <!-- Searchbar or Uploaded Files are shown -->
+    <BaseRow
+      :disable-save-button="!selectedRecords.length"
+      :save-button-text="'import.importEntries'"
+      :save-button-icon="'download'"
+      :show-search="!importedFileNames.length"
+      :show-back-button="false"
+      :show-remove-button="!!importedFileNames.length"
+      :show-save-button="!!results.length"
+      :title="importedFileNames"
+      :unsaved-changes="!!selectedRecords.length"
+      @return="cancelImport"
+      @remove="resetSearch"
+      @search="runSearch"
+      @save="onImport" />
 
-    <BaseSearch
-      v-if="!isBibtexImportInProgress"
-      v-model="searchText"
-      data-e2e-import-search-box
-      label="SearchInput"
-      :placeholder="$t('import.searchCatalogueText')"
-      show-image
-      @input="runSearch" />
-
-    <label>
+    <!-- HANDLE FILE UPLOAD(s) -->
+    <label
+      v-if="dropboxVisible">
       <BaseDropBox
-        v-if="dropboxVisible"
         :box-size="{ width: 'calc(100%)', height: '250px'} "
         :icon="'add-new-object'"
         :text="$t('import.attachBibTex')"
@@ -36,6 +37,7 @@
         @change="handleFileSelect">
     </label>
 
+    <!-- BIBTEX PARSER -->
     <BibtexParser
       v-if="!!filesToUpload.length"
       :file-list="filesToUpload"
@@ -44,6 +46,7 @@
       @import-failed="onBibtexImportFailed($event)"
       @success="onBibtexFilesParsed($event)" />
 
+    <!-- RESULTS -->
     <div class="results-container">
       <BaseSelectOptions
         v-if="results && results.length && !isLoading"
@@ -189,38 +192,26 @@
         </template>
       </SelectableAccordion>
     </div>
-    <BaseTextList
+
+    <!-- TODO: should be like rest of the no results messages -->
+    <div
       v-if="noResultsText"
-      class="no-results-container"
-      data-e2e-import-noresults
-      render-label-as="h4"
-      :data="[{ label: noResultsText }]" />
+      class="no-entries">
+      <p class="no-entries-title">
+        {{ $t('noMatchingEntriesTitle') }}
+      </p>
+      <p class="no-entries-subtext">
+        {{ $t('noMatchingEntriesSubtext') }}
+      </p>
+    </div>
+
+    <!-- PAGINATION -->
     <BasePagination
       v-if="results && results.length && !isLoading"
       :current="currentPage"
       :total="pageCount"
       data-e2e-import-results-pagination
       @set-page="currentPage = $event" />
-    <div
-      v-if="results && results.length && !isLoading"
-      class="buttons-container">
-      <base-button
-        :text="$t('cancel')"
-        style="margin-right: 4px;"
-        icon="remove"
-        button-style="row"
-        icon-size="small"
-        data-e2e-import-cancel
-        @clicked="resetSearch" />
-      <base-button
-        :text="$t('import.importButtonTitle')"
-        :disabled="!selectedRecords.length"
-        icon="download"
-        button-style="row"
-        icon-size="small"
-        data-e2e-import-run
-        @clicked="onImport" />
-    </div>
   </div>
 </template>
 
@@ -231,6 +222,7 @@ import BibtexParser from '@/components/BibtexParser';
 import createEntryFromPrimo from '@/utils/primoMapper';
 import createEntryFromBibtex from '@/utils/bibtexMapper';
 import SelectableAccordion from '@/components/SelectableAccordion';
+import BaseRow from '@/components/BaseRow';
 
 const { CancelToken } = axios;
 let cancel;
@@ -240,6 +232,7 @@ export default {
   components: {
     BibtexParser,
     SelectableAccordion,
+    BaseRow,
   },
   data() {
     return {
@@ -263,6 +256,8 @@ export default {
       filesToUpload: [],
       // true when import from bibtex file(s) is in progress
       isBibtexImportInProgress: false,
+      // semicolon separated list of uploaded filenames
+      importedFileNames: '',
     };
   },
   computed: {
@@ -318,7 +313,9 @@ export default {
     /**
      * Occurs when the search input changes.
      */
-    runSearch() {
+    runSearch(value) {
+      this.searchText = value;
+
       // clear/reset values pertaining to previous search
       this.noResultsText = '';
       this.currentPage = 1;
@@ -414,7 +411,8 @@ export default {
         this.selectedRecords.push(rec);
       } else {
         // deselect, i.e. remove the record id from the selection
-        this.selectedRecords = this.selectedRecords.filter((el) => el.id !== rec.id);
+        this.selectedRecords = this.selectedRecords
+          .filter((el) => el.id !== rec.id);
       }
     },
     /**
@@ -508,6 +506,7 @@ export default {
      * Occurs when the "Cancel" button is clicked or the import has completed.
      */
     resetSearch() {
+      this.importedFileNames = '';
       this.searchText = '';
       this.results = [];
       this.noResultsText = '';
@@ -515,6 +514,13 @@ export default {
       this.currentPage = 1;
       this.isBibtexImportInProgress = false;
       this.dropboxVisible = true;
+    },
+    /**
+     * cancel import and route to dashboard
+     */
+    cancelImport() {
+      this.resetSearch();
+      this.$router.push('/');
     },
     handleFileSelect(e) {
       const files = e.dataTransfer ? e.dataTransfer.files : e.target.files;
@@ -528,12 +534,14 @@ export default {
     resetInput() {
       this.$refs.fileInput.value = '';
     },
-    // when upload of files complete reset the variable
+    /**
+     * reset filesToUpload when upload of files is complete
+     */
     resetFiles() {
       this.filesToUpload = [];
     },
     onBibtexImportFailed(reason) {
-      this.filesToUpload = [];
+      this.resetFiles();
       this.$notify({
         group: 'request-notifications',
         title: this.$t('import.failText'),
@@ -543,6 +551,7 @@ export default {
       this.resetSearch();
     },
     onBibtexFilesParsed(data) {
+      this.importedFileNames = this.filesToUpload.map((file) => file.name).join('; ');
       this.filesToUpload = [];
       this.results = this.processParsed(data);
       this.dropboxVisible = false;
@@ -609,10 +618,6 @@ export default {
   display: flex;
   flex-direction: column;
   top: $spacing;
-
-  .back-button {
-    display: none;
-  }
 }
 
 .loader {
@@ -628,9 +633,21 @@ export default {
   margin: $spacing 0;
 }
 
-.no-results-container {
-  margin: $spacing 0;
-  text-align: center;
+.no-entries {
+  height: 100%;
+  width: 100%;
+  padding-top: 50px;
+
+  .no-entries-title, .no-entries-subtext {
+    text-align: center;
+    color: $font-color-second;
+    margin-bottom: $spacing;
+    padding: 0 $spacing-large;
+  }
+
+  .no-entries-title {
+    font-size: $font-size-large;
+  }
 }
 
 .buttons-container {
@@ -647,16 +664,5 @@ export default {
 .definition-column {
   font-size: $font-size-small;
   color: $font-color-second;
-}
-
-@media screen and (max-width: $mobile) {
-  .import-page {
-    top: $spacing-small;
-    .back-button {
-      display: block;
-      border-bottom: $separation-line;
-      width: 100%;
-    }
-  }
 }
 </style>

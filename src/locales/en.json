@@ -261,6 +261,7 @@
   },
   "import": {
     "importButtonTitle": "Import",
+    "importEntries": "Import Entries",
     "searchCatalogueText": "Search the Library Catalogue",
     "successText": "Import successful",
     "successSubtext": "{count} entries were imported successfully.",

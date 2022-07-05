@@ -255,6 +255,7 @@
   },
   "import": {
     "importButtonTitle": "Importieren",
+    "importEntries": "Einträge importieren",
     "searchCatalogueText": "Bibliothekskatalog durchsuchen",
     "successText": "Importierung erfolgreich",
     "successSubtext": "{count} Einträge wurden erfolgreich importiert.",
