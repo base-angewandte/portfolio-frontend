@@ -321,9 +321,7 @@ export default {
      */
     searchText() {
       if (this.searchText.length === 0) {
-        this.results = [];
-        this.noResultsText = '';
-        this.dropboxVisible = true;
+        this.resetSearch();
       } else {
         this.dropboxVisible = false;
       }
@@ -533,6 +531,12 @@ export default {
      * Occurs when the "Cancel" button is clicked or the import has completed.
      */
     resetSearch() {
+      // cancel current search requests
+      if (cancel) {
+        cancel('search request has been canceled');
+      }
+
+      // reset states
       this.importedFileNames = '';
       this.searchText = '';
       this.results = [];
