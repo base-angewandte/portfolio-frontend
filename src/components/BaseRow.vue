@@ -1,5 +1,8 @@
 <template>
-  <div class="base-row">
+  <div
+    :class="['base-row',
+             { 'base-row-multiple-buttons':
+               buttons.filter((button) => button.visible).length > 1 }]">
     <div
       v-if="showTitle || showSearch"
       class="base-row-header">
@@ -32,8 +35,10 @@
         show-image
         @input="$emit('search', searchText)" />
     </div>
-    <div class="base-row-buttons">
+    <div
+      class="base-row-buttons">
       <div
+        v-if="showMobileBackButton || showBackButton"
         :class="[
           'form-button',
           'form-back-button',
@@ -48,28 +53,38 @@
           class="form-button-inner"
           @clicked="cancel" />
       </div>
-      <div
-        v-if="showSaveButton"
-        class="form-button form-save-button">
-        <BaseButton
-          :active="unsavedChanges"
-          :text="$t(saveButtonText)"
-          :disabled="dbRequestOngoing || disableSaveButton"
-          :icon="isSaving ? '' : saveButtonIcon"
-          button-type="submit"
-          icon-size="small"
-          button-style="row"
-          class="form-button-inner"
-          @clicked="save">
-          <template
-            v-if="isSaving"
-            slot="left-of-text">
-            <span class="save-loader">
-              <BaseLoader />
-            </span>
-          </template>
-        </BaseButton>
-      </div>
+
+      <template
+        v-if="buttons">
+        <template
+          v-for="(button, index) in buttons">
+          <div
+            v-if="button.visible"
+            :key="index"
+            :class="['form-button',
+                     'form-save-button',
+                     'form-save-button-' + (index + 1)]">
+            <BaseButton
+              :active="button.unsavedChanges"
+              :text="$t(button.text)"
+              :disabled="dbRequestOngoing || button.disabled"
+              :icon="isSaving ? '' : button.icon"
+              button-type="submit"
+              icon-size="small"
+              button-style="row"
+              class="form-button-inner"
+              @clicked="save(button.action)">
+              <template
+                v-if="isSaving"
+                slot="left-of-text">
+                <span class="save-loader">
+                  <BaseLoader />
+                </span>
+              </template>
+            </BaseButton>
+          </div>
+        </template>
+      </template>
     </div>
   </div>
 </template>
@@ -99,6 +114,21 @@ export default {
       default: '',
     },
     /**
+     * define save button(s)<br>
+     */
+    buttons: {
+      type: Array,
+      default: () => [{
+        action: 'save',
+        disabled: false,
+        icon: 'save-file',
+        text: 'save',
+        unsavedChanges: false,
+        visible: true,
+      }],
+      validator: (data) => data.every((obj) => ['action', 'disabled', 'icon', 'text', 'unsavedChanges', 'visible'].every((key) => Object.keys(obj).includes(key))),
+    },
+    /**
      * define visibility of save button
      */
     showSaveButton: {
@@ -109,6 +139,13 @@ export default {
      * define visibility of back button
      */
     showBackButton: {
+      type: Boolean,
+      default: true,
+    },
+    /**
+     * define visibility of back button on mobile resolution
+     */
+    showMobileBackButton: {
       type: Boolean,
       default: true,
     },
@@ -140,27 +177,6 @@ export default {
       type: Boolean,
       default: false,
     },
-    /**
-     * define save button icon
-     */
-    saveButtonIcon: {
-      type: String,
-      default: 'save-file',
-    },
-    /**
-     * define save button text
-     */
-    saveButtonText: {
-      type: String,
-      default: 'save',
-    },
-    /**
-     * define save buttons disable state
-     */
-    disableSaveButton: {
-      type: Boolean,
-      default: false,
-    },
   },
   data() {
     return {
@@ -182,9 +198,9 @@ export default {
       this.resetSearchText();
       this.$emit('return');
     },
-    save() {
+    save(action) {
       this.resetSearchText();
-      this.$emit('save');
+      this.$emit('save', action);
     },
   },
 };
@@ -193,8 +209,24 @@ export default {
 <style lang="scss" scoped>
   @import "../styles/variables.scss";
 
-  .base-row-header {
+  .form-save-button {
+    border-left: $separation-line;
+    white-space: nowrap;
+  }
+
+  .form-button-child {
+    display: block;
+    border-left: $separation-line;
+  }
+
+  .save-loader {
     position: relative;
+    transform: scale(0.5);
+    margin-right: $spacing;
+    padding-right: $spacing;
+  }
+
+  .base-row-header {
 
     &__text-wrapper {
       display: flex;
@@ -226,27 +258,32 @@ export default {
     & > .form-button:only-child {
       width: 100%;
     }
+  }
 
-    @media screen and (max-width: $mobile) {
-      width: 100%;
+  @media screen and (max-width: $tablet) {
+    .base-row-multiple-buttons {
+      flex-wrap: wrap;
+
+      .base-row-header {
+        border-bottom: $separation-line;
+      }
+
+      .base-row-buttons {
+        width: 100%;
+
+        .form-save-button-1 {
+          border-left: none;
+        }
+      }
+
+      .form-save-button {
+        width: 50%;
+
+        .form-button-inner {
+          width: 100%;
+        }
+      }
     }
-  }
-
-  .form-save-button {
-    border-left: $separation-line;
-    white-space: nowrap;
-  }
-
-  .form-button-child {
-    display: block;
-    border-left: $separation-line;
-  }
-
-  .save-loader {
-    position: relative;
-    transform: scale(0.5);
-    margin-right: $spacing;
-    padding-right: $spacing;
   }
 
   @media screen and (max-width: $mobile) {
@@ -268,6 +305,21 @@ export default {
 
     .form-button-inner {
       width: 100%;
+    }
+
+    .base-row-buttons {
+      width: 100%;
+    }
+
+    .base-row-multiple-buttons {
+      .base-row-buttons {
+        flex-wrap: wrap;
+
+        .form-back-button {
+          width: 100%;
+          border-bottom: $separation-line;
+        }
+      }
     }
   }
 </style>

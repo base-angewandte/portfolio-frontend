@@ -4,10 +4,27 @@
     <!-- Searchbar or Uploaded Files are shown -->
     <BaseRow
       :disable-save-button="!selectedRecords.length"
-      :save-button-text="'import.importEntries'"
+      :buttons="[{
+                   action: 'importAll',
+                   disabled: false,
+                   icon: 'download',
+                   text: 'import.importAll',
+                   unsavedChanges: false,
+                   visible: !!results.length && !!importedFileNames.length,
+                 },
+                 {
+                   action: 'importSelected',
+                   disabled: !selectedRecords.length,
+                   icon: 'download',
+                   text: 'import.importSelected',
+                   unsavedChanges: !!selectedRecords.length,
+                   visible: !!results.length,
+                 }]"
+      :save-button-text="'import.importSelected'"
       :save-button-icon="'download'"
       :show-search="!importedFileNames.length"
       :show-back-button="false"
+      :show-mobile-back-button="!results.length"
       :show-remove-button="!!importedFileNames.length"
       :show-save-button="!!results.length"
       :title="importedFileNames"
@@ -59,7 +76,12 @@
         :select-text="$t('selectAll')"
         :deselect-text="$t('selectNone')"
         data-e2e-import-results-options
-        @selected="selectAll" />
+        @selected="selectAll">
+        <template v-slot:selectedText>
+          {{ `${selectedRecords.length}/${results.length}
+              ${$t('entriesSelected', { type: $tc('entry', results.length) })}` }}
+        </template>
+      </BaseSelectOptions>
       <BaseLoader
         v-if="isLoading"
         data-e2e-import-loading
@@ -82,9 +104,10 @@
                   {{ item.title }}
                 </td>
               </tr>
-              <tr>
+              <tr
+                v-if="item.authors">
                 <td class="term-column">
-                  {{ $t('import.responsible') }}
+                  {{ $t('import.contributor') }}
                 </td>
                 <td class="definition-column">
                   {{ item.authors.toString() }}
@@ -436,7 +459,11 @@ export default {
     /**
      * Occurs when the "Import" button is clicked.
      */
-    async onImport() {
+    async onImport(action) {
+      if (action === 'importAll') {
+        this.selectedRecords = this.results;
+      }
+
       this.isLoading = true;
       await this.importSelected()
         .then((entryIds) => {

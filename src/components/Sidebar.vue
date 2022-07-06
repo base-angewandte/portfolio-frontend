@@ -898,6 +898,10 @@ export default {
       border-bottom: $separation-line;
     }
 
+    .base-button {
+      border-right: none !important;
+    }
+
     .search-button {
       display: none !important;
     }
