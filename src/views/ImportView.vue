@@ -216,7 +216,7 @@
       </SelectableAccordion>
     </div>
 
-    <!-- TODO: should be like rest of the no results messages -->
+    <!-- NO RESULTS TEXT -->
     <div
       v-if="noResultsText"
       class="no-entries">
@@ -349,8 +349,7 @@ export default {
       // let quick key strokes not trigger an api call
       this.timeout = setTimeout(async () => {
         if (this.searchText.length >= 3) {
-          this.isLoading = true;
-          this.fetchSearchResults();
+          await this.fetchSearchResults();
         } else {
           this.results = [];
         }
@@ -362,6 +361,8 @@ export default {
      */
     async fetchSearchResults() {
       try {
+        this.isLoading = true;
+
         const backendUrl = `${process.env.VUE_APP_BACKEND_BASE_URL}${process.env.VUE_APP_BACKEND_PREFIX}`;
         const apiUrl = encodeURI(`${backendUrl}/autosuggest/v1/bibrecs/any,contains,${this.searchText}/`);
         // cancel previous request if there is any
@@ -382,18 +383,18 @@ export default {
         });
         this.results = this.processResults(response.data);
         this.noResultsText = response.data.length ? '' : this.$t('form.noResult');
-        // }
+        this.isLoading = false;
       } catch (e) {
         // on status code >= 300
         if (e.response && e.response.status) {
           console.error(`Error fetching search results. HTTP status code: ${e.response.status}`);
+          this.isLoading = false;
         } else if (axios.isCancel(e)) {
           console.warn('Request cancelled:', e.message);
         } else {
+          this.isLoading = false;
           console.error(e);
         }
-      } finally {
-        this.isLoading = false;
       }
     },
     /**
