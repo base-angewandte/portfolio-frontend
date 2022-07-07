@@ -25,8 +25,8 @@
         },
         maxEntriesReached: $t('maxEntries'),
       }"
-      :entry-types="entryTypes"
-      :entry-types-config="filterTypeConfig"
+      :entry-types="entryTypesInt"
+      :entry-types-config="entryTypeConfig"
       :sort-config="sortConfig"
       :sort-options="sortOptions"
       :height="'100%'"
@@ -198,7 +198,7 @@ export default {
       isLoading: false,
       timeout: null,
       filterString: '',
-      filterTypeConfig: {
+      entryTypeConfig: {
         label: this.$t('dropdown.allTypes'),
         default: {
           label: {
@@ -225,6 +225,15 @@ export default {
 
       sidebarMenuHeight: '0px',
       entriesSelectable: false,
+
+      // default entry types to render component immediately
+      entryTypesInt: [{
+        label: {
+          de: this.$t('dropdown.allTypes'),
+          en: this.$t('dropdown.allTypes'),
+        },
+        source: '',
+      }],
     };
   },
   computed: {
@@ -288,6 +297,11 @@ export default {
     ]),
   },
   watch: {
+    entryTypes(val) {
+      if (val) {
+        this.entryTypesInt = val;
+      }
+    },
     list(val) {
       this.listInt = val.map((entry) => ({
         ...entry,
