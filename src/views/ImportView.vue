@@ -47,7 +47,7 @@
       <input
         ref="fileInput"
         type="file"
-        accept=".bib"
+        :accept="acceptedFileTypes"
         multiple
         class="hide"
         @click="resetInput"
@@ -281,6 +281,8 @@ export default {
       isBibtexImportInProgress: false,
       // semicolon separated list of uploaded filenames
       importedFileNames: '',
+      // allowed file types to upload and process
+      acceptedFileTypes: '.bib',
     };
   },
   computed: {
@@ -556,9 +558,27 @@ export default {
     },
     handleFileSelect(e) {
       const files = e.dataTransfer ? e.dataTransfer.files : e.target.files;
+
       if (files && files.length) {
         for (let i = 0; i < files.length; i += 1) {
-          this.filesToUpload.push(files[i]);
+          const fileType = files[i].name.match(/\.[0-9a-zA-Z]+$/);
+
+          // check if file-type is accepted
+          if (fileType && fileType[0]
+            && this.acceptedFileTypes.includes(fileType[0].toLowerCase())) {
+            this.filesToUpload.push(files[i]);
+          }
+        }
+
+        // if there are no files to upload we can assume
+        // that the file-format of the dropped file(s) were wrong
+        if (!this.filesToUpload.length) {
+          this.$notify({
+            group: 'request-notifications',
+            title: this.$t('import.failText'),
+            text: this.$t('import.failSubtext', { error: this.$t('import.invalidFileType') }),
+            type: 'error',
+          });
         }
       }
     },
