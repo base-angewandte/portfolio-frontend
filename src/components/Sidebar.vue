@@ -525,11 +525,14 @@ export default {
       const optionsButtonsHeight = this.$refs.optionButtons
         ? this.$refs.optionButtons.clientHeight
         : 0;
+      const selectOptionsHeight = menuSidebarEntries.$refs.selectOptions
+        ? menuSidebarEntries.$refs.selectOptions.$el.clientHeight
+        : 0;
 
       // calculate usable content height for entries in sidebar,
-      // taking expanded options height into account.
+      // taking expanded options and select options height into account.
       this.sidebarMenuHeight = sidebarHeight - sidebarHeadHeight
-        + optionsButtonsHeight;
+        + optionsButtonsHeight + selectOptionsHeight;
 
       // deduct height and spacing for pagination element from sidebar height
       this.sidebarMenuHeight = this.sidebarMenuHeight - 48 - 16;
