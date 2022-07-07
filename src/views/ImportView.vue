@@ -230,7 +230,7 @@
 
     <!-- PAGINATION -->
     <BasePagination
-      v-if="results && results.length && !isLoading"
+      v-if="results && results.length && !isLoading && pageCount > 1"
       :current="currentPage"
       :total="pageCount"
       data-e2e-import-results-pagination
