@@ -271,6 +271,10 @@ export default {
       .base-row-buttons {
         width: 100%;
 
+        .form-save-button {
+          white-space: normal;
+        }
+
         .form-save-button-1 {
           border-left: none;
         }
