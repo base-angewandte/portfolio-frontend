@@ -45,6 +45,7 @@ import {
   BaseMultilineTextInput,
   BaseProgressBar,
   BaseSwitchButton,
+  BaseEntrySelector,
 } from 'base-ui-components';
 // TODO: import component css separately!
 import 'base-ui-components/dist/base-ui-components-common.css';
@@ -95,3 +96,4 @@ Vue.use(BaseMap);
 Vue.use(BaseMultilineTextInput);
 Vue.use(BaseProgressBar);
 Vue.use(BaseSwitchButton);
+Vue.use(BaseEntrySelector);

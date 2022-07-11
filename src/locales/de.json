@@ -43,6 +43,7 @@
   "selectAll": "Alle auswählen",
   "selectNone": "Keine auswählen",
   "entriesSelected": "{type} ausgewählt",
+  "maxEntries": "Maximale Anzahl erreicht",
   "form": {
     "Add": "{value} hinzufügen",
     "select": "Wähle",
