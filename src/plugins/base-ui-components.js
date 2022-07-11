@@ -8,7 +8,7 @@ import {
   BaseDropDownList,
   BaseFormFieldCreator,
   BaseImageBox,
-  BaseMediaPreview,
+  BaseMediaCarousel,
   BaseOptions,
   BaseResultBoxSection,
   BaseTextList,
@@ -58,7 +58,7 @@ Vue.use(BaseDropButton);
 Vue.use(BaseDropDownList);
 Vue.use(BaseFormFieldCreator);
 Vue.use(BaseImageBox);
-Vue.use(BaseMediaPreview);
+Vue.use(BaseMediaCarousel);
 Vue.use(BaseOptions);
 Vue.use(BaseResultBoxSection);
 Vue.use(BaseTextList);
