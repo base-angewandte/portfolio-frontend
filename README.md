@@ -97,6 +97,8 @@ In the `.env` file contained in the project folder the following variables can b
 | VUE_DEFAULT_LISTS  | Please dont edit this value directly but via [default_lists.json](config/default_lists.json) in the `/config` folder. It contains all default values for customizable drop down lists - this is set via `gulp set-default-lists` (run automatically on project start up). As per default the JSON file contains:<br><br>CONTRIBUTORS_DEFAULT*: a default displayed for all contributor fields (Contributors and Roles (e.g. authors, architects)<br><br>LOCATION_DEFAULT*: a default displayed for the location input field <br><br>required attributes for each default entry: label, optional: source, additional|
 | VUE_APP_ARCHIVE_UPLOAD | Enables or disables long-term archival of assets in the application. When this variable is set to **true**, the "Push to Archive" button becomes available in the attachment area of an entry. |
 | VUE_APP_SHOWROOM_URL          | url to showroom page                                                                                                                                     |
+| VUE_APP_BASE_UI_ICONS         | url to icons spriteSheet (base-ui-icons.svg)                                                                                                                        |
+
 
 (*if there are any other dynamic autocomplete fields in the future, defaults can be added as {backend property name}_DEFAULT as well)
 

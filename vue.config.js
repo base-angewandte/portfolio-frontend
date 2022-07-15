@@ -1,5 +1,13 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 const path = require('path');
+const webpack = require('webpack');
+const childProcess = require('child_process');
+
+// generate unique hash for cache busting
+const commitHash = childProcess
+  .execSync('git rev-parse --short HEAD')
+  .toString()
+  .trim();
 
 module.exports = {
   publicPath: process.env.VUE_APP_PREFIX || '/',
@@ -9,6 +17,11 @@ module.exports = {
         'vue$': 'vue/dist/vue.esm.js',
       },
     },
+    plugins: [
+      new webpack.DefinePlugin({
+        __COMMIT_HASH__: JSON.stringify(commitHash)
+      })
+    ]
   },
   css: {
     loaderOptions: {
