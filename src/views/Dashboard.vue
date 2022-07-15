@@ -350,7 +350,6 @@ export default {
      * @param {Object} fileData - media item to open
      */
     openMediaPreview(fileData) {
-      console.log(fileData.response_code);
       // if file is already converted
       // a) check for response_code - 202 means it is still converting
       if (fileData.response_code === 202) {
