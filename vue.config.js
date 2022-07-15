@@ -1,13 +1,9 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 const path = require('path');
 const webpack = require('webpack');
-const childProcess = require('child_process');
 
 // generate unique hash for cache busting
-const commitHash = childProcess
-  .execSync('git rev-parse --short HEAD')
-  .toString()
-  .trim();
+const cacheHash = Date.now().toString().trim();
 
 module.exports = {
   publicPath: process.env.VUE_APP_PREFIX || '/',
@@ -19,7 +15,7 @@ module.exports = {
     },
     plugins: [
       new webpack.DefinePlugin({
-        __COMMIT_HASH__: JSON.stringify(commitHash)
+        __CACHE_HASH__: JSON.stringify(cacheHash)
       })
     ]
   },
