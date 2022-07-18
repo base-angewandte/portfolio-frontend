@@ -1,9 +1,5 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-const path = require('path');
 const webpack = require('webpack');
-
-// generate unique hash for cache busting
-const cacheHash = Date.now().toString().trim();
 
 module.exports = {
   publicPath: process.env.VUE_APP_PREFIX || '/',
@@ -15,7 +11,8 @@ module.exports = {
     },
     plugins: [
       new webpack.DefinePlugin({
-        __CACHE_HASH__: JSON.stringify(cacheHash)
+        // generate hash for cache busting
+        __CACHE_HASH__: Date.now().toString(),
       })
     ]
   },
@@ -47,6 +44,5 @@ module.exports = {
       .options({
         name: 'assets/[name].[hash:8].[ext]',
       });
-
   }
 };
