@@ -3,6 +3,8 @@
  * from a Bibtex format file (.bib) to portfolio types.
 */
 
+import { matchUsername } from './commonUtils';
+
 /**
  * Mapping function that returns the portfolio entry's type.
  * @param {string} bibtexType The type of the Bibtex record.
@@ -127,20 +129,37 @@ function getKeywords(value) {
   return retVal;
 }
 
-function getAuthor(value) {
-  if (value) {
-    return [{
-      label: value,
-      roles: [
-        {
-          source: 'http://base.uni-ak.ac.at/portfolio/vocabulary/author',
-          label: {
-            de: 'Autor*in',
-            en: 'Author',
+/**
+ * Maps the author of bibtex record to portfolio "author"
+ * @param {string} data - string of authors
+ * @param {object} user - user object with at least first_name, last_name, source attributes
+ * @returns {null|*[]} - authors array
+ */
+function getAuthor(data, user) {
+  if (data) {
+    const entries = [];
+    const values = data.split(' and ');
+
+    values.forEach((value, index) => {
+      entries.push({
+        label: value.trim(),
+        roles: [
+          {
+            source: 'http://base.uni-ak.ac.at/portfolio/vocabulary/author',
+            label: {
+              de: 'Autor*in',
+              en: 'Author',
+            },
           },
-        },
-      ],
-    }];
+        ],
+      });
+
+      if (matchUsername(value.trim(), user)) {
+        entries[index].label = `${user.first_name} ${user.last_name}`;
+        entries[index].source = user.uuid;
+      }
+    });
+    return entries;
   }
   return null;
 }
@@ -195,7 +214,7 @@ function getVolumeIssue(volume, number) {
  * Returns an object that represents a portfolio entry
  * (e.g. it is ready to be posted to the entry creation api in portfolio)
  */
-function createEntryFromBibtex(record) {
+function createEntryFromBibtex(record, user) {
   const entry = {};
   entry.title = record.title;
   const keywords = getKeywords(record.keywords);
@@ -205,7 +224,7 @@ function createEntryFromBibtex(record) {
     // data object is needed if type exists
     const data = {};
     // map authors, if any
-    const authors = getAuthor(record.authors);
+    const authors = getAuthor(record.authors, user);
     // conference type does not have authors
     if (authors && entry.type.source !== 'http://base.uni-ak.ac.at/portfolio/taxonomy/conference') {
       data.authors = authors;

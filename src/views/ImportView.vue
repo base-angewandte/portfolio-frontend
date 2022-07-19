@@ -313,6 +313,12 @@ export default {
     selectedIds() {
       return this.selectedRecords.map((record) => record.id);
     },
+    /**
+     * returns user object
+     */
+    user() {
+      return this.$store.state.PortfolioAPI.user;
+    },
     ...mapGetters('data', [
       'getPortfolioLangs',
     ]),
@@ -507,10 +513,10 @@ export default {
             // 'primo' and 'bibtex' are valid values for sourceName
             switch (record.sourceName) {
             case 'primo':
-              entry = createEntryFromPrimo(record, this.getPortfolioLangs);
+              entry = createEntryFromPrimo(record, this.getPortfolioLangs, this.user);
               break;
             case 'bibtex':
-              entry = createEntryFromBibtex(record);
+              entry = createEntryFromBibtex(record, this.user);
               break;
             default:
               console.error('Unknown record type');

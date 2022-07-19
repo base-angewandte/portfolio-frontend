@@ -4,6 +4,8 @@
  * to portfolio types.
 */
 
+import { matchUsername } from './commonUtils';
+
 /**
  * This array is used to look up ISO language codes in 639-2 and 639-1 formats.
  * Note that for some languages there are two 639-2 code values for the same 639-1 code
@@ -306,10 +308,11 @@ function getPortfolioType(primoType) {
 /**
  * Mapping function that returns a single portfolio author object.
  * @param {*} authorLabel The author's label
- * @param {*} lad24 Maps to docs/{index}/pnx/addata/lad24 of the Primo API response body
- * @returns An author ojbect, with or without GND.
+ * @param {object} user - user object with at least first_name, last_name, source attributes
+ * @param {*} lad24 - Maps to docs/{index}/pnx/addata/lad24 of the Primo API response body
+ * @returns {object} - An author object
  */
-function getAuthorObject(authorLabel, lad24 = 0) {
+function getAuthorObject(authorLabel, user, lad24 = 0) {
   const author = {
     label: authorLabel,
     roles: [{
@@ -327,6 +330,13 @@ function getAuthorObject(authorLabel, lad24 = 0) {
     const gndRecord = lad24.find((el) => (el.indexOf(' ') === -1 ? false : el.split(' ')[2] === '100' || el.split(' ')[2] === '110'));
     if (gndRecord) author.source = `http://d-nb.info/gnd/${gndRecord.split(' ')[1]}`;
   }
+
+  // add logged-in username and source if username matches authorLabel
+  if (matchUsername(authorLabel.trim(), user)) {
+    author.label = `${user.first_name} ${user.last_name}`;
+    author.source = user.uuid;
+  }
+
   return author;
 }
 
@@ -335,19 +345,20 @@ function getAuthorObject(authorLabel, lad24 = 0) {
  * @param {*} creator Maps to docs/{index}/pnx/display/creator of the Primo API response body
  * @param {*} lad24 Maps to docs/{index}/pnx/addata/lad24 of the Primo API response body
  * @param {*} lds16 Maps to docs/{index}/pnx/display/lds16 of the Primo API response body
+ * @param {object} user - user object
  * @returns
  */
-function getPortfolioAuthors(creator, lad24, lds16) {
+function getPortfolioAuthors(creator, lad24, lds16, user) {
   const authors = [];
   // if there is only one creator, look up this creator's GND in lad24
   // and return the author with the GND included.
   // otherwise, return the list of authors found in creator without GND
   if (creator && creator.length) {
     if (creator.length === 1) {
-      authors.push(getAuthorObject(creator[0], lad24));
+      authors.push(getAuthorObject(creator[0], user, lad24));
     } else {
       creator.forEach((item) => {
-        authors.push(getAuthorObject(item));
+        authors.push(getAuthorObject(item, user));
       });
     }
   } else if (lds16) {
@@ -355,10 +366,10 @@ function getPortfolioAuthors(creator, lad24, lds16) {
     const chunks = lds16.split(';');
     if (chunks.length > 1) {
       chunks.forEach((item) => {
-        authors.push(getAuthorObject(item));
+        authors.push(getAuthorObject(item, user));
       });
     } else {
-      authors.push(getAuthorObject(lds16));
+      authors.push(getAuthorObject(lds16, user));
     }
   }
   return authors;
@@ -766,7 +777,7 @@ function getKeywords(value) {
  * Converts a library search result record into an object that represents
  * a new entry in portfolio.
  */
-function createEntryFromPrimo(record, portfolioLangs) {
+function createEntryFromPrimo(record, portfolioLangs, user) {
   const entry = {};
   entry.title = record.title;
   entry.keywords = getKeywords(record.subject);
@@ -775,7 +786,7 @@ function createEntryFromPrimo(record, portfolioLangs) {
     // assume data object is needed if type exists
     const data = {};
     // map authors, if any
-    const authors = getPortfolioAuthors(record.authors, record.lad24, record.lds16);
+    const authors = getPortfolioAuthors(record.authors, record.lad24, record.lds16, user);
     // workaround: add authors only to compabitble types in portfolio
     if (authors && authors.length && typeHasAuthor(entry.type.source)) {
       data.authors = authors;
