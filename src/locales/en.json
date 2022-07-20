@@ -260,6 +260,7 @@
     "archiveUpdateSuccessful": "The archived data was successfully updated."
   },
   "import": {
+    "importBibTexTitle": "BibTex Importer",
     "importButtonTitle": "Import",
     "importSelected": "Import Selected",
     "importAll": "Import All",
