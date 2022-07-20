@@ -254,6 +254,7 @@
     "archiveUpdateSuccessful": "Die archivierten Daten wurden erfolgreich aktualisiert."
   },
   "import": {
+    "importBibTexTitle": "BibTex Importer",
     "importButtonTitle": "Importieren",
     "importSelected": "Ausgewählte importieren",
     "importAll": "Alle importieren",

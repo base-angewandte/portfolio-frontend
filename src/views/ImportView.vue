@@ -22,12 +22,12 @@
                  }]"
       :save-button-text="'import.importSelected'"
       :save-button-icon="'download'"
-      :show-search="!importedFileNames.length"
+      :show-search="primoImporter && !importedFileNames.length"
       :show-back-button="false"
       :show-mobile-back-button="!results.length"
       :show-remove-button="!!importedFileNames.length"
       :show-save-button="!!results.length"
-      :title="importedFileNames"
+      :title="!primoImporter ? $t('import.importBibTexTitle') : importedFileNames"
       :unsaved-changes="!!selectedRecords.length"
       @return="cancelImport"
       @remove="resetSearch"
@@ -312,6 +312,19 @@ export default {
      */
     selectedIds() {
       return this.selectedRecords.map((record) => record.id);
+    },
+    /**
+     * returns user object
+     */
+    user() {
+      return this.$store.state.PortfolioAPI.user;
+    },
+    /**
+     * returns boolean if primo importer is enabled
+     * @returns {boolean}
+     */
+    primoImporter() {
+      return JSON.parse(process.env.VUE_APP_PRIMO_IMPORTER);
     },
     ...mapGetters('data', [
       'getPortfolioLangs',
