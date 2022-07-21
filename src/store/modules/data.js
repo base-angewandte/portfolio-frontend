@@ -637,12 +637,19 @@ const actions = {
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
       try {
-        const createdEntry = await this.dispatch('PortfolioAPI/post', { kind: 'entry', id: data.id, data });
-        if (createdEntry) {
-          commit('setCurrentItemId', createdEntry);
+        const response = await this.dispatch('PortfolioAPI/post', { kind: 'entry', id: data.id, data });
+        // check if response is a single object or an array ob objects from bulk action
+        // use last created object
+        const createdObj = Array.isArray(response) ? response.slice(-1) : response;
+        // use array of id's or single id
+        const createdIds = Array.isArray(response)
+          ? response.map((entry) => entry.id) : response.id;
+
+        if (createdObj) {
+          commit('setCurrentItemId', createdObj);
           // this adjustment is necessary to be able to
           // populate a BaseForm with existing values like 'texts'
-          const adjustedEntry = await adjustEntry(createdEntry);
+          const adjustedEntry = await adjustEntry(createdObj);
           commit('setCurrentItemData', adjustedEntry);
           commit('setIsFormSaved', true);
           // if this is an archived entry, update the isArchiveChanged
@@ -651,7 +658,7 @@ const actions = {
             await dispatch('fetchIsArchiveChanged');
           }
         }
-        resolve(createdEntry.id);
+        resolve(createdIds);
       } catch (e) {
         console.error(e);
         reject(e);

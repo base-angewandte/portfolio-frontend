@@ -182,3 +182,17 @@ export const matchUsername = (string, user) => {
 
   return (matchFirstname && matchLastname) || (matchFirstCharAndPoint && matchLastname);
 };
+
+/**
+ * Divide array into arrays of specific size
+ * @param {array} arr - array to divide
+ * @param {number} size - size of chunks
+ * @returns {*[]} - divided array
+ */
+export const divideArray = (arr, size) => {
+  const groups = [];
+  for (let i = 0; i < arr.length; i += size) {
+    groups.push(arr.slice(i, size + i));
+  }
+  return groups;
+};

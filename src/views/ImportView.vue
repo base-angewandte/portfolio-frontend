@@ -246,6 +246,7 @@ import createEntryFromPrimo from '@/utils/primoMapper';
 import createEntryFromBibtex from '@/utils/bibtexMapper';
 import SelectableAccordion from '@/components/SelectableAccordion';
 import BaseRow from '@/components/BaseRow';
+import { divideArray } from '../utils/commonUtils';
 
 const { CancelToken } = axios;
 let cancel;
@@ -480,7 +481,10 @@ export default {
 
       this.isLoading = true;
       await this.importSelected()
-        .then((entryIds) => {
+        .then((entries) => {
+          // reduce ids from bulk-create - eg. [[1, 2], [3, 4]] => [1, 2, 3, 4]
+          const entryIds = entries.reduce((a, b) => a.concat(b), []);
+
           // update the store about the import completed event
           // so as to trigger update of sidebar etc. in relevant components
           this.$store.commit('data/setImportedIds', entryIds);
@@ -510,28 +514,34 @@ export default {
      * Performs a batch import, i.e. creates new entries for each of the selected records.
      */
     async importSelected() {
-      return Promise.all(this.selectedRecords
-      // eslint-disable-next-line no-async-promise-executor
-        .map((record) => new Promise(async (resolve, reject) => {
+      // map selected records to portfolio schema
+      const mappedEntries = this.selectedRecords.map((record) => {
+        // initially, the portfolio entry to be created is an empty object
+        let entry = {};
+        // to create the entry, send the record to its respective mapper method;
+        // 'primo' and 'bibtex' are valid values for sourceName
+        switch (record.sourceName) {
+        case 'primo':
+          entry = createEntryFromPrimo(record, this.getPortfolioLangs, this.user);
+          break;
+        case 'bibtex':
+          entry = createEntryFromBibtex(record, this.user);
+          break;
+        default:
+          console.error('Unknown record type');
+        }
+
+        return entry;
+      });
+
+      return Promise.all(divideArray(mappedEntries, 100)
+        // eslint-disable-next-line no-async-promise-executor
+        .map((group) => new Promise(async (resolve, reject) => {
           try {
-            // initially, the portfolio entry to be created is an empty object
-            let entry = {};
-            // to create the entry, send the record to its respective mapper method;
-            // 'primo' and 'bibtex' are valid values for sourceName
-            switch (record.sourceName) {
-            case 'primo':
-              entry = createEntryFromPrimo(record, this.getPortfolioLangs, this.user);
-              break;
-            case 'bibtex':
-              entry = createEntryFromBibtex(record, this.user);
-              break;
-            default:
-              console.error('Unknown record type');
-            }
-            // dispatch the entry to the store for posting to API
-            await this.$store.dispatch('data/addOrUpdateEntry', entry)
-              .then((id) => {
-                resolve(id);
+            // dispatch group of entries to the store for posting to API
+            await this.$store.dispatch('data/addOrUpdateEntry', group)
+              .then((entryIds) => {
+                resolve(entryIds);
               }).catch((e) => {
                 console.error(e);
                 reject(e);
