@@ -426,6 +426,7 @@ export default {
           subject: res.subject ? res.subject.toString().substring(0, 255) : '',
           authors: res.author ? res.author : '',
           year: res.creationdate ? res.creationdate.toString() : '',
+          source: res.source,
           sourceName: 'primo',
           type: res.type ? res.type.toString() : '',
           lad24: res.lad24 ? res.lad24 : '',

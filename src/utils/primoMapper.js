@@ -782,6 +782,7 @@ function createEntryFromPrimo(record, portfolioLangs, user) {
   entry.title = record.title;
   entry.keywords = getKeywords(record.subject);
   entry.type = getPortfolioType(record.type);
+  entry.reference = Array.isArray(record.source) ? record.source[0] : '';
   if (entry.type) {
     // assume data object is needed if type exists
     const data = {};
