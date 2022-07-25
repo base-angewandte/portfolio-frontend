@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-const path = require('path');
+const webpack = require('webpack');
 
 module.exports = {
   publicPath: process.env.VUE_APP_PREFIX || '/',
@@ -9,6 +9,12 @@ module.exports = {
         'vue$': 'vue/dist/vue.esm.js',
       },
     },
+    plugins: [
+      new webpack.DefinePlugin({
+        // generate hash for cache busting
+        __CACHE_HASH__: Date.now().toString(),
+      })
+    ]
   },
   css: {
     loaderOptions: {
@@ -38,6 +44,5 @@ module.exports = {
       .options({
         name: 'assets/[name].[hash:8].[ext]',
       });
-
   }
 };

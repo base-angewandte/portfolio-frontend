@@ -101,19 +101,24 @@
         v-slot:thumbnails="{ item }">
         <base-icon
           v-if="item.shared"
-          name="people" />
+          name="people"
+          class="base-entry-selector__entry__icon" />
         <base-icon
           v-if="item.published"
-          name="eye" />
+          name="eye"
+          class="base-entry-selector__entry__icon" />
         <base-icon
           v-if="item.error"
-          name="attention" />
+          name="attention"
+          class="base-entry-selector__entry__icon" />
         <base-icon
           v-if="item.has_media"
-          name="attachment" />
+          name="attachment"
+          class="base-entry-selector__entry__icon" />
         <base-icon
           v-if="item.archive_URI && getIsArchivalEnabled"
-          name="archive-sheets" />
+          name="archive-sheets"
+          class="base-entry-selector__entry__icon" />
       </template>
     </BaseEntrySelector>
   </div>
@@ -579,6 +584,11 @@ export default {
     .search-bar {
       border-left: $separation-line;
     }
+  }
+
+  .base-icon.base-entry-selector__entry__icon {
+    width: $icon-small;
+    height: $icon-small;
   }
 
   // special width dictated by header / footer component
