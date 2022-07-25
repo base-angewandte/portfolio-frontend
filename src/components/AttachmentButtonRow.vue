@@ -11,6 +11,8 @@
         :box-size="{ width: 'calc(25% - 16rem / 19 / 2)' }"
         :text="$t('form-view.addExistingEntry')"
         :subtext="$t('form-view.clickordrag')"
+        :disabled="!currentId"
+        :show-tooltip="!currentId"
         icon="file-object"
         drop-type="elements"
         drag-item-class="base-menu-list__list-entry"
@@ -18,7 +20,8 @@
         render-element-as="button"
         class="file-box file-boxes-margin"
         @dropped-element="droppedEntries"
-        @clicked="openEntrySelect" />
+        @clicked="openEntrySelect"
+        @onTooltip="openEntrySelect" />
 
       <!-- LINK A NEW ENTRY -->
       <BaseBoxButton
@@ -27,10 +30,11 @@
         :box-size="{ width: 'calc(25% - 16rem / 19 / 2)'}"
         :text="$t('form-view.addNewEntry')"
         :disabled="!currentId"
-        :show-tooltip="!currentId ? true : false"
+        :show-tooltip="!currentId"
         icon="file-object"
         class="file-box file-boxes-margin"
         render-element-as="button"
+        :class="[{ 'base-box-button-disabled': !currentId }]"
         @clicked="$emit('open-new-form')"
         @onTooltip="$emit('open-new-form')" />
 
@@ -54,7 +58,7 @@
           :text="$t('form-view.attachFile')"
           :subtext="$t('form-view.clickordrag')"
           :disabled="!currentId"
-          :show-tooltip="!currentId ? true : false"
+          :show-tooltip="!currentId"
           icon="camera"
           class="file-select-dropbox"
           @dropped-file="handleFileSelect($event)"
@@ -71,6 +75,8 @@
       <BaseButton
         key="mobile-addFile"
         :text="$t('form-view.addExistingEntry')"
+        :disabled="!currentId"
+        :show-tooltip="!currentId"
         icon-size="large"
         button-style="row"
         icon="file-object"
@@ -83,7 +89,7 @@
         key="mobile-addNew"
         :text="$t('form-view.addNewEntry')"
         :disabled="!currentId"
-        :show-tooltip="!currentId ? true : false"
+        :show-tooltip="!currentId"
         icon-size="large"
         button-style="row"
         align-text="left"
@@ -99,7 +105,7 @@
           key="mobile-addExisting"
           :text="$t('form-view.attachFile')"
           :disabled="!currentId"
-          :show-tooltip="!currentId ? true : false"
+          :show-tooltip="!currentId"
           icon="camera"
           icon-size="large"
           align-text="left"
@@ -153,7 +159,6 @@
 </template>
 
 <script>
-import axios from 'axios';
 import Sidebar from './Sidebar';
 import Uploader from './Uploader';
 import { userInfo } from '../mixins/userInfo';
@@ -241,6 +246,15 @@ export default {
     },
     // function triggered upon click on link entries drop box
     openEntrySelect() {
+      if (!this.currentId) {
+        this.$notify({
+          group: 'request-notifications',
+          title: this.$t('notify.linkingNotPossible'),
+          text: this.$t('notify.saveBeforeLink'),
+          type: 'error',
+        });
+        return;
+      }
       this.showEntryPopUp = true;
     },
     getSelectedIdsAndLink(objList) {
@@ -267,38 +281,6 @@ export default {
       // only save to db if entry exists in db already
       if (this.currentId) {
         await this.$parent.actionLinked({ list, action: 'save' });
-        // otherwise just save state in store for now and commit with general first save of entry
-      } else {
-        const failArr = [];
-        const fullList = await Promise.all(list
-          // eslint-disable-next-line no-async-promise-executor
-          .map((entryId, index) => new Promise(async (resolve) => {
-            try {
-              // get the data of the linked entry
-              const entry = await this.$store.dispatch('PortfolioAPI/get', { kind: 'entry', id: entryId });
-              resolve({
-                id: `tempId${this.$store.getters['data/getCurrentLinked'].length + index}`,
-                to: entry,
-              });
-            } catch (e) {
-              if (axios.isCancel(e)) {
-                console.warn(e.message);
-              } else {
-                console.error(e);
-              }
-              failArr.push(entryId);
-              resolve();
-            }
-          })));
-        const linkedList = fullList.filter(Boolean);
-        if (linkedList.length) {
-          this.$store.commit('data/setLinked', { list: fullList.filter(Boolean), replace: false });
-        }
-        this.informUser({
-          failedArr: failArr,
-          action: 'link',
-          type: 'entry',
-        });
       }
       // close the pop up again
       this.showEntryPopUp = false;
