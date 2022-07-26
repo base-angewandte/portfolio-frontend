@@ -144,6 +144,9 @@ export default {
   margin: 0 0 0 2em;
 }
 .error-list-icon {
-  height: 24px; margin: 0 6px; color: $app-color;
+  height: $icon-medium;
+  width: $icon-medium;
+  margin: 0 $spacing-small;
+  color: $app-color;
 }
 </style>
