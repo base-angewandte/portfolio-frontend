@@ -259,5 +259,23 @@
     "updateArchiveButton": "Update archive",
     "archiveUpdateTitle": "Update archive",
     "archiveUpdateSuccessful": "The archived data was successfully updated."
+  },
+  "import": {
+    "importBibTexTitle": "BibTex Importer",
+    "importButtonTitle": "Import",
+    "importSelected": "Import Selected",
+    "importAll": "Import All",
+    "searchCatalogueText": "Search the Library Catalogue",
+    "successText": "Import successful",
+    "successSubtext": "{count} entries were imported successfully.",
+    "failText": "Error during import",
+    "failSubtext": "Unfortunately import has failed due to the following reason: {error}.",
+    "title": "Title",
+    "contributor": "Contributor",
+    "year": "Year",
+    "clickordrag": "Click or Drag'n Drop",
+    "attachBibTex": "Attach BibTex file",
+    "invalidBibTex": "The BibTex file could not be read",
+    "invalidFileType": "Invalid file type"
   }
 }

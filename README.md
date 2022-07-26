@@ -98,7 +98,7 @@ In the `.env` file contained in the project folder the following variables can b
 | VUE_APP_ARCHIVE_UPLOAD | Enables or disables long-term archival of assets in the application. When this variable is set to **true**, the "Push to Archive" button becomes available in the attachment area of an entry. |
 | VUE_APP_SHOWROOM_URL          | url to showroom page                                                                                                                                     |
 | VUE_APP_BASE_UI_ICONS         | url to icons spriteSheet (base-ui-icons.svg)                                                                                                                        |
-
+| VUE_APP_PRIMO_IMPORTER        | enable/disable the PRIMO Library Importer                                                                                                                      |
 
 (*if there are any other dynamic autocomplete fields in the future, defaults can be added as {backend property name}_DEFAULT as well)
 

@@ -60,6 +60,7 @@
       :class="['sidebar', { 'sidebar-full': !showForm, 'sidebar-hidden-mobile': showForm }]"
       @new-form="checkUnsavedChanges"
       @show-entry="checkUnsavedChanges"
+      @import-entries="checkUnsavedChanges"
       @update-publish-state="updateFormData" />
     <main
       v-if="showForm"
@@ -105,6 +106,9 @@ export default {
       return this.serializeMediaPreviewData(this.$store.state.data.linkedMedia)
         .filter((item) => !item.processing);
     },
+    importComplete() {
+      return this.$store.getters['data/getImportedIds'];
+    },
   },
   watch: {
     $route() {
@@ -112,6 +116,12 @@ export default {
         this.$store.commit('data/deleteCurrentItem');
       }
       this.$store.commit('data/setNewForm', this.$route.name === 'newEntry');
+    },
+    // upon successful import of entries, update the sidebar and open the topmost entry
+    async importComplete() {
+      await this.updateSidebarData(true);
+      const goToId = this.$refs.sidebar.listInt[0].id;
+      this.routeToEntry(goToId);
     },
   },
   mounted() {
@@ -130,7 +140,7 @@ export default {
         this.$router.push('/new');
       }
     },
-    checkUnsavedChanges(id) {
+    checkUnsavedChanges(action, id) {
       const followUpAction = () => {
         // remove leftover stored values before entering new item;
         sessionStorage.removeItem('valueList');
@@ -138,7 +148,18 @@ export default {
         if (id) {
           this.routeToEntry(id);
         } else {
-          this.createNewForm();
+          switch (action) {
+          case 'goToNew':
+            this.createNewForm();
+            break;
+          case 'goToImport':
+            if (this.$route.name !== 'importEntries') {
+              this.$router.push('/import');
+            }
+            break;
+          default:
+            console.error('An unknown route/action was requested.');
+          }
         }
       };
       if (this.$refs.view && this.$refs.view.unsavedChanges) {
@@ -189,7 +210,7 @@ export default {
       evt.preventDefault();
       // TODO: image zoom?
     },
-    updateSidebarData(alwaysUpdate) {
+    async updateSidebarData(alwaysUpdate) {
       if (!this.$refs.sidebar.entriesExist) {
         this.$refs.sidebar.resetFilters();
       }
@@ -209,7 +230,7 @@ export default {
               || (activeSidebarEntry.type
                 && getLangLabel(activeSidebarEntry.type.label, this.$i18n.locale)
                 !== this.$refs.view.type))))) {
-        this.$refs.sidebar.fetchSidebarData();
+        await this.$refs.sidebar.fetchSidebarData();
       }
     },
     updateFormData(published) {

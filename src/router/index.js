@@ -3,6 +3,7 @@ import Router from 'vue-router';
 import { i18n } from '@/plugins/i18n';
 import Dashboard from '../views/Dashboard';
 import FormView from '../views/FormView';
+import ImportView from '../views/ImportView';
 import NotFoundComponent from '../views/EntryNotFound';
 import NetworkError from '../views/Error';
 import store from '../store';
@@ -43,6 +44,11 @@ export default new Router({
           component: FormView,
         },
         {
+          path: 'import',
+          name: 'importEntries',
+          component: ImportView,
+        },
+        {
           path: ':lang',
           component: {
             template: '<router-view></router-view>',
@@ -80,6 +86,11 @@ export default new Router({
               path: 'new',
               name: 'newEntryLang',
               component: FormView,
+            },
+            {
+              path: 'import',
+              name: 'importEntriesLang',
+              component: ImportView,
             },
           ],
         },

@@ -40,22 +40,59 @@
       <template
         slot="head">
         <div
-          :class="['base-row', { 'base-row-with-form': isNewForm || !!activeEntryId }]">
+          :class="['base-row', { 'base-row-with-form':
+            isNewForm || !!activeEntryId || isImportPage }]">
           <BaseButton
             v-if="newEnabled"
             :active="isNewForm"
-            :text="$t('new')"
+            :text="isButtonMinimized ? '' : $t('new')"
             :disabled="isLoading"
             icon="add-new-object"
             icon-size="large"
-            class="base-row-button"
+            :class="['base-row-button',
+                     { 'minimized': isButtonMinimized },
+                     { 'maximized': isButtonMaximized }]"
             button-style="row"
+            data-e2e-new-button
             @clicked="getNewForm" />
+          <BaseButton
+            v-if="importEnabled"
+            :text="isButtonMinimized ? '' : $t('import.importButtonTitle')"
+            :active="isImportPage"
+            icon="download"
+            icon-size="small"
+            :class="['base-row-button',
+                     { 'minimized': isButtonMinimized },
+                     { 'maximized': isButtonMaximized }]"
+            button-style="row"
+            data-e2e-import-button
+            @clicked="$emit('import-entries', 'goToImport')" />
+          <BaseButton
+            v-if="!isSearchExpanded"
+            text=""
+            icon="magnifier"
+            icon-size="large"
+            class="base-row-button search-button minimized"
+            style="border-right: none;"
+            button-style="row"
+            data-e2e-search-button
+            @clicked="expandOrCollapseSearch(true)" />
+          <!-- Searchbar is conditionally visible for desktop screens -->
+          <BaseSearch
+            v-if="isSearchExpanded"
+            id="sidebarSearchInput"
+            v-model="filterString"
+            :show-image="true"
+            :placeholder="$t('search')"
+            class="search-bar-desktop"
+            @blur="onSearchInputBlur()"
+            @input="filterEntries($event, 'title')" />
+          <!-- Searchbar is always visible for medium and mobile screens -->
           <BaseSearch
             v-model="filterString"
             :show-image="true"
             :placeholder="$t('search')"
-            class="search-bar"
+            class="search-bar-mobile"
             @input="filterEntries($event, 'title')" />
         </div>
       </template>
@@ -149,6 +186,14 @@ export default {
       default: true,
     },
     /**
+     * whether the import button is to be shown; e.g. this is not required
+     * when the sidebar instance is used on the "attach existing entries" pop-up
+     */
+    importEnabled: {
+      type: Boolean,
+      default: true,
+    },
+    /**
      * need to set from outside for link entries functionality
      */
     selectActive: {
@@ -227,10 +272,10 @@ export default {
       entriesExist: false,
       noEntriesTitle: '',
       noEntriesSubtext: '',
-
       sidebarMenuHeight: '0px',
       entriesSelectable: false,
-
+      // used to horizontally collapse/expand the sidebar's search input
+      isSearchExpanded: true,
       // default entry types to render component immediately
       entryTypesInt: [{
         label: {
@@ -259,6 +304,9 @@ export default {
     },
     isNewForm() {
       return this.$route.name === 'newEntry';
+    },
+    isImportPage() {
+      return this.$route.path === '/import';
     },
     sortOptions() {
       return [
@@ -300,6 +348,26 @@ export default {
     ...mapGetters('data', [
       'getCurrentItemData',
     ]),
+    /**
+     * Returns true if sidebar head buttons such as 'New' or 'Import'
+     * are to be rendered in minimized state (i.e. without text and limited width).
+     */
+    isButtonMinimized() {
+      if (this.isSearchExpanded && this.$route.path !== '/') {
+        return true;
+      }
+      return false;
+    },
+    /**
+     * Returns true if sidebar head buttons such as 'New' or 'Import'
+     * are to be rendered in maximized state (i.e. with text and full width).
+     */
+    isButtonMaximized() {
+      if (!this.isSearchExpanded && this.$route.path !== '/') {
+        return true;
+      }
+      return false;
+    },
   },
   watch: {
     entryTypes(val) {
@@ -325,6 +393,7 @@ export default {
           && this.$refs.menuSidebarEntries.$refs.pagination) {
           this.$refs.menuSidebarEntries.$refs.pagination.setStartEnd();
         }
+        this.expandOrCollapseSearch();
       }
     },
     windowWidth() {
@@ -357,6 +426,9 @@ export default {
       this.entriesSelectable = true;
     }
   },
+  created() {
+    this.expandOrCollapseSearch();
+  },
   methods: {
     fetchEntries(request) {
       this.sortParam = request.sort;
@@ -365,7 +437,7 @@ export default {
       this.fetchSidebarData();
     },
     showEntry(id) {
-      this.$emit('show-entry', id);
+      this.$emit('show-entry', 'goToEntry', id);
     },
     selectEntry(evt) {
       this.selectedMenuEntries = evt;
@@ -375,7 +447,7 @@ export default {
     getNewForm() {
       this.$store.commit('data/deleteCurrentItem');
       this.$store.commit('data/deleteParentItems');
-      this.$emit('new-form');
+      this.$emit('new-form', 'goToNew');
     },
     filterEntries(val, type) {
       if (type === 'type') {
@@ -569,6 +641,44 @@ export default {
         source: '',
       };
     },
+    checkContainerPosition() {
+      if (this.listInt.length && this.$refs.sidebarHead) {
+        // check sidebar head position for whole page scroll and menuContainer position
+        // for container scrolling
+        this.sidebarBelow = (this.isMobile && this.optionsVisible
+          && this.$refs.sidebarHead.offsetTop > 0)
+          || this.$refs.menuContainer.scrollTop > 0;
+      }
+    },
+    /**
+     * Triggers a (horizontally) collapsed or an expanded state for the search input
+     * of the sidebar.
+     */
+    expandOrCollapseSearch(forceExpand = false) {
+      // expand the search in the following cases: (a) we are on root page
+      // (b) import is disabled (c) forceExpand flag is true
+      if (this.$route.path === '/' || !this.importEnabled || forceExpand) {
+        this.isSearchExpanded = true;
+        // set focus on the search input
+        this.$nextTick(() => {
+          const inputEl = document.querySelector('#sidebarSearchInput');
+          if (inputEl) {
+            inputEl.focus();
+          }
+        });
+      } else {
+        this.isSearchExpanded = false;
+      }
+    },
+    /**
+     * Occurs when the sidebar search input loses focus
+     */
+    onSearchInputBlur() {
+      // collapse search input if text is empty
+      if (!this.filterString.length) {
+        this.expandOrCollapseSearch();
+      }
+    },
   },
 };
 </script>
@@ -584,6 +694,23 @@ export default {
     .search-bar {
       border-left: $separation-line;
     }
+
+    .base-row-button {
+      max-width: 100%;
+      border-right: $separation-line;
+    }
+
+    .minimized {
+      width: 3rem;
+    }
+
+    .maximized {
+      width: 100%;
+    }
+
+    .search-bar-mobile {
+      display: none;
+    }
   }
 
   .base-icon.base-entry-selector__entry__icon {
@@ -595,6 +722,14 @@ export default {
   @media screen and (max-width: 1083px) {
     .menu-sidebar {
       height: calc(100vh - #{$header-height} - #{$row-height-small} - 131px);
+
+      .search-bar-desktop {
+        display: none;
+      }
+
+      .search-bar-mobile {
+        display: block;
+      }
     }
   }
 
@@ -608,7 +743,20 @@ export default {
 
         .base-row-button {
           width: 100%;
+          border-right: none;
           border-bottom: $separation-line;
+        }
+
+        .search-button {
+          display: none !important;
+        }
+
+        .search-bar-desktop {
+          display: none;
+        }
+
+        .search-bar-mobile {
+          display: block;
         }
       }
     }
@@ -620,11 +768,24 @@ export default {
       border-bottom: $separation-line;
     }
 
+    .base-button {
+      border-right: none !important;
+    }
+
+    .search-button {
+      display: none !important;
+    }
+
     .menu-sidebar {
       height: calc(100vh - #{$header-height} - (2 * #{$spacing}));
 
-      .search-bar {
+      .search-bar-mobile {
+        display: block;
         border-left: none;
+      }
+
+      .search-bar-desktop {
+        display: none;
       }
     }
   }
