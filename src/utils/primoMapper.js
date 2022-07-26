@@ -323,11 +323,12 @@ function getAuthorObject(authorLabel, user, lad24 = 0) {
       },
     }],
   };
-  // add GND only for authors identifiable via lad24 code 100 (persons) or 110 (Körperschaftsname)
+  // add GND only for authors identifiable via
+  // lad24 code 100 (persons) or 110 (Körperschaftsname) or 700 (Herausgeberinnen)
   if (lad24 && lad24.length) {
     // if the lad24 field contains spaces, split it in chunks
     // find the record where chunk[2] = 100, if found then chunk[1] is the gnd
-    const gndRecord = lad24.find((el) => (el.indexOf(' ') === -1 ? false : el.split(' ')[2] === '100' || el.split(' ')[2] === '110'));
+    const gndRecord = lad24.find((el) => (el.indexOf(' ') === -1 ? false : el.split(' ')[2] === '100' || el.split(' ')[2] === '110') || el.split(' ')[2] === '700');
     if (gndRecord) author.source = `http://d-nb.info/gnd/${gndRecord.split(' ')[1]}`;
   }
 
@@ -369,7 +370,7 @@ function getPortfolioAuthors(creator, lad24, lds16, user) {
         authors.push(getAuthorObject(item, user));
       });
     } else {
-      authors.push(getAuthorObject(lds16, user));
+      authors.push(getAuthorObject(lds16, user, lad24));
     }
   }
   return authors;
