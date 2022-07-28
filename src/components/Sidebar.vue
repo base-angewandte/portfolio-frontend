@@ -695,6 +695,10 @@ export default {
       border-left: $separation-line;
     }
 
+    .base-row-with-form {
+      overflow: hidden;
+    }
+
     .base-row-button {
       max-width: 100%;
       border-right: $separation-line;
@@ -763,13 +767,19 @@ export default {
   }
 
   @media screen and (max-width: $mobile) {
-    .base-row-button {
-      width: 100%;
-      border-bottom: $separation-line;
-    }
-
     .base-button {
       border-right: none !important;
+
+      &.base-button-row {
+        width: 50%;
+        border-bottom: $separation-line;
+        transition: color 250ms ease-in-out;
+
+        &:first-child {
+          width: calc(50% - #{$border-width});
+          margin-right: $border-width;
+        }
+      }
     }
 
     .search-button {
