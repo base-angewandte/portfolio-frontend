@@ -346,7 +346,7 @@ function getAuthorObject(authorLabel, user, lad24 = 0) {
  * @param {*} creator Maps to docs/{index}/pnx/display/creator of the Primo API response body
  * @param {*} lad24 Maps to docs/{index}/pnx/addata/lad24 of the Primo API response body
  * @param {*} lds16 Maps to docs/{index}/pnx/display/lds16 of the Primo API response body
- * @param {object} user - user object
+ * @param {object} user - user object with at least first_name, last_name, source attributes
  * @returns
  */
 function getPortfolioAuthors(creator, lad24, lds16, user) {
@@ -719,26 +719,33 @@ function getPublishedIn(isPartOf) {
 /**
  * Mapping function that returns the portfolio entry's "Contributors" field
  * @param {*} list Maps to pnx/display/contributor in Primo
+ * @param {Object} user - user object with at least first_name, last_name, source attributes
  * @returns The array structure corresponding to "Contributors" in portfolio
  */
-function getContributors(list) {
+function getContributors(list, user) {
   const retVal = [];
   if (list && list.length) {
     list.forEach((contributor) => {
-      retVal.push(
-        {
-          label: contributor,
-          roles: [
-            {
-              source: 'http://base.uni-ak.ac.at/portfolio/vocabulary/contribution',
-              label: {
-                en: 'Contribution',
-                de: 'Beitrag',
-              },
+      const obj = {
+        label: contributor,
+        roles: [
+          {
+            source: 'http://base.uni-ak.ac.at/portfolio/vocabulary/contribution',
+            label: {
+              en: 'Contribution',
+              de: 'Beitrag',
             },
-          ],
-        },
-      );
+          },
+        ],
+      };
+
+      // add logged-in username and source if username matches authorLabel
+      if (matchUsername(contributor.trim(), user)) {
+        obj.label = `${user.first_name} ${user.last_name}`;
+        obj.source = user.uuid;
+      }
+
+      retVal.push(obj);
     });
   }
   return retVal;
@@ -843,7 +850,7 @@ function createEntryFromPrimo(record, portfolioLangs, user) {
       data.published_in = record.isPartOf;
     }
     // map the contributors
-    const contributors = getContributors(record.contributors);
+    const contributors = getContributors(record.contributors, user);
     // append to already existing contributors, if any
     if (data.contributors) {
       data.contributors.concat(contributors);
