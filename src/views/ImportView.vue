@@ -357,6 +357,7 @@ export default {
       this.noResultsText = '';
       this.currentPage = 1;
       this.selectedRecords = [];
+      this.isLoading = false;
 
       if (this.timeout) {
         clearTimeout(this.timeout);
