@@ -1467,7 +1467,7 @@ export default {
       if (!this.valueList.showroom_id && this.counter < attempts) {
         setTimeout(() => {
           this.fetchShowroomId();
-        }, delay);
+        }, this.counter === 1 ? delay / 2 : delay);
         this.counter += 1;
       }
     },
