@@ -92,7 +92,7 @@
             v-model="filterString"
             :show-image="true"
             :placeholder="$t('search')"
-            class="search-bar-mobile"
+            :class="['search-bar-mobile', { 'search-bar-mobile__visible': isSearchExpanded }]"
             @input="filterEntries($event, 'title')" />
         </div>
       </template>
@@ -732,7 +732,11 @@ export default {
       }
 
       .search-bar-mobile {
-        display: block;
+        display: none;
+
+        &__visible {
+          display: block;
+        }
       }
     }
   }
