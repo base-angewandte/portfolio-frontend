@@ -274,8 +274,8 @@ export default {
       licenseSelected: {},
       // to switch url during hover save hover state in this array
       imageHover: [],
-      // timeout for requesting media again if there are still unconverted
-      timeout: null,
+      // interval for requesting media again if there are still unconverted
+      mediaRequestInterval: null,
       // toggle loader display, displayed during db requests
       entriesLoading: false,
       filesLoading: false,
@@ -410,21 +410,22 @@ export default {
         .map((media) => media.id);
     },
     /**
-     * Returns an array of all media assets IDs where archival is in progress
-     * (i.e. the file was submitted for archival but we don't have an archive URI yet)
+     * variable to see if archiving is still in progress
      */
-    archivingMediaIds() {
+    archivingInProgress() {
       return this.attachedList
-        .filter((media) => media.archival_in_progress)
-        .map((media) => media.id);
+        .some((media) => media.archival_in_progress);
     },
   },
   watch: {
     // if attached media list changes trigger function to re-fetch media from time to time
     attachedList: {
       handler(val) {
+        if (val && val.length
+          && JSON.stringify(val) !== JSON.stringify(this.attachedListOriginal)) {
+          this.checkConverting();
+        }
         this.attachedListOriginal = val;
-        this.checkConverting();
       },
       immediate: true,
     },
@@ -438,9 +439,9 @@ export default {
   },
   destroyed() {
     // if timeout was set (for refetching media), remove it
-    if (this.timeout) {
-      clearTimeout(this.timeout);
-      this.timeout = null;
+    if (this.mediaRequestInterval) {
+      clearInterval(this.mediaRequestInterval);
+      this.mediaRequestInterval = null;
     }
   },
   methods: {
@@ -746,16 +747,19 @@ export default {
       return '';
     },
     checkConverting() {
-      if (this.timeout) {
-        clearTimeout(this.timeout);
-        this.timeout = null;
+      // cancel previously set intervals
+      if (this.mediaRequestInterval) {
+        clearInterval(this.mediaRequestInterval);
+        this.mediaRequestInterval = null;
       }
       // request media data again in a minute if media are still converting
       // or in the "submitted for archival" state
-      if (this.isConverting || this.archivingMediaIds.length > 0) {
-        this.timeout = setTimeout(() => {
+      if (this.isConverting || this.archivingInProgress) {
+        this.mediaRequestInterval = setInterval(() => {
           this.fetchMedia();
-        }, 60000);
+        }, 10000);
+      } else {
+        clearInterval(this.mediaRequestInterval);
       }
     },
     iconDescription(state, item) {
