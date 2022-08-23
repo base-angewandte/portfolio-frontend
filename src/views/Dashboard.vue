@@ -74,8 +74,9 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
+import { capitalizeString, getApiUrl, getLangLabel } from '@/utils/commonUtils';
 import Sidebar from '../components/Sidebar';
-import { capitalizeString, getApiUrl, getLangLabel } from '../utils/commonUtils';
 
 export default {
   components: {
@@ -90,6 +91,9 @@ export default {
     };
   },
   computed: {
+    ...mapGetters({
+      importedIds: 'data/getImportedIds',
+    }),
     showForm() {
       return this.$route.name !== 'Dashboard';
     },
@@ -106,9 +110,6 @@ export default {
       return this.serializeMediaPreviewData(this.$store.state.data.linkedMedia)
         .filter((item) => !item.processing);
     },
-    importComplete() {
-      return this.$store.getters['data/getImportedIds'];
-    },
   },
   watch: {
     $route() {
@@ -118,10 +119,12 @@ export default {
       this.$store.commit('data/setNewForm', this.$route.name === 'newEntry');
     },
     // upon successful import of entries, update the sidebar and open the topmost entry
-    async importComplete() {
+    async importedIds(val) {
       await this.updateSidebarData(true);
-      const goToId = this.$refs.sidebar.listInt[0].id;
-      this.routeToEntry(goToId);
+      // get the first entry that was imported
+      const lastId = val[val.length - 1];
+      // open form of first imported entry
+      this.routeToEntry(lastId);
     },
   },
   mounted() {
