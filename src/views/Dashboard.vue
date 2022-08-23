@@ -126,6 +126,10 @@ export default {
   },
   mounted() {
     this.$store.commit('data/setNewForm', this.$route.name === 'newEntry');
+    // when user presses browser back button put preview to false in case its open!
+    window.addEventListener('popstate', () => {
+      this.showPreview = false;
+    });
   },
   methods: {
     createNewForm() {
