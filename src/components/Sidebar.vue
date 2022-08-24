@@ -284,6 +284,8 @@ export default {
         },
         source: '',
       }],
+      resizeTimeout: null,
+      prevHeight: 0,
     };
   },
   computed: {
@@ -343,7 +345,7 @@ export default {
       return this.$store.state.data.windowWidth;
     },
     isMobile() {
-      return this.windowWidth && this.windowWidth <= 640;
+      return !!this.windowWidth && this.windowWidth <= 640;
     },
     ...mapGetters('data', [
       'getCurrentItemData',
@@ -353,20 +355,14 @@ export default {
      * are to be rendered in minimized state (i.e. without text and limited width).
      */
     isButtonMinimized() {
-      if (this.isSearchExpanded && this.$route.path !== '/') {
-        return true;
-      }
-      return false;
+      return this.isSearchExpanded && this.$route.path !== '/';
     },
     /**
      * Returns true if sidebar head buttons such as 'New' or 'Import'
      * are to be rendered in maximized state (i.e. with text and full width).
      */
     isButtonMaximized() {
-      if (!this.isSearchExpanded && this.$route.path !== '/') {
-        return true;
-      }
-      return false;
+      return !this.isSearchExpanded && this.$route.path !== '/';
     },
   },
   watch: {
@@ -385,20 +381,16 @@ export default {
     $route(to, from) {
       this.setInfoText();
       if (!(from.name === to.name || from.name.includes(to.name) || to.name.includes(from.name))) {
-        // refetch sidebar data when switching from overview to form view and vice versa
-        this.calculateSidebarHeight();
-        this.fetchSidebarData();
-
-        if (this.$refs.menuSidebarEntries
-          && this.$refs.menuSidebarEntries.$refs.pagination) {
-          this.$refs.menuSidebarEntries.$refs.pagination.setStartEnd();
-        }
         this.expandOrCollapseSearch();
       }
     },
-    windowWidth() {
+    /**
+     * since sidebar entry height (and font etc) changes on switch to mobile
+     * recalculate sidebar height and refetch appropriate number of entries
+     * if window is resized from or to mobile
+     */
+    isMobile() {
       this.calculateSidebarHeight();
-      this.fetchSidebarData();
     },
     getCurrentItemData(val) {
       // whenever the active store entry gets an archive_URI,
@@ -412,22 +404,30 @@ export default {
       }
     },
   },
+  created() {
+    this.expandOrCollapseSearch();
+  },
   mounted() {
     this.listInt = this.list.map((entry) => ({
       ...entry,
       icon: entry.icon && entry.icon.includes('calendar-many')
         ? 'calendar-many' : 'file-object',
     }));
+    // set the previous height variable to be able to detect height changes
+    this.prevHeight = window.innerHeight;
+    // initial calculation of sidebar height
     this.calculateSidebarHeight();
+    // listen to window resize changes in order to determine if sidebar height should
+    // be recalculated
+    window.addEventListener('resize', this.setResizeTimeout);
     this.$store.dispatch('data/fetchEntryTypes');
-    this.fetchSidebarData();
 
     if (this.selectActive) {
       this.entriesSelectable = true;
     }
   },
-  created() {
-    this.expandOrCollapseSearch();
+  destroyed() {
+    window.removeEventListener('resize', this.setResizeTimeout);
   },
   methods: {
     fetchEntries(request) {
@@ -532,8 +532,26 @@ export default {
         this.$emit('update-publish-state', action === 'publish');
       }
     },
+    setResizeTimeout() {
+      // get window inner height
+      const { innerHeight } = window;
+      // only trigger recalculation of sidebar height when actual window height
+      // has changed
+      if (innerHeight !== this.prevHeight) {
+        // check if there is a timeout already set and clear it if yes
+        if (this.resizeTimeout) {
+          clearTimeout(this.resizeTimeout);
+          this.resizeTimeout = null;
+        }
+        // then set time out new
+        this.resizeTimeout = setTimeout(() => {
+          this.calculateSidebarHeight();
+        }, 500);
+        // set previous height to new measurement
+        this.prevHeight = innerHeight;
+      }
+    },
     async fetchSidebarData() {
-      this.calculateSidebarHeight();
       this.isLoading = true;
       try {
         let offset = (this.pageNumber - 1) * this.entriesPerPage;
@@ -618,6 +636,8 @@ export default {
       const entryHeight = this.isMobile ? 48 : 57;
       const numberOfEntries = Math.floor(this.sidebarMenuHeight / entryHeight);
       this.entriesPerPage = numberOfEntries > 4 ? numberOfEntries : 4;
+      // after everything was calculated refetch sidebar data
+      this.fetchSidebarData();
     },
     setInfoText() {
       if (this.entriesExist && (this.filterString || this.filterType.source)) {
