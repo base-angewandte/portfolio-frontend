@@ -286,6 +286,7 @@ export default {
       }],
       resizeTimeout: null,
       prevHeight: 0,
+      prevWidth: 0,
     };
   },
   computed: {
@@ -381,6 +382,11 @@ export default {
     $route(to, from) {
       this.setInfoText();
       if (!(from.name === to.name || from.name.includes(to.name) || to.name.includes(from.name))) {
+        // refetch sidebar data when switching from overview to form view and vice versa
+        // next tick added since values were still the old ones
+        this.$nextTick(() => {
+          this.calculateSidebarHeight();
+        });
         this.expandOrCollapseSearch();
       }
     },
@@ -534,10 +540,14 @@ export default {
     },
     setResizeTimeout() {
       // get window inner height
-      const { innerHeight } = window;
+      const { innerHeight, innerWidth } = window;
       // only trigger recalculation of sidebar height when actual window height
-      // has changed
-      if (innerHeight !== this.prevHeight) {
+      // has changed or switch was between mobile/tablet/desktop
+      if (innerHeight !== this.prevHeight
+        || (this.prevWidth > 640 && innerWidth <= 640)
+        || (this.prevWidth <= 640 && innerWidth > 640)
+        || (this.prevWidth > 1024 && innerWidth <= 1024)
+        || (this.prevWidth <= 1024 && innerWidth > 1024)) {
         // check if there is a timeout already set and clear it if yes
         if (this.resizeTimeout) {
           clearTimeout(this.resizeTimeout);
@@ -549,6 +559,7 @@ export default {
         }, 500);
         // set previous height to new measurement
         this.prevHeight = innerHeight;
+        this.prevWidth = innerWidth;
       }
     },
     async fetchSidebarData() {
