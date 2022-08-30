@@ -167,6 +167,7 @@ import { mapGetters } from 'vuex';
 import { entryHandlingMixin } from '@/mixins/entryHandling';
 import { userInfo } from '@/mixins/userInfo';
 import { getLangLabel } from '@/utils/commonUtils';
+import variables from '@/styles/exports.module.scss';
 
 export default {
   mixins: [entryHandlingMixin, userInfo],
@@ -284,7 +285,24 @@ export default {
         },
         source: '',
       }],
+      /**
+       * timeout variable to not trigger entry calculation while
+       * resize ongoing
+       * @type {?number}
+       */
       resizeTimeout: null,
+      /**
+       * resize observer to be triggered when menu list changes size
+       * @type {?ResizeObserver}
+       */
+      resizeObserver: null,
+      /**
+       * store previous element height and width to only trigger entry number
+       * calculation when window height and width actually changed
+       * (this prevents a recalculation when the menu options are opened and
+       * resize observer on menuList triggers would trigger)
+       * @type {number}
+       */
       prevHeight: 0,
       prevWidth: 0,
     };
@@ -382,21 +400,8 @@ export default {
     $route(to, from) {
       this.setInfoText();
       if (!(from.name === to.name || from.name.includes(to.name) || to.name.includes(from.name))) {
-        // refetch sidebar data when switching from overview to form view and vice versa
-        // next tick added since values were still the old ones
-        this.$nextTick(() => {
-          this.calculateSidebarHeight();
-        });
         this.expandOrCollapseSearch();
       }
-    },
-    /**
-     * since sidebar entry height (and font etc) changes on switch to mobile
-     * recalculate sidebar height and refetch appropriate number of entries
-     * if window is resized from or to mobile
-     */
-    isMobile() {
-      this.calculateSidebarHeight();
     },
     getCurrentItemData(val) {
       // whenever the active store entry gets an archive_URI,
@@ -419,23 +424,33 @@ export default {
       icon: entry.icon && entry.icon.includes('calendar-many')
         ? 'calendar-many' : 'file-object',
     }));
-    // set the previous height variable to be able to detect height changes
-    this.prevHeight = window.innerHeight;
-    // initial calculation of sidebar height
-    this.calculateSidebarHeight();
-    // listen to window resize changes in order to determine if sidebar height should
-    // be recalculated
-    window.addEventListener('resize', this.setResizeTimeout);
+
     this.$store.dispatch('data/fetchEntryTypes');
 
     if (this.selectActive) {
       this.entriesSelectable = true;
     }
+    this.initObserver();
   },
   destroyed() {
-    window.removeEventListener('resize', this.setResizeTimeout);
+    this.resizeObserver.disconnect();
   },
   methods: {
+    /**
+     * function to initialize the resize observer necessary to adapt
+     * sidebar entry list (number of displayed items) on resize events
+     */
+    initObserver() {
+      // create an observer
+      const tempResizeObserver = new ResizeObserver((elements) => {
+        // when triggered call timeout function
+        this.setResizeTimeout(elements[0].contentRect.height);
+      });
+      // put it on the relevant element
+      tempResizeObserver.observe(this.$refs.menuSidebarEntries.$refs.body);
+      // store it
+      this.resizeObserver = tempResizeObserver;
+    },
     fetchEntries(request) {
       this.sortParam = request.sort;
       this.filterType = request.type;
@@ -538,16 +553,13 @@ export default {
         this.$emit('update-publish-state', action === 'publish');
       }
     },
-    setResizeTimeout() {
+    setResizeTimeout(height) {
       // get window inner height
       const { innerHeight, innerWidth } = window;
       // only trigger recalculation of sidebar height when actual window height
       // has changed or switch was between mobile/tablet/desktop
       if (innerHeight !== this.prevHeight
-        || (this.prevWidth > 640 && innerWidth <= 640)
-        || (this.prevWidth <= 640 && innerWidth > 640)
-        || (this.prevWidth > 1024 && innerWidth <= 1024)
-        || (this.prevWidth <= 1024 && innerWidth > 1024)) {
+        || innerWidth !== this.prevWidth) {
         // check if there is a timeout already set and clear it if yes
         if (this.resizeTimeout) {
           clearTimeout(this.resizeTimeout);
@@ -555,7 +567,7 @@ export default {
         }
         // then set time out new
         this.resizeTimeout = setTimeout(() => {
-          this.calculateSidebarHeight();
+          this.calculateSidebarHeight(height);
         }, 500);
         // set previous height to new measurement
         this.prevHeight = innerHeight;
@@ -622,33 +634,45 @@ export default {
       });
       return response;
     },
-    calculateSidebarHeight() {
-      const { menuSidebarEntries } = this.$refs;
-      const sidebarHeight = this.$refs.menuSidebar.clientHeight;
-      const sidebarHeadHeight = menuSidebarEntries.$refs.head
-        ? menuSidebarEntries.$refs.head.clientHeight
-        : 0;
-      const optionsButtonsHeight = this.$refs.optionButtons
-        ? this.$refs.optionButtons.clientHeight
-        : 0;
-      const selectOptionsHeight = menuSidebarEntries.$refs.selectOptions
-        ? menuSidebarEntries.$refs.selectOptions.$el.clientHeight
-        : 0;
+    calculateSidebarHeight(bodyHeight) {
+      // store the previous entries per page number in order to be able
+      // to only trigger entry re-fetching if number changes
+      const previousEntriesPerPage = this.entriesPerPage;
+      // determine row height
+      // get the current font size for px calculation from rem and convert to number
+      let { fontSize } = getComputedStyle(document.getElementsByTagName('body')[0]);
+      fontSize = Number(fontSize.replace('px', ''));
+      // get row height and border width from scss variables and also convert to numbers
+      const rowHeight = Number(variables.rowHeightLarge.replace('rem', ''));
+      const border = Number(variables.borderWidth.replace('px', ''));
+      // now calculate the actual entry height - should currently be either
+      // 50px (mobile) or 59px (> mobile)
+      const entryHeight = (rowHeight * fontSize) + border;
 
-      // calculate usable content height for entries in sidebar,
-      // taking expanded options and select options height into account.
-      this.sidebarMenuHeight = sidebarHeight - sidebarHeadHeight
-        + optionsButtonsHeight + selectOptionsHeight;
+      // calculate menuList height
+      // first get pagination height - this is important because on first page load the
+      // pagination is not there yet and therefore menuList values to large
+      // if this is not first page load we dont need to subtract pagination --> 0
+      const paginationHeight = this.$refs.menuSidebarEntries
+      && this.$refs.menuSidebarEntries.$refs
+      && this.$refs.menuSidebarEntries && this.$refs.menuSidebarEntries.$refs.pagination
+      && this.$refs.menuSidebarEntries.$refs.pagination.$el.clientHeight
+        ? 0 : 32 + 16;
+      // now subtract the value depending if its first pageload (48) or not (0) from the
+      // observer provided list height
+      const menuListHeight = bodyHeight - paginationHeight;
 
-      // deduct height and spacing for pagination element from sidebar height
-      this.sidebarMenuHeight = this.sidebarMenuHeight - 48 - 16;
+      // calculate the actual entries fitting the area
+      const numberOfEntries = Math.floor(menuListHeight / entryHeight);
 
-      // hardcoded because unfortunately no other possibility found
-      const entryHeight = this.isMobile ? 48 : 57;
-      const numberOfEntries = Math.floor(this.sidebarMenuHeight / entryHeight);
+      // then either use this number OR if its less then 4 - 4 entries min for entries
+      // to display
       this.entriesPerPage = numberOfEntries > 4 ? numberOfEntries : 4;
-      // after everything was calculated refetch sidebar data
-      this.fetchSidebarData();
+      // finally check if calculation changed the number of entries per page
+      if (previousEntriesPerPage !== this.entriesPerPage) {
+        // after everything was calculated refetch sidebar data
+        this.fetchSidebarData();
+      }
     },
     setInfoText() {
       if (this.entriesExist && (this.filterString || this.filterType.source)) {
