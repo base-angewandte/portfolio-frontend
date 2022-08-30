@@ -305,6 +305,12 @@ export default {
        */
       prevHeight: 0,
       prevWidth: 0,
+      /**
+       * need variable to store recent route change to have it available in observer
+       * to trigger a recalculation of menu list entry number
+       * @type {boolean}
+       */
+      routeChanged: false,
     };
   },
   computed: {
@@ -402,6 +408,12 @@ export default {
       if (!(from.name === to.name || from.name.includes(to.name) || to.name.includes(from.name))) {
         this.expandOrCollapseSearch();
       }
+      // if a switch from or to Dashboard occurs the sidebar width changes and entry number should
+      // be re-calculated - therefore save in variable that route changed so resize observer can
+      // trigger recalculation
+      if (from.name === 'Dashboard' || to.name === 'Dashboard') {
+        this.routeChanged = true;
+      }
     },
     getCurrentItemData(val) {
       // whenever the active store entry gets an archive_URI,
@@ -443,8 +455,16 @@ export default {
     initObserver() {
       // create an observer
       const tempResizeObserver = new ResizeObserver((elements) => {
-        // when triggered call timeout function
-        this.setResizeTimeout(elements[0].contentRect.height);
+        const menuListHeight = elements[0].contentRect.height;
+        // first check if resize of element was caused by a route change
+        if (this.routeChanged) {
+          this.calculateSidebarHeight(menuListHeight);
+          this.routeChanged = false;
+          // if not go the regular timeout way
+        } else {
+          // when triggered call timeout function
+          this.setResizeTimeout(menuListHeight);
+        }
       });
       // put it on the relevant element
       tempResizeObserver.observe(this.$refs.menuSidebarEntries.$refs.body);
