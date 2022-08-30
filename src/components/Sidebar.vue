@@ -98,41 +98,38 @@
       </template>
       <template
         slot="option-actions">
-        <div
-          ref="optionButtons">
-          <BaseButton
-            :text="$tc('publish', 2)"
-            :disabled="isLoading"
-            :has-background-color="false"
-            icon-size="large"
-            icon="eye"
-            button-style="single"
-            @clicked="handleAction('publish')" />
-          <BaseButton
-            :text="$tc('offline', 2)"
-            :disabled="isLoading"
-            :has-background-color="false"
-            icon-size="large"
-            icon="forbidden"
-            button-style="single"
-            @clicked="handleAction('offline')" />
-          <BaseButton
-            :text="$tc('duplicate', 2)"
-            :disabled="isLoading"
-            :has-background-color="false"
-            icon-size="large"
-            icon="duplicate"
-            button-style="single"
-            @clicked="duplicateEntries" />
-          <BaseButton
-            :text="$tc('delete', 2)"
-            :disabled="isLoading"
-            :has-background-color="false"
-            icon-size="large"
-            icon="waste-bin"
-            button-style="single"
-            @clicked="handleAction('delete')" />
-        </div>
+        <BaseButton
+          :text="$tc('publish', 2)"
+          :disabled="isLoading"
+          :has-background-color="false"
+          icon-size="large"
+          icon="eye"
+          button-style="single"
+          @clicked="handleAction('publish')" />
+        <BaseButton
+          :text="$tc('offline', 2)"
+          :disabled="isLoading"
+          :has-background-color="false"
+          icon-size="large"
+          icon="forbidden"
+          button-style="single"
+          @clicked="handleAction('offline')" />
+        <BaseButton
+          :text="$tc('duplicate', 2)"
+          :disabled="isLoading"
+          :has-background-color="false"
+          icon-size="large"
+          icon="duplicate"
+          button-style="single"
+          @clicked="duplicateEntries" />
+        <BaseButton
+          :text="$tc('delete', 2)"
+          :disabled="isLoading"
+          :has-background-color="false"
+          icon-size="large"
+          icon="waste-bin"
+          button-style="single"
+          @clicked="handleAction('delete')" />
       </template>
       <template
         v-slot:thumbnails="{ item }">
@@ -768,6 +765,10 @@ export default {
 
     .search-bar {
       border-left: $separation-line;
+    }
+
+    .menu-sidebar__options {
+      border: red;
     }
 
     .base-row-with-form {
