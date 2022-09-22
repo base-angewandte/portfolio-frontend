@@ -336,10 +336,6 @@ export default {
 
         // image
         if (item.type === 'i') {
-          // eslint-disable-next-line
-          console.log(item, item.original, item.response_code, item.previews);
-          // eslint-disable-next-line
-          console.log(item.response_code !== 202, item.response_code !== '202');
           obj = {
             mediaUrl: `${baseUrl}${item.original}`,
             // check if medium is still converting
