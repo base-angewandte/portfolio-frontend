@@ -338,7 +338,8 @@ export default {
         if (item.type === 'i') {
           obj = {
             mediaUrl: `${baseUrl}${item.original}`,
-            previews: this.mediaPreviews(item.previews),
+            // check if medium is still converting
+            previews: item.response_code !== '202' ? this.mediaPreviews(item.previews) : [],
             displaySize: {
               // use largest preview image size and set to max-width to respect intrinsic size
               'max-width': `${parseInt(Object.keys(item.previews.slice(-1)[0]), 10)}px`,
