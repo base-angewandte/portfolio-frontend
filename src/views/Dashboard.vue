@@ -336,14 +336,18 @@ export default {
 
         // image
         if (item.type === 'i') {
+          // eslint-disable-next-line
+          console.log(item, item.original, item.response_code, item.previews);
+          // eslint-disable-next-line
+          console.log(item.response_code !== 202, item.response_code !== '202');
           obj = {
             mediaUrl: `${baseUrl}${item.original}`,
             // check if medium is still converting
-            previews: item.response_code !== '202' ? this.mediaPreviews(item.previews) : [],
-            displaySize: {
+            previews: item.previews ? this.mediaPreviews(item.previews) : [],
+            displaySize: item.previews ? {
               // use largest preview image size and set to max-width to respect intrinsic size
               'max-width': `${parseInt(Object.keys(item.previews.slice(-1)[0]), 10)}px`,
-            },
+            } : {},
           };
         }
 
