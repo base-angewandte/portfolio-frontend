@@ -195,7 +195,7 @@
     "fetchSingleEntry": "The selected entry could not be fetched from the database.",
     "deleted": "deleted",
     "saved": "saved",
-    "featured": "featured",
+    "featured": "updated",
     "publishd": "published",
     "offlined": "taken offline",
     "duplicated": "duplicated",
