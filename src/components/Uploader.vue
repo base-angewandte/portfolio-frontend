@@ -49,6 +49,7 @@
 
 <script>
 import axios from 'axios';
+import { i18n } from '@/plugins/i18n';
 
 const STATUS_INITIAL = 'initial';
 const STATUS_SAVING = 'saving';
@@ -162,6 +163,7 @@ export default {
                       xsrfCookieName: 'csrftoken_portfolio',
                       xsrfHeaderName: 'X-CSRFToken',
                       headers: {
+                        'Accept-Language': i18n.locale,
                         'Content-Type': 'multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW',
                       },
                       onUploadProgress: (progressEvent) => {
