@@ -155,6 +155,11 @@ export default {
   },
   post({ state, commit }, { kind, id, data }) {
     let p = {};
+    // Todo: condition could be removed when #2122 is fixed
+    if (!data.data) {
+      // eslint-disable-next-line no-param-reassign
+      data.data = {};
+    }
     return new Promise((resolve, reject) => {
       if (kind && id && data) {
         commit('setLoading', `Updating ${kind} ${id} to Database`);
