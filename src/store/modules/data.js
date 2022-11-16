@@ -1050,11 +1050,9 @@ const actions = {
       } else if (key === 'texts') {
         // check that texts is not undefinded
         const tempValues = values || [];
-        // check if transformation is still necessary by checking for data property (only there
-        // if data from db (on clone entries)
-        const texts = tempValues && tempValues.length
-          && (!tempValues[0].data || !tempValues[0].data.length)
-          ? transformTextData(tempValues) : [].concat(tempValues);
+        // transform texts from multiline text input field structure to backend required
+        // structure
+        const texts = transformTextData(tempValues);
         Vue.set(newData, key, texts);
         // special case single choice chips (saved as object in backend)
       } else if (xAttrs && xAttrs.field_type && xAttrs.field_type.includes('chips')
