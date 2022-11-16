@@ -76,6 +76,14 @@
       <BaseRow
         v-if="!formIsLoading && formDataPresent"
         key="mobile-save-row"
+        :buttons="[{
+          action: 'save',
+          disabled: false,
+          icon: 'save-file',
+          text: 'save',
+          unsavedChanges,
+          visible: true,
+        }]"
         :unsaved-changes="unsavedChanges"
         :is-saving="dataSaving"
         :show-title="false"
@@ -121,6 +129,14 @@
 
       <!-- HEADER ROW -->
       <BaseRow
+        :buttons="[{
+          action: 'save',
+          disabled: false,
+          icon: 'save-file',
+          text: 'save',
+          unsavedChanges,
+          visible: true,
+        }]"
         :title="title"
         :type="type"
         :show-back-button="!!parent"

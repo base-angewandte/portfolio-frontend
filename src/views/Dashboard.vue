@@ -60,6 +60,7 @@
       :class="['sidebar', { 'sidebar-full': !showForm, 'sidebar-hidden-mobile': showForm }]"
       @new-form="checkUnsavedChanges"
       @show-entry="checkUnsavedChanges"
+      @import-entries="checkUnsavedChanges"
       @update-publish-state="updateFormData" />
     <main
       v-if="showForm"
@@ -73,8 +74,9 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
+import { capitalizeString, getApiUrl, getLangLabel } from '@/utils/commonUtils';
 import Sidebar from '../components/Sidebar';
-import { capitalizeString, getApiUrl, getLangLabel } from '../utils/commonUtils';
 
 export default {
   components: {
@@ -89,6 +91,9 @@ export default {
     };
   },
   computed: {
+    ...mapGetters({
+      importedIds: 'data/getImportedIds',
+    }),
     showForm() {
       return this.$route.name !== 'Dashboard';
     },
@@ -113,9 +118,21 @@ export default {
       }
       this.$store.commit('data/setNewForm', this.$route.name === 'newEntry');
     },
+    // upon successful import of entries, update the sidebar and open the topmost entry
+    async importedIds(val) {
+      await this.updateSidebarData(true);
+      // get the first entry that was imported
+      const lastId = val[val.length - 1];
+      // open form of first imported entry
+      this.routeToEntry(lastId);
+    },
   },
   mounted() {
     this.$store.commit('data/setNewForm', this.$route.name === 'newEntry');
+    // when user presses browser back button put preview to false in case its open!
+    window.addEventListener('popstate', () => {
+      this.showPreview = false;
+    });
   },
   methods: {
     createNewForm() {
@@ -130,7 +147,7 @@ export default {
         this.$router.push('/new');
       }
     },
-    checkUnsavedChanges(id) {
+    checkUnsavedChanges(action, id) {
       const followUpAction = () => {
         // remove leftover stored values before entering new item;
         sessionStorage.removeItem('valueList');
@@ -138,7 +155,18 @@ export default {
         if (id) {
           this.routeToEntry(id);
         } else {
-          this.createNewForm();
+          switch (action) {
+          case 'goToNew':
+            this.createNewForm();
+            break;
+          case 'goToImport':
+            if (this.$route.name !== 'importEntries') {
+              this.$router.push('/import');
+            }
+            break;
+          default:
+            console.error('An unknown route/action was requested.');
+          }
         }
       };
       if (this.$refs.view && this.$refs.view.unsavedChanges) {
@@ -189,7 +217,7 @@ export default {
       evt.preventDefault();
       // TODO: image zoom?
     },
-    updateSidebarData(alwaysUpdate) {
+    async updateSidebarData(alwaysUpdate) {
       if (!this.$refs.sidebar.entriesExist) {
         this.$refs.sidebar.resetFilters();
       }
@@ -209,7 +237,7 @@ export default {
               || (activeSidebarEntry.type
                 && getLangLabel(activeSidebarEntry.type.label, this.$i18n.locale)
                 !== this.$refs.view.type))))) {
-        this.$refs.sidebar.fetchSidebarData();
+        await this.$refs.sidebar.fetchSidebarData();
       }
     },
     updateFormData(published) {
@@ -310,11 +338,12 @@ export default {
         if (item.type === 'i') {
           obj = {
             mediaUrl: `${baseUrl}${item.original}`,
-            previews: this.mediaPreviews(item.previews),
-            displaySize: {
+            // check if medium is still converting
+            previews: item.previews ? this.mediaPreviews(item.previews) : [],
+            displaySize: item.previews ? {
               // use largest preview image size and set to max-width to respect intrinsic size
               'max-width': `${parseInt(Object.keys(item.previews.slice(-1)[0]), 10)}px`,
-            },
+            } : {},
           };
         }
 

@@ -40,62 +40,96 @@
       <template
         slot="head">
         <div
-          :class="['base-row', { 'base-row-with-form': isNewForm || !!activeEntryId }]">
+          :class="['base-row', { 'base-row-with-form':
+            isNewForm || !!activeEntryId || isImportPage }]">
           <BaseButton
             v-if="newEnabled"
             :active="isNewForm"
-            :text="$t('new')"
+            :text="isButtonMinimized ? '' : $t('new')"
             :disabled="isLoading"
             icon="add-new-object"
             icon-size="large"
-            class="base-row-button"
+            :class="['base-row-button',
+                     { 'minimized': isButtonMinimized },
+                     { 'maximized': isButtonMaximized }]"
             button-style="row"
+            data-e2e-new-button
             @clicked="getNewForm" />
+          <BaseButton
+            v-if="importEnabled"
+            :text="isButtonMinimized ? '' : $t('import.importButtonTitle')"
+            :active="isImportPage"
+            icon="download"
+            icon-size="small"
+            :class="['base-row-button',
+                     { 'minimized': isButtonMinimized },
+                     { 'maximized': isButtonMaximized }]"
+            button-style="row"
+            data-e2e-import-button
+            @clicked="$emit('import-entries', 'goToImport')" />
+          <BaseButton
+            v-if="!isSearchExpanded"
+            text=""
+            icon="magnifier"
+            icon-size="large"
+            class="base-row-button search-button minimized"
+            style="border-right: none;"
+            button-style="row"
+            data-e2e-search-button
+            @clicked="expandOrCollapseSearch(true)" />
+          <!-- Searchbar is conditionally visible for desktop screens -->
+          <BaseSearch
+            v-if="isSearchExpanded"
+            id="sidebarSearchInput"
+            v-model="filterString"
+            :show-image="true"
+            :placeholder="$t('search')"
+            class="search-bar-desktop"
+            @blur="onSearchInputBlur()"
+            @input="filterEntries($event, 'title')" />
+          <!-- Searchbar is always visible for medium and mobile screens -->
           <BaseSearch
             v-model="filterString"
             :show-image="true"
             :placeholder="$t('search')"
-            class="search-bar"
+            :class="['search-bar-mobile', { 'search-bar-mobile__visible': isSearchExpanded }]"
             @input="filterEntries($event, 'title')" />
         </div>
       </template>
       <template
         slot="option-actions">
-        <div
-          ref="optionButtons">
-          <BaseButton
-            :text="$tc('publish', 2)"
-            :disabled="isLoading"
-            :has-background-color="false"
-            icon-size="large"
-            icon="eye"
-            button-style="single"
-            @clicked="handleAction('publish')" />
-          <BaseButton
-            :text="$tc('offline', 2)"
-            :disabled="isLoading"
-            :has-background-color="false"
-            icon-size="large"
-            icon="forbidden"
-            button-style="single"
-            @clicked="handleAction('offline')" />
-          <BaseButton
-            :text="$tc('duplicate', 2)"
-            :disabled="isLoading"
-            :has-background-color="false"
-            icon-size="large"
-            icon="duplicate"
-            button-style="single"
-            @clicked="duplicateEntries" />
-          <BaseButton
-            :text="$tc('delete', 2)"
-            :disabled="isLoading"
-            :has-background-color="false"
-            icon-size="large"
-            icon="waste-bin"
-            button-style="single"
-            @clicked="handleAction('delete')" />
-        </div>
+        <BaseButton
+          :text="$tc('publish', 2)"
+          :disabled="isLoading"
+          :has-background-color="false"
+          icon-size="large"
+          icon="eye"
+          button-style="single"
+          @clicked="handleAction('publish')" />
+        <BaseButton
+          :text="$tc('offline', 2)"
+          :disabled="isLoading"
+          :has-background-color="false"
+          icon-size="large"
+          icon="forbidden"
+          button-style="single"
+          @clicked="handleAction('offline')" />
+        <BaseButton
+          :text="$tc('duplicate', 2)"
+          :disabled="isLoading"
+          :has-background-color="false"
+          icon-size="large"
+          icon="duplicate"
+          button-style="single"
+          @clicked="duplicateEntries" />
+        <BaseButton
+          :text="$tc('delete', 2)"
+          :disabled="isLoading"
+          :has-background-color="false"
+          icon-size="large"
+          icon="waste-bin"
+          button-style="single"
+          @clicked="handleAction('delete')" />
       </template>
       <template
         v-slot:thumbnails="{ item }">
@@ -130,6 +164,7 @@ import { mapGetters } from 'vuex';
 import { entryHandlingMixin } from '@/mixins/entryHandling';
 import { userInfo } from '@/mixins/userInfo';
 import { getLangLabel } from '@/utils/commonUtils';
+import variables from '@/styles/exports.module.scss';
 
 export default {
   mixins: [entryHandlingMixin, userInfo],
@@ -145,6 +180,14 @@ export default {
      * make optional for link entries functionality
      */
     newEnabled: {
+      type: Boolean,
+      default: true,
+    },
+    /**
+     * whether the import button is to be shown; e.g. this is not required
+     * when the sidebar instance is used on the "attach existing entries" pop-up
+     */
+    importEnabled: {
       type: Boolean,
       default: true,
     },
@@ -227,10 +270,10 @@ export default {
       entriesExist: false,
       noEntriesTitle: '',
       noEntriesSubtext: '',
-
       sidebarMenuHeight: '0px',
       entriesSelectable: false,
-
+      // used to horizontally collapse/expand the sidebar's search input
+      isSearchExpanded: true,
       // default entry types to render component immediately
       entryTypesInt: [{
         label: {
@@ -239,6 +282,32 @@ export default {
         },
         source: '',
       }],
+      /**
+       * timeout variable to not trigger entry calculation while
+       * resize ongoing
+       * @type {?number}
+       */
+      resizeTimeout: null,
+      /**
+       * resize observer to be triggered when menu list changes size
+       * @type {?ResizeObserver}
+       */
+      resizeObserver: null,
+      /**
+       * store previous element height and width to only trigger entry number
+       * calculation when window height and width actually changed
+       * (this prevents a recalculation when the menu options are opened and
+       * resize observer on menuList triggers would trigger)
+       * @type {number}
+       */
+      prevHeight: 0,
+      prevWidth: 0,
+      /**
+       * need variable to store recent route change to have it available in observer
+       * to trigger a recalculation of menu list entry number
+       * @type {boolean}
+       */
+      routeChanged: false,
     };
   },
   computed: {
@@ -259,6 +328,9 @@ export default {
     },
     isNewForm() {
       return this.$route.name === 'newEntry';
+    },
+    isImportPage() {
+      return this.$route.path === '/import';
     },
     sortOptions() {
       return [
@@ -295,11 +367,25 @@ export default {
       return this.$store.state.data.windowWidth;
     },
     isMobile() {
-      return this.windowWidth && this.windowWidth <= 640;
+      return !!this.windowWidth && this.windowWidth <= 640;
     },
     ...mapGetters('data', [
       'getCurrentItemData',
     ]),
+    /**
+     * Returns true if sidebar head buttons such as 'New' or 'Import'
+     * are to be rendered in minimized state (i.e. without text and limited width).
+     */
+    isButtonMinimized() {
+      return this.isSearchExpanded && this.$route.path !== '/';
+    },
+    /**
+     * Returns true if sidebar head buttons such as 'New' or 'Import'
+     * are to be rendered in maximized state (i.e. with text and full width).
+     */
+    isButtonMaximized() {
+      return !this.isSearchExpanded && this.$route.path !== '/';
+    },
   },
   watch: {
     entryTypes(val) {
@@ -317,19 +403,14 @@ export default {
     $route(to, from) {
       this.setInfoText();
       if (!(from.name === to.name || from.name.includes(to.name) || to.name.includes(from.name))) {
-        // refetch sidebar data when switching from overview to form view and vice versa
-        this.calculateSidebarHeight();
-        this.fetchSidebarData();
-
-        if (this.$refs.menuSidebarEntries
-          && this.$refs.menuSidebarEntries.$refs.pagination) {
-          this.$refs.menuSidebarEntries.$refs.pagination.setStartEnd();
-        }
+        this.expandOrCollapseSearch();
       }
-    },
-    windowWidth() {
-      this.calculateSidebarHeight();
-      this.fetchSidebarData();
+      // if a switch from or to Dashboard occurs the sidebar width changes and entry number should
+      // be re-calculated - therefore save in variable that route changed so resize observer can
+      // trigger recalculation
+      if (from.name === 'Dashboard' || to.name === 'Dashboard') {
+        this.routeChanged = true;
+      }
     },
     getCurrentItemData(val) {
       // whenever the active store entry gets an archive_URI,
@@ -343,21 +424,50 @@ export default {
       }
     },
   },
+  created() {
+    this.expandOrCollapseSearch();
+  },
   mounted() {
     this.listInt = this.list.map((entry) => ({
       ...entry,
       icon: entry.icon && entry.icon.includes('calendar-many')
         ? 'calendar-many' : 'file-object',
     }));
-    this.calculateSidebarHeight();
+
     this.$store.dispatch('data/fetchEntryTypes');
-    this.fetchSidebarData();
 
     if (this.selectActive) {
       this.entriesSelectable = true;
     }
+    this.initObserver();
+  },
+  destroyed() {
+    this.resizeObserver.disconnect();
   },
   methods: {
+    /**
+     * function to initialize the resize observer necessary to adapt
+     * sidebar entry list (number of displayed items) on resize events
+     */
+    initObserver() {
+      // create an observer
+      const tempResizeObserver = new ResizeObserver((elements) => {
+        const menuListHeight = elements[0].contentRect.height;
+        // first check if resize of element was caused by a route change
+        if (this.routeChanged) {
+          this.calculateSidebarHeight(menuListHeight);
+          this.routeChanged = false;
+          // if not go the regular timeout way
+        } else {
+          // when triggered call timeout function
+          this.setResizeTimeout(menuListHeight);
+        }
+      });
+      // put it on the relevant element
+      tempResizeObserver.observe(this.$refs.menuSidebarEntries.$refs.body);
+      // store it
+      this.resizeObserver = tempResizeObserver;
+    },
     fetchEntries(request) {
       this.sortParam = request.sort;
       this.filterType = request.type;
@@ -365,7 +475,7 @@ export default {
       this.fetchSidebarData();
     },
     showEntry(id) {
-      this.$emit('show-entry', id);
+      this.$emit('show-entry', 'goToEntry', id);
     },
     selectEntry(evt) {
       this.selectedMenuEntries = evt;
@@ -375,7 +485,7 @@ export default {
     getNewForm() {
       this.$store.commit('data/deleteCurrentItem');
       this.$store.commit('data/deleteParentItems');
-      this.$emit('new-form');
+      this.$emit('new-form', 'goToNew');
     },
     filterEntries(val, type) {
       if (type === 'type') {
@@ -460,8 +570,28 @@ export default {
         this.$emit('update-publish-state', action === 'publish');
       }
     },
+    setResizeTimeout(height) {
+      // get window inner height
+      const { innerHeight, innerWidth } = window;
+      // only trigger recalculation of sidebar height when actual window height
+      // has changed or switch was between mobile/tablet/desktop
+      if (innerHeight !== this.prevHeight
+        || innerWidth !== this.prevWidth) {
+        // check if there is a timeout already set and clear it if yes
+        if (this.resizeTimeout) {
+          clearTimeout(this.resizeTimeout);
+          this.resizeTimeout = null;
+        }
+        // then set time out new
+        this.resizeTimeout = setTimeout(() => {
+          this.calculateSidebarHeight(height);
+        }, 500);
+        // set previous height to new measurement
+        this.prevHeight = innerHeight;
+        this.prevWidth = innerWidth;
+      }
+    },
     async fetchSidebarData() {
-      this.calculateSidebarHeight();
       this.isLoading = true;
       try {
         let offset = (this.pageNumber - 1) * this.entriesPerPage;
@@ -521,31 +651,45 @@ export default {
       });
       return response;
     },
-    calculateSidebarHeight() {
-      const { menuSidebarEntries } = this.$refs;
-      const sidebarHeight = this.$refs.menuSidebar.clientHeight;
-      const sidebarHeadHeight = menuSidebarEntries.$refs.head
-        ? menuSidebarEntries.$refs.head.clientHeight
-        : 0;
-      const optionsButtonsHeight = this.$refs.optionButtons
-        ? this.$refs.optionButtons.clientHeight
-        : 0;
-      const selectOptionsHeight = menuSidebarEntries.$refs.selectOptions
-        ? menuSidebarEntries.$refs.selectOptions.$el.clientHeight
-        : 0;
+    calculateSidebarHeight(bodyHeight) {
+      // store the previous entries per page number in order to be able
+      // to only trigger entry re-fetching if number changes
+      const previousEntriesPerPage = this.entriesPerPage;
+      // determine row height
+      // get the current font size for px calculation from rem and convert to number
+      let { fontSize } = getComputedStyle(document.getElementsByTagName('body')[0]);
+      fontSize = Number(fontSize.replace('px', ''));
+      // get row height and border width from scss variables and also convert to numbers
+      const rowHeight = Number(variables.rowHeightLarge.replace('rem', ''));
+      const border = Number(variables.borderWidth.replace('px', ''));
+      // now calculate the actual entry height - should currently be either
+      // 50px (mobile) or 59px (> mobile)
+      const entryHeight = (rowHeight * fontSize) + border;
 
-      // calculate usable content height for entries in sidebar,
-      // taking expanded options and select options height into account.
-      this.sidebarMenuHeight = sidebarHeight - sidebarHeadHeight
-        + optionsButtonsHeight + selectOptionsHeight;
+      // calculate menuList height
+      // first get pagination height - this is important because on first page load the
+      // pagination is not there yet and therefore menuList values to large
+      // if this is not first page load we dont need to subtract pagination --> 0
+      const paginationHeight = this.$refs.menuSidebarEntries
+      && this.$refs.menuSidebarEntries.$refs
+      && this.$refs.menuSidebarEntries && this.$refs.menuSidebarEntries.$refs.pagination
+      && this.$refs.menuSidebarEntries.$refs.pagination.$el.clientHeight
+        ? 0 : 32 + 16;
+      // now subtract the value depending if its first pageload (48) or not (0) from the
+      // observer provided list height
+      const menuListHeight = bodyHeight - paginationHeight;
 
-      // deduct height and spacing for pagination element from sidebar height
-      this.sidebarMenuHeight = this.sidebarMenuHeight - 48 - 16;
+      // calculate the actual entries fitting the area
+      const numberOfEntries = Math.floor(menuListHeight / entryHeight);
 
-      // hardcoded because unfortunately no other possibility found
-      const entryHeight = this.isMobile ? 48 : 57;
-      const numberOfEntries = Math.floor(this.sidebarMenuHeight / entryHeight);
+      // then either use this number OR if its less then 4 - 4 entries min for entries
+      // to display
       this.entriesPerPage = numberOfEntries > 4 ? numberOfEntries : 4;
+      // finally check if calculation changed the number of entries per page
+      if (previousEntriesPerPage !== this.entriesPerPage) {
+        // after everything was calculated refetch sidebar data
+        this.fetchSidebarData();
+      }
     },
     setInfoText() {
       if (this.entriesExist && (this.filterString || this.filterType.source)) {
@@ -569,6 +713,44 @@ export default {
         source: '',
       };
     },
+    checkContainerPosition() {
+      if (this.listInt.length && this.$refs.sidebarHead) {
+        // check sidebar head position for whole page scroll and menuContainer position
+        // for container scrolling
+        this.sidebarBelow = (this.isMobile && this.optionsVisible
+          && this.$refs.sidebarHead.offsetTop > 0)
+          || this.$refs.menuContainer.scrollTop > 0;
+      }
+    },
+    /**
+     * Triggers a (horizontally) collapsed or an expanded state for the search input
+     * of the sidebar.
+     */
+    expandOrCollapseSearch(forceExpand = false) {
+      // expand the search in the following cases: (a) we are on root page
+      // (b) import is disabled (c) forceExpand flag is true
+      if (this.$route.path === '/' || !this.importEnabled || forceExpand) {
+        this.isSearchExpanded = true;
+        // set focus on the search input
+        this.$nextTick(() => {
+          const inputEl = document.querySelector('#sidebarSearchInput');
+          if (inputEl) {
+            inputEl.focus();
+          }
+        });
+      } else {
+        this.isSearchExpanded = false;
+      }
+    },
+    /**
+     * Occurs when the sidebar search input loses focus
+     */
+    onSearchInputBlur() {
+      // collapse search input if text is empty
+      if (!this.filterString.length) {
+        this.expandOrCollapseSearch();
+      }
+    },
   },
 };
 </script>
@@ -584,6 +766,31 @@ export default {
     .search-bar {
       border-left: $separation-line;
     }
+
+    .menu-sidebar__options {
+      border: red;
+    }
+
+    .base-row-with-form {
+      overflow: hidden;
+    }
+
+    .base-row-button {
+      max-width: 100%;
+      border-right: $separation-line;
+    }
+
+    .minimized {
+      width: 3rem;
+    }
+
+    .maximized {
+      width: 100%;
+    }
+
+    .search-bar-mobile {
+      display: none;
+    }
   }
 
   .base-icon.base-entry-selector__entry__icon {
@@ -595,6 +802,18 @@ export default {
   @media screen and (max-width: 1083px) {
     .menu-sidebar {
       height: calc(100vh - #{$header-height} - #{$row-height-small} - 131px);
+
+      .search-bar-desktop {
+        display: none;
+      }
+
+      .search-bar-mobile {
+        display: none;
+
+        &__visible {
+          display: block;
+        }
+      }
     }
   }
 
@@ -608,23 +827,55 @@ export default {
 
         .base-row-button {
           width: 100%;
+          border-right: none;
           border-bottom: $separation-line;
+        }
+
+        .search-button {
+          display: none !important;
+        }
+
+        .search-bar-desktop {
+          display: none;
+        }
+
+        .search-bar-mobile {
+          display: block;
         }
       }
     }
   }
 
   @media screen and (max-width: $mobile) {
-    .base-row-button {
-      width: 100%;
-      border-bottom: $separation-line;
+    .base-button {
+      border-right: none !important;
+
+      &.base-button-row {
+        width: 50%;
+        border-bottom: $separation-line;
+        transition: color 250ms ease-in-out;
+
+        &:first-child {
+          width: calc(50% - #{$border-width});
+          margin-right: $border-width;
+        }
+      }
+    }
+
+    .search-button {
+      display: none !important;
     }
 
     .menu-sidebar {
       height: calc(100vh - #{$header-height} - (2 * #{$spacing}));
 
-      .search-bar {
+      .search-bar-mobile {
+        display: block;
         border-left: none;
+      }
+
+      .search-bar-desktop {
+        display: none;
       }
     }
   }

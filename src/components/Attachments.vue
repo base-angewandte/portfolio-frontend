@@ -274,8 +274,8 @@ export default {
       licenseSelected: {},
       // to switch url during hover save hover state in this array
       imageHover: [],
-      // timeout for requesting media again if there are still unconverted
-      timeout: null,
+      // interval for requesting media again if there are still unconverted
+      mediaRequestInterval: null,
       // toggle loader display, displayed during db requests
       entriesLoading: false,
       filesLoading: false,
@@ -295,6 +295,12 @@ export default {
     };
   },
   computed: {
+    entryId() {
+      if (this.$route && this.$route.params) {
+        return this.$route.params.id;
+      }
+      return undefined;
+    },
     // variable for checking if there are still unconverted files
     isConverting() {
       return this.attachedList.some((file) => !file.metadata);
@@ -410,21 +416,31 @@ export default {
         .map((media) => media.id);
     },
     /**
-     * Returns an array of all media assets IDs where archival is in progress
-     * (i.e. the file was submitted for archival but we don't have an archive URI yet)
+     * variable to see if archiving is still in progress
      */
-    archivingMediaIds() {
+    archivingInProgress() {
       return this.attachedList
-        .filter((media) => media.archival_in_progress)
-        .map((media) => media.id);
+        .some((media) => media.archival_in_progress);
     },
   },
   watch: {
     // if attached media list changes trigger function to re-fetch media from time to time
     attachedList: {
       handler(val) {
+        // check if list is present and is different from saved original list
+        if (val && val.length
+          && JSON.stringify(val) !== JSON.stringify(this.attachedListOriginal)) {
+          // if so - check if media are still converting or archiving
+          this.checkConverting();
+          // else check if all prerequisites of fetching media is there and if there is
+          // still an interval set - if so - clear the interval!
+          // (this is necessary for the 'New' page since for some reason the component is not
+          // destroyed when switching to /new (otherwise interval is cleared in destroyed() hook))
+        } else if ((!val || !val.length || !this.entryId) && this.mediaRequestInterval) {
+          clearInterval(this.mediaRequestInterval);
+          this.mediaRequestInterval = null;
+        }
         this.attachedListOriginal = val;
-        this.checkConverting();
       },
       immediate: true,
     },
@@ -438,9 +454,9 @@ export default {
   },
   destroyed() {
     // if timeout was set (for refetching media), remove it
-    if (this.timeout) {
-      clearTimeout(this.timeout);
-      this.timeout = null;
+    if (this.mediaRequestInterval) {
+      clearInterval(this.mediaRequestInterval);
+      this.mediaRequestInterval = null;
     }
   },
   methods: {
@@ -494,7 +510,7 @@ export default {
     async orderAction(orderedList) {
       const response = await this.$store.dispatch('data/orderFiles', {
         action: 'order',
-        entryId: this.$route.params.id,
+        entryId: this.entryId,
         list: orderedList.map((item) => ({ id: item.id })),
       });
 
@@ -728,7 +744,7 @@ export default {
       // update information in attachment area with new info
       // TODO: do i need to do this or could i just change things locally??
       try {
-        await this.$store.dispatch('data/fetchMediaData', this.$route.params.id);
+        await this.$store.dispatch('data/fetchMediaData', this.entryId);
       } catch (e) {
         console.error(e);
         this.$notify({
@@ -746,16 +762,19 @@ export default {
       return '';
     },
     checkConverting() {
-      if (this.timeout) {
-        clearTimeout(this.timeout);
-        this.timeout = null;
+      // cancel previously set intervals
+      if (this.mediaRequestInterval) {
+        clearInterval(this.mediaRequestInterval);
+        this.mediaRequestInterval = null;
       }
       // request media data again in a minute if media are still converting
       // or in the "submitted for archival" state
-      if (this.isConverting || this.archivingMediaIds.length > 0) {
-        this.timeout = setTimeout(() => {
+      if (this.entryId && (this.isConverting || this.archivingInProgress)) {
+        this.mediaRequestInterval = setInterval(() => {
           this.fetchMedia();
-        }, 60000);
+        }, 10000);
+      } else {
+        clearInterval(this.mediaRequestInterval);
       }
     },
     iconDescription(state, item) {

@@ -161,6 +161,10 @@ const state = {
   // have been updated since the last archival. Valid values:
   // true = changed; false = not changed; null = not applicable
   isArchiveChanged: null,
+  // stores the ids of entries imported from external sources (library catalog, bibtex)
+  importedIds: [],
+  // ISO 639-1 list of languages
+  isoLanguages: [],
 };
 
 const getters = {
@@ -246,6 +250,12 @@ const getters = {
   getIsArchivalEnabled() {
     // when true, the buttons pertaining to the long-term archival feature become visible in the gui
     return JSON.parse(process.env.VUE_APP_ARCHIVE_UPLOAD);
+  },
+  getImportedIds(state) {
+    return state.importedIds;
+  },
+  getPortfolioLangs() {
+    return state.isoLanguages;
   },
 };
 
@@ -387,6 +397,12 @@ const mutations = {
   },
   setIsArchiveChanged(state, val) {
     state.isArchiveChanged = val;
+  },
+  setImportedIds(state, val) {
+    state.importedIds = val;
+  },
+  setPortfolioLangs(state, val) {
+    state.isoLanguages = val;
   },
 };
 
@@ -617,12 +633,19 @@ const actions = {
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
       try {
-        const createdEntry = await this.dispatch('PortfolioAPI/post', { kind: 'entry', id: data.id, data });
-        if (createdEntry) {
-          commit('setCurrentItemId', createdEntry);
+        const response = await this.dispatch('PortfolioAPI/post', { kind: 'entry', id: data.id, data });
+        // check if response is a single object or an array ob objects from bulk action
+        // use last created object
+        const createdObj = Array.isArray(response) ? response.slice(-1) : response;
+        // use array of id's or single id
+        const createdIds = Array.isArray(response)
+          ? response.map((entry) => entry.id) : response.id;
+
+        if (createdObj) {
+          commit('setCurrentItemId', createdObj);
           // this adjustment is necessary to be able to
           // populate a BaseForm with existing values like 'texts'
-          const adjustedEntry = await adjustEntry(createdEntry);
+          const adjustedEntry = await adjustEntry(createdObj);
           commit('setCurrentItemData', adjustedEntry);
           commit('setIsFormSaved', true);
           // if this is an archived entry, update the isArchiveChanged
@@ -631,7 +654,7 @@ const actions = {
             await dispatch('fetchIsArchiveChanged');
           }
         }
-        resolve(createdEntry.id);
+        resolve(createdIds);
       } catch (e) {
         console.error(e);
         reject(e);
@@ -1113,6 +1136,24 @@ const actions = {
   },
   addEnglishTitleCasing(context, object) {
     return addEnglishTextStyling(object);
+  },
+  async fetchIsoLanguages(context) {
+    try {
+      const url = `${process.env.VUE_APP_BACKEND_BASE_URL}${process.env.VUE_APP_BACKEND_PREFIX}/autosuggest/v1/languages`;
+      await axios.get(url,
+        {
+          withCredentials: true,
+          xsrfCookieName: 'csrftoken_portfolio',
+          xsrfHeaderName: 'X-CSRFToken',
+          headers: {
+            'Accept-Language': i18n.locale,
+          },
+        }).then((response) => {
+        context.commit('setPortfolioLangs', response.data);
+      });
+    } catch (e) {
+      console.error(e);
+    }
   },
 };
 

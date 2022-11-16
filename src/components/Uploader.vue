@@ -13,6 +13,7 @@
     :current-status="currentStatus"
     :file-list="fileList"
     :rejected-files="rejectedFiles"
+    :file-errors="fileErrors"
     :user-space="userSpace"
     :upload-percentage="uploadPercentage"
     :uploaded-files="uploadedFiles"
@@ -48,6 +49,7 @@
 
 <script>
 import axios from 'axios';
+import { i18n } from '@/plugins/i18n';
 
 const STATUS_INITIAL = 'initial';
 const STATUS_SAVING = 'saving';
@@ -74,6 +76,7 @@ export default {
       publish: { label: this.$t('no'), value: 'false' },
       license: {},
       disabled: true,
+      fileErrors: [],
     };
   },
   computed: {
@@ -135,7 +138,7 @@ export default {
           await Promise.all(this.fileList
             // eslint-disable-next-line no-async-promise-executor
             .map((file, index) => new Promise(async (resolve, reject) => {
-              // accounting for retrys by only acting on files that have no upload
+              // accounting for retries by only acting on files that have no upload
               // percentage yet
               if (this.uploadPercentage[index] === 0) {
                 const formData = new FormData();
@@ -160,6 +163,7 @@ export default {
                       xsrfCookieName: 'csrftoken_portfolio',
                       xsrfHeaderName: 'X-CSRFToken',
                       headers: {
+                        'Accept-Language': i18n.locale,
                         'Content-Type': 'multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW',
                       },
                       onUploadProgress: (progressEvent) => {
@@ -175,6 +179,14 @@ export default {
                   this.uploadError = err.response;
                   this.currentStatus = STATUS_FAILED;
                   this.rejectedFiles.push(file.name);
+                  // add error messages by file name
+                  this.fileErrors.push({
+                    name: file.name,
+                    message: Array.isArray(err.response.data.file)
+                      ? err.response.data.file.join(', ')
+                      : err.response.data.file,
+                  });
+
                   reject(err);
                 }
               }
@@ -219,6 +231,7 @@ export default {
       this.currentStatus = STATUS_INITIAL;
       this.uploadedFiles = [];
       this.rejectedFiles = [];
+      this.fileErrors = [];
       this.publish = { label: this.$t('no'), value: false };
       this.license = {
         label: this.$t('nolicense'),
@@ -226,15 +239,6 @@ export default {
       };
       this.uploadError = null;
       this.fileList.forEach((file, index) => this.$set(this.uploadPercentage, index, 0));
-    },
-    getStatus(fileName) {
-      if (this.uploadedFiles.includes(fileName)) {
-        return 'success';
-      }
-      if (this.rejectedFiles.includes(fileName)) {
-        return 'fail';
-      }
-      return '';
     },
     removeFile(index) {
       this.fileList.splice(index, 1);

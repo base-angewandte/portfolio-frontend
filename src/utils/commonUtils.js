@@ -165,3 +165,34 @@ export const checkForLabel = (value) => {
   }
   return newValue;
 };
+
+/**
+ * Match username in a string
+ * eg: 'Firstname Lastname', 'Lastname, Firstname', 'F. Lastname'
+ * @param {string} string - string to match
+ * @param {object} user - user object with at least first_name, last_name, source attributes
+ * @returns {boolean}
+ */
+export const matchUsername = (string, user) => {
+  if (!user.first_name || !user.last_name) return false;
+
+  const matchFirstname = !!string.match(`\\b${user.first_name}\\b`);
+  const matchLastname = !!string.match(`\\b${user.last_name}\\b`);
+  const matchFirstCharAndPoint = !!string.match(`\\b${user.first_name.charAt(0)}\\b.`);
+
+  return (matchFirstname && matchLastname) || (matchFirstCharAndPoint && matchLastname);
+};
+
+/**
+ * Divide array into arrays of specific size
+ * @param {array} arr - array to divide
+ * @param {number} size - size of chunks
+ * @returns {*[]} - divided array
+ */
+export const divideArray = (arr, size) => {
+  const groups = [];
+  for (let i = 0; i < arr.length; i += size) {
+    groups.push(arr.slice(i, size + i));
+  }
+  return groups;
+};

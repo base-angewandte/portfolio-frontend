@@ -156,7 +156,7 @@
     "delete": "löschen",
     "save": "speichern",
     "order": "ordnen",
-    "feature": "Cover Bild auswählen",
+    "feature": "Cover Bild ändern",
     "publish": "veröffentlichen",
     "offline": "offline nehmen",
     "duplicate": "Duplizierung",
@@ -189,7 +189,7 @@
     "fetchSingleEntry": "Leider konnte der ausgewählte Eintrag nicht geladen werden.",
     "deleted": "gelöscht",
     "saved": "gespeichert",
-    "featured": "als Cover Bild ausgewählt",
+    "featured": "geändert",
     "publishd": "veröffentlicht",
     "offlined": "offline genommen",
     "duplicated": "dupliziert",
@@ -227,7 +227,7 @@
     "filterByType": "Nach Typ Filtern"
   },
   "upload": {
-    "title": "Dateien Hochladen",
+    "title": "Dateien hochladen",
     "choose_license": "Wählen Sie bitte eine Lizenz.",
     "publish_images": "Dateien veröffentlichen?",
     "upload": "Hochladen",
@@ -253,5 +253,23 @@
     "updateArchiveButton": "Archiv aktualisieren",
     "archiveUpdateTitle": "Archiv aktualisieren",
     "archiveUpdateSuccessful": "Die archivierten Daten wurden erfolgreich aktualisiert."
+  },
+  "import": {
+    "importBibTexTitle": "BibTex Importer",
+    "importButtonTitle": "Importieren",
+    "importSelected": "Ausgewählte importieren",
+    "importAll": "Alle importieren",
+    "searchCatalogueText": "Bibliothekskatalog durchsuchen",
+    "successText": "Importierung erfolgreich",
+    "successSubtext": "{count} Einträge wurden erfolgreich importiert.",
+    "failText": "Importfehler",
+    "failSubtext": "Leider ist der Import aus folgendem Grund fehlgeschlagen: {error}.",
+    "title": "Titel",
+    "contributor": "Beteiligung",
+    "year": "Jahr",
+    "clickordrag": "Click oder Drag'n Drop",
+    "attachBibTex": "BibTex-Datei Hinzufügen",
+    "invalidBibTex": "Die BibTex-Datei konnte nicht gelesen werden",
+    "invalidFileType": "Ungültiger Dateityp"
   }
 }

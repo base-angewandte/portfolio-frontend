@@ -33,7 +33,6 @@ import {
   BaseMenuList,
   BasePopUp,
   BaseSelectOptions,
-  BaseUploadBar,
   BaseUploadPopUp,
   BaseBoxTooltip,
   BaseChip,
@@ -84,7 +83,6 @@ Vue.use(BaseLoader);
 Vue.use(BaseMenuList);
 Vue.use(BasePopUp);
 Vue.use(BaseSelectOptions);
-Vue.use(BaseUploadBar);
 Vue.use(BaseUploadPopUp);
 Vue.use(BaseBoxTooltip);
 Vue.use(BaseChip);
