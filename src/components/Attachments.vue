@@ -1058,6 +1058,7 @@ export default {
     .status-icon {
       height: $icon-medium;
       max-width: $icon-medium;
+      width: 100%;
     }
 
     .status-icons {
