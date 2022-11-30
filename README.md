@@ -111,4 +111,6 @@ In the `.env` file contained in the project folder the following variables can b
   to create new files `.env.development.local` and `env.production.local` which will overwrite the default `.env.local` file.
   
 * For further details on the use of environmental variables in this App also refer to the  [Vue-CLI documentation](https://cli.vuejs.org/guide/mode-and-env.html#environment-variables).  
-  
+
+This project uses [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/). More detailed information and documentation is
+available [here](https://basedev.uni-ak.ac.at/documentation/base/dev_guide.html#commit-guidelines).
