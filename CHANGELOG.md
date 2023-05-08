@@ -1,3 +1,9 @@
+## 1.3.4 (2023-05-08)
+
+### Fixed
+* Update [base-ui-components](https://base-angewandte.github.io/base-ui-components/) to v2.0.11 to fix baseButton active state.
+
+
 ## 1.3.3 (2023-03-28)
 
 ### Fixed
