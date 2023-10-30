@@ -1,3 +1,10 @@
+## 1.3.5 (2023-10-30)
+
+
+### Fixed
+
+* update external dependencies to avoid security vulnerabilities
+
 ## 1.3.4 (2023-05-08)
 
 ### Fixed
